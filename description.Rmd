@@ -1,0 +1,398 @@
+---
+title: "Project Asclepias"
+author: "Bradley Saul"
+date: "4/8/2019"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+```{r, echo = FALSE, message=FALSE}
+library(ggplot2)
+library(dplyr)
+```
+
+# Background
+
+# Data
+
+## Events
+
+Define an event $w$ as:
+\[
+w = \{(x, y), t\} \text{ s.t. } x \leq y \in \mathbb{Z}, t \in \{\clubsuit, \heartsuit, \diamondsuit, \spadesuit \}
+\]
+
+Events are collected into a partially ordered set of events as follows:
+
+\[
+W = [(w_1, w_2, \dots, w_n) |  x_i \leq x_{i + 1} \forall i = 1, \dots, n; y_i \leq y_{i + 1} \forall i \text{ s.t. } x_i = x_{i + 1}]
+\]
+
+For example, here's a JSON representation of randomly generated, example data:
+
+```{r, echo = FALSE}
+set.seed(12)
+n <- 20
+W <- tibble::tibble(
+  x = sample(1:100, size = n, replace = TRUE),
+  y = x + sample(0:10, size = n, replace = TRUE, prob = c(.5, rep(.05, 10))),
+  t = sample(c("heart", "club", "spade", "diamond"), size = n, replace = TRUE)
+) 
+
+Wdt <- W %>%
+  mutate(xy = purrr::map2(x, y, ~ c(.x, .y))) %>%
+  dplyr::arrange(x, y)
+
+W <- apply(select(Wdt, xy, t), 1, as.list)
+jsonlite::toJSON(head(select(Wdt, xy, t), 3), pretty = TRUE, auto_unbox = TRUE)
+```
+
+And here's $W$ represented graphically where y-axis is used to differentiate each $w$ by its $t$:
+
+```{r, echo = FALSE, fig.height=1}
+ggplot(
+  data = Wdt,
+  aes(x = x, y = t)
+) + geom_segment(
+  aes(xend = y, yend = t),
+  color = "grey90",
+  size = 0.5
+) + geom_point(
+  aes(shape = t),
+  size = 5,
+  position = position_dodge(width = 0.8)
+) + 
+  scale_shape_manual(
+    guide  = FALSE,
+    values = c("spade"= "\u2660", "heart" = "\u2665", "club" = "\u2663", "diamond" = "\u2666")
+  ) + 
+  # scale_y_discrete(expand = c(0, 0)) + 
+  theme_classic() +
+  theme(
+    axis.line.x = element_line(size = 0.5, color  = "black"),
+    axis.ticks.x = element_line(size = 0.5),
+    axis.title   = element_blank(),
+    axis.text.y  = element_blank()
+  )
+```
+
+## Specification
+
+TODO: a specification is a data type that specifies the composition and ordering of functions.
+
+# Functions
+
+
+## Accessors
+
+Accessor functions extract information from an event $w$. Basic functions include:
+
+\[
+\mathsf{a}_s(w) = x; \mathsf{a}_e(w) = y; \mathsf{a}_d(w) = t
+\]
+
+Similary accessors can combined:
+
+\[
+\mathsf{a}_{se}(w) = (\mathsf{a}_s(w), \mathsf{a}_e(w)) = (x, y)
+\]
+
+Functions can also be defined that operate on collections of events, for example:
+
+\[
+\mathsf{A}_s(W) = \{(x_1, \dots, x_n) | x_i = \mathsf{a}_s(w_i) \,\, \forall w_i \in W\}
+\]
+
+## Predicates
+
+A predicate $\mathsf{P}$ is a function that returns a boolean (or $\{0, 1\}$) based on $w$ that is constructed by an accessor and a relational operator.
+
+\[
+\mathsf{P}^c : (a, \cdot) \mapsto \mathsf{P}: w \mapsto  \{0, 1\}
+\]
+
+where $a$ is an accessor function and $\cdot$ is a relational operator. Defined similarly for a set of events:
+
+\[
+\mathsf{P}^c : (A, \cdot) \mapsto \mathsf{P}: W \mapsto \{\{0, 1\}^n\}
+\]
+
+Predicates are constructed from acessors and relations. For example, the following function returns $1$ when the start of $w$ is less than or equal to some bound $b$:
+
+\[
+\mathsf{P}'(w) = \begin{cases}
+1 & \mathsf{a}_s(w) \leq b \\
+0 & else
+\end{cases}
+\]
+
+where $\mathsf{P}' = \mathsf{P}^c(a_s, < b)$.
+
+## Filter
+
+A filter is a function $\mathsf{L}$ that subsets $W$ based on a set of predicate functions $P$.
+
+\[
+\mathsf{L}: (P, W) \mapsto W';  W' \subseteq W
+\]
+
+
+Here's an example filter function that filters $W$ based on $\mathsf{P}'$:
+
+\[
+\mathsf{L}'(P, W) = \{w \in W | \mathsf{P}'(w) = 1 \}
+\]
+
+Implemented in `R` it might look something like this.
+
+```{r}
+a_s <- function(w) w$xy[[1]]
+P1  <- function(w) a_s(w) > 50
+L1  <- function(w) Filter(P1, w)
+L1(W)
+```
+
+But we can think even higher level and produce function molds. Here's an example.
+
+```{r}
+a_cast <- function(name, positions){
+  function(w){
+    w[[name]][positions]
+  }
+}
+
+p_cast <- function(accessor, relation, bound){
+  force(accessor);
+  function(w){
+    relation(accessor(w), bound)
+  }
+}
+
+l_cast <- function(p){
+  force(p)
+  function(w){
+    Filter(p, w)
+  }
+}
+
+a_cast("xy", 1) %>%
+  p_cast(`<=`, 10) %>%
+  l_cast() %>%
+  {.(W)}
+```
+
+A couple of notes:
+
+* The organization of these molds will be critical for the overall flow and composability of the software
+* In `R`, the evaluation of the cast inputs need to be `force`d (or otherwise evaluated) else problems arise.
+
+
+## Features
+
+A feature is a function that extracts data $D$ from a set $W$. Features are composed entirely from the types of functions described above: accessors, predicates, and filters (and map/reduce functions).
+
+\[
+\mathsf{F}: W \mapsto D
+\]
+
+For example, let's define the "start of the first $\heartsuit$ after the start of the first $\spadesuit$". As a function of $W$, this can be expressed as
+
+\[
+\mathsf{F}^{\star}(W) = \min \{ \mathsf{a}_s(z) | z \in W' = \mathsf{L}^{\star}(W) \}
+\]
+
+where $\mathsf{L}^{\star}$ filters $W$ to the set of all $w$ that occur after the first $w$ with $\spadesuit$:
+
+\[
+\mathsf{L}^{\star}(W) = \{w | \mathsf{a}_s(c)  > \min(\mathsf{a}_s(s)), s \in S = \mathsf{L}(P^{\spadesuit}, W), c \in \mathsf{L}(P^{\heartsuit}, W)  \}
+\]
+
+\[
+\mathsf{P}^{\text{suit}}(w) = \begin{cases}
+1 & \mathsf{a}_t(w) = \text{suit} \\
+0 & else
+\end{cases}
+\]
+
+Let's implement this in `R`:
+
+```{r}
+Amap_cast <- function(a){
+  function(W){
+    Map(a, W)
+  }
+}
+
+Lsuit_cast <- function(suit){
+  a_cast("t", 1) %>%
+    p_cast(`==`, suit) %>%
+    l_cast()
+}
+
+min_op <- function(A, L){
+  force(A); force(L)
+  function(w) {
+    Reduce(min, A(L(w)))
+  }
+}
+
+A_s    <- Amap_cast(a_s)
+A_prd  <- Amap_cast(a_cast("xy", c(1, 2)))
+Lspade <- Lsuit_cast("spade")
+Lheart <- Lsuit_cast("heart")
+
+
+first_of <- function(what, filter){
+  force(what); force(filter)
+  function(w){
+    min_op(what, filter)(w)
+  }
+}
+  
+first_start_of_spade <- first_of(A_s, Lspade)
+
+fstar <- function(W){
+  # Define a predicate function that indicates starts less than the first spade event
+  p_cast(A_s, `>`, first_start_of_spade(W)) %>%
+    # apply this function to the heart events
+    { .(Lheart(W)) } %>%
+    Lheart(W)[.] %>%
+    { first_of(A_s, Lheart)(.) }
+}
+fstar(W)
+
+```
+
+# A Practical Toy Example
+
+That's define a cohort where:
+
+* the index event is the "start of the first $\heartsuit$ after the start of the first $\spadesuit$" (i.e $\text{index}(W) = \mathsf{F}^{\star}(W)$).
+
+```{r}
+index <- fstar
+```
+
+Based on the index, we want to extract the following features about $W$:
+
+* foreverDiamonds: Do the $\diamondsuit$ events have a gap of no more than 10 time units before index, starting from 25 units before index? TRUE/FALSE
+  * NOTE: This is analogous to a continuous enrollment algorithm
+* 2spade1heart: Before index, does $W$ contain 2 $\spadesuit$ separated by at least 3 time units or 1 $\heartsuit$? TRUE/FALSE
+  * NOTE: this is analogous to a "2-out/1-in" algorithm
+* flush: 
+  * TRUE/FALSE: Is there a flush after index; any set of five events consecutive events after index of the same suit.
+  * Int: What is the time that the flush occurred?
+  * Suit: What suit triggered the flush
+  * NOTE: the flush feature contains three data points: an indicator whether some event occurred, the time it occurred, and the type that triggered it.
+* clubTrump:
+  * TRUE/FALSE: Is there a flush after index; any set of five events consecutive events after index of the same suit.
+  * Int: What is the time that the flush occurred?
+* fullOfHearts:
+  * $\{Int\}$: the set of all times that $\heartsuit$ that occur before a clubTrump
+  * NOTE: the feature in this case is a set of times (not just a single time)
+
+Now let's express each of these features mathematically:
+
+TODO: modify this to filter based on index *after* identifying periods (because a gap could occur between the end of the period and index).
+
+$$
+\begin{aligned}
+\mathsf{L}^{\diamondsuit}_{\text{index}}(W) &= \{ w | w \in \mathsf{L}(W', \mathsf{P}^c(A_t, = \diamondsuit), W' = \mathsf{L}(W, \mathsf{P}^c(A_s, \leq \text{index}(W))  \} \\
+\text{scangap} &= f(B) = \{(a, b)^n | (a, b) \in B, \,\, a = \text{if }  x_{i} \leq y_{i - 1} + c \text{ then } x_{i - 1} \text{ else } x_{i} , b = \text{if }  y_{i} \leq y_{i - 1} \text{ then } y_{i - 1} \text{ else } y_{i}, \forall i = 2, \dots, n  \} \\
+\text{periods} &= g(B) = \{(a, b)^k | (a, b) \in f(B), \,\, b = max(b) \,\, \forall a_i = a_j \} \\
+\text{foreverDiamonds}(W, \text{index}) &= \{\text{if } g(A_{se}(\mathsf{L}^{\diamondsuit}_{\text{index}})) = \emptyset \text{ FALSE} \text { else } \text{TRUE} \} \\
+\end{aligned}
+$$
+
+Let's look at the $\text{scangap}$ function and the patterns it can be composed of. First, we have a function performing the nuts and bolts of the set comprehension (e.g., $\text{if }  x_{i} \leq y_{i - 1} + c \text{ then } x_{i - 1} \text{ else } x_{i}$), which be somewhat kludglily patterned as:
+
+```{r}
+check_gap_cast <- function(cc = 0, pos = c(1, 2, 1, 1)) {
+  function(a, b){
+    if (b[pos[1]] <= (a[pos[2]] + cc)) a[pos[3]] else b[pos[4]]
+  }
+}
+```
+
+So that `check_gap_cast(cc = 10, pos = c(1, 2, 1, 1))` yields $f(x, y) = \text{if }  x_{i} \leq y_{i - 1} + 10 \text{ then } x_{i - 1} \text{ else } x_{i}$ and `check_gap_cast(cc = 0, pos = c(2, 2, 2, 2))` yields $f'(x, y) = \text{if }  y_{i} \leq y_{i - 1} \text{ then } y_{i - 1} \text{ else } y_{i}$.
+
+Then we can apply that pattern to create the scangap function.
+
+```{r}
+scangap_cast <- function(cc){
+  function(l){
+    Reduce(
+      f = function(x, y){
+        c(check_gap_cast(cc, c(1, 2, 1, 1))(x, y), 
+          check_gap_cast(0, c(2, 2, 2, 2))(x, y))
+        },
+    x = l, accumulate = TRUE)
+  }
+}
+
+scangap_cast(10)(head(Wdt$xy))
+```
+
+In summary, scangap return a set of tuples the same length as the input $W$, where the start and end of each $w_i \in W$ have been updated depending on $w_{i - 1}$ extending the period until a time gap of 10 units occurs.
+
+Now, we can identify which of those periods are the non overlapping periods by scanning the modified periods from the right, accumulating an indicator of whether each period is the longest segment of a period; then we can use set (list) comprehension to filter to the unique periods.
+
+For example, (warning: this is klunky and could be cleaned up), but in `R`:
+
+```{r}
+# Finds the longest non-overlapping periods
+scan_periods_cast <- function(cc){
+  function(l){
+     Map(
+       function(x) as.logical(x[3]),
+       Reduce(
+         f = function(a, b) c(a, (a[2] + cc <= b[1]) * 1),
+         x = l[-length(l)],
+         init = c(l[[length(l)]], 1), accumulate = TRUE, right = TRUE)
+     )
+  }
+}
+
+period_cast <- function(cc){
+  ff <- scan_periods_cast(cc)
+  gg <- scangap_cast(cc)
+  function(l){
+    gg(l)[unlist(ff(gg(l)))]
+  }
+}
+
+
+
+period_cast(10)(Wdt$xy)
+period_cast(10)(head(Wdt$xy))
+```
+
+Now let's build foreverDiamonds
+```{r}
+Ldiamond <- Lsuit_cast("diamond")
+
+Lw <- function(W){
+  # Define a predicate function that indicates starts less than the first spade event
+  p_cast(A_s, `<`, index(W)) %>%
+    # apply this function to the heart events
+    { .(Ldiamond(W)) } %>%
+    Ldiamond(W)[.] 
+}
+
+foreverDiamonds <- function(W){
+  Lw(W) %>% 
+    A_prd() %>%
+    { period_cast(10)(.) } %>%
+    length(.) > 0
+}
+
+foreverDiamonds(W)
+```
+
+Note that another pattern emerged! `Lw` is exactly the same pattern as the first part of `index`! 
+
+
+
+* $\text{fullHouse}(W, \text{index})$
+* $\text{postClubs}(W, \text{index})$
+

@@ -2,8 +2,10 @@
 title: "Project Asclepias"
 subtitle: "A Functional Approach to Cohort Construction"
 author: "Bradley Saul"
-date: "4/8/2019"
-output: html_document
+date: "`r format(Sys.Date(), '%Y-%m-%d')`"
+output:
+  html_document:
+     toc: true
 editor_options: 
   chunk_output_type: console
 ---
@@ -12,41 +14,77 @@ library(ggplot2)
 library(dplyr)
 ```
 
-
-
-
 # Background
 
-* cohort package
-* Why a functional approach? What is it?
-* The business case
+Cohorts are a fundamental to many epidemiologic studies. Informally, a cohort is simply a group within a population who share a common set of features. 
+
+In his book Category Theory for Programmers, xxx writes: "Functional programmers have a peculiar way of approaching problems. They start by asking very Zen-like questions. For instance, when designing an interactive program, they would ask: What is interaction?" In that vein, what is a cohort?
+
+I think a cohort can be expressed as a mathematical function. Let $P$ be a population and $S$ be a study design that specifies a cohort's inclusion/exclusion criteria and the set of features needed for analysis. A cohort can be conceived a function that maps a population and a specification to sets of features about each unit in the cohort:
+
+\[
+\Upsilon: (P, S) \mapsto \{D_1, \dots, D_{m^{\star}} \} 
+\]
+
+where $m^{\star}$ is the number of observational units selected in the study from $P$. This formulation obviously leaves out a lot of details. $\Upsilon$ will be composed of many other functions and the structure of $P$, $S$, and $D$ need to be specified. 
+
+Converting source data such as insurance claims, electronic medical records, and case report forms into analysis-ready cohorts consumes an inordinate amount of resources in a research pipeline. The process may involve computationally-intensive transformations of source data into a common data model, preparing an analysis plan by researchers, and programmers who translate the analysis plan and wrangle data into analysis-ready files. Project Asclepias targets the translation of analysis plan into analytic files.
+
+PUT A FIGURE HERE.  
+```
+ETL --> CDM 
+            \
+            Wrangle --> Analysis files
+            /
+        SAP
+```
+
+The "wrangle" step is often the most challenging and largest bottleneck in terms of human resources. An analysis plan's natural language descriptions of the cohort creation algorithm must be translated into code. This step is prone to vague language by scientists and misinterpretations by programmers.
+
+## Emerging, current approaches
+
+* original approach was floors of SAS programmers
+* Describe various solutions such as [aetion](https://www.aetion.com/platform) and [ConceptQL](https://github.com/outcomesinsights/conceptql) (upon which Jigsaw is built) and [ODHSI](https://www.ohdsi.org/)'s [ATLAS](http://www.ohdsi.org/web/atlas/#/home) program
+  
+## Asceplias is different
+
+Solutions such as ConceptQL and presumably others create a high level language for describing algorithms mapping tightly to a programming language, such as SQL. ConceptQL is indeed quite sophisticated and in many ways this project will appear similar. Still, Project Asclepias takes a somewhat different approach. Asclepias declares a cohort mathematically as composed of [algebraic data types](https://en.wikipedia.org/wiki/Algebraic_data_type) and functions that operate on these data types (think [category theory](https://www.youtube.com/watch?v=JH_Ou17_zyU)). Asclepias provides a rigorous framework for reasoning about, composing, and ultimately computing a cohort.
+
+More thoughts:
+
+* With a rigorous mathematical underpinning: 
+     * software more straightforward to implement and test
+     * a mapping to a more "expressive" language can be derived to be used in writing specifications
+
+Moreover, with its mathematical foundation, Asclepias will be implemented using a [functional programming approach](https://en.wikipedia.org/wiki/Functional_programming): "[you don't tell the computer what to do as such but rather you tell it what stuff *is*.](http://learnyouahaskell.com/introduction#about-this-tutorial)"
+
+## Towards flexible architectures
+
+Many programming languages (R, python, scala, and so on) include functional programming concepts. This way of thinking about software design also lends itself to serverless architectures like [AWS Lambda](https://aws.amazon.com/lambda/). In fact, AWS Lambda gets its name from [lambda (or anonymous) functions](https://en.wikipedia.org/wiki/Anonymous_function) which come out of the [lambda calculus](https://en.wikipedia.org/wiki/Lambda_calculus) system, upon which *pure* functional languages are based.
 
 # Design
 
 ## Data Structures
 
-The fundamental data structure in this approach is that of events occurring in time with information attached to the event such as a hospital stay, disease diagnosis, or lab values. We most often work on the time scale of days, so we'll think about the time intervals in terms of integers.
+The fundamental data structure in this setup is that of events occurring in time with information attached to the event such as a hospital stay, disease diagnosis, or lab values. We most often work on the time scale of days, so for now we'll think about the time intervals in terms of integers.
 
 Define an event $w$ as a set with an interval and a context:
-
-\[
-w := \{\Theta, \square\}
-\]
 
 \[
 w := \{\Xi, \square\}
 \]
 
+where $\Xi$ and $\square$ are defined in the next two sections.
 
 ### Interval
 
-An interval $\iota$ is as an ordered pair defining the start and end of a segment on the integer line.
+An interval $\Xi$ is as an ordered pair defining the start and end of a segment on the integer line.
 
 \[
-\iota := (a, b) \mid a \leq b \in \mathbb{Z}
+\Xi := (a, b) \mid a \leq b \in \mathbb{Z}
 \]
 
-Let $\mathcal{I}$ be the set of all $\Xi$. Here's a few $\iota$s represented visually:
+Let $\mathcal{I}$ be the set of all $\Xi$. Here's a few $\Xi$s represented visually:
 
 ```{r, echo = FALSE, fig.height = 1}
 num_line_baseplot <- function(a, b){
@@ -109,7 +147,7 @@ interval_pair_o <- setClass(
   "interval_pair_o", 
   contains = "interval_pair",
   validity = function(object){
-    ordered(slot(object, "a"), slot(object, "b"))
+    `<`(slot(object, "a"), slot(object, "b"))
   })
 
 setMethod("show", "interval_pair", function(object) {
@@ -141,15 +179,27 @@ setMethod("expandr", "interval", function(object, c) interval(a = s(object), b =
 setGeneric("expand", function(object, ...) standardGeneric("expand") )
 setMethod("expand", "interval", function(object, c)  expandr(expandl(object, c), c))
 # setGeneric("expand", function(object, ...) standardGeneric("expand") )
-setGeneric("ordered", function(x, y) standardGeneric("ordered") )
-setMethod("ordered", c("interval", "interval"), 
-          function(x, y) { s(x) <= s(y)  })
+setMethod(
+  `==`, 
+  c("interval", "interval"), 
+  function(e1, e2) { 
+    if(s(e1) == s(e2) && e(e1) == e(e2)) TRUE
+    else FALSE
+  })
+setMethod(
+  `<`, 
+  c("interval", "interval"), 
+  function(e1, e2) { 
+    if(s(e1) < s(e2) | ((s(e1) == s(e2)) & e(e1) < e(e2))) TRUE
+    else FALSE
+  })
+
 setGeneric("order", function(x) standardGeneric("order") )
 setMethod(
   "order", 
   "interval_pair",
   function(x) {
-    if(ordered(slot(x, "a"), slot(x, "b"))) {
+    if(`<`(slot(x, "a"), slot(x, "b"))) {
       interval_pair_o(a = slot(x, "a"), b = slot(x, "b"))  
     } else {
      interval_pair_o(a = slot(x, "b"), b = slot(x, "a"))  
@@ -173,24 +223,25 @@ We're going to get into functions later, but a few basic functions might help co
  
 | Definition     | Mapping                      | Description        |
 | ------------   | ---------------------------- | ------------------ |
-| $s(\iota) = a$ | $s : \mathcal{I} \mapsto \mathbb{Z}$ | Gets the interval's start | 
-| $e(\iota) = b$ | $e : \mathcal{I} \mapsto \mathbb{Z}$ | Gets the interval's end   |
-| $shift(\iota, c) = (s(\iota) + c, e(\iota) + c)$ | $shift : (\mathcal{I}, \mathbb{Z}) \mapsto \mathcal{I}$ | Shifts an interval by $c$ |
-| $expandl(\iota, c) = (s(\iota) - c, e(\iota))$ | $expandl : (\mathcal{I}, \mathbb{Z}) \mapsto \mathcal{I}$ | Expands an interval to the left by $c$ | 
-| $expandr(\iota, c) = (s(\iota), e(\iota) + c)$ | $expandr : (\mathcal{I}, \mathbb{Z}) \mapsto \mathcal{I}$ | Expands an interval to the right by $c$ | 
-| $expand(\iota, c) = (s(\iota) - c, e(\iota) + c)$ | $expand : (\mathcal{I}, \mathbb{Z}) \mapsto \mathcal{I}$ | Expands an interval by $c$ | 
-| $length(\iota) = e(\iota) - s(\iota)$ | $length : \mathcal{I} \mapsto \mathbb{Z}$ | Measures the length of an interval | 
-| $flipl(\iota)  = (s(\iota) - length(\iota), s(\iota))$| $flipl : \mathcal{I} \mapsto \mathbb{Z}$ | Flips an interval to the left | 
-| $flipr(\iota)  = (e(\iota), e(iota) + length(\iota))$| $flipr : \mathcal{I} \mapsto \mathbb{Z}$ | Flips an interval to the right | 
-| $ennummerate(\iota) = \{z \mid z \in \mathbb{Z}, z >= s(\iota), z <= e(\iota)\}$ | $ennummerate : \mathcal{I} \mapsto \mathbb{Z}$ | Ennumerates all the integers in an interval | 
-| $ordered(\iota, \iota') = \begin{cases} TRUE  & s(\iota) \leq s(\iota') \\ FALSE & else\end{cases}$ | $ordered : (\mathcal{I}, \mathcal{I}) \mapsto \mathbb{B}$ | determines if two intervals are ordered such that $s(\iota) \leq s(\iota')$ | 
-| $order( ( \iota, \iota' ) ) = \begin{cases} <\iota, \iota'>  & ordered(\iota, \iota') = TRUE \\ < \iota', \iota > & ordered(\iota, \iota') = FALSE \end{cases}$ | $order : (\mathcal{I} \times \mathcal{I}) \mapsto \mathcal{I^{2}_o}$ where $\mathcal{I}^{2}_o = \{ < \iota, \iota' >\}$ and $<\cdot, \cdot>$ indicates that the pair of elements are ordered | puts two intervals into order s.t. $s(\iota) \leq s(\iota')$ | 
-| $overlaps( <\iota, \iota'> ) = \begin{cases} TRUE  & s(\iota') \leq e(\iota) \\ FALSE & else\end{cases}$ | $overlaps : \mathcal{I^{2}_o} \mapsto \mathbb{B}$  | determines if two ordered intervals overlap | 
+| $s(\Xi) = a$ | $s : \mathcal{I} \mapsto \mathbb{Z}$ | Gets the interval's start | 
+| $e(\Xi) = b$ | $e : \mathcal{I} \mapsto \mathbb{Z}$ | Gets the interval's end   |
+| $shift(\Xi, c) = (s(\Xi) + c, e(\Xi) + c)$ | $shift : (\mathcal{I}, \mathbb{Z}) \mapsto \mathcal{I}$ | Shifts an interval by $c$ |
+| $expandl(\Xi, c) = (s(\Xi) - c, e(\Xi))$ | $expandl : (\mathcal{I}, \mathbb{Z}) \mapsto \mathcal{I}$ | Expands an interval to the left by $c$ | 
+| $expandr(\Xi, c) = (s(\Xi), e(\Xi) + c)$ | $expandr : (\mathcal{I}, \mathbb{Z}) \mapsto \mathcal{I}$ | Expands an interval to the right by $c$ | 
+| $expand(\Xi, c) = (s(\Xi) - c, e(\Xi) + c)$ | $expand : (\mathcal{I}, \mathbb{Z}) \mapsto \mathcal{I}$ | Expands an interval by $c$ | 
+| $length(\Xi) = e(\Xi) - s(\Xi)$ | $length : \mathcal{I} \mapsto \mathbb{Z}$ | Measures the length of an interval | 
+| $flipl(\Xi)  = (s(\Xi) - length(\Xi), s(\Xi))$| $flipl : \mathcal{I} \mapsto \mathbb{Z}$ | Flips an interval to the left | 
+| $flipr(\Xi)  = (e(\Xi), e(iota) + length(\Xi))$| $flipr : \mathcal{I} \mapsto \mathbb{Z}$ | Flips an interval to the right | 
+| $ennummerate(\Xi) = \{z \mid z \in \mathbb{Z}, z >= s(\Xi), z <= e(\Xi)\}$ | $ennummerate : \mathcal{I} \mapsto \mathbb{Z}$ | Ennumerates all the integers in an interval |
+| $=(\Xi, \Xi') = \begin{cases} TRUE  & s(\Xi) = s(\Xi') \; \& \; e(\Xi) = e(\Xi') \\ FALSE & else\end{cases}$ | $= : (\mathcal{I}, \mathcal{I}) \mapsto \mathbb{B}$ | determines if two intervals are equal$ | 
+| $<(\Xi, \Xi') = \begin{cases} TRUE  & s(\Xi) < s(\Xi') \\ TRUE  & s(\Xi) = s(\Xi') \; \& \; e(\Xi) < e(\Xi') \\ FALSE & else\end{cases}$ | $< : (\mathcal{I}, \mathcal{I}) \mapsto \mathbb{B}$ | determines if two intervals are ordered such that $s(\Xi) < s(\Xi')$ or $s(\Xi) = s(\Xi')$ and $e(\Xi) < e(\Xi')$. | 
+| $order( ( \Xi, \Xi' ) ) = \begin{cases} <\Xi, \Xi'>  & <(\Xi, \Xi') = TRUE \\ < \Xi', \Xi > & <(\Xi, \Xi') = FALSE \end{cases}$ | $order : (\mathcal{I} \times \mathcal{I}) \mapsto \mathcal{I^{2}_o}$ where $\mathcal{I}^{2}_o = \{ < \Xi, \Xi' >\}$ and $<\cdot, \cdot>$ indicates that the pair of elements are ordered | puts two intervals into order according to `<`.| 
+| $overlaps( <\Xi, \Xi'> ) = \begin{cases} TRUE  & s(\Xi') \leq e(\Xi) \\ FALSE & else\end{cases}$ | $overlaps : \mathcal{I^{2}_o} \mapsto \mathbb{B}$  | determines if two ordered intervals overlap | 
 
 These functions may seem trivial, but they reveal a few concepts:
 
-* We've expressly defined the data types of function's input and output.
-* Starting with simple accessor functions ($s$ and $e$) and basic set, relational, and arithmetic operators, we created simple functions that form the building blocks for more complicated functions. 
+* We've expressly defined the data types of each function's input and output.
+* Starting with simple accessor functions ($s$ and $e$) and basic set, relational, and arithmetic operators, we created simple functions from which more complicated functions can be composed (as we will see). 
 
 Here are the functions in action:
 
@@ -206,7 +257,10 @@ shift(itv, 5L)
 expandl(itv, 5L)
 expandr(itv, 5L)
 expand(itv, 5L)
-ordered(itv, interval(a = 5L, b = 11L))
+itv < interval(a = 5L, b = 11L)
+itv < interval(a = 1L, b = 11L)
+itv < interval(a = 2L, b = 11L)
+itv < interval(a = 2L, b = 3L)
 
 interval_pair(a = itv, b = interval(a = -1L, b = 10L)) %>%
   order() %>%
@@ -215,11 +269,30 @@ interval_pair(a = itv, b = interval(a = -1L, b = 10L)) %>%
 interval_pair(a = itv, b = interval(a = -1L, b = 0L)) %>%
   order() %>%
   overlaps()
+
+
+interval_pair(a = itv, b = interval(a = 2L, b = 11L)) %>%
+  order() %>%
+  overlaps()
 ```
 
+
+
+```{r, eval=FALSE}
+x <- Map(expandr, Wdt$interval, c = 5L)
+
+x
+  Reduce(f = function(x, y){
+    print(x)
+    interval_pair(a = x, b = y) %>%
+    order() %>%
+    overlaps()
+  }, x)
+
+```
 ### Context
 
-Define a context $\square$ as an arbitrary, finite collection of objects. A context is always paired with a $\iota$ as an event (defined below) and contains all the relevant information about the $\iota$ such as a type and associated values.
+Define a context $\square$ as an arbitrary, finite collection of objects. A context is always paired with a $\Xi$ as an event (defined below) and contains all the relevant information about the $\Xi$ such as a type and associated values.
 
 For the purposes of this demonstration, let the context be the pair the suit and value of a poker card:
 
@@ -285,7 +358,7 @@ value(c2)
 Events are collected into an indexed, partially ordered set:
 
 \[
-W = \{ (w_1, w_2, \dots, w_n) \mid  a_i \leq a_{i + 1} \; i = 1, \dots, n, b_i \leq b_{i + 1} \: \forall a_i = a_{i + 1} \}
+W = \{ (w_1, w_2, \dots, w_n) \mid  \Xi_i \leq \Xi_{i + 1} \: \forall i = 1, \dots, n -1 \}
 \]
 
 ```{r, echo = FALSE, message = FALSE, results = "hide"}
@@ -303,7 +376,7 @@ event(interval = itv, context = c1)
 event(interval = interval(a = 4L, b = 20L), context = c2)
 ```
 
-Here's a randomly generated set $W$.
+Here's a randomly generated set $W$:
 
 ```{r, echo = FALSE}
 set.seed(12)
@@ -317,8 +390,10 @@ W <- tibble::tibble(
 ) 
 
 Wdt <- W %>%
-  mutate(interval = purrr::map2(x, y, ~ interval(a = .x, b = .y)),
-         context  = purrr::map2(suit, value, ~ context(suit = suit(.x), value = .y))) %>%
+  mutate(
+    xy       = purrr::map2(x, y, ~ c(.x, .y)),
+    interval = purrr::map2(x, y, ~ interval(a = .x, b = .y)),
+    context  = purrr::map2(suit, value, ~ context(suit = suit(.x), value = .y))) %>%
   dplyr::arrange(x, y)
 
 W <- apply(select(Wdt, interval, context), 1, as.event)
@@ -370,7 +445,7 @@ TODO: a specification is a data type that specifies the composition and ordering
 As described above, accessor functions extract information from an event $w$. For example:
 
 \[
-\mathsf{a}_{\iota}(w) = (a, b); \mathsf{a}_s(w) = (s \circ \mathsf{a}_{\iota}) (w) = a ; \mathsf{a}_{\square}(w) = \square
+\mathsf{a}_{\Xi}(w) = (a, b); \mathsf{a}_s(w) = (s \circ \mathsf{a}_{\Xi}) (w) = a ; \mathsf{a}_{\square}(w) = \square
 \]
 
 
@@ -430,20 +505,19 @@ L1  <- function(w) Filter(P1, w)
 L1(W)
 ```
 
-But we can think even higher level and produce function molds. Here's an example.
+But we can program in an more functional way and produce function molds. Here's an example.
 
 ```{r}
-a_cast <- function(name1, name2){
+a_cast <- function(slots){
   function(w){
-    slot(w, name1) %>% slot(name2)
+    Reduce(function(x, y) slot(x, y), slots, init = w)
   }
 }
-
-a_cast("interval", "a")(W[[1]])
-a_cast("context", "value")(W[[1]])
+a_cast(c("interval", "a"))(W[[1]])
+a_cast(c("context", "value"))(W[[1]])
 
 p_cast <- function(accessor, relation, bound){
-  force(accessor);
+  force(accessor); force(bound);
   function(w){
     relation(accessor(w), bound)
   }
@@ -460,7 +534,7 @@ l_cast <- function(p){
 Which can then be composed to extract elements from $W$.
 
 ```{r}
-a_cast("interval", "a") %>%
+a_cast(c("interval", "a")) %>%
   p_cast(`<=`, 10) %>%
   l_cast() %>%
   {.(W)}
@@ -469,7 +543,7 @@ a_cast("interval", "a") %>%
 
 ## Features
 
-A feature is a function that extracts data $D$ from a set $W$. Features are composed from the types of functions described above: accessors, predicates, and filters (and map/reduce functions).
+A feature is a function that extracts data $D$ from a set $W$. Features are composed from the types of functions described above: accessors, predicates, and filters (and map/reduce functions). Think of $D$ as the set of all possible information that could be extracted from $W$.
 
 \[
 \mathsf{F}: W \mapsto D
@@ -494,6 +568,8 @@ where $\mathsf{L}^{\star}$ filters $W$ to the set of all $w$ that occur after th
 \end{cases}
 \]
 
+NOTE: to safely implement $F^{\star}$, we'll need to handle the empty set, $\emptyset$, but I'll ignore this for now.
+
 Let's implement this in `R`:
 
 ```{r}
@@ -504,7 +580,7 @@ Amap_cast <- function(a){
 }
 
 Lsuit_cast <- function(suit){
-  a_cast("context", "suit") %>%
+  a_cast(c("context", "suit")) %>%
     p_cast(`==`, suit) %>%
     l_cast()
 }
@@ -517,10 +593,8 @@ min_op <- function(A, L){
 }
 
 A_s    <- Amap_cast(a_s)
-A_prd  <- Amap_cast(a_cast("xy", c(1, 2)))
 Lspade <- Lsuit_cast("spade")
 Lheart <- Lsuit_cast("heart")
-
 
 first_of <- function(what, filter){
   force(what); force(filter)
@@ -532,16 +606,14 @@ first_of <- function(what, filter){
 first_start_of_spade <- first_of(A_s, Lspade)
 
 fstar <- function(W){
-  # Define a predicate function that indicates starts less than the first spade event
-  p_cast(A_s, `>`, first_start_of_spade(W)) %>%
-    # apply this function to the heart events
+  a_cast(c("interval", "a")) %>%
+    p_cast(`>`, first_start_of_spade(W)) %>%
+    l_cast() %>%
     { .(Lheart(W)) } %>%
-    Lheart(W)[.] %>%
     { first_of(A_s, Lheart)(.) }
 }
 
 fstar(W)
-
 ```
 
 
@@ -556,10 +628,10 @@ That's define a cohort where:
 index <- fstar
 ```
 
-Based on the index, we want to extract the following features about $W$:
+Based on the index feature, we want to extract the following features about $W$:
 
 * 2spade1heart:
-  * TRUE/FALSE: Before index, does $W$ contain 2 $\spadesuit$ separated by at least 3 time units or 1 $\heartsuit$?
+  * TRUE/FALSE: Anytime before index, does $W$ contain 2 $\spadesuit$ separated by at least 3 time units or 1 $\clubsuit$?
   * NOTE: this is analogous to a "2-out/1-in" algorithm
 * foreverDiamonds:
   * TRUE/FALSE: Do the $\diamondsuit$ events have a gap of no more than 10 time units before index, starting from 25 units before index?
@@ -576,7 +648,19 @@ Based on the index, we want to extract the following features about $W$:
   * $\{Int\}$: the set of all times that $\heartsuit$ that occur before a clubTrump
   * NOTE: the feature in this case is a set of times (not just a single time)
 
-Now let's express each of these features mathematically
+Now let's express each of these features mathematically.
+
+
+## 2spade1heart
+
+Let's define a few more functions that operate on $w$ and $\Xi$.
+
+| Definition     | Mapping                      | Description        |
+| ------------   | ---------------------------- | ------------------ |
+| $any(W) = \begin{cases} W \neq \emptyset & TRUE \\ else & FALSE \end{cases}$  | $any : \mathcal{W} \mapsto \mathbb{B}$ | Is $W$ empty? | 
+
+
+
 
 ## foreverDiamonds
 
@@ -747,7 +831,12 @@ foreverDiamonds(W)
 
 Note that another pattern emerged! `Lw` is exactly the same pattern as the first part of `index`! 
 
+## fullHouse
+
 * $\text{fullHouse}(W, \text{index})$
+
+## postClubs
+
 * $\text{postClubs}(W, \text{index})$
 
 # Cohort
@@ -755,5 +844,5 @@ Note that another pattern emerged! `Lw` is exactly the same pattern as the first
 A cohort is a function mapping a population ($\{W_1, \dots, W_m\}$) and a specification to a set of features:
 
 \[
-\Upsilon: (Pop, S) \mapsto \{D_1, \dots, D_{m^{\star}}} \} 
+\Upsilon: (Pop, S) \mapsto \{D_1, \dots, D_{m^{\star}} \} 
 \]

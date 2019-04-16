@@ -11,6 +11,7 @@
 
 <meta name="author" content="Bradley Saul" />
 
+<meta name="date" content="2019-04-16" />
 
 <title>Project Asclepias</title>
 
@@ -372,38 +373,100 @@ $(document).ready(function () {
 <h1 class="title toc-ignore">Project Asclepias</h1>
 <h3 class="subtitle"><em>A Functional Approach to Cohort Construction</em></h3>
 <h4 class="author"><em>Bradley Saul</em></h4>
-<h4 class="date"><em>4/8/2019</em></h4>
+<h4 class="date"><em>2019-04-16</em></h4>
 
 </div>
 
+<div id="TOC">
+<ul>
+<li><a href="#background">Background</a><ul>
+<li><a href="#emerging-current-approaches">Emerging, Current approaches</a></li>
+<li><a href="#asceplias-is-different">Asceplias is different</a></li>
+<li><a href="#towards-flexible-architectures">Towards flexible architectures</a></li>
+</ul></li>
+<li><a href="#design">Design</a><ul>
+<li><a href="#data-structures">Data Structures</a><ul>
+<li><a href="#interval">Interval</a></li>
+<li><a href="#context">Context</a></li>
+<li><a href="#event">Event</a></li>
+<li><a href="#specification">Specification</a></li>
+</ul></li>
+<li><a href="#functions">Functions</a><ul>
+<li><a href="#accessors">Accessors</a></li>
+</ul></li>
+<li><a href="#predicates">Predicates</a></li>
+<li><a href="#filter">Filter</a></li>
+<li><a href="#features">Features</a></li>
+</ul></li>
+<li><a href="#a-practical-toy-example">A Practical Toy Example</a><ul>
+<li><a href="#spade1heart">2spade1heart</a></li>
+<li><a href="#foreverdiamonds">foreverDiamonds</a></li>
+<li><a href="#fullhouse">fullHouse</a></li>
+<li><a href="#postclubs">postClubs</a></li>
+</ul></li>
+<li><a href="#cohort">Cohort</a></li>
+</ul>
+</div>
 
 <div id="background" class="section level1">
 <h1>Background</h1>
+<p>Cohorts are a fundamental to many epidemiologic studies. Informally, a cohort is simply a group within a population who share a common set of features.</p>
+<p>In his book Category Theory for Programmers, xxx writes: “Functional programmers have a peculiar way of approaching problems. They start by asking very Zen-like questions. For instance, when designing an interactive program, they would ask: What is interaction?” In that vein, what is a cohort?</p>
+<p>I think a cohort can be expressed as a mathematical function. Let <span class="math inline">\(P\)</span> be a population and <span class="math inline">\(S\)</span> be a study design that specifies a cohort’s inclusion/exclusion criteria and the set of features needed for analysis. A cohort can be conceived a function that maps a population and a specification to sets of features about each unit in the cohort:</p>
+<p><span class="math display">\[
+\Upsilon: (P, S) \mapsto \{D_1, \dots, D_{m^{\star}} \} 
+\]</span></p>
+<p>where <span class="math inline">\(m^{\star}\)</span> is the number of observational units selected in the study from <span class="math inline">\(P\)</span>. This formulation obviously leaves out a lot of details. <span class="math inline">\(\Upsilon\)</span> will be composed of many other functions and the structure of <span class="math inline">\(P\)</span>, <span class="math inline">\(S\)</span>, and <span class="math inline">\(D\)</span> need to be specified.</p>
+<p>Converting source data such as insurance claims, electronic medical records, and case report forms into analysis-ready cohorts consumes an inordinate amount of resources in a research pipeline. The process may involve computationally-intensive transformations of source data into a common data model, preparing an analysis plan by researchers, and programmers who translate the analysis plan and wrangle data into analysis-ready files. Project Asclepias targets the translation of analysis plan into analytic files.</p>
+<p>PUT A FIGURE HERE.</p>
+<pre><code>ETL --&gt; CDM 
+            \
+            Wrangle --&gt; Analysis files
+            /
+        SAP</code></pre>
+<p>The “wrangle” step is often the most challenging and largest bottleneck in terms of human resources. An analysis plan’s natural language descriptions of the cohort creation algorithm must be translated into code. This step is prone to vague language by scientists and misinterpretations by programmers.</p>
+<div id="emerging-current-approaches" class="section level2">
+<h2>Emerging, Current approaches</h2>
 <ul>
-<li>cohort package</li>
-<li>Why a functional approach? What is it?</li>
-<li>The business case</li>
+<li>original approach was floors of SAS programmers</li>
+<li>Describe various solutions such as <a href="https://www.aetion.com/platform">aetion</a> and <a href="https://github.com/outcomesinsights/conceptql">ConceptQL</a> (upon which Jigsaw is built) and <a href="https://www.ohdsi.org/">ODHSI</a>’s <a href="http://www.ohdsi.org/web/atlas/#/home">ATLAS</a> program</li>
 </ul>
+</div>
+<div id="asceplias-is-different" class="section level2">
+<h2>Asceplias is different</h2>
+<p>Solutions such as ConceptQL and presumably others create a high level language for describing algorithms mapping tightly to a programming language, such as SQL. ConceptQL is indeed quite sophisticated and in many ways this project will appear similar. Still, Project Asclepias takes a somewhat different approach. Asclepias declares a cohort mathematically as composed of <a href="https://en.wikipedia.org/wiki/Algebraic_data_type">algebraic data types</a> and functions that operate on these data types (think <a href="https://www.youtube.com/watch?v=JH_Ou17_zyU">category theory</a>). Asclepias provides a rigorous framework for reasoning about, composing, and ultimately computing a cohort.</p>
+<p>More thoughts:</p>
+<ul>
+<li>With a rigorous mathematical underpinning:
+<ul>
+<li>software more straightforward to implement and test</li>
+<li>a mapping to a more “expressive” language can be derived to be used in writing specifications</li>
+</ul></li>
+</ul>
+<p>Moreover, with its mathematical foundation, Asclepias will be implemented using a <a href="https://en.wikipedia.org/wiki/Functional_programming">functional programming approach</a>: “<a href="http://learnyouahaskell.com/introduction#about-this-tutorial">you don’t tell the computer what to do as such but rather you tell it what stuff <em>is</em>.</a>”</p>
+</div>
+<div id="towards-flexible-architectures" class="section level2">
+<h2>Towards flexible architectures</h2>
+<p>Many programming languages (R, python, scala, and so on) include functional programming concepts. This way of thinking about software design also lends itself to serverless architectures like <a href="https://aws.amazon.com/lambda/">AWS Lambda</a>. In fact, AWS Lambda gets its name from <a href="https://en.wikipedia.org/wiki/Anonymous_function">lambda (or anonymous) functions</a> which come out of the <a href="https://en.wikipedia.org/wiki/Lambda_calculus">lambda calculus</a> system, upon which <em>pure</em> functional languages are based.</p>
+</div>
 </div>
 <div id="design" class="section level1">
 <h1>Design</h1>
 <div id="data-structures" class="section level2">
 <h2>Data Structures</h2>
-<p>The fundamental data structure in this approach is that of events occurring in time with information attached to the event such as a hospital stay, disease diagnosis, or lab values. We most often work on the time scale of days, so we’ll think about the time intervals in terms of integers.</p>
+<p>The fundamental data structure in this setup is that of events occurring in time with information attached to the event such as a hospital stay, disease diagnosis, or lab values. We most often work on the time scale of days, so for now we’ll think about the time intervals in terms of integers.</p>
 <p>Define an event <span class="math inline">\(w\)</span> as a set with an interval and a context:</p>
-<p><span class="math display">\[
-w := \{\Theta, \square\}
-\]</span></p>
 <p><span class="math display">\[
 w := \{\Xi, \square\}
 \]</span></p>
+<p>where <span class="math inline">\(\Xi\)</span> and <span class="math inline">\(\square\)</span> are defined in the next two sections.</p>
 <div id="interval" class="section level3">
 <h3>Interval</h3>
-<p>An interval <span class="math inline">\(\iota\)</span> is as an ordered pair defining the start and end of a segment on the integer line.</p>
+<p>An interval <span class="math inline">\(\Xi\)</span> is as an ordered pair defining the start and end of a segment on the integer line.</p>
 <p><span class="math display">\[
-\iota := (a, b) \mid a \leq b \in \mathbb{Z}
+\Xi := (a, b) \mid a \leq b \in \mathbb{Z}
 \]</span></p>
-<p>Let <span class="math inline">\(\mathcal{I}\)</span> be the set of all <span class="math inline">\(\Xi\)</span>. Here’s a few <span class="math inline">\(\iota\)</span>s represented visually:</p>
+<p>Let <span class="math inline">\(\mathcal{I}\)</span> be the set of all <span class="math inline">\(\Xi\)</span>. Here’s a few <span class="math inline">\(\Xi\)</span>s represented visually:</p>
 <p><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABUAAAADACAYAAADFjslEAAAEGWlDQ1BrQ0dDb2xvclNwYWNlR2VuZXJpY1JHQgAAOI2NVV1oHFUUPrtzZyMkzlNsNIV0qD8NJQ2TVjShtLp/3d02bpZJNtoi6GT27s6Yyc44M7v9oU9FUHwx6psUxL+3gCAo9Q/bPrQvlQol2tQgKD60+INQ6Ium65k7M5lpurHeZe58853vnnvuuWfvBei5qliWkRQBFpquLRcy4nOHj4g9K5CEh6AXBqFXUR0rXalMAjZPC3e1W99Dwntf2dXd/p+tt0YdFSBxH2Kz5qgLiI8B8KdVy3YBevqRHz/qWh72Yui3MUDEL3q44WPXw3M+fo1pZuQs4tOIBVVTaoiXEI/MxfhGDPsxsNZfoE1q66ro5aJim3XdoLFw72H+n23BaIXzbcOnz5mfPoTvYVz7KzUl5+FRxEuqkp9G/Ajia219thzg25abkRE/BpDc3pqvphHvRFys2weqvp+krbWKIX7nhDbzLOItiM8358pTwdirqpPFnMF2xLc1WvLyOwTAibpbmvHHcvttU57y5+XqNZrLe3lE/Pq8eUj2fXKfOe3pfOjzhJYtB/yll5SDFcSDiH+hRkH25+L+sdxKEAMZahrlSX8ukqMOWy/jXW2m6M9LDBc31B9LFuv6gVKg/0Szi3KAr1kGq1GMjU/aLbnq6/lRxc4XfJ98hTargX++DbMJBSiYMIe9Ck1YAxFkKEAG3xbYaKmDDgYyFK0UGYpfoWYXG+fAPPI6tJnNwb7ClP7IyF+D+bjOtCpkhz6CFrIa/I6sFtNl8auFXGMTP34sNwI/JhkgEtmDz14ySfaRcTIBInmKPE32kxyyE2Tv+thKbEVePDfW/byMM1Kmm0XdObS7oGD/MypMXFPXrCwOtoYjyyn7BV29/MZfsVzpLDdRtuIZnbpXzvlf+ev8MvYr/Gqk4H/kV/G3csdazLuyTMPsbFhzd1UabQbjFvDRmcWJxR3zcfHkVw9GfpbJmeev9F08WW8uDkaslwX6avlWGU6NRKz0g/SHtCy9J30o/ca9zX3Kfc19zn3BXQKRO8ud477hLnAfc1/G9mrzGlrfexZ5GLdn6ZZrrEohI2wVHhZywjbhUWEy8icMCGNCUdiBlq3r+xafL549HQ5jH+an+1y+LlYBifuxAvRN/lVVVOlwlCkdVm9NOL5BE4wkQ2SMlDZU97hX86EilU/lUmkQUztTE6mx1EEPh7OmdqBtAvv8HdWpbrJS6tJj3n0CWdM6busNzRV3S9KTYhqvNiqWmuroiKgYhshMjmhTh9ptWhsF7970j/SbMrsPE1suR5z7DMC+P/Hs+y7ijrQAlhyAgccjbhjPygfeBTjzhNqy28EdkUh8C+DU9+z2v/oyeH791OncxHOs5y2AtTc7nb/f73TWPkD/qwBnjX8BoJ98VQNcC+8AADSWSURBVHgB7d0JmFxVmTDgrzobW8IqI8g6QNgEhAETBIyALII6CIgiqIDAMILIKqjsmyOKwgDiKAYUUUERFFB/lkBkAEVQZNHIoggBUdkXAyR0//1dLCZdqe5Up6uqq6rf4xOTunXqnHPfU1TV/e5ZSj29KSQCBAgQIECAAAECBAgQIECAAAECBAh0oEBXB56TUyJAgAABAgQIECBAgAABAgQIECBAgEAhIADqjUCAAAECBAgQIECAAAECBAgQIECAQMcKCIB2bNc6MQIECBAgQIAAAQIECBAgQIAAAQIEBEC9BwgQIECAAAECBAgQIECAAAECBAgQ6FgBAdCO7VonRoAAAQIECBAgQIAAAQIECBAgQICAAKj3AAECBAgQIECAAAECBAgQIECAAAECHSsgANqxXevECBAgQIAAAQIECBAgQIAAAQIECBAQAPUeIECAAAECBAgQIECAAAECBAgQIECgYwUEQDu2a50YAQIECBAgQIAAAQIECBAgQIAAAQICoN4DBAgQIECAAAECBAgQIECAAAECBAh0rIAAaMd2rRMjQIAAAQIECBAgQIAAAQIECBAgQEAA1HuAAAECBAgQIECAAAECBAgQIECAAIGOFRAA7diudWIECBAgQIAAAQIECBAgQIAAAQIECAiAeg8QIECAAAECBAgQIECAAAECBAgQINCxAgKgHdu1TowAAQIECBAgQIAAAQIECBAgQIAAAQFQ7wECBAgQIECAAAECBAgQIECAAAECBDpWQAC0Y7vWiREgQIAAAQIECBAgQIAAAQIECBAgIADqPUCAAAECBAgQIECAAAECBAgQIECAQMcKCIB2bNc6MQIECBAgQIAAAQIECBAgQIAAAQIEBEC9BwgQIECAAAECBAgQIECAAAECBAgQ6FgBAdCO7VonRoAAAQIECBAgQIAAAQIECBAgQICAAKj3AAECBAgQIECAAAECBAgQIECAAAECHSsgANqxXevECBAgQIAAAQIECBAgQIAAAQIECBAQAPUeIECAAAECBAgQIECAAAECBAgQIECgYwUEQDu2a50YAQIECBAgQIAAAQIECBAgQIAAAQKjERAgQIAAAQIECBAg0PkC/3hqVvy/L94d994+K7q7I9Zcf1y864h1Y8Ly4zv/5J0hAQIECBAgMKIFSj29aUQLOHkCBAgQIECAAAECHS4wdd+b46ipa8UTPUv3OdMJ8Vyc8L7fxqE/3KLPcQ8IECBAgAABAp0kIADaSb3pXAgQIECAAAECBAhUCJz0zulx/PVTeo/muIdSxbOvHTtw/ZvinN8KglbgeEiAAAECBAh0iIA1QDukI50GAQIECBAgQIAAgUqBm75yV2/w8+29h6sFPzN3BkR74ty7tojLjrotD0gECBAgQIAAgY4TEADtuC51QgQIECBAgAABAgReE/jcCa/0/iODnJUjP+cWeu25z51jLdC5VfybAAECBAgQ6BwBU+A7py+dCQECBAgQIECAAIHXBea88mosOm5OvBJje48NFAB9/SXx9/ueimXWWOr/DvgXAQIECBAgQKADBIwA7YBOdAoECBAgQIAAAQIEKgWevP+p3uDnuN7DtQU/8/V/ueepymI8JkCAAAECBAi0vYAAaNt3oRMgQIAAAQIECBAgMK/A4itO6D2Ya3/WnpZYYdHaM8tJgAABAgQIEGgTAQHQNukozSRAgAABAgQIECAwGIGFJoyLjRedUeNLemKlUY/GipssV2N+2QgQIECAAAEC7SMgANo+faWlBAgQIECAAAECBAYl8PHdy1Pa5zcStBQf3+7BQZUtMwECBAgQIECgXQRsgtQuPaWdBAgQIECAAAECBAYp8Oqc7thphTviqr9u0vvKDIJWrgf62rG3jb87pj22ZoxbLDdMkggQIECAAAECnSVgBGhn9aezIUCAAAECBAgQIPC6wKjRXXHpjPXiw6vd3HusMviZ2Urx78vdFj/53cqCn6+r+QcBAgQIECDQaQJGgHZajzofAgQIECBAgAABAlUEbvvm7+Lis56I3/15fHT3Dvyc+KYX4oP7T4gpn9igSm6HCBAgQIAAAQKdIyAA2jl96UwIECBAgAABAgQIECBAgAABAgQIEKgQMAW+AsRDAgQIECBAgAABAgQIECBAgAABAgQ6R0AAtHP60pkQIECAAAECBAgQIECAAAECBAgQIFAhIABaAeIhAQIECBAgQIAAAQIECBAgQIAAAQKdIyAA2jl96UwIECBAgAABAgQIECBAgAABAgQIEKgQEACtAPGQAAECBAgQIECAAAECBAgQIECAAIHOERAA7Zy+dCYECBAgQIAAAQIECBAgQIAAAQIECFQICIBWgHhIgAABAgQIECBAgAABAgQIECBAgEDnCAiAdk5fOhMCBAgQIECAAAECBAgQIECAAAECBCoEBEArQDwkQIAAAQIECBAgQIAAAQIECBAgQKBzBARAO6cvnQkBAgQIECBAgAABAgQIECBAgAABAhUCAqAVIB4SIECAAAECBAgQIECAAAECBAgQINA5AgKgndOXzoQAAQIECBAgQIAAAQIECBAgQIAAgQoBAdAKEA8JECBAgAABAgQIECBAgAABAgQIEOgcAQHQzulLZ0KAAAECBAgQIECAAAECBAgQIECAQIWAAGgFiIcECBAgQIAAAQIECBAgQIAAAQIECHSOgABo5/SlMyFAgAABAgQIECBAgAABAgQIECBAoEJgdMVjDwkQIECAAIFhFHjuuYhrrol44IGIsWMjNtggYsqUiNG+sYexV1RNgAABAgQIECBAIKJn1qzouf6GiN/PeI1j7bWi9M6torTQQnhaXMDlVIt3kOYRIECAwMgQ6OmJ+PznI045JeLFF/ue88orR5xzTsS73933uEcECBAgQIAAAQIECDRHoHvqhdF91Gcjnniyb4XLLB1dp58WXXt/tO9xj1pKoNTTm1qqRRpDgAABAgRGoMBHPhJx0UUDn/g3vhGxzz4D5/EsAQIECBAgQIAAAQL1FXj1uBOj5+TPDVho6bjPxKgTjxswjyeHT0AAdPjs1UyAAAECBAqBDGzuu+/8MXIa/D33RKy55vzzykGAAAECBAgQIECAwNAFuq+7Prq32bGmgrqu/2l0bbVlTXllaq6ATZCa6602AgQIECAwj0BOe68lzZkTcfrpteSUhwABAgQIECBAgACBegj0nNq7TlWNaTB5ayxStjoJGAFaJ0jFECBAgACBBRH4wx8i1lqr1lf2xJgxT8TGG/97rS+QjwABAgQIECBAgACBBRQY92p3/Oy2OyNHD5ZqKaOrK0a98GSUFl64ltzyNFGgdzKdRIAAAQIECAyXwKOPDqbmUsyevUzceusve1/UPZgXykuAAAECBAgQIECAwCAFVu3NPyrG1f6q7t7f6H/9a8Qqq9T+GjmbImAKfFOYVUKAAAECBKoLLL549ePVj+a+hc/3/hH8rO7jKAECBAgQIECAAIH6CTyzIEUN7gf+gtTgNQsgYAr8AqB5CQECBAgQqJfAK69ELL10xAsv1FbiO985Oy69tMbMtRUpFwECBAgQIECAAAEC/Qgs+tbNo+uBB/t5tuLwWhNj9O/vqjjoYSsImALfCr2gDQQIECAwYgXGjo3Yb7+IL3+5NoJPfnJMLLnkkrVllosAAQIECBAgQIAAgSEJdB/88eg++PCayug68ICa8snUfAEjQJtvrkYCBAgQINBH4LnnIiZNipgxo8/heR7suWfERRfNc9gBAgQIECBAgAABAgQaJNAze3a8us0OEdNvGrCG0jveHl3X/iRKo401HBBqmJ60BugwwauWAAECBAiUBSZMiLjhhojNNy8fmffv//zPiKlT5z3uCAECBAgQIECAAAECjRMojRkTo678YZTe995+Kynt/O/R9ePLBD/7FRr+J4wAHf4+0AICBAgQIFAI9PTucXTVVRGXXRbxwAMR43o3nNxgg4gPfzhiww0hESBAgAABAgQIECAwnAI9038e3d+9NHp+/9rUrdI6a0fX7rtF6e1bDGez1F2DgABoDUiyECBAgAABAgQIECBAgAABAgQIECDQngKmwLdnv2k1AQIECBAgQIAAAQIECBAgQIAAAQI1CAiA1oAkCwECBAgQIECAAAECBAgQIECAAAEC7SkgANqe/abVBAgQIECAAAECBAgQIECAAAECBAjUICAAWgOSLAQIECBAgAABAgQIECBAgAABAgQItKeAAGh79ptWEyBAgAABAgQIECBAgAABAgQIECBQg4AAaA1IshAgQIAAAQIECBAgQIAAAQIECBAg0J4CAqDt2W9aTYAAAQIECBAgQIAAAQIECBAgQIBADQICoDUgyUKAAAECBAgQIECAAAECBAgQIECAQHsKCIC2Z79pNQECBAgQIECAAAECBAgQIECAAAECNQgIgNaAJAsBAgQIECBAgAABAgQIECBAgAABAu0pIADanv2m1QQIECBAgAABAgQIECBAgAABAgQI1CAgAFoDkiwECBAgQIAAAQIECBAgQIAAAQIECLSngABoe/abVhMgQIAAAQIECBAgQIAAAQIECBAgUIOAAGgNSLIQIECAAAECBAgQIECAAAECBAgQINCeAgKg7dlvWk2AAAECBAgQIECAAAECBAgQIECAQA0CAqA1IMlCgAABAgQIECBAgAABAgQIECBAgEB7Coxuz2ZrNYHhFXjiiYjrrot45JGI8eMjJk+OeMtbhrdNaidAgACBBRfouePX0XPbryJeeDFi5ZWitM3WUVpyyQUv0CsJECBAgAABAgQIEGgZAQHQlukKDWkHgZdfjjj66Ihzz42YPbtviydNivja1yLWX7/vcY8IECBAoHUFem6/I1494KCIO37Tt5Fjx0bpkIOi65QTozRmTN/nPCJAgAABAgQIECBAoK0ESj29qa1arLEEhkkgg5/bbBNx0039N2CRRSKuuSZis836z+MZAgQIEGgNge5pN0T3DjtF5Ad8PylHgnZdfYUgaD8+DhMgQIAAAQIECBBoBwFrgLZDL2ljSwh89rMDBz+zkf/4R8Suu0a82DuDUiJAgACB1hXoeeaZ6N5tjwGDn9n6nmuvj+6TT2vdE9EyAgQIECBAgAABAgTmKyAAOl8iGQhE9F4nx9ln1ybx+OMR559fW165CBAgQGB4BHrO612z5Mmnaqq854yzoifvcEkECBAgQIAAAQIECLSlgCnwbdltGt1sgR/+MGKXXWqvdcklb+tdC/RTtb9ATgIECBBoqsCX77w31nv2+Zrr7Prpj6Jr++1qzi8jAQIECBAgQIAAAQKtI2ATpNbpCy1pYYGZMwfXuKefXjSmT58+uBfJTYAAAQJNE1gsxvbWVaq9vpmP1p5XTgIECBAgQIAAAQIEWkrAFPiW6g6NaVWBxRcfbMueHewL5CdAgACBJgo8G4PcA3LwXwRNPBtVESBAgAABAgQIECAwkIARoAPpeI7APwU23XRwFAccsEGccELvYqASAQIECLSkwKJH9e5s981v19y20uS31pxXRgIECBAgQIAAAQIEWkvAGqCt1R9a08ICW28dMW3a/Bs4alTEvfdGrLnm/PPKQYAAAQLDI9Dz27vi1Q0n9W7zPv+RoKV3vytGXXn58DRUrQQIECBAgAABAgQIDFnAFPghEypgpAicd15ELTMgTzxR8HOkvCecJwEC7StQ2mD9KH36yPmfwNJLRdfZX55/PjkIECBAgAABAgQIEGhZAQHQlu0aDWs1gYkTI264IWKVVaq3bHTvghKnnhrx2d5ZlRIBAgQItL5A1yknRunYT0d09fNzaPXVYtT066LU3wd/65+iFhIgQIAAAQIECBAg0CtgCry3AYFBCrz8csRFF0VcfXXEI49EjB8fMXlyxMc+FrH66oMsTHYCBAgQGHaBnhl/iO6pF0bPbbdHvPhilFZaMUrv3iFKe34oSmPGDHv7NIAAAQIECBAgQIAAgaEJCIAOzc+rCRAgQIAAAQIECBAgQIAAAQIECBBoYYF+5ny1cIs1jQABAgQIECBAgAABAgQIECBAgAABAjUKCIDWCCUbAQIECBAgQIAAAQIECBAgQIAAAQLtJyAA2n59psUECBAgQIAAAQIECBAgQIAAAQIECNQoIABaI5RsBAgQIECAAAECBAgQIECAAAECBAi0n4AAaPv1mRYTIECAAAECBAgQIECAAAECBAgQIFCjgABojVCyESBAgAABAgQIECBAgAABAgQIECDQfgICoO3XZ1pMgAABAgQIECBAgAABAgQIECBAgECNAgKgNULJRoAAAQIECBAgQIAAAQIECBAgQIBA+wkIgLZfn2kxAQIECBAgQIAAAQIECBAgQIAAAQI1CgiA1gglGwECBAgQIECAAAECBAgQIECAAAEC7ScgANp+fabFBAgQIECAAAECBAgQIECAAAECBAjUKCAAWiOUbAQIECBAgAABAgQIECBAgAABAgQItJ+AAGj79ZkWEyBAgAABAgQIECBAgAABAgQIECBQo4AAaI1QshEgQIAAAQIECBAgQIAAAQIECBAg0H4CAqDt12daTIAAAQIECBAgQIAAAQIECBAgQIBAjQICoDVCyUaAAAECBAgQIECAAAECBAgQIECAQPsJjG6/JmsxgeEXeOaZiGnTIh55JGL8+IjJkyPWWWf429XJLejp7o74xS+j5667I+bMiZi4RpSmvD1K48Z18mk7NwIECBAgQIAAAQIECBAgQGCIAgKgQwT08pEl8MorEcceG3HmmRH577nTFltEnHdexLrrzn3Uv+sh0P2z/xfdBx0a8eAf+xa39FLRddpJ0bX/vn2Pe0SAAAECBAgQIECAAAECBAgQ+KdAqac30SBAYP4CGfDcfvuIG27oP+9ii0Vcd13EpEn95/HM4AS6p14Y3fv+Z8QAH1WlQz8Ro770hcEVLDcBAgQIECBAgAABAgQIECAwIgQEQEdENzvJeggcfXTE5z8//5KWXz7i/vsjFllk/nnlGFig53e/j1c32OS1Ke8DZ42uy74XXTvvNJ9cniZAgAABAgQIECBAgAABAgRGmoBNkEZajzvfBRJ49tnXpr3X8uLHHov4xjdqySnP/AS6P3d6TcHPLKf7xFPmV5znCRAgQIAAAQIECBAgQIAAgREoYAToCOx0pzx4gcsvj9h559pft/TSv4oNN/xM7S+Qs6rApTfeGov1bnhUqvrsvAdHzXwwSm9607xPOEKAAAECBAgQIECAAAECBAiMWAGbII3YrnfigxHI3d4Hk558cuHetUB7FwOVFlhgod5Xjo9B7vD+yMwIAdAFNvdCAgQIECBAgAABAgQIECDQiQKmwHdirzqnugtMmDDYIp8f7AvkrxB4qffx7Ogp/lfxVP8PB99R/ZflGQIECBAgQIAAAQIECBAgQKAjBIwA7YhudBKNFpg8eXA17Lvvm+O44x4e3IvknkegZ+cPROn2X89zvOqBJZaImLhG1accJECAAAECBAgQIECAAAECBEaugADoyO17Zz4IgbXWipgyJWL69Pm/qKt3XPVhh42PFVccP//Mcgwo0P3Jg6L7w/sMmKf8ZGm/vaM02kda2cPfBAgQIECAAAECBAgQIECAwGsCpsB7JxCoUeC883rXpKwhpnnssRFrr11jobINKFDaY/co7bj9gHmKJ9daM7qOtenU/KHkIECAAAECBAgQIECAAAECI09AAHTk9bkzXkCBDGpef33ECitULyBHfp5wQsTxx1d/3tHBC5RKpei69DtR+sCu/b948ltj1PU/jVIt0en+S/EMAQIECBAgQIAAAQIECBAg0KECpZ7e1KHn5rQINERg1qyICy6I+MlPIh5+OCL33Zk0KWK//SJyqrzUGIHuG6dHz0XfiZ6774mYMydKa6wepffvEqVd3hcZKJUIECBAgAABAgQIECBAgAABAtUEBECrqThGgAABAgQIECBAgAABAgQIECBAgEBHCJgC3xHd6CQIECBAgAABAgQIECBAgAABAgQIEKgmIABaTcUxAgQIECBAgAABAgQIECBAgAABAgQ6QkAAtCO60UkQIECAAAECBAgQIECAAAECBAgQIFBNQAC0mopjBAgQIECAAAECBAgQIECAAAECBAh0hIAAaEd0o5MgQIAAAQIECBAgQIAAAQIECBAgQKCaQFMDoPfdd19cfvnlMXv27GptcYwAAQIECBAgQIAAAQIECBAgQIAAgREqcMstt8S0adPqfvZNCYA++eSTceCBB8Y666wTO++8cxx33HF1PxEFEiBAgAABAgQIECBAgAABAgQIECDQngIZ/Nx8881j6623jilTpsRvfvObup1IQwOgc+bMibPPPjvWWGON+MpXvhKvvvpq0fCXXnqpbiegIAIECBAgQIAAAQIECBAgQIAAAQIE2lvg5Zdfjp6enuIkfv7zn8fGG28c+++/f/ztb38b8ok1LAB6zTXXxAYbbBAHH3xwPP3000VDx4wZE4cffnicdtppQ264AggQIECAAAECBAgQIECAAAECBAgQ6AyBLbfcMr797W/HcsstV5xQd3d3fP3rX4+JEyfGGWecMaQlNUu9kdXXQqt1snr00UeL4aoPPfRQnxLf8IY3xFprrRWLLrpon+MeECBAgAABAgQIECBAgAABAgQIECBAIAVyRvkf//jH+NOf/vT6iNA8vthii8VXv/rV2GOPPfLhoFLdA6C5xmdudCQRIECAAAECBAgQIECAAAECBAgQIECgXgJLLLHE6zPNB1Nm3afAv+c97xlM/fISIECAAAECBAgQIECAAAECBAgQIEBgvgK5LuiCpLqPAM1G3H333cVan9dee22fNuUOTscee2ysttpqfY57MHSBiy++OI455pi47777ItdalRovkJt6rb766nHyySfHnnvu2fgK1VAIHHHEETFjxoy46qqriDRJ4Pbbb4/3v//9hfm6667bpFpVkzsfvu1tbys+Y2g0R+D888+P008/vfgubU6Nann++edj/fXXL9Z0yllEUnMEDjzwwHjiiSfikksuaU6FaoncyOGjH/1oTJs2LVZddVUiTRLI79H3vve9cfTRRzepRtWcddZZccEFF8Sdd94Jo0kCf/3rX2Py5MnFtODtttuuSbWqZq+99opSqVS832nUV+CFF16Ic845J6ZOndpnzc9//dd/jVNPPTU++MEPLlCFoxfoVfN50XrrrRe5CdL1118fhxxySNxzzz3FK6ZPnx65pf13v/vd2GWXXeZTiqcHI7DMMssU2VdZZRUB0MHADSFvBkAzLb300pHuUnMExo8fH+PGjWPeHO6illzbOdPyyy/PvZBozv+NHTs2JkyYwLw53EUtSy21VPFD1md689Cfe+65orJcK55789xzTf68uGDePPMcpJBphRVW4N489hg9enQsvvjizJtovuSSS8aoUaOYN9E8fzNmWnbZZbk30X2RRRbxu7EB3jNnzoztt98+ytegWUVOeT/++OPjoIMOKj7XF7Tauk+Bn7shOXol7/yce+65RZAon5s9e3ZcccUVc2fzbwIECBAgQIAAAQIECBAgQIAAAQIERrDArbfe+nrwM2+mHHDAAXH//fcXgyvzptZQ0tBeXUPN2eCPf/zjsfvuuxdDVe+666448sgja3ilLAQIECBAgAABAgQIECBAgAABAgQIjASBHXfcMT784Q/HrFmziiU0c6mkeqWGB0DLDc2h8F/84hfLD/1NgAABAgQIECBAgAABAgQIECBAgACBQiCXFvjWt77VEI2GToFvSIsVSoAAAQIECBAgQIAAAQIECBAgQIAAgRoFRp3Qm2rMK1sLC+TCx3PmzImddtqphVvZWU3r6uqKxx57rNjQ641vfGNnnVwLn02+z3MDgc0226yFW9lZTcu7cLkI9Z577hkLLbRQZ51cC5/NM888E5tvvnmsueaaLdzKzmpaLtszZsyY2GGHHTrrxFr4bNL74Ycfjt122y3KGzq2cHM7pmkvvfRS5E6qkyZN6phzavUTye/P3Kl5jz32sGFpEzvrySefjK222ipWW221JtY6sqvKXbFzo7Vtt912ZEM08exzg9g///nPxbKDOfNWao7AP/7xj1h77bVjo402ak6FahmyQKmnNw25FAUQIECAAAECBAgQIECAAAECBAgQIECgBQVMgW/BTtEkAgQIECBAgAABAgQIECBAgAABAgTqIyAAWh9HpRAgQIAAAQIECBAgQIAAAQIECBAg0IICAqAt2CmaRIAAAQIECBAgQIAAAQIECBAgQIBAfQQEQOvjqBQCBAgQIECAAAECBAgQIECAAAECBFpQYHQLtkmThiBwww03xE033RQzZ86M7u7uWGmllWLTTTeNbbbZZgilemmtArkT3BFHHBG5K/xxxx1X68vkq0FgxowZ8f3vf7/Y4TB3llxvvfWKXT1zF1up8QJXX311fOtb34oTTjih2O2w8TWOzBpyt9pLL700HnzwwWK34GWXXTZWXXXV+MAHPhBveMMbRiZKE876uuuuixtvvLH47lxuueWKz5ctt9wy8t9ScwR+85vfxLnnnlvsSr7ffvs1p9IRVkv+Rrzrrrv6Petlllmm2KG83wyeWCCBp59+On784x/HH/7wh3j00UeL34iTJ0+O97znPTF6tEuxBULt50Vf//rX4/nnn+/n2f873NXVFYcccsj/HfCvugjcfvvt8bOf/SweeuihGDVqVKyyyiqx0047+d1YF93qhTz11FPF78b77rsv8jfkm970puK6f8qUKZHvc6k+ArVeB7lerY93I0uxC3wjdZtY9ssvvxxHHnlk5AVEpgkTJhR/P/fcc8Xfb3nLW+L000+PhRdeuHjs/+ov0NPTE5/+9Kfj5ptvjg033DD++7//u/6VjNASf/CDH8RZZ51VnP1iiy0Wr7zySvEn38//9V//FRtttNEIlWnOad99991x8MEHx5w5c+Lss8+O/DyR6i+QAbjTTjstZs2aVVw4LL300sWP2VdffbX47D7qqKNi6623rn/FI7jEfE8fffTR8ctf/rJQGD9+fLzwwguRn+eLL7548b25zjrrjGCh5px6Biz22muv+Nvf/hbvfOc74/jjj29OxSOslgz43HHHHf2edd5Q/OY3v9nv854YvMC9994bxx57bPz973+PUqkU+bn+xBNPFAWtvfbaxXfquHHjBl+wV1QV2HnnnQvrqk/OdTADQ9OnT5/riH8OVeDMM8+Myy67rCgm39P5PZq/1/N9/7GPfSw++tGPDrUKr68Q+MUvfhGnnHJKPPvss8UzeROr/Pniu7QCawgPa70Ocr06BOQmvtRtxyZiN7KqHDWRwc+803bMMcfEmmuuWVSXdyFOOumkuPPOO4sfWZ/61Kca2YwRW3YGLDJAl8FPqb4C+aWTweSxY8cWF8VbbLFFEYi74ooriuM54vY73/lOMaKivjUrLQXycyWDERkokhonkKOCysHPvffeuxiFlRcQeXMrR97mnwz2T5w4MVZcccXGNWSElfw///M/RfBz+eWXjwMPPDDe9ra3RY7Wuvzyy+Oiiy6KT37yk/G9732vCFqMMJqmnu4ZZ5xRBD+bWukIrOz+++8vzjpvaFULuuUNAKl+AjkI4dBDDy1uauUo/j322COWXHLJYibLZz/72fj9738f5513npGI9SOPAw44IF566aWqJebNxPPPPz+yX3bccceqeRxcMIEcXZ7Bz/ytnt+bebM2ZyL+9Kc/jXPOOadwX3fddWPjjTdesAq8ah6BHPl54oknFjdt3/GOd8Thhx8eSyyx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qXO1iusVePTRRwuHXNJhoKnZsIYukDOwcu3yQw89NK666qpitOcmm2wS+bmTG6vlzd1cRibzCPYP3btcQl7P54aCaZzL+LzjHe8oNl3LGXM5ujxv8ObMIqk5Aq5Xm+Ncj1oEQOuhOMxlzL1DfN5VHijNPcJloHyeI9AqAnmBdvbZZxejnHNX7IsvvrhoWh7Paav/8R//ITjRKp2lHQsk8Kc//anP3fuBPsfLa20tUEVeNI9AjqDIHVRzre0MSJRHlefnSwaIDjrooLDB2jxsDrShQF4on3feeXHWWWcVNxQz6J9p4YUXLjbNPOywwywlU+d+zXX5zjzzzPjGN75RjNK6+uqrixpyZ/i8WD7kkEPs0Fxn83Jx5RG31lctizT27xxpmDO18rs0A/4ZgCun3ITq8MMPNxK3DFKnv/PG7EknnVR8rmfg+cc//nFRci51kgNDclr8QJuw1akZivmngOvV9nkrlHqHqfcdp94+bddSAgRGmEAGf3JNvvzYys1hFl100REm4HQJEGiUQK6T+PDDDxefKzllMkeISgQ6USCXfcjNBTMQl9+lRjg3vpfzd0uOSsxp77mkBvPGm6theARy/dX8Ls1AXH6X5k0WqbEC+bmS5uXro/xsl4ZPwPXq8NnXUrMAaC1K8hAgQIAAAQIECBAgQIAAAQIECBAg0JYCNkFqy27TaAIECBAgQIAAAQIECBAgQIAAAQIEahEQAK1FSR4CBAgQIECAAAECBAgQIECAAAECBNpSQAC0LbtNowkQIECAAAECBAgQIECAAAECBAgQqEVAALQWJXkIECBAgAABAgQIECBAgAABAgQIEGhLAQHQtuw2jSZAgAABAgQIECBAgAABAgQIECBAoBYBAdBalOQhQIAAAQIECBAgQIAAAQIECBAgQKAtBQRA27LbNJoAAQIECBAgQIAAAQIECBAgQIAAgVoEBEBrUZKHAAECBAgQIECAAAECBAgQIECAAIG2FBAAbctu02gCBAgQIECAAAECBAgQIECAAAECBGoREACtRUkeAgQIECBAgAABAgQIECBAgAABAgTaUkAAtC27TaMJECBAgAABAgQIECBAgAABAgQIEKhFQAC0FiV5CBAgQIAAAQIECBAgQIAAAQIECBBoSwEB0LbsNo0mQIAAAQIECBAgQIAAAQIECBAgQKAWAQHQWpTkIUCAAAECBAgQIECAAAECBAgQIECgLQUEQNuy2zSaAAECBAgQIECAAAECBAgQIECAAIFaBARAa1GShwABAgQIECBAgAABAgQIECBAgACBthQQAG3LbtNoAgQIECBAgAABAgQIECBAgAABAgRqERAArUVJHgIECBAgQIAAAQIECBAgQIAAAQIE2lJAALQtu02jCRAgQIAAAQIECBAgQIAAAQIECBCoReD/A9z/A8OdNlcPAAAAAElFTkSuQmCC" width="672" /></p>
 <p>To make the math concrete, define data structures in a programming language (in this case <code>R</code>) that align with our mathematical definition.</p>
 <pre class="r"><code>itv &lt;- interval(a = 2L, b = 4L)
@@ -425,67 +488,72 @@ itv</code></pre>
 </thead>
 <tbody>
 <tr class="odd">
-<td><span class="math inline">\(s(\iota) = a\)</span></td>
+<td><span class="math inline">\(s(\Xi) = a\)</span></td>
 <td><span class="math inline">\(s : \mathcal{I} \mapsto \mathbb{Z}\)</span></td>
 <td>Gets the interval’s start</td>
 </tr>
 <tr class="even">
-<td><span class="math inline">\(e(\iota) = b\)</span></td>
+<td><span class="math inline">\(e(\Xi) = b\)</span></td>
 <td><span class="math inline">\(e : \mathcal{I} \mapsto \mathbb{Z}\)</span></td>
 <td>Gets the interval’s end</td>
 </tr>
 <tr class="odd">
-<td><span class="math inline">\(shift(\iota, c) = (s(\iota) + c, e(\iota) + c)\)</span></td>
+<td><span class="math inline">\(shift(\Xi, c) = (s(\Xi) + c, e(\Xi) + c)\)</span></td>
 <td><span class="math inline">\(shift : (\mathcal{I}, \mathbb{Z}) \mapsto \mathcal{I}\)</span></td>
 <td>Shifts an interval by <span class="math inline">\(c\)</span></td>
 </tr>
 <tr class="even">
-<td><span class="math inline">\(expandl(\iota, c) = (s(\iota) - c, e(\iota))\)</span></td>
+<td><span class="math inline">\(expandl(\Xi, c) = (s(\Xi) - c, e(\Xi))\)</span></td>
 <td><span class="math inline">\(expandl : (\mathcal{I}, \mathbb{Z}) \mapsto \mathcal{I}\)</span></td>
 <td>Expands an interval to the left by <span class="math inline">\(c\)</span></td>
 </tr>
 <tr class="odd">
-<td><span class="math inline">\(expandr(\iota, c) = (s(\iota), e(\iota) + c)\)</span></td>
+<td><span class="math inline">\(expandr(\Xi, c) = (s(\Xi), e(\Xi) + c)\)</span></td>
 <td><span class="math inline">\(expandr : (\mathcal{I}, \mathbb{Z}) \mapsto \mathcal{I}\)</span></td>
 <td>Expands an interval to the right by <span class="math inline">\(c\)</span></td>
 </tr>
 <tr class="even">
-<td><span class="math inline">\(expand(\iota, c) = (s(\iota) - c, e(\iota) + c)\)</span></td>
+<td><span class="math inline">\(expand(\Xi, c) = (s(\Xi) - c, e(\Xi) + c)\)</span></td>
 <td><span class="math inline">\(expand : (\mathcal{I}, \mathbb{Z}) \mapsto \mathcal{I}\)</span></td>
 <td>Expands an interval by <span class="math inline">\(c\)</span></td>
 </tr>
 <tr class="odd">
-<td><span class="math inline">\(length(\iota) = e(\iota) - s(\iota)\)</span></td>
+<td><span class="math inline">\(length(\Xi) = e(\Xi) - s(\Xi)\)</span></td>
 <td><span class="math inline">\(length : \mathcal{I} \mapsto \mathbb{Z}\)</span></td>
 <td>Measures the length of an interval</td>
 </tr>
 <tr class="even">
-<td><span class="math inline">\(flipl(\iota) = (s(\iota) - length(\iota), s(\iota))\)</span></td>
+<td><span class="math inline">\(flipl(\Xi) = (s(\Xi) - length(\Xi), s(\Xi))\)</span></td>
 <td><span class="math inline">\(flipl : \mathcal{I} \mapsto \mathbb{Z}\)</span></td>
 <td>Flips an interval to the left</td>
 </tr>
 <tr class="odd">
-<td><span class="math inline">\(flipr(\iota) = (e(\iota), e(iota) + length(\iota))\)</span></td>
+<td><span class="math inline">\(flipr(\Xi) = (e(\Xi), e(iota) + length(\Xi))\)</span></td>
 <td><span class="math inline">\(flipr : \mathcal{I} \mapsto \mathbb{Z}\)</span></td>
 <td>Flips an interval to the right</td>
 </tr>
 <tr class="even">
-<td><span class="math inline">\(ennummerate(\iota) = \{z \mid z \in \mathbb{Z}, z &gt;= s(\iota), z &lt;= e(\iota)\}\)</span></td>
+<td><span class="math inline">\(ennummerate(\Xi) = \{z \mid z \in \mathbb{Z}, z &gt;= s(\Xi), z &lt;= e(\Xi)\}\)</span></td>
 <td><span class="math inline">\(ennummerate : \mathcal{I} \mapsto \mathbb{Z}\)</span></td>
 <td>Ennumerates all the integers in an interval</td>
 </tr>
 <tr class="odd">
-<td><span class="math inline">\(ordered(\iota, \iota') = \begin{cases} TRUE &amp; s(\iota) \leq s(\iota') \\ FALSE &amp; else\end{cases}\)</span></td>
-<td><span class="math inline">\(ordered : (\mathcal{I}, \mathcal{I}) \mapsto \mathbb{B}\)</span></td>
-<td>determines if two intervals are ordered such that <span class="math inline">\(s(\iota) \leq s(\iota')\)</span></td>
+<td><span class="math inline">\(=(\Xi, \Xi') = \begin{cases} TRUE &amp; s(\Xi) = s(\Xi') \; \&amp; \; e(\Xi) = e(\Xi') \\ FALSE &amp; else\end{cases}\)</span></td>
+<td><span class="math inline">\(= : (\mathcal{I}, \mathcal{I}) \mapsto \mathbb{B}\)</span></td>
+<td>determines if two intervals are equal$</td>
 </tr>
 <tr class="even">
-<td><span class="math inline">\(order( ( \iota, \iota' ) ) = \begin{cases} &lt;\iota, \iota'&gt; &amp; ordered(\iota, \iota') = TRUE \\ &lt; \iota', \iota &gt; &amp; ordered(\iota, \iota') = FALSE \end{cases}\)</span></td>
-<td><span class="math inline">\(order : (\mathcal{I} \times \mathcal{I}) \mapsto \mathcal{I^{2}_o}\)</span> where <span class="math inline">\(\mathcal{I}^{2}_o = \{ &lt; \iota, \iota' &gt;\}\)</span> and <span class="math inline">\(&lt;\cdot, \cdot&gt;\)</span> indicates that the pair of elements are ordered</td>
-<td>puts two intervals into order s.t. <span class="math inline">\(s(\iota) \leq s(\iota')\)</span></td>
+<td><span class="math inline">\(&lt;(\Xi, \Xi') = \begin{cases} TRUE &amp; s(\Xi) &lt; s(\Xi') \\ TRUE &amp; s(\Xi) = s(\Xi') \; \&amp; \; e(\Xi) &lt; e(\Xi') \\ FALSE &amp; else\end{cases}\)</span></td>
+<td><span class="math inline">\(&lt; : (\mathcal{I}, \mathcal{I}) \mapsto \mathbb{B}\)</span></td>
+<td>determines if two intervals are ordered such that <span class="math inline">\(s(\Xi) &lt; s(\Xi')\)</span> or <span class="math inline">\(s(\Xi) = s(\Xi')\)</span> and <span class="math inline">\(e(\Xi) &lt; e(\Xi')\)</span>.</td>
 </tr>
 <tr class="odd">
-<td><span class="math inline">\(overlaps( &lt;\iota, \iota'&gt; ) = \begin{cases} TRUE &amp; s(\iota') \leq e(\iota) \\ FALSE &amp; else\end{cases}\)</span></td>
+<td><span class="math inline">\(order( ( \Xi, \Xi' ) ) = \begin{cases} &lt;\Xi, \Xi'&gt; &amp; &lt;(\Xi, \Xi') = TRUE \\ &lt; \Xi', \Xi &gt; &amp; &lt;(\Xi, \Xi') = FALSE \end{cases}\)</span></td>
+<td><span class="math inline">\(order : (\mathcal{I} \times \mathcal{I}) \mapsto \mathcal{I^{2}_o}\)</span> where <span class="math inline">\(\mathcal{I}^{2}_o = \{ &lt; \Xi, \Xi' &gt;\}\)</span> and <span class="math inline">\(&lt;\cdot, \cdot&gt;\)</span> indicates that the pair of elements are ordered</td>
+<td>puts two intervals into order according to <code>&lt;</code>.</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(overlaps( &lt;\Xi, \Xi'&gt; ) = \begin{cases} TRUE &amp; s(\Xi') \leq e(\Xi) \\ FALSE &amp; else\end{cases}\)</span></td>
 <td><span class="math inline">\(overlaps : \mathcal{I^{2}_o} \mapsto \mathbb{B}\)</span></td>
 <td>determines if two ordered intervals overlap</td>
 </tr>
@@ -493,8 +561,8 @@ itv</code></pre>
 </table>
 <p>These functions may seem trivial, but they reveal a few concepts:</p>
 <ul>
-<li>We’ve expressly defined the data types of function’s input and output.</li>
-<li>Starting with simple accessor functions (<span class="math inline">\(s\)</span> and <span class="math inline">\(e\)</span>) and basic set, relational, and arithmetic operators, we created simple functions that form the building blocks for more complicated functions.</li>
+<li>We’ve expressly defined the data types of each function’s input and output.</li>
+<li>Starting with simple accessor functions (<span class="math inline">\(s\)</span> and <span class="math inline">\(e\)</span>) and basic set, relational, and arithmetic operators, we created simple functions from which more complicated functions can be composed (as we will see).</li>
 </ul>
 <p>Here are the functions in action:</p>
 <pre class="r"><code>itv &lt;- interval(a = 2L, b = 10L)
@@ -518,8 +586,14 @@ s(itv)</code></pre>
 <pre><code>## (2, 15)</code></pre>
 <pre class="r"><code>expand(itv, 5L)</code></pre>
 <pre><code>## (-3, 15)</code></pre>
-<pre class="r"><code>ordered(itv, interval(a = 5L, b = 11L))</code></pre>
+<pre class="r"><code>itv &lt; interval(a = 5L, b = 11L)</code></pre>
 <pre><code>## [1] TRUE</code></pre>
+<pre class="r"><code>itv &lt; interval(a = 1L, b = 11L)</code></pre>
+<pre><code>## [1] FALSE</code></pre>
+<pre class="r"><code>itv &lt; interval(a = 2L, b = 11L)</code></pre>
+<pre><code>## [1] TRUE</code></pre>
+<pre class="r"><code>itv &lt; interval(a = 2L, b = 3L)</code></pre>
+<pre><code>## [1] FALSE</code></pre>
 <pre class="r"><code>interval_pair(a = itv, b = interval(a = -1L, b = 10L)) %&gt;%
   order() %&gt;%
   overlaps()</code></pre>
@@ -528,10 +602,23 @@ s(itv)</code></pre>
   order() %&gt;%
   overlaps()</code></pre>
 <pre><code>## [1] FALSE</code></pre>
+<pre class="r"><code>interval_pair(a = itv, b = interval(a = 2L, b = 11L)) %&gt;%
+  order() %&gt;%
+  overlaps()</code></pre>
+<pre><code>## [1] TRUE</code></pre>
+<pre class="r"><code>x &lt;- Map(expandr, Wdt$interval, c = 5L)
+
+x
+  Reduce(f = function(x, y){
+    print(x)
+    interval_pair(a = x, b = y) %&gt;%
+    order() %&gt;%
+    overlaps()
+  }, x)</code></pre>
 </div>
 <div id="context" class="section level3">
 <h3>Context</h3>
-<p>Define a context <span class="math inline">\(\square\)</span> as an arbitrary, finite collection of objects. A context is always paired with a <span class="math inline">\(\iota\)</span> as an event (defined below) and contains all the relevant information about the <span class="math inline">\(\iota\)</span> such as a type and associated values.</p>
+<p>Define a context <span class="math inline">\(\square\)</span> as an arbitrary, finite collection of objects. A context is always paired with a <span class="math inline">\(\Xi\)</span> as an event (defined below) and contains all the relevant information about the <span class="math inline">\(\Xi\)</span> such as a type and associated values.</p>
 <p>For the purposes of this demonstration, let the context be the pair the suit and value of a poker card:</p>
 <p><span class="math display">\[
 \square \in \{suit \in \mathcal{S} = \{\clubsuit, \heartsuit, \diamondsuit, \spadesuit \}, value \in \mathcal{V} = \{A, 2, 3, 4, 5, 6, 7 , 8, 9, 10, J, Q, K\}\}
@@ -580,13 +667,13 @@ suit(c1)</code></pre>
 <h3>Event</h3>
 <p>Events are collected into an indexed, partially ordered set:</p>
 <p><span class="math display">\[
-W = \{ (w_1, w_2, \dots, w_n) \mid  a_i \leq a_{i + 1} \; i = 1, \dots, n, b_i \leq b_{i + 1} \: \forall a_i = a_{i + 1} \}
+W = \{ (w_1, w_2, \dots, w_n) \mid  \Xi_i \leq \Xi_{i + 1} \: \forall i = 1, \dots, n -1 \}
 \]</span></p>
 <pre class="r"><code>event(interval = itv, context = c1)</code></pre>
 <pre><code>## {(2, 10), {♥, 3}}</code></pre>
 <pre class="r"><code>event(interval = interval(a = 4L, b = 20L), context = c2)</code></pre>
 <pre><code>## {(4, 20), {♦, J}}</code></pre>
-<p>Here’s a randomly generated set <span class="math inline">\(W\)</span>.</p>
+<p>Here’s a randomly generated set <span class="math inline">\(W\)</span>:</p>
 <pre><code>## {(1, 6), {♦, 10}},
 ## {(3, 3), {♥, 5}},
 ## {(4, 4), {♥, 3}},
@@ -622,7 +709,7 @@ W = \{ (w_1, w_2, \dots, w_n) \mid  a_i \leq a_{i + 1} \; i = 1, \dots, n, b_i \
 <h3>Accessors</h3>
 <p>As described above, accessor functions extract information from an event <span class="math inline">\(w\)</span>. For example:</p>
 <p><span class="math display">\[
-\mathsf{a}_{\iota}(w) = (a, b); \mathsf{a}_s(w) = (s \circ \mathsf{a}_{\iota}) (w) = a ; \mathsf{a}_{\square}(w) = \square
+\mathsf{a}_{\Xi}(w) = (a, b); \mathsf{a}_s(w) = (s \circ \mathsf{a}_{\Xi}) (w) = a ; \mathsf{a}_{\square}(w) = \square
 \]</span></p>
 <p>Functions can also be defined that operate on collections of events, for example:</p>
 <p><span class="math display">\[
@@ -677,19 +764,18 @@ L1(W)</code></pre>
 ## {(82, 91), {♣, 10}}
 ## [[6]]
 ## {(95, 95), {♦, K}}</code></pre>
-<p>But we can think even higher level and produce function molds. Here’s an example.</p>
-<pre class="r"><code>a_cast &lt;- function(name1, name2){
+<p>But we can program in an more functional way and produce function molds. Here’s an example.</p>
+<pre class="r"><code>a_cast &lt;- function(slots){
   function(w){
-    slot(w, name1) %&gt;% slot(name2)
+    Reduce(function(x, y) slot(x, y), slots, init = w)
   }
 }
-
-a_cast(&quot;interval&quot;, &quot;a&quot;)(W[[1]])</code></pre>
+a_cast(c(&quot;interval&quot;, &quot;a&quot;))(W[[1]])</code></pre>
 <pre><code>## [1] 1</code></pre>
-<pre class="r"><code>a_cast(&quot;context&quot;, &quot;value&quot;)(W[[1]])</code></pre>
+<pre class="r"><code>a_cast(c(&quot;context&quot;, &quot;value&quot;))(W[[1]])</code></pre>
 <pre><code>## [1] &quot;10&quot;</code></pre>
 <pre class="r"><code>p_cast &lt;- function(accessor, relation, bound){
-  force(accessor);
+  force(accessor); force(bound);
   function(w){
     relation(accessor(w), bound)
   }
@@ -702,7 +788,7 @@ l_cast &lt;- function(p){
   }
 }</code></pre>
 <p>Which can then be composed to extract elements from <span class="math inline">\(W\)</span>.</p>
-<pre class="r"><code>a_cast(&quot;interval&quot;, &quot;a&quot;) %&gt;%
+<pre class="r"><code>a_cast(c(&quot;interval&quot;, &quot;a&quot;)) %&gt;%
   p_cast(`&lt;=`, 10) %&gt;%
   l_cast() %&gt;%
   {.(W)}</code></pre>
@@ -717,7 +803,7 @@ l_cast &lt;- function(p){
 </div>
 <div id="features" class="section level2">
 <h2>Features</h2>
-<p>A feature is a function that extracts data <span class="math inline">\(D\)</span> from a set <span class="math inline">\(W\)</span>. Features are composed from the types of functions described above: accessors, predicates, and filters (and map/reduce functions).</p>
+<p>A feature is a function that extracts data <span class="math inline">\(D\)</span> from a set <span class="math inline">\(W\)</span>. Features are composed from the types of functions described above: accessors, predicates, and filters (and map/reduce functions). Think of <span class="math inline">\(D\)</span> as the set of all possible information that could be extracted from <span class="math inline">\(W\)</span>.</p>
 <p><span class="math display">\[
 \mathsf{F}: W \mapsto D
 \]</span></p>
@@ -735,6 +821,7 @@ l_cast &lt;- function(p){
 0 &amp; else
 \end{cases}
 \]</span></p>
+<p>NOTE: to safely implement <span class="math inline">\(F^{\star}\)</span>, we’ll need to handle the empty set, <span class="math inline">\(\emptyset\)</span>, but I’ll ignore this for now.</p>
 <p>Let’s implement this in <code>R</code>:</p>
 <pre class="r"><code>Amap_cast &lt;- function(a){
   function(W){
@@ -743,7 +830,7 @@ l_cast &lt;- function(p){
 }
 
 Lsuit_cast &lt;- function(suit){
-  a_cast(&quot;context&quot;, &quot;suit&quot;) %&gt;%
+  a_cast(c(&quot;context&quot;, &quot;suit&quot;)) %&gt;%
     p_cast(`==`, suit) %&gt;%
     l_cast()
 }
@@ -756,10 +843,8 @@ min_op &lt;- function(A, L){
 }
 
 A_s    &lt;- Amap_cast(a_s)
-A_prd  &lt;- Amap_cast(a_cast(&quot;xy&quot;, c(1, 2)))
 Lspade &lt;- Lsuit_cast(&quot;spade&quot;)
 Lheart &lt;- Lsuit_cast(&quot;heart&quot;)
-
 
 first_of &lt;- function(what, filter){
   force(what); force(filter)
@@ -771,11 +856,10 @@ first_of &lt;- function(what, filter){
 first_start_of_spade &lt;- first_of(A_s, Lspade)
 
 fstar &lt;- function(W){
-  # Define a predicate function that indicates starts less than the first spade event
-  p_cast(A_s, `&gt;`, first_start_of_spade(W)) %&gt;%
-    # apply this function to the heart events
+  a_cast(c(&quot;interval&quot;, &quot;a&quot;)) %&gt;%
+    p_cast(`&gt;`, first_start_of_spade(W)) %&gt;%
+    l_cast() %&gt;%
     { .(Lheart(W)) } %&gt;%
-    Lheart(W)[.] %&gt;%
     { first_of(A_s, Lheart)(.) }
 }
 
@@ -790,17 +874,17 @@ fstar(W)</code></pre>
 <li>the index function returns the “start of the first <span class="math inline">\(\heartsuit\)</span> after the start of the first <span class="math inline">\(\spadesuit\)</span>” (i.e <span class="math inline">\(\text{index}(W) = \mathsf{F}^{\star}(W)\)</span>).</li>
 </ul>
 <pre class="r"><code>index &lt;- fstar</code></pre>
-<p>Based on the index, we want to extract the following features about <span class="math inline">\(W\)</span>:</p>
+<p>Based on the index feature, we want to extract the following features about <span class="math inline">\(W\)</span>:</p>
 <ul>
+<li>2spade1heart:
+<ul>
+<li>TRUE/FALSE: Anytime before index, does <span class="math inline">\(W\)</span> contain 2 <span class="math inline">\(\spadesuit\)</span> separated by at least 3 time units or 1 <span class="math inline">\(\clubsuit\)</span>?</li>
+<li>NOTE: this is analogous to a “2-out/1-in” algorithm</li>
+</ul></li>
 <li>foreverDiamonds:
 <ul>
 <li>TRUE/FALSE: Do the <span class="math inline">\(\diamondsuit\)</span> events have a gap of no more than 10 time units before index, starting from 25 units before index?</li>
 <li>NOTE: This is analogous to a continuous enrollment algorithm</li>
-</ul></li>
-<li>2spade1heart:
-<ul>
-<li>TRUE/FALSE: Before index, does <span class="math inline">\(W\)</span> contain 2 <span class="math inline">\(\spadesuit\)</span> separated by at least 3 time units or 1 <span class="math inline">\(\heartsuit\)</span>?</li>
-<li>NOTE: this is analogous to a “2-out/1-in” algorithm</li>
 </ul></li>
 <li>flush:
 <ul>
@@ -820,7 +904,32 @@ fstar(W)</code></pre>
 <li>NOTE: the feature in this case is a set of times (not just a single time)</li>
 </ul></li>
 </ul>
-<p>Now let’s express each of these features mathematically</p>
+<p>Now let’s express each of these features mathematically.</p>
+<div id="spade1heart" class="section level2">
+<h2>2spade1heart</h2>
+<p>Let’s define a few more functions that operate on <span class="math inline">\(w\)</span> and <span class="math inline">\(\Xi\)</span>.</p>
+<table>
+<colgroup>
+<col width="20%"></col>
+<col width="48%"></col>
+<col width="31%"></col>
+</colgroup>
+<thead>
+<tr class="header">
+<th>Definition</th>
+<th>Mapping</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(any(W) = \begin{cases} W \neq \emptyset &amp; TRUE \\ else &amp; FALSE \end{cases}\)</span></td>
+<td><span class="math inline">\(any : \mathcal{W} \mapsto \mathbb{B}\)</span></td>
+<td>Is <span class="math inline">\(W\)</span> empty?</td>
+</tr>
+</tbody>
+</table>
+</div>
 <div id="foreverdiamonds" class="section level2">
 <h2>foreverDiamonds</h2>
 <p><span class="math display">\[
@@ -853,8 +962,23 @@ fstar(W)</code></pre>
 }
 
 scangap_cast(10)(head(Wdt$xy))</code></pre>
-<pre><code>## Warning: Unknown or uninitialised column: 'xy'.</code></pre>
-<pre><code>## NULL</code></pre>
+<pre><code>## [[1]]
+## [1] 1 6
+## 
+## [[2]]
+## [1] 1 6
+## 
+## [[3]]
+## [1] 1 6
+## 
+## [[4]]
+## [1] 1 7
+## 
+## [[5]]
+## [1]  1 12
+## 
+## [[6]]
+## [1]  1 17</code></pre>
 <p>In summary, scangap return a set of tuples the same length as the input <span class="math inline">\(W\)</span>, where the start and end of each <span class="math inline">\(w_i \in W\)</span> have been updated depending on <span class="math inline">\(w_{i - 1}\)</span> extending the period until a time gap of 10 units occurs.</p>
 <p>Now, we can identify which of those periods are the non overlapping periods by scanning the modified periods from the right, accumulating an indicator of whether each period is the longest segment of a period; then we can use set (list) comprehension to filter to the unique periods.</p>
 <p>For example, (warning: this is klunky and could be cleaned up), but in <code>R</code>:</p>
@@ -880,11 +1004,14 @@ period_cast &lt;- function(cc){
 }
 
 period_cast(10)(Wdt$xy)</code></pre>
-<pre><code>## Warning: Unknown or uninitialised column: 'xy'.</code></pre>
-<pre><code>## NULL</code></pre>
+<pre><code>## [[1]]
+## [1]  1 67
+## 
+## [[2]]
+## [1] 82 95</code></pre>
 <pre class="r"><code>period_cast(10)(head(Wdt$xy))</code></pre>
-<pre><code>## Warning: Unknown or uninitialised column: 'xy'.</code></pre>
-<pre><code>## NULL</code></pre>
+<pre><code>## [[1]]
+## [1]  1 17</code></pre>
 <p>Now we have need a function that limits our periods to just those that overlap another period <span class="math inline">\(pd\)</span> (e.g. a lookback period). This is the <span class="math inline">\(pdperiod\)</span> function.</p>
 <pre class="r"><code>pdperiod &lt;- function(l, p){
   Filter(
@@ -894,14 +1021,17 @@ period_cast(10)(Wdt$xy)</code></pre>
 }
 
 period_cast(10)(Wdt$xy) %&gt;% pdperiod(p = c(4, 10))</code></pre>
-<pre><code>## Warning: Unknown or uninitialised column: 'xy'.</code></pre>
-<pre><code>## NULL</code></pre>
+<pre><code>## [[1]]
+## [1]  1 67</code></pre>
 <pre class="r"><code>period_cast(10)(Wdt$xy) %&gt;% pdperiod(p = c(-10, 10))</code></pre>
-<pre><code>## Warning: Unknown or uninitialised column: 'xy'.</code></pre>
-<pre><code>## NULL</code></pre>
+<pre><code>## [[1]]
+## [1]  1 67</code></pre>
 <pre class="r"><code>period_cast(10)(Wdt$xy) %&gt;% pdperiod(p = c(-10, 90))</code></pre>
-<pre><code>## Warning: Unknown or uninitialised column: 'xy'.</code></pre>
-<pre><code>## NULL</code></pre>
+<pre><code>## [[1]]
+## [1]  1 67
+## 
+## [[2]]
+## [1] 82 95</code></pre>
 <pre class="r"><code># Define a couple of helper function
 s &lt;- function(p) p[1]
 e &lt;- function(p) p[2]
@@ -967,8 +1097,16 @@ foreverDiamonds &lt;- function(W){
 
 foreverDiamonds(W)</code></pre>
 <p>Note that another pattern emerged! <code>Lw</code> is exactly the same pattern as the first part of <code>index</code>!</p>
+</div>
+<div id="fullhouse" class="section level2">
+<h2>fullHouse</h2>
 <ul>
 <li><span class="math inline">\(\text{fullHouse}(W, \text{index})\)</span></li>
+</ul>
+</div>
+<div id="postclubs" class="section level2">
+<h2>postClubs</h2>
+<ul>
 <li><span class="math inline">\(\text{postClubs}(W, \text{index})\)</span></li>
 </ul>
 </div>
@@ -977,7 +1115,7 @@ foreverDiamonds(W)</code></pre>
 <h1>Cohort</h1>
 <p>A cohort is a function mapping a population (<span class="math inline">\(\{W_1, \dots, W_m\}\)</span>) and a specification to a set of features:</p>
 <p><span class="math display">\[
-\Upsilon: (Pop, S) \mapsto \{D_1, \dots, D_{m^{\star}}} \} 
+\Upsilon: (Pop, S) \mapsto \{D_1, \dots, D_{m^{\star}} \} 
 \]</span></p>
 </div>
 

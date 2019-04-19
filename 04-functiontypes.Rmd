@@ -1,0 +1,101 @@
+# Function Types
+
+## Accessors
+
+As described above, accessor functions extract information from an event $w$. For example:
+
+\[
+\mathsf{a}_{\Xi}(w) = (a, b); \mathsf{a}_s(w) = (s \circ \mathsf{a}_{\Xi}) (w) = a ; \mathsf{a}_{\square}(w) = \square
+\]
+
+
+Functions can also be defined that operate on collections of events, for example:
+
+\[
+\mathsf{a}_s(W) = \{(a_1, \dots, a_n) | a_i = \mathsf{a}_s(w_i) \,\, \forall w_i \in W\}
+\]
+
+## Predicates
+
+A predicate $\mathsf{P}$ is a function that returns a boolean (or $\{0, 1\}$) based on $w$ that is constructed by an accessor and a relational operator.
+
+\[
+\mathsf{P}^c : (\mathsf{a}, \cdot) \mapsto \mathsf{P}: w \mapsto  \{0, 1\}
+\]
+
+where $a$ is an accessor function and $\cdot$ is a relational operator. Defined similarly for a set of events:
+
+\[
+\mathsf{P}^c : (\mathsf{a}, \cdot) \mapsto \mathsf{P}: W \mapsto \{\{0, 1\}^n\}
+\]
+
+Predicates are constructed from acessors and relations. For example, the following function returns $1$ when the start of $w$ is less than or equal to some constant $c$:
+
+\[
+\mathsf{P}'(w) = \begin{cases}
+1 & \mathsf{a}_s(w) \leq c \\
+0 & else
+\end{cases}
+\]
+
+where $\mathsf{P}' = \mathsf{P}^c(\mathsf{a}_s, < c)$.
+
+## Filters
+
+A filter is a function $\mathsf{L}$ that subsets $W$ based on a set of predicate functions $\{\mathsf{P}\}$.
+
+\[
+\mathsf{L}: (\mathsf{P}, W) \mapsto W';  W' \subseteq W
+\]
+
+
+Here's an example filter function that filters $W$ based on $\mathsf{P}'$:
+
+\[
+\mathsf{L}'(\mathsf{P}, W) = \{w \in W | \mathsf{P}'(w) = 1 \}
+\]
+
+Implemented in `R` it might look something like this.
+
+```{r}
+a_i <- function(w) w@interval
+a_s <- function(w) s(a_i(w))
+P1  <- function(w) a_s(w) > 50
+L1  <- function(w) Filter(P1, w)
+L1(W)
+```
+
+But we can program in an more functional way and produce function molds. Here's an example.
+
+```{r}
+a_cast <- function(slots){
+  function(w){
+    Reduce(function(x, y) slot(x, y), slots, init = w)
+  }
+}
+a_cast(c("interval", "a"))(W[[1]])
+a_cast(c("context", "value"))(W[[1]])
+
+p_cast <- function(accessor, relation, bound){
+  force(accessor); force(bound);
+  function(w){
+    relation(accessor(w), bound)
+  }
+}
+
+l_cast <- function(p){
+  force(p)
+  function(w){
+    Filter(p, w)
+  }
+}
+```
+
+Which can then be composed to extract elements from $W$.
+
+```{r}
+a_cast(c("interval", "a")) %>%
+  p_cast(`<=`, 10) %>%
+  l_cast() %>%
+  {.(W)}
+```

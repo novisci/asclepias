@@ -1,0 +1,15 @@
+---
+title: "Project Asclepias"
+site: bookdown::bookdown_site
+output: bookdown::gitbook
+---
+
+```{r, echo =FALSE}
+library(dplyr)
+library(ggplot2)
+source("asclepias.R")
+```
+
+# Preface {-}
+
+ETC

@@ -1,0 +1,61 @@
+# Design
+
+@CITE writes: 
+
+> "One of the important advantages of having a mathematical model for programming is that it’s possible to perform formal proofs of correctness of software. This might not seem so important when you’re writing consumer software, but there are areas of programming where the price of failure may be exorbitant, or where human life is at stake." 
+
+In epidemiology and medicine, programming errors can cost lives. Project Asclepias aims to formalize one aspect of the research pipeline: implementing the study plan. 
+
+@CITE writes: "Functional programmers have a peculiar way of approaching problems. They start by asking very Zen-like questions. For instance, when designing an interactive program, they would ask: What is interaction?" In that vein, what is a cohort?
+
+Asclepias defines a cohort $C$ as the output of a mathematical function. Let $P$ be a population and $S$ be a study design that specifies a cohort's inclusion/exclusion criteria and the set of features needed for analysis. The cohort building function maps a population and a specification to a cohort:
+
+\[
+\Upsilon: (P, S) \mapsto C 
+\]
+
+This formulation obviously leaves out a lot of details. $\Upsilon$ will be composed of many other functions and the structure of $P$, $S$, and $C$ need to be described. 
+
+Asclepias takes a *functional* approach to cohort building. Existing approaches and cohort building languaage are algorithmic by describing the steps. And while all functions are algorithms not all algorithms are functions. Why does this make a difference?
+
+
+
+With the goals of:
+
+* providing a structured language of cohort building that can declare designs from simple to complex
+* reducing the time between planning and execution of analyses
+* providing software that can be scaled to handle massive datasets
+* (?) validated software for a regulated industry
+
+## What is does not do
+
+Asclepias does not check that the plan itself is sound or that the population is relevant to the study question.
+
+## From here
+
+* described at a big picture
+* now going to describe from inside out
+* outline core data types
+
+A cohort builder is a function mapping a population and a specification to a cohort:
+
+$$
+\Upsilon: (P, S) \mapsto C 
+$$
+An analysis plan is a function $\Lambda$ that maps a specification $S$ to a cohort builder.
+
+
+$$
+\Lambda: S \mapsto ( C: P  \mapsto C )
+$$
+
+
+The next 4 chapters describe the design of 
+
+* $P$ and data types it is composed of
+* $C'$ and the function types it is composed of
+* $C$ and the data types it is composed of 
+
+Before demostrating a complete working example starting from $S$ and $\Lambda$, we first explain how $C'$ works with toy example building a cohort "by hand" using the types 
+
+* $S$ and how a specification defines all of the above

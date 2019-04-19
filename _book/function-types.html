@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html >
+
+<head>
+
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Chapter 4 Function Types | Project Asclepias</title>
+  <meta name="description" content="Chapter 4 Function Types | Project Asclepias">
+  <meta name="generator" content="bookdown  and GitBook 2.6.7">
+
+  <meta property="og:title" content="Chapter 4 Function Types | Project Asclepias" />
+  <meta property="og:type" content="book" />
+  
+  
+  
+  
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Chapter 4 Function Types | Project Asclepias" />
+  
+  
+  
+
+
+
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  
+  
+<link rel="prev" href="data-types.html">
+<link rel="next" href="features-observational-units-and-cohorts.html">
+<script src="libs/jquery-2.2.3/jquery.min.js"></script>
+<link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+
+
+
+
+
+
+
+
+
+<style type="text/css">
+a.sourceLine { display: inline-block; line-height: 1.25; }
+a.sourceLine { pointer-events: none; color: inherit; text-decoration: inherit; }
+a.sourceLine:empty { height: 1.2em; position: absolute; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+a.sourceLine { text-indent: -1em; padding-left: 1em; }
+}
+pre.numberSource a.sourceLine
+  { position: relative; }
+pre.numberSource a.sourceLine:empty
+  { position: absolute; }
+pre.numberSource a.sourceLine::before
+  { content: attr(data-line-number);
+    position: absolute; left: -5em; text-align: right; vertical-align: baseline;
+    border: none; pointer-events: all;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {  }
+@media screen {
+a.sourceLine::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+</head>
+
+<body>
+
+
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i>Preface</a></li>
+<li class="chapter" data-level="1" data-path="introductions.html"><a href="introductions.html"><i class="fa fa-check"></i><b>1</b> Introductions</a><ul>
+<li class="chapter" data-level="1.1" data-path="introductions.html"><a href="introductions.html#emerging-current-approaches"><i class="fa fa-check"></i><b>1.1</b> Emerging, current approaches</a></li>
+<li class="chapter" data-level="1.2" data-path="introductions.html"><a href="introductions.html#asceplias-is-different"><i class="fa fa-check"></i><b>1.2</b> Asceplias is different</a></li>
+<li class="chapter" data-level="1.3" data-path="introductions.html"><a href="introductions.html#towards-flexible-architectures"><i class="fa fa-check"></i><b>1.3</b> Towards flexible architectures</a></li>
+</ul></li>
+<li class="chapter" data-level="2" data-path="design.html"><a href="design.html"><i class="fa fa-check"></i><b>2</b> Design</a><ul>
+<li class="chapter" data-level="2.1" data-path="design.html"><a href="design.html#what-is-does-not-do"><i class="fa fa-check"></i><b>2.1</b> What is does not do</a></li>
+<li class="chapter" data-level="2.2" data-path="design.html"><a href="design.html#from-here"><i class="fa fa-check"></i><b>2.2</b> From here</a></li>
+</ul></li>
+<li class="chapter" data-level="3" data-path="data-types.html"><a href="data-types.html"><i class="fa fa-check"></i><b>3</b> Data Types</a><ul>
+<li class="chapter" data-level="3.1" data-path="data-types.html"><a href="data-types.html#interval"><i class="fa fa-check"></i><b>3.1</b> Interval</a></li>
+<li class="chapter" data-level="3.2" data-path="data-types.html"><a href="data-types.html#context"><i class="fa fa-check"></i><b>3.2</b> Context</a></li>
+<li class="chapter" data-level="3.3" data-path="data-types.html"><a href="data-types.html#contextualized-set"><i class="fa fa-check"></i><b>3.3</b> Contextualized Set</a></li>
+<li class="chapter" data-level="3.4" data-path="data-types.html"><a href="data-types.html#events"><i class="fa fa-check"></i><b>3.4</b> Events</a></li>
+<li class="chapter" data-level="3.5" data-path="data-types.html"><a href="data-types.html#event-history"><i class="fa fa-check"></i><b>3.5</b> Event History</a></li>
+<li class="chapter" data-level="3.6" data-path="data-types.html"><a href="data-types.html#subject"><i class="fa fa-check"></i><b>3.6</b> Subject</a></li>
+<li class="chapter" data-level="3.7" data-path="data-types.html"><a href="data-types.html#population"><i class="fa fa-check"></i><b>3.7</b> Population</a></li>
+</ul></li>
+<li class="chapter" data-level="4" data-path="function-types.html"><a href="function-types.html"><i class="fa fa-check"></i><b>4</b> Function Types</a><ul>
+<li class="chapter" data-level="4.1" data-path="function-types.html"><a href="function-types.html#accessors"><i class="fa fa-check"></i><b>4.1</b> Accessors</a></li>
+<li class="chapter" data-level="4.2" data-path="function-types.html"><a href="function-types.html#predicates"><i class="fa fa-check"></i><b>4.2</b> Predicates</a></li>
+<li class="chapter" data-level="4.3" data-path="function-types.html"><a href="function-types.html#filters"><i class="fa fa-check"></i><b>4.3</b> Filters</a></li>
+</ul></li>
+<li class="chapter" data-level="5" data-path="features-observational-units-and-cohorts.html"><a href="features-observational-units-and-cohorts.html"><i class="fa fa-check"></i><b>5</b> Features, observational units, and Cohorts</a><ul>
+<li class="chapter" data-level="5.1" data-path="features-observational-units-and-cohorts.html"><a href="features-observational-units-and-cohorts.html#features-and-feature-sets"><i class="fa fa-check"></i><b>5.1</b> Features and Feature sets</a></li>
+<li class="chapter" data-level="5.2" data-path="features-observational-units-and-cohorts.html"><a href="features-observational-units-and-cohorts.html#observational-unit"><i class="fa fa-check"></i><b>5.2</b> Observational Unit</a></li>
+<li class="chapter" data-level="5.3" data-path="features-observational-units-and-cohorts.html"><a href="features-observational-units-and-cohorts.html#cohort"><i class="fa fa-check"></i><b>5.3</b> Cohort</a></li>
+</ul></li>
+<li class="chapter" data-level="6" data-path="toy-example.html"><a href="toy-example.html"><i class="fa fa-check"></i><b>6</b> Toy Example</a><ul>
+<li class="chapter" data-level="6.1" data-path="toy-example.html"><a href="toy-example.html#spade1heart"><i class="fa fa-check"></i><b>6.1</b> 2spade1heart</a></li>
+<li class="chapter" data-level="6.2" data-path="toy-example.html"><a href="toy-example.html#foreverdiamonds"><i class="fa fa-check"></i><b>6.2</b> foreverDiamonds</a></li>
+<li class="chapter" data-level="6.3" data-path="toy-example.html"><a href="toy-example.html#fullhouse"><i class="fa fa-check"></i><b>6.3</b> fullHouse</a></li>
+<li class="chapter" data-level="6.4" data-path="toy-example.html"><a href="toy-example.html#postclubs"><i class="fa fa-check"></i><b>6.4</b> postClubs</a></li>
+</ul></li>
+<li class="chapter" data-level="7" data-path="specifications.html"><a href="specifications.html"><i class="fa fa-check"></i><b>7</b> Specifications</a></li>
+<li class="chapter" data-level="8" data-path="working-example.html"><a href="working-example.html"><i class="fa fa-check"></i><b>8</b> Working example</a></li>
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">Project Asclepias</a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="function-types" class="section level1">
+<h1><span class="header-section-number">Chapter 4</span> Function Types</h1>
+<div id="accessors" class="section level2">
+<h2><span class="header-section-number">4.1</span> Accessors</h2>
+<p>As described above, accessor functions extract information from an event <span class="math inline">\(w\)</span>. For example:</p>
+<p><span class="math display">\[
+\mathsf{a}_{\Xi}(w) = (a, b); \mathsf{a}_s(w) = (s \circ \mathsf{a}_{\Xi}) (w) = a ; \mathsf{a}_{\square}(w) = \square
+\]</span></p>
+<p>Functions can also be defined that operate on collections of events, for example:</p>
+<p><span class="math display">\[
+\mathsf{a}_s(W) = \{(a_1, \dots, a_n) | a_i = \mathsf{a}_s(w_i) \,\, \forall w_i \in W\}
+\]</span></p>
+</div>
+<div id="predicates" class="section level2">
+<h2><span class="header-section-number">4.2</span> Predicates</h2>
+<p>A predicate <span class="math inline">\(\mathsf{P}\)</span> is a function that returns a boolean (or <span class="math inline">\(\{0, 1\}\)</span>) based on <span class="math inline">\(w\)</span> that is constructed by an accessor and a relational operator.</p>
+<p><span class="math display">\[
+\mathsf{P}^c : (\mathsf{a}, \cdot) \mapsto \mathsf{P}: w \mapsto  \{0, 1\}
+\]</span></p>
+<p>where <span class="math inline">\(a\)</span> is an accessor function and <span class="math inline">\(\cdot\)</span> is a relational operator. Defined similarly for a set of events:</p>
+<p><span class="math display">\[
+\mathsf{P}^c : (\mathsf{a}, \cdot) \mapsto \mathsf{P}: W \mapsto \{\{0, 1\}^n\}
+\]</span></p>
+<p>Predicates are constructed from acessors and relations. For example, the following function returns <span class="math inline">\(1\)</span> when the start of <span class="math inline">\(w\)</span> is less than or equal to some constant <span class="math inline">\(c\)</span>:</p>
+<p><span class="math display">\[
+\mathsf{P}&#39;(w) = \begin{cases}
+1 &amp; \mathsf{a}_s(w) \leq c \\
+0 &amp; else
+\end{cases}
+\]</span></p>
+<p>where <span class="math inline">\(\mathsf{P}&#39; = \mathsf{P}^c(\mathsf{a}_s, &lt; c)\)</span>.</p>
+</div>
+<div id="filters" class="section level2">
+<h2><span class="header-section-number">4.3</span> Filters</h2>
+<p>A filter is a function <span class="math inline">\(\mathsf{L}\)</span> that subsets <span class="math inline">\(W\)</span> based on a set of predicate functions <span class="math inline">\(\{\mathsf{P}\}\)</span>.</p>
+<p><span class="math display">\[
+\mathsf{L}: (\mathsf{P}, W) \mapsto W&#39;;  W&#39; \subseteq W
+\]</span></p>
+<p>Here’s an example filter function that filters <span class="math inline">\(W\)</span> based on <span class="math inline">\(\mathsf{P}&#39;\)</span>:</p>
+<p><span class="math display">\[
+\mathsf{L}&#39;(\mathsf{P}, W) = \{w \in W | \mathsf{P}&#39;(w) = 1 \}
+\]</span></p>
+<p>Implemented in <code>R</code> it might look something like this.</p>
+<pre class="sourceCode r"><code class="sourceCode r">a_i &lt;-<span class="st"> </span><span class="cf">function</span>(w) w<span class="op">@</span>interval
+a_s &lt;-<span class="st"> </span><span class="cf">function</span>(w) <span class="kw">s</span>(<span class="kw">a_i</span>(w))
+P1  &lt;-<span class="st"> </span><span class="cf">function</span>(w) <span class="kw">a_s</span>(w) <span class="op">&gt;</span><span class="st"> </span><span class="dv">50</span>
+L1  &lt;-<span class="st"> </span><span class="cf">function</span>(w) <span class="kw">Filter</span>(P1, w)
+<span class="kw">L1</span>(W)</code></pre>
+<pre><code>## [[1]]
+## {(55, 63), {♠, 10}}
+## [[2]]
+## {(65, 65), {♥, 10}}
+## [[3]]
+## {(67, 67), {♠, 3}}
+## [[4]]
+## {(82, 85), {♠, 6}}
+## [[5]]
+## {(82, 91), {♣, 10}}
+## [[6]]
+## {(95, 95), {♦, K}}</code></pre>
+<p>But we can program in an more functional way and produce function molds. Here’s an example.</p>
+<pre class="sourceCode r"><code class="sourceCode r">a_cast &lt;-<span class="st"> </span><span class="cf">function</span>(slots){
+  <span class="cf">function</span>(w){
+    <span class="kw">Reduce</span>(<span class="cf">function</span>(x, y) <span class="kw">slot</span>(x, y), slots, <span class="dt">init =</span> w)
+  }
+}
+<span class="kw">a_cast</span>(<span class="kw">c</span>(<span class="st">&quot;interval&quot;</span>, <span class="st">&quot;a&quot;</span>))(W[[<span class="dv">1</span>]])</code></pre>
+<pre><code>## [1] 1</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">a_cast</span>(<span class="kw">c</span>(<span class="st">&quot;context&quot;</span>, <span class="st">&quot;value&quot;</span>))(W[[<span class="dv">1</span>]])</code></pre>
+<pre><code>## [1] &quot;10&quot;</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">p_cast &lt;-<span class="st"> </span><span class="cf">function</span>(accessor, relation, bound){
+  <span class="kw">force</span>(accessor); <span class="kw">force</span>(bound);
+  <span class="cf">function</span>(w){
+    <span class="kw">relation</span>(<span class="kw">accessor</span>(w), bound)
+  }
+}
+
+l_cast &lt;-<span class="st"> </span><span class="cf">function</span>(p){
+  <span class="kw">force</span>(p)
+  <span class="cf">function</span>(w){
+    <span class="kw">Filter</span>(p, w)
+  }
+}</code></pre>
+<p>Which can then be composed to extract elements from <span class="math inline">\(W\)</span>.</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">a_cast</span>(<span class="kw">c</span>(<span class="st">&quot;interval&quot;</span>, <span class="st">&quot;a&quot;</span>)) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">p_cast</span>(<span class="st">`</span><span class="dt">&lt;=</span><span class="st">`</span>, <span class="dv">10</span>) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">l_cast</span>() <span class="op">%&gt;%</span>
+<span class="st">  </span>{.(W)}</code></pre>
+<pre><code>## [[1]]
+## {(1, 6), {♦, 10}}
+## [[2]]
+## {(3, 3), {♥, 5}}
+## [[3]]
+## {(4, 4), {♥, 3}}
+## [[4]]
+## {(7, 7), {♠, 10}}</code></pre>
+
+</div>
+</div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+<a href="data-types.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="features-observational-units-and-cohorts.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+    </div>
+  </div>
+<script src="libs/gitbook-2.6.7/js/app.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/lunr.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="libs/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script>
+gitbook.require(["gitbook"], function(gitbook) {
+gitbook.start({
+"sharing": {
+"github": false,
+"facebook": true,
+"twitter": true,
+"google": false,
+"linkedin": false,
+"weibo": false,
+"instapaper": false,
+"vk": false,
+"all": ["facebook", "google", "twitter", "linkedin", "weibo", "instapaper"]
+},
+"fontsettings": {
+"theme": "white",
+"family": "sans",
+"size": 2
+},
+"edit": {
+"link": null,
+"text": null
+},
+"history": {
+"link": null,
+"text": null
+},
+"download": null,
+"toc": {
+"collapse": "subsection"
+}
+});
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "true";
+    if (src === "" || src === "true") src = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:" && /^https?:/.test(src))
+      src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+</body>
+
+</html>

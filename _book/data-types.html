@@ -158,8 +158,9 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li class="chapter" data-level="6" data-path="toy-example.html"><a href="toy-example.html"><i class="fa fa-check"></i><b>6</b> Toy Example</a><ul>
 <li class="chapter" data-level="6.1" data-path="toy-example.html"><a href="toy-example.html#spade1heart"><i class="fa fa-check"></i><b>6.1</b> 2spade1heart</a></li>
 <li class="chapter" data-level="6.2" data-path="toy-example.html"><a href="toy-example.html#foreverdiamonds"><i class="fa fa-check"></i><b>6.2</b> foreverDiamonds</a></li>
-<li class="chapter" data-level="6.3" data-path="toy-example.html"><a href="toy-example.html#fullhouse"><i class="fa fa-check"></i><b>6.3</b> fullHouse</a></li>
-<li class="chapter" data-level="6.4" data-path="toy-example.html"><a href="toy-example.html#postclubs"><i class="fa fa-check"></i><b>6.4</b> postClubs</a></li>
+<li class="chapter" data-level="6.3" data-path="toy-example.html"><a href="toy-example.html#flush"><i class="fa fa-check"></i><b>6.3</b> flush</a></li>
+<li class="chapter" data-level="6.4" data-path="toy-example.html"><a href="toy-example.html#clubtrump"><i class="fa fa-check"></i><b>6.4</b> clubTrump</a></li>
+<li class="chapter" data-level="6.5" data-path="toy-example.html"><a href="toy-example.html#fullofhearts"><i class="fa fa-check"></i><b>6.5</b> fullOfHearts</a></li>
 </ul></li>
 <li class="chapter" data-level="7" data-path="specifications.html"><a href="specifications.html"><i class="fa fa-check"></i><b>7</b> Specifications</a></li>
 <li class="chapter" data-level="8" data-path="working-example.html"><a href="working-example.html"><i class="fa fa-check"></i><b>8</b> Working example</a></li>
@@ -190,7 +191,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 \Xi := (a, b) \mid a \leq b \in \mathbb{Z}
 \]</span></p>
 <p>Let <span class="math inline">\(\mathcal{I}\)</span> be the set of all <span class="math inline">\(\Xi\)</span>. Here’s a few <span class="math inline">\(\Xi\)</span>s represented visually:</p>
-<p><img src="bookdown-demo_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+<p><img src="bookdown-demo_files/figure-html/unnamed-chunk-438-1.png" width="672" /></p>
 <p>To make the math concrete, define data structures in a programming language (in this case <code>R</code>) that align with our mathematical definition.</p>
 <pre class="sourceCode r"><code class="sourceCode r">itv &lt;-<span class="st"> </span><span class="kw">interval</span>(<span class="dt">a =</span> 2L, <span class="dt">b =</span> 4L)
 itv</code></pre>
@@ -332,8 +333,29 @@ itv</code></pre>
 </div>
 <div id="context" class="section level2">
 <h2><span class="header-section-number">3.2</span> Context</h2>
-<p>Define a context <span class="math inline">\(\square\)</span> as an arbitrary, finite collection of objects. A context is always paired with a <span class="math inline">\(\Xi\)</span> as an event (defined below) and contains all the relevant information about the <span class="math inline">\(\Xi\)</span> such as a type and associated values.</p>
-<p>For the purposes of this demonstration, let the context be the pair the suit and value of a poker card:</p>
+<p>Define a context <span class="math inline">\(\square\)</span> as an <a href="https://en.wikipedia.org/wiki/Associative_array">associative array</a>.</p>
+<p>TODO:</p>
+<ul>
+<li>formalize the notion of a context constructor such that different event “domains” <em>can</em> have different contexts (i.e. different keys). For example, one could define a lab results context that has keys for LOINC code, value, and units and a diagnosis context that has keys for diagnosis code, code source (ICD-10, ICD-9, etc), and clinic location.</li>
+</ul>
+</div>
+<div id="contextualized-set" class="section level2">
+<h2><span class="header-section-number">3.3</span> Contextualized Set</h2>
+<p>This pattern repeats throughout the design:</p>
+<p><span class="math display">\[
+\{ \square, \cdot \}
+\]</span></p>
+<p>where <span class="math inline">\(\cdot\)</span> is some set.</p>
+<p>TODO: further describe this type.</p>
+</div>
+<div id="events" class="section level2">
+<h2><span class="header-section-number">3.4</span> Events</h2>
+<p>The fundamental data structure is that of events occurring in time with information attached to the event such as a hospital stay, disease diagnosis, or lab values. We most often work on the time scale of days, so for now we’ll think about the time intervals in terms of integers.</p>
+<p>Define an event <span class="math inline">\(w\)</span> as a set with an interval and a context:</p>
+<p><span class="math display">\[
+w := \{\Xi, \square\}
+\]</span></p>
+<p>For the purposes of the toy example, let their be a single context type that is the pair of the suit and value of a poker card:</p>
 <p><span class="math display">\[
 \square \in \{suit \in \mathcal{S} = \{\clubsuit, \heartsuit, \diamondsuit, \spadesuit \}, value \in \mathcal{V} = \{A, 2, 3, 4, 5, 6, 7 , 8, 9, 10, J, Q, K\}\}
 \]</span></p>
@@ -376,23 +398,6 @@ c2 &lt;-<span class="st"> </span><span class="kw">context</span>(<span class="dt
 <pre><code>## [1] &quot;3&quot;</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">value</span>(c2)</code></pre>
 <pre><code>## [1] &quot;J&quot;</code></pre>
-</div>
-<div id="contextualized-set" class="section level2">
-<h2><span class="header-section-number">3.3</span> Contextualized Set</h2>
-<p>This pattern repeats through the design:</p>
-<p><span class="math display">\[
-\{ \square, \cdot \}
-\]</span>
-where <span class="math inline">\(\cdot\)</span> is some set.</p>
-<p>TODO: further describe this type.</p>
-</div>
-<div id="events" class="section level2">
-<h2><span class="header-section-number">3.4</span> Events</h2>
-<p>The fundamental data structure in this setup is that of events occurring in time with information attached to the event such as a hospital stay, disease diagnosis, or lab values. We most often work on the time scale of days, so for now we’ll think about the time intervals in terms of integers.</p>
-<p>Define an event <span class="math inline">\(w\)</span> as a set with an interval and a context:</p>
-<p><span class="math display">\[
-w := \{\Xi, \square\}
-\]</span></p>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">event</span>(<span class="dt">interval =</span> itv, <span class="dt">context =</span> c1)</code></pre>
 <pre><code>## {(2, 10), {♥, 3}}</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">event</span>(<span class="dt">interval =</span> <span class="kw">interval</span>(<span class="dt">a =</span> 4L, <span class="dt">b =</span> 20L), <span class="dt">context =</span> c2)</code></pre>
@@ -426,14 +431,15 @@ W = \{ (w_1, w_2, \dots, w_n) \mid  \Xi_i \leq \Xi_{i + 1} \: \forall i = 1, \do
 ## {(82, 91), {♣, 10}},
 ## {(95, 95), {♦, K}}</code></pre>
 <p>And here’s <span class="math inline">\(W\)</span> represented graphically where y-axis is used to differentiate each <span class="math inline">\(w\)</span> by its suit:</p>
-<p><img src="bookdown-demo_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
+<p><img src="bookdown-demo_files/figure-html/unnamed-chunk-444-1.png" width="672" /></p>
 </div>
 <div id="subject" class="section level2">
 <h2><span class="header-section-number">3.6</span> Subject</h2>
 <p>A subject, patient or unit is a context and an event history:</p>
 <p><span class="math display">\[
 U = \{ \square, W\}
-\]</span></p>
+\]</span>
+The context could contain information such as a patient ID and information that is constant over the course of the study as birth date and race. Note that this information could also be stored in event context(s) – the decision is up to the study planners.</p>
 </div>
 <div id="population" class="section level2">
 <h2><span class="header-section-number">3.7</span> Population</h2>
@@ -441,6 +447,7 @@ U = \{ \square, W\}
 <p><span class="math display">\[
 P = \{\square, \{U_1, \dots, U_m \} \}
 \]</span></p>
+<p>The population context may contain metadata such as when the data was generated.</p>
 <p>TODO:</p>
 <ul>
 <li>define a way of ordering populations?</li>

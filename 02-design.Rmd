@@ -37,25 +37,25 @@ Asclepias does not check that the plan itself is sound or that the population is
 * now going to describe from inside out
 * outline core data types
 
-A cohort builder is a function mapping a population and a specification to a cohort:
+A cohort builder $\zeta$ is a function mapping a population to a cohort:
 
 $$
-\Upsilon: (P, S) \mapsto C 
+\zeta: P \mapsto C 
 $$
-An analysis plan is a function $\Lambda$ that maps a specification $S$ to a cohort builder.
+A cohort planner is a function $\Lambda$ that maps a specification $S$ to a cohort builder.
 
 
 $$
-\Lambda: S \mapsto ( C: P  \mapsto C )
+\Lambda: S \mapsto ( \zeta : P  \mapsto C )
 $$
 
 
 The next 4 chapters describe the design of 
 
 * $P$ and data types it is composed of
-* $C'$ and the function types it is composed of
+* $\zeta$ and the function types it is composed of
 * $C$ and the data types it is composed of 
 
-Before demostrating a complete working example starting from $S$ and $\Lambda$, we first explain how $C'$ works with toy example building a cohort "by hand" using the types 
+Before demostrating a complete working example starting from $S$ and $\Lambda$, we first explain how $\zeta$ works with toy example building a cohort "by hand" using the types 
 
 * $S$ and how a specification defines all of the above

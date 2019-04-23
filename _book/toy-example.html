@@ -158,8 +158,9 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li class="chapter" data-level="6" data-path="toy-example.html"><a href="toy-example.html"><i class="fa fa-check"></i><b>6</b> Toy Example</a><ul>
 <li class="chapter" data-level="6.1" data-path="toy-example.html"><a href="toy-example.html#spade1heart"><i class="fa fa-check"></i><b>6.1</b> 2spade1heart</a></li>
 <li class="chapter" data-level="6.2" data-path="toy-example.html"><a href="toy-example.html#foreverdiamonds"><i class="fa fa-check"></i><b>6.2</b> foreverDiamonds</a></li>
-<li class="chapter" data-level="6.3" data-path="toy-example.html"><a href="toy-example.html#fullhouse"><i class="fa fa-check"></i><b>6.3</b> fullHouse</a></li>
-<li class="chapter" data-level="6.4" data-path="toy-example.html"><a href="toy-example.html#postclubs"><i class="fa fa-check"></i><b>6.4</b> postClubs</a></li>
+<li class="chapter" data-level="6.3" data-path="toy-example.html"><a href="toy-example.html#flush"><i class="fa fa-check"></i><b>6.3</b> flush</a></li>
+<li class="chapter" data-level="6.4" data-path="toy-example.html"><a href="toy-example.html#clubtrump"><i class="fa fa-check"></i><b>6.4</b> clubTrump</a></li>
+<li class="chapter" data-level="6.5" data-path="toy-example.html"><a href="toy-example.html#fullofhearts"><i class="fa fa-check"></i><b>6.5</b> fullOfHearts</a></li>
 </ul></li>
 <li class="chapter" data-level="7" data-path="specifications.html"><a href="specifications.html"><i class="fa fa-check"></i><b>7</b> Specifications</a></li>
 <li class="chapter" data-level="8" data-path="working-example.html"><a href="working-example.html"><i class="fa fa-check"></i><b>8</b> Working example</a></li>
@@ -182,41 +183,50 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
             <section class="normal" id="section-">
 <div id="toy-example" class="section level1">
 <h1><span class="header-section-number">Chapter 6</span> Toy Example</h1>
-<p>That’s define a cohort where:</p>
-<ul>
-<li>the index function returns the “start of the first <span class="math inline">\(\heartsuit\)</span> after the start of the first <span class="math inline">\(\spadesuit\)</span>” (i.e <span class="math inline">\(\text{index}(W) = \mathsf{F}^{\star}(W)\)</span>).</li>
-</ul>
+<p>This example uses data for the single subject defined above to define a <span class="math inline">\(n = 1\)</span> feature set. The subject’s index event is defined as the start of the first <span class="math inline">\(\heartsuit\)</span> after the start of the first <span class="math inline">\(\spadesuit\)</span> (i.e <span class="math inline">\(\text{index}(W) = \mathsf{F}^{\star}(W)\)</span>).</p>
 <pre class="sourceCode r"><code class="sourceCode r">index &lt;-<span class="st"> </span>fstar</code></pre>
-<p>Based on the index feature, we want to extract the following features about <span class="math inline">\(W\)</span>:</p>
-<ul>
-<li>2spade1heart:
-<ul>
-<li>TRUE/FALSE: Anytime before index, does <span class="math inline">\(W\)</span> contain 2 <span class="math inline">\(\spadesuit\)</span> separated by at least 3 time units or 1 <span class="math inline">\(\clubsuit\)</span>?</li>
-<li>NOTE: this is analogous to a “2-out/1-in” algorithm</li>
-</ul></li>
-<li>foreverDiamonds:
-<ul>
-<li>TRUE/FALSE: Do the <span class="math inline">\(\diamondsuit\)</span> events have a gap of no more than 10 time units before index, starting from 25 units before index?</li>
-<li>NOTE: This is analogous to a continuous enrollment algorithm</li>
-</ul></li>
-<li>flush:
-<ul>
-<li>TRUE/FALSE: Is there a flush after index? I.e. any set of five consecutive events after index of the same suit.</li>
-<li>Int: What is the time that the flush occurred?</li>
-<li>Suit: What suit triggered the flush?</li>
-<li>NOTE: the flush feature contains three data points: an indicator whether some event occurred, the time it occurred, and the type that triggered it.</li>
-</ul></li>
-<li>clubTrump:
-<ul>
-<li>TRUE/FALSE: Did a <span class="math inline">\(\clubsuit\)</span> occur after index?</li>
-<li>Int: What is the time that the club occurred after index?</li>
-</ul></li>
-<li>fullOfHearts:
-<ul>
-<li><span class="math inline">\(\{Int\}\)</span>: the set of all times that <span class="math inline">\(\heartsuit\)</span> that occur before a clubTrump</li>
-<li>NOTE: the feature in this case is a set of times (not just a single time)</li>
-</ul></li>
-</ul>
+<p>Define the following features:</p>
+<table>
+<colgroup>
+<col width="34%" />
+<col width="40%" />
+<col width="26%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Feature</th>
+<th>Definition</th>
+<th>Analogy</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>2spade1heart</td>
+<td>Indicate whether, before index, there are 2 <span class="math inline">\(\spadesuit\)</span> event whose starts are separated by at least 3 time units <em>or</em> 1 <span class="math inline">\(\clubsuit\)</span></td>
+<td>“2-out/1-in”</td>
+</tr>
+<tr class="even">
+<td>foreverDiamonds</td>
+<td>Indicate whether, after joining all overlapping or adjoined events, the <span class="math inline">\(\diamondsuit\)</span> events have a gap of no more than 5 time units in the time between 25 units before index and up to index</td>
+<td>continuous enrollment</td>
+</tr>
+<tr class="odd">
+<td>flush</td>
+<td>Indicate whether there is a flush after index; i.e. any set of five consecutive events after index of the same suit. If a flush occurred, keep the time that the flush occurred <em>and</em> what suit triggered the flush.</td>
+<td>time to event outcome variable</td>
+</tr>
+<tr class="even">
+<td>clubTrump</td>
+<td>Indicate if a <span class="math inline">\(\clubsuit\)</span> occurs after index. If so, keep the time that the first club occurred.</td>
+<td>censoring variable</td>
+</tr>
+<tr class="odd">
+<td>fullOfHearts</td>
+<td>The set of all <span class="math inline">\(\heartsuit\)</span> event start times that occur between index and clubTrump</td>
+<td>longitudinal data</td>
+</tr>
+</tbody>
+</table>
 <p>Now let’s express each of these features mathematically.</p>
 <div id="spade1heart" class="section level2">
 <h2><span class="header-section-number">6.1</span> 2spade1heart</h2>
@@ -242,9 +252,153 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </tr>
 </tbody>
 </table>
+<pre class="sourceCode r"><code class="sourceCode r">ANY &lt;-<span class="st"> </span><span class="cf">function</span>(x) <span class="kw">length</span>(x) <span class="op">&gt;</span><span class="st"> </span><span class="dv">0</span>
+
+compare_head_to_tail_cast &lt;-<span class="st"> </span><span class="cf">function</span>(compareFUN){
+  
+  <span class="kw">force</span>(compareFUN)
+  
+  f &lt;-<span class="st"> </span><span class="cf">function</span>(el){
+    <span class="cf">if</span>(<span class="kw">length</span>(el) <span class="op">==</span><span class="st"> </span><span class="dv">0</span>){ 
+      <span class="kw">return</span>(<span class="kw">list</span>()) 
+    }
+      
+    <span class="cf">else</span> <span class="cf">if</span>(<span class="kw">length</span>(el) <span class="op">==</span><span class="st"> </span><span class="dv">1</span>){
+      <span class="kw">return</span>(<span class="kw">list</span>(<span class="ot">FALSE</span>))
+    } 
+    
+    <span class="cf">else</span> {
+      <span class="kw">Map</span>(
+        <span class="cf">function</span>(x, h) { <span class="kw">compareFUN</span>(x, <span class="dt">h =</span> h) },
+        el[<span class="op">-</span>1L], 
+        <span class="dt">h =</span> el[1L]
+      ) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">        </span><span class="kw">Reduce</span>(<span class="st">`</span><span class="dt">|</span><span class="st">`</span>, .) -&gt;
+<span class="st">        </span>hold
+      <span class="co"># hold &lt;- any(unlist(hold))</span>
+      <span class="kw">append</span>(<span class="kw">list</span>(hold), <span class="kw">f</span>(el[<span class="op">-</span>1L]))
+    }
+  }
+  
+  f
+}
+
+compare_function_cast &lt;-<span class="st"> </span><span class="cf">function</span>(relation, bound){
+  <span class="cf">function</span>(x, h){
+    <span class="kw">relation</span>( <span class="kw">s</span>(x) <span class="op">-</span><span class="st"> </span><span class="kw">s</span>(h), bound)
+  }
+}
+
+<span class="kw">compare_function_cast</span>(<span class="st">`</span><span class="dt">&gt;=</span><span class="st">`</span>, <span class="dv">9</span>) <span class="op">%&gt;%</span>
+<span class="st"> </span><span class="kw">compare_head_to_tail_cast</span>() <span class="op">%&gt;%</span>
+<span class="st"> </span>{ W[<span class="dv">1</span><span class="op">:</span><span class="dv">5</span>][<span class="kw">unlist</span>(.(W[<span class="dv">1</span><span class="op">:</span><span class="dv">5</span>]))] }</code></pre>
+<pre><code>## [[1]]
+## {(1, 6), {♦, 10}}
+## [[2]]
+## {(3, 3), {♥, 5}}</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="co"># f &lt;- function(el){</span>
+<span class="co">#   if(length(el) == 0){</span>
+<span class="co">#     return(list())</span>
+<span class="co">#   }</span>
+<span class="co">#   else if(length(el) == 1){</span>
+<span class="co">#     return(list(FALSE))</span>
+<span class="co">#   } else {</span>
+<span class="co">#     hold &lt;- Map(</span>
+<span class="co">#       function(t, h) { (s(t) - s(h)) &gt;= 9 }, </span>
+<span class="co">#       el[-1L], </span>
+<span class="co">#       h = el[1L]</span>
+<span class="co">#     )</span>
+<span class="co">#     hold &lt;- any(unlist(hold))</span>
+<span class="co">#     append(list(hold), f(el[-1L]))</span>
+<span class="co">#   }</span>
+<span class="co"># }</span>
+
+
+
+
+
+check_gaps &lt;-<span class="st"> </span><span class="cf">function</span>(accessor, b){
+  <span class="kw">force</span>(accessor); <span class="kw">force</span>(b)
+  <span class="cf">function</span>(W){
+    <span class="cf">if</span>(<span class="kw">length</span>(W) <span class="op">%in%</span><span class="st"> </span><span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">1</span>)){
+      <span class="kw">list</span>()
+    } <span class="cf">else</span> {
+      <span class="kw">Reduce</span>(<span class="dt">f =</span> <span class="cf">function</span>(x, y) y <span class="op">-</span><span class="st"> </span>x <span class="op">&gt;</span><span class="st"> </span>b, <span class="kw">accessor</span>(W), <span class="dt">accumulate =</span> <span class="ot">TRUE</span>)
+    }
+  }
+}
+
+<span class="co"># t2spade1heart &lt;- function(W){</span>
+<span class="co">#   a_cast(c(&quot;interval&quot;, &quot;a&quot;)) %&gt;%</span>
+<span class="co">#    p_cast(`&lt;`, index(W)) %&gt;%</span>
+<span class="co">#     l_cast() %&gt;%</span>
+<span class="co">#     {</span>
+<span class="co">#      {.(Lsuit_cast(&quot;spade&quot;)(W))} %&gt;%</span>
+<span class="co">#         { check_gaps(A_s, 3)(.) } %&gt;%</span>
+<span class="co">#         ANY()  ||</span>
+<span class="co">#      {.(Lsuit_cast(&quot;club&quot;)(W))} %&gt;%</span>
+<span class="co">#         ANY()</span>
+<span class="co">#     }</span>
+<span class="co"># }</span>
+
+t2spade1heart &lt;-<span class="st"> </span><span class="cf">function</span>(W){
+  <span class="kw">a_cast</span>(<span class="kw">c</span>(<span class="st">&quot;interval&quot;</span>, <span class="st">&quot;a&quot;</span>)) <span class="op">%&gt;%</span>
+<span class="st">   </span><span class="kw">p_cast</span>(<span class="st">`</span><span class="dt">&lt;</span><span class="st">`</span>, <span class="kw">index</span>(W)) <span class="op">%&gt;%</span>
+<span class="st">    </span><span class="kw">l_cast</span>() <span class="op">%&gt;%</span>
+<span class="st">    </span>{
+     {.(<span class="kw">Lsuit_cast</span>(<span class="st">&quot;spade&quot;</span>)(W))} <span class="op">%&gt;%</span>
+<span class="st">     </span>{
+       w &lt;-<span class="st"> </span>.
+       <span class="kw">compare_function_cast</span>(<span class="st">`</span><span class="dt">&gt;=</span><span class="st">`</span>, <span class="dv">3</span>) <span class="op">%&gt;%</span>
+<span class="st">        </span><span class="kw">compare_head_to_tail_cast</span>() <span class="op">%&gt;%</span>
+<span class="st">         </span>{ w[<span class="kw">unlist</span>(.(w))] } 
+     } <span class="op">%&gt;%</span>
+<span class="st">        </span><span class="kw">ANY</span>()  <span class="op">||</span>
+<span class="st">     </span>{.(<span class="kw">Lsuit_cast</span>(<span class="st">&quot;club&quot;</span>)(W))} <span class="op">%&gt;%</span>
+<span class="st">        </span><span class="kw">ANY</span>()
+    }
+}
+
+<span class="co"># No clubs before index</span>
+W1 &lt;-<span class="st"> </span>W[<span class="op">-</span><span class="dv">7</span>]
+W3 &lt;-<span class="st"> </span>W2 &lt;-<span class="st"> </span>W1
+W2[[<span class="dv">6</span>]] &lt;-<span class="st"> </span><span class="kw">event</span>(<span class="dt">interval =</span> <span class="kw">interval</span>(<span class="dt">a =</span> 17L, <span class="dt">b =</span> 17L), 
+               <span class="dt">context =</span> <span class="kw">context</span>(<span class="dt">suit =</span> <span class="kw">suit</span>(<span class="st">&quot;spade&quot;</span>), <span class="dt">value =</span> <span class="st">&quot;2&quot;</span>))
+W3[[<span class="dv">5</span>]] &lt;-<span class="st"> </span><span class="kw">event</span>(<span class="dt">interval =</span> <span class="kw">interval</span>(<span class="dt">a =</span> 8L, <span class="dt">b =</span> 8L), 
+               <span class="dt">context =</span> <span class="kw">context</span>(<span class="dt">suit =</span> <span class="kw">suit</span>(<span class="st">&quot;spade&quot;</span>), <span class="dt">value =</span> <span class="st">&quot;2&quot;</span>))
+
+<span class="kw">t2spade1heart</span>(W)</code></pre>
+<pre><code>## [1] TRUE</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">t2spade1heart</span>(W1)</code></pre>
+<pre><code>## [1] FALSE</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">t2spade1heart</span>(W2)</code></pre>
+<pre><code>## [1] TRUE</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">t2spade1heart</span>(W3)</code></pre>
+<pre><code>## [1] FALSE</code></pre>
+<p>This code will certainly be cleaned up, a key point is that the function is composed of a pattern: <code>filter W -&gt; apply function</code>:</p>
+<pre><code>                 or
+           /           \
+        clubs         spades
+           |            |
+      between (index - 25, index)   
+           |            | 
+          id         has gaps &gt; 3  
+           |            |
+          any          any
+  </code></pre>
+<p>The key this project is identifying and exploiting such patterns.</p>
+<p>Towards a configuration:</p>
+<pre><code>filters:
+   A: starts of clubs before index
+   B: starts of spades with a pairwise distance of starts &gt; 3 before index 
+features:
+   id: any A or any B</code></pre>
 </div>
 <div id="foreverdiamonds" class="section level2">
 <h2><span class="header-section-number">6.2</span> foreverDiamonds</h2>
+<pre><code>any periods of diamonds
+
+</code></pre>
 <p><span class="math display">\[
 \begin{aligned}
 \mathsf{L}^{\diamondsuit}(W) &amp;= \{ w | w \in \mathsf{L}(W&#39;, \mathsf{P}^c(A_t, = \diamondsuit)  \} \\
@@ -411,17 +565,20 @@ foreverDiamonds &lt;-<span class="st"> </span><span class="cf">function</span>(W
 <span class="kw">foreverDiamonds</span>(W)</code></pre>
 <p>Note that another pattern emerged! <code>Lw</code> is exactly the same pattern as the first part of <code>index</code>!</p>
 </div>
-<div id="fullhouse" class="section level2">
-<h2><span class="header-section-number">6.3</span> fullHouse</h2>
+<div id="flush" class="section level2">
+<h2><span class="header-section-number">6.3</span> flush</h2>
 <ul>
-<li><span class="math inline">\(\text{fullHouse}(W, \text{index})\)</span></li>
+<li><span class="math inline">\(\text{flush}(W, \text{index})\)</span></li>
 </ul>
 </div>
-<div id="postclubs" class="section level2">
-<h2><span class="header-section-number">6.4</span> postClubs</h2>
+<div id="clubtrump" class="section level2">
+<h2><span class="header-section-number">6.4</span> clubTrump</h2>
 <ul>
-<li><span class="math inline">\(\text{postClubs}(W, \text{index})\)</span></li>
+<li><span class="math inline">\(\text{clubTrump}(W, \text{index})\)</span></li>
 </ul>
+</div>
+<div id="fullofhearts" class="section level2">
+<h2><span class="header-section-number">6.5</span> fullOfHearts</h2>
 
 </div>
 </div>

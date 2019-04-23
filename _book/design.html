@@ -158,8 +158,9 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li class="chapter" data-level="6" data-path="toy-example.html"><a href="toy-example.html"><i class="fa fa-check"></i><b>6</b> Toy Example</a><ul>
 <li class="chapter" data-level="6.1" data-path="toy-example.html"><a href="toy-example.html#spade1heart"><i class="fa fa-check"></i><b>6.1</b> 2spade1heart</a></li>
 <li class="chapter" data-level="6.2" data-path="toy-example.html"><a href="toy-example.html#foreverdiamonds"><i class="fa fa-check"></i><b>6.2</b> foreverDiamonds</a></li>
-<li class="chapter" data-level="6.3" data-path="toy-example.html"><a href="toy-example.html#fullhouse"><i class="fa fa-check"></i><b>6.3</b> fullHouse</a></li>
-<li class="chapter" data-level="6.4" data-path="toy-example.html"><a href="toy-example.html#postclubs"><i class="fa fa-check"></i><b>6.4</b> postClubs</a></li>
+<li class="chapter" data-level="6.3" data-path="toy-example.html"><a href="toy-example.html#flush"><i class="fa fa-check"></i><b>6.3</b> flush</a></li>
+<li class="chapter" data-level="6.4" data-path="toy-example.html"><a href="toy-example.html#clubtrump"><i class="fa fa-check"></i><b>6.4</b> clubTrump</a></li>
+<li class="chapter" data-level="6.5" data-path="toy-example.html"><a href="toy-example.html#fullofhearts"><i class="fa fa-check"></i><b>6.5</b> fullOfHearts</a></li>
 </ul></li>
 <li class="chapter" data-level="7" data-path="specifications.html"><a href="specifications.html"><i class="fa fa-check"></i><b>7</b> Specifications</a></li>
 <li class="chapter" data-level="8" data-path="working-example.html"><a href="working-example.html"><i class="fa fa-check"></i><b>8</b> Working example</a></li>
@@ -212,21 +213,21 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li>now going to describe from inside out</li>
 <li>outline core data types</li>
 </ul>
-<p>A cohort builder is a function mapping a population and a specification to a cohort:</p>
+<p>A cohort builder <span class="math inline">\(\zeta\)</span> is a function mapping a population to a cohort:</p>
 <p><span class="math display">\[
-\Upsilon: (P, S) \mapsto C 
+\zeta: P \mapsto C 
 \]</span>
-An analysis plan is a function <span class="math inline">\(\Lambda\)</span> that maps a specification <span class="math inline">\(S\)</span> to a cohort builder.</p>
+A cohort planner is a function <span class="math inline">\(\Lambda\)</span> that maps a specification <span class="math inline">\(S\)</span> to a cohort builder.</p>
 <p><span class="math display">\[
-\Lambda: S \mapsto ( C: P  \mapsto C )
+\Lambda: S \mapsto ( \zeta : P  \mapsto C )
 \]</span></p>
 <p>The next 4 chapters describe the design of</p>
 <ul>
 <li><span class="math inline">\(P\)</span> and data types it is composed of</li>
-<li><span class="math inline">\(C&#39;\)</span> and the function types it is composed of</li>
+<li><span class="math inline">\(\zeta\)</span> and the function types it is composed of</li>
 <li><span class="math inline">\(C\)</span> and the data types it is composed of</li>
 </ul>
-<p>Before demostrating a complete working example starting from <span class="math inline">\(S\)</span> and <span class="math inline">\(\Lambda\)</span>, we first explain how <span class="math inline">\(C&#39;\)</span> works with toy example building a cohort “by hand” using the types</p>
+<p>Before demostrating a complete working example starting from <span class="math inline">\(S\)</span> and <span class="math inline">\(\Lambda\)</span>, we first explain how <span class="math inline">\(\zeta\)</span> works with toy example building a cohort “by hand” using the types</p>
 <ul>
 <li><span class="math inline">\(S\)</span> and how a specification defines all of the above</li>
 </ul>

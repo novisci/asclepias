@@ -1,33 +1,22 @@
 
 # Toy Example
 
-That's define a cohort where:
-
-* the index function returns the "start of the first $\heartsuit$ after the start of the first $\spadesuit$" (i.e $\text{index}(W) = \mathsf{F}^{\star}(W)$).
+This example uses data for the single subject defined above to define a $n = 1$ feature set. The subject's index event is defined as the start of the first $\heartsuit$ after the start of the first $\spadesuit$ (i.e $\text{index}(W) = \mathsf{F}^{\star}(W)$).
 
 ```{r}
 index <- fstar
 ```
 
-Based on the index feature, we want to extract the following features about $W$:
 
-* 2spade1heart:
-  * TRUE/FALSE: Anytime before index, does $W$ contain 2 $\spadesuit$ separated by at least 3 time units or 1 $\clubsuit$?
-  * NOTE: this is analogous to a "2-out/1-in" algorithm
-* foreverDiamonds:
-  * TRUE/FALSE: Do the $\diamondsuit$ events have a gap of no more than 10 time units before index, starting from 25 units before index?
-  * NOTE: This is analogous to a continuous enrollment algorithm
-* flush: 
-  * TRUE/FALSE: Is there a flush after index? I.e. any set of five consecutive events after index of the same suit.
-  * Int: What is the time that the flush occurred?
-  * Suit: What suit triggered the flush?
-  * NOTE: the flush feature contains three data points: an indicator whether some event occurred, the time it occurred, and the type that triggered it.
-* clubTrump:
-  * TRUE/FALSE: Did a $\clubsuit$ occur after index?
-  * Int: What is the time that the club occurred after index?
-* fullOfHearts:
-  * $\{Int\}$: the set of all times that $\heartsuit$ that occur before a clubTrump
-  * NOTE: the feature in this case is a set of times (not just a single time)
+Define the following features:
+
+|   Feature       |   Definition       |   Analogy   |
+|-----------------|--------------------|-------------|
+| 2spade1heart    | Indicate whether, before index, there are 2 $\spadesuit$ event whose starts are separated by at least 3 time units *or* 1 $\clubsuit$ | "2-out/1-in" |
+| foreverDiamonds | Indicate whether, after joining all overlapping or adjoined events, the $\diamondsuit$ events have a gap of no more than 5 time units in the time between 25 units before index and up to index | continuous enrollment | 
+| flush | Indicate whether there is a flush after index; i.e. any set of five consecutive events after index of the same suit. If a flush occurred, keep the time that the flush occurred *and* what suit triggered the flush. | time to event outcome variable| 
+| clubTrump    | Indicate if a $\clubsuit$ occurs after index. If so, keep the time that the first club occurred. | censoring variable |
+| fullOfHearts | The set of all $\heartsuit$ event start times that occur between index and clubTrump | longitudinal data | 
 
 Now let's express each of these features mathematically.
 
@@ -41,10 +30,114 @@ Let's define a few more functions that operate on $w$ and $\Xi$.
 | $any(W) = \begin{cases} W \neq \emptyset & TRUE \\ else & FALSE \end{cases}$  | $any : \mathcal{W} \mapsto \mathbb{B}$ | Is $W$ empty? | 
 
 
+```{r}
+ANY <- function(x) length(x) > 0
 
+compare_head_to_tail_cast <- function(compareFUN){
+  
+  force(compareFUN)
+  
+  f <- function(el){
+    if(length(el) == 0){ 
+      return(list()) 
+    }
+      
+    else if(length(el) == 1){
+      return(list(FALSE))
+    } 
+    
+    else {
+      Map(
+        function(x, h) { compareFUN(x, h = h) },
+        el[-1L], 
+        h = el[1L]
+      ) %>% 
+        Reduce(`|`, .) ->
+        hold
+      # hold <- any(unlist(hold))
+      append(list(hold), f(el[-1L]))
+    }
+  }
+  
+  f
+}
+
+compare_function_cast <- function(relation, bound){
+  function(x, h){
+    relation( s(x) - s(h), bound)
+  }
+}
+
+
+
+
+t2spade1heart <- function(W){
+  a_cast(c("interval", "a")) %>%
+   p_cast(`<`, index(W)) %>%
+    l_cast() %>%
+    {
+     {.(Lsuit_cast("spade")(W))} %>%
+     {
+       w <- .
+       compare_function_cast(`>=`, 3) %>%
+        compare_head_to_tail_cast() %>%
+         { w[unlist(.(w))] } 
+     } %>%
+        ANY()  ||
+     {.(Lsuit_cast("club")(W))} %>%
+        ANY()
+    }
+}
+
+# No clubs before index
+W1 <- W[-7]
+W3 <- W2 <- W1
+W2[[6]] <- event(interval = interval(a = 17L, b = 17L), 
+               context = context(suit = suit("spade"), value = "2"))
+W3[[5]] <- event(interval = interval(a = 8L, b = 8L), 
+               context = context(suit = suit("spade"), value = "2"))
+
+t2spade1heart(W)
+t2spade1heart(W1)
+t2spade1heart(W2)
+t2spade1heart(W3)
+
+```
+
+This code will certainly be cleaned up, a key point is that the function is composed of a pattern: `filter W -> apply function`:
+
+```
+                 or
+           /           \
+        clubs         spades
+           |            |
+      between (index - 25, index)   
+           |            | 
+          id         has gaps > 3  
+           |            |
+          any          any
+  
+```
+
+The key this project is identifying and exploiting such patterns.
+
+Towards a configuration:
+
+```
+filters:
+   A: starts of clubs before index
+   B: starts of spades with a pairwise distance of starts > 3 before index 
+features:
+   id: any A or any B
+```
 
 ## foreverDiamonds
 
+```
+any periods of diamonds
+
+
+```
 
 $$
 \begin{aligned}
@@ -212,11 +305,14 @@ foreverDiamonds(W)
 
 Note that another pattern emerged! `Lw` is exactly the same pattern as the first part of `index`! 
 
-## fullHouse
+## flush
 
-* $\text{fullHouse}(W, \text{index})$
+* $\text{flush}(W, \text{index})$
 
-## postClubs
+## clubTrump
 
-* $\text{postClubs}(W, \text{index})$
+* $\text{clubTrump}(W, \text{index})$
+
+## fullOfHearts
+
 

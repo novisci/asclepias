@@ -118,3 +118,6 @@ setMethod("as.character", "event", function(x){
 setMethod("show", "event", function(object) { cat(as.character(object)) })
 setGeneric("as.event", function(x) standardGeneric("as.event"))
 setMethod("as.event", "list", function(x) new("event", interval = x[[1]], context = x[[2]]))
+
+setMethod("s", "event", function(object) s(object@interval))
+setMethod("e", "event", function(object) e(object@interval))

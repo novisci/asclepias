@@ -124,9 +124,36 @@ interval_pair(a = itv, b = interval(a = 2L, b = 11L)) %>%
 
 ## Context
 
-Define a context $\square$ as an arbitrary, finite collection of objects. A context is always paired with a $\Xi$ as an event (defined below) and contains all the relevant information about the $\Xi$ such as a type and associated values.
+Define a context $\square$ as an [associative array](https://en.wikipedia.org/wiki/Associative_array).
 
-For the purposes of this demonstration, let the context be the pair the suit and value of a poker card:
+TODO: 
+
+* formalize the notion of a context constructor such that different event "domains" *can* have different contexts (i.e. different keys). For example, one could define a lab results context that has keys for LOINC code, value, and units and a diagnosis context that has keys for diagnosis code, code source (ICD-10, ICD-9, etc), and clinic location.
+
+## Contextualized Set
+
+This pattern repeats throughout the design:
+
+$$
+\{ \square, \cdot \}
+$$
+
+where $\cdot$ is some set.
+
+TODO: further describe this type.
+
+
+## Events
+
+The fundamental data structure is that of events occurring in time with information attached to the event such as a hospital stay, disease diagnosis, or lab values. We most often work on the time scale of days, so for now we'll think about the time intervals in terms of integers.
+
+Define an event $w$ as a set with an interval and a context:
+
+\[
+w := \{\Xi, \square\}
+\]
+
+For the purposes of the toy example, let their be a single context type that is the pair of the suit and value of a poker card:
 
 \[
 \square \in \{suit \in \mathcal{S} = \{\clubsuit, \heartsuit, \diamondsuit, \spadesuit \}, value \in \mathcal{V} = \{A, 2, 3, 4, 5, 6, 7 , 8, 9, 10, J, Q, K\}\}
@@ -150,28 +177,6 @@ suit(c2)
 value(c1)
 value(c2)
 ```
-
-## Contextualized Set
-
-This pattern repeats throughout the design:
-
-$$
-\{ \square, \cdot \}
-$$
-where $\cdot$ is some set.
-
-TODO: further describe this type.
-
-
-## Events
-
-The fundamental data structure in this setup is that of events occurring in time with information attached to the event such as a hospital stay, disease diagnosis, or lab values. We most often work on the time scale of days, so for now we'll think about the time intervals in terms of integers.
-
-Define an event $w$ as a set with an interval and a context:
-
-\[
-w := \{\Xi, \square\}
-\]
 
 ```{r}
 event(interval = itv, context = c1)
@@ -248,6 +253,7 @@ A subject, patient or unit is a context and an event history:
 $$
 U = \{ \square, W\}
 $$
+The context could contain information such as a patient ID and information that is constant over the course of the study as birth date and race. Note that this information could also be stored in event context(s) -- the decision is up to the study planners.
 
 ## Population
 
@@ -256,6 +262,8 @@ A population is a context and a unordered set of subjects:
 $$
 P = \{\square, \{U_1, \dots, U_m \} \}
 $$
+
+The population context may contain metadata such as when the data was generated. 
 
 TODO:
 

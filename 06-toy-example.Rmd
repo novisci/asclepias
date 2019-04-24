@@ -38,28 +38,16 @@ compare_head_to_tail_cast <- function(compareFUN){
   force(compareFUN)
   
   f <- function(el){
-    if(length(el) == 0){ 
-      return(list()) 
-    }
-      
-    else if(length(el) == 1){
-      return(list(FALSE))
-    } 
-    
-    else {
-      Map(
-        function(x, h) { compareFUN(x, h = h) },
-        el[-1L], 
-        h = el[1L]
-      ) %>% 
-        Reduce(`|`, .) ->
-        hold
-      # hold <- any(unlist(hold))
-      append(list(hold), f(el[-1L]))
-    }
+    switch(
+      EXPR = as.character(length(el)),
+      "0"  = list(),
+      "1"  = list(FALSE),
+      Map(function(x, h) { compareFUN(x, h = h) }, el[-1L], h = el[1L]) %>%
+        Reduce(`|`, .) %>% list() %>% append(f(el[-1L])))
   }
   
   f
+
 }
 
 compare_function_cast <- function(relation, bound){
@@ -67,9 +55,6 @@ compare_function_cast <- function(relation, bound){
     relation( s(x) - s(h), bound)
   }
 }
-
-
-
 
 t2spade1heart <- function(W){
   a_cast(c("interval", "a")) %>%
@@ -107,16 +92,15 @@ t2spade1heart(W3)
 This code will certainly be cleaned up, a key point is that the function is composed of a pattern: `filter W -> apply function`:
 
 ```
-                 or
-           /           \
         clubs         spades
            |            |
-      between (index - 25, index)   
+             before index   
            |            | 
           id         has gaps > 3  
            |            |
           any          any
-  
+            \          /
+                 or
 ```
 
 The key this project is identifying and exploiting such patterns.

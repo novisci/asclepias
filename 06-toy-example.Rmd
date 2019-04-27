@@ -1,6 +1,29 @@
 
 # Toy Example
 
+First some useful concepts. We can define a sequence of *distinct* (non-overlapping) intervals as a monoid, a set closed under associative binary operator that has an identity element. NOTE: I think this is *not* a commutative monoid, 
+
+$$
+\begin{align*}
+[\Xi] + [] = [\Xi] \\
+[] + [\Xi] = [\Xi] \\
+[\Xi] + [\Xi'] =
+flatten[head([\Xi]), tail([\Xi]) + head([\Xi']), tail([\Xi])])
+\end{align*}
+$$
+where I'm being loose with $tail$ and $head$ ($tail(\Xi)$ is the *last* element of $[\Xi]$ and $head(\Xi')$ is the *first* element of $[\Xi']$) and the sum of two intervals is defined as $\Xi + \Xi'$ is defined as 
+
+$$
+\Xi + \Xi' = (a, b) + (c, d) = \begin{cases}
+[(a, d)] & c \leq d 
+[(a, b), (c, d)] &  else
+\end{cases}
+$$
+
+
+
+
+
 This example uses data for the single subject defined above to define a $n = 1$ feature set. The subject's index event is defined as the start of the first $\heartsuit$ after the start of the first $\spadesuit$ (i.e $\text{index}(W) = \mathsf{F}^{\star}(W)$).
 
 ```{r}

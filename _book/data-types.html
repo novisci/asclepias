@@ -330,6 +330,23 @@ itv</code></pre>
 <span class="st">  </span><span class="kw">order</span>() <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">overlaps</span>()</code></pre>
 <pre><code>## [1] TRUE</code></pre>
+<p>TODO: (I think) A sequence of <em>distinct</em> (non-overlapping) intervals and an addition-like operator can be defined as a monoid, a set closed under associative binary operator that has an identity element. NOTE: I think this is <em>not</em> a commutative monoid.</p>
+<p><span class="math display">\[
+\begin{align*}
+[\Xi] + [] &amp;= [\Xi] \\
+[] + [\Xi] &amp;= [\Xi] \\
+[\Xi] + [\Xi&#39;] &amp;=
+[head([\Xi])](last([\Xi]) + first([\Xi&#39;])[tail([\Xi&#39;])])
+\end{align*}
+\]</span></p>
+<p>where I’m being loose with <span class="math inline">\(tail\)</span> and <span class="math inline">\(head\)</span> (<span class="math inline">\(tail([\Xi])\)</span> is the <em>last</em> element of <span class="math inline">\([\Xi]\)</span> and <span class="math inline">\(head([\Xi&#39;])\)</span> is the <em>first</em> element of <span class="math inline">\([\Xi&#39;]\)</span>) and the sum of two intervals is defined as <span class="math inline">\(\Xi + \Xi&#39;\)</span> is defined as</p>
+<p><span class="math display">\[
+\Xi + \Xi&#39; = (a, b) + (c, d) = \begin{cases}
+[(a, d)] &amp; c \leq d \\
+[(a, b), (c, d)] &amp;  else
+\end{cases}
+\]</span>
+Note that <span class="math inline">\((\Xi, +)\)</span> is <em>not</em> a monoid, but <span class="math inline">\(([\Xi], +)\)</span> is.</p>
 </div>
 <div id="context" class="section level2">
 <h2><span class="header-section-number">3.2</span> Context</h2>

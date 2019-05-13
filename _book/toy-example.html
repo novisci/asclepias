@@ -183,22 +183,6 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
             <section class="normal" id="section-">
 <div id="toy-example" class="section level1">
 <h1><span class="header-section-number">Chapter 6</span> Toy Example</h1>
-<p>First some useful concepts. We can define a sequence of <em>distinct</em> (non-overlapping) intervals as a monoid, a set closed under associative binary operator that has an identity element. NOTE: I think this is <em>not</em> a commutative monoid,</p>
-<p><span class="math display">\[
-\begin{align*}
-[\Xi] + [] = [\Xi] \\
-[] + [\Xi] = [\Xi] \\
-[\Xi] + [\Xi&#39;] =
-flatten[head([\Xi]), tail([\Xi]) + head([\Xi&#39;]), tail([\Xi])])
-\end{align*}
-\]</span>
-where I’m being loose with <span class="math inline">\(tail\)</span> and <span class="math inline">\(head\)</span> (<span class="math inline">\(tail(\Xi)\)</span> is the <em>last</em> element of <span class="math inline">\([\Xi]\)</span> and <span class="math inline">\(head(\Xi&#39;)\)</span> is the <em>first</em> element of <span class="math inline">\([\Xi&#39;]\)</span>) and the sum of two intervals is defined as <span class="math inline">\(\Xi + \Xi&#39;\)</span> is defined as</p>
-<p><span class="math display">\[
-\Xi + \Xi&#39; = (a, b) + (c, d) = \begin{cases}
-[(a, d)] &amp; c \leq d 
-[(a, b), (c, d)] &amp;  else
-\end{cases}
-\]</span></p>
 <p>This example uses data for the single subject defined above to define a <span class="math inline">\(n = 1\)</span> feature set. The subject’s index event is defined as the start of the first <span class="math inline">\(\heartsuit\)</span> after the start of the first <span class="math inline">\(\spadesuit\)</span> (i.e <span class="math inline">\(\text{index}(W) = \mathsf{F}^{\star}(W)\)</span>).</p>
 <pre class="sourceCode r"><code class="sourceCode r">index &lt;-<span class="st"> </span>fstar</code></pre>
 <p>Define the following features:</p>

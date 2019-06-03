@@ -1,17 +1,22 @@
 module Hasklepias.IntervalAlgebra(
   Period,
+  PredicateOf,
   period,
   point,
   isPoint,
   toPeriod,
-  startPoint,
-  endPoint,
-  endPoints,
   start,
   end,
+  startPoint,
+  startPoints,
+  endPoint,
+  endPoints,
+  startEndPoint,
   expandl,
+  expandlPeriods,
   expandr,
-  durations,
+  expandrPeriods,
+  extentPeriod,
   collapsePeriods,
   periodGaps,
   meets,
@@ -27,52 +32,66 @@ module Hasklepias.IntervalAlgebra(
   during,
   contains,
   disjoint,
-  duration
+  duration,
+  durations
 ) where
 
-type Comparator a = (a -> a -> Bool)
+{-
+_TODO list_
+* look at Data.Sequence (or other options) for listlike [Period] type 
+   * Consider performance implications for various types:
+     https://github.com/haskell-perf/sequences
+   * e.g. Seq are very fast for appending but slower for filter operations
+* make Period type use newtype rather than data (see Toying.hs)
+  
+-}
 
+
+type PredicateOf a = (a -> a -> Bool) 
+
+-- |The Periodic class specifies the functions and operators for interval
+-- algebra.
 class Periodic a where
-    meets, metBy             :: Comparator a
-    before, after            :: Comparator a
-    overlaps, overlappedBy   :: Comparator a
-    moverlaps, moverlappedBy :: Comparator a
-    starts, startedBy        :: Comparator a
-    ends, endedBy            :: Comparator a
-    during, contains         :: Comparator a
-    disjoint                 :: Comparator a
+    -- | Does x meet y? Does y meet x?
+    meets, metBy             :: PredicateOf a
+    before, after            :: PredicateOf a
+    overlaps, overlappedBy   :: PredicateOf a
+    mverlaps, mverlappedBy   :: PredicateOf a
+    starts, startedBy        :: PredicateOf a
+    ends, endedBy            :: PredicateOf a
+    during, contains         :: PredicateOf a
+    disjoint                 :: PredicateOf a
     duration                 :: a -> Int
 
+    -- default function definitions
     metBy         = flip meets
     after         = flip before
     overlappedBy  = flip overlaps
-    moverlappedBy = flip moverlaps
+    mverlappedBy  = flip mverlaps
     startedBy     = flip starts
     endedBy       = flip ends
     contains      = flip during
     disjoint x y  = (before x y) || (after x y)
 
+
+-- |For now, a Period is defined in terms of Int
+-- TODO: Generalize the notion of a Period to derive from arbitrary Ord types
+-- see Toying.hs
 data Period = 
     Point    { start :: Int, end :: Int}
   | Moment   { start :: Int, end :: Int}
   | Interval { start :: Int, end :: Int}
   deriving (Eq, Read)
 
-type BoxPeriod = [Period]
-
-{- 
-These functions assume x <= y
-TODO: formalize this notion
- -}
-
 instance Periodic Period where
+  {- These functions assume x <= y. TODO: formalize this notion -}
   meets    x y  = (start y) == (end x)  
   before   x y  = (end x)   < (start y) 
   starts   x y  = (start x) == (start y)
   ends     x y  = (end x)   == (end y)
   during   x y  = (overlaps x y) && (end x) <= (end y)
   overlaps x y  = (start y) < (end x)
-  moverlaps x y = meets x y || overlaps x y
+  mverlaps x y  = meets x y || overlaps x y
   duration x    = (end x) - (start x)
 
 instance Ord Period where
@@ -103,53 +122,63 @@ isPoint x = (duration x) == 0
 
 expandl :: Int -> Period -> Period
 expandl i p = period (start p - i) (end p)
+-- TODO: handle cased that i is negative
 
 expandr :: Int -> Period -> Period
 expandr i p = period (start p) (end p + i)
+-- TODO: handle cased that i is negative
 
 startPoint :: Period -> Period
 startPoint x = point (start x)
 
+startPoints :: [Period] -> [Period]
+startPoints x = map startPoint x
+
 endPoint :: Period -> Period
 endPoint x = point (end x)
 
-endPoints :: Period -> BoxPeriod
-endPoints x
+endPoints :: [Period] -> [Period]
+endPoints x = map endPoint x
+
+extentPeriod :: Period -> Period -> Period
+extentPeriod p1 p2 = period a b 
+    where a = min (start p1) (start p2)
+          b = max (end p1) (end p2) 
+
+startEndPoint :: Period -> [Period]
+startEndPoint x
     | isPoint x = [x]
     | otherwise = [startPoint x, endPoint x]
 
-durations :: BoxPeriod -> [Int]
+durations :: [Period] -> [Int]
 durations x = map duration x
 
-
-unBox (x:_) = x 
-
-(<<>>) :: BoxPeriod -> BoxPeriod -> BoxPeriod
+(<<>>) :: [Period] -> [Period] -> [Period]
 (<<>>) xl yl
    | null xl   = yl
    | null yl   = xl
    | otherwise = init xl ++ [period (start x) (end y)] ++ tailList yl
-   where x = unBox ( lastList xl )
-         y = unBox ( headList yl )
+   where x = last xl
+         y = head yl
 
-(<++>) :: BoxPeriod -> BoxPeriod -> BoxPeriod
+(<++>) :: [Period] -> [Period] -> [Period]
 (<++>) xl yl
    | null xl         = yl
    | null yl         = xl
-   | x `moverlaps` y = xl <<>> yl
+   | x `mverlaps` y  = xl <<>> yl
    | x `before` y    = xl ++ yl
-   where x = unBox ( lastList xl )
-         y = unBox ( headList yl )
+   where x = last xl
+         y = head yl
 
 
-(<-->) :: BoxPeriod -> BoxPeriod -> BoxPeriod
+(<-->) :: [Period] -> [Period] -> [Period]
 (<-->) xl yl
-   | null xl         = endPoints y
-   | null yl         = endPoints x
-   | x `moverlaps` y = init xl ++ init (endPoints x) ++ tail (endPoints y) ++ tailList yl
-   | x `before`    y = init xl ++ (endPoints x) <<>> (endPoints y) ++ tailList yl
-   where x = unBox ( lastList xl )
-         y = unBox ( headList yl )
+   | null xl         = startEndPoint y
+   | null yl         = startEndPoint x
+   | x `mverlaps` y  = init xl ++ init (startEndPoint x) ++ tail (startEndPoint y) ++ tailList yl
+   | x `before`    y = init xl ++ (startEndPoint x) <<>> (startEndPoint y) ++ tailList yl
+   where x = last xl
+         y = head yl
 
 
 {-
@@ -165,21 +194,24 @@ s3 = map toPeriod [(1, 3), (1, 7), (13, 13), (13, 16), (20, 20)]
 --^^ incorrect
 -}
 
-collapsePeriods :: BoxPeriod -> BoxPeriod
+expandrPeriods  :: Int -> [Period] -> [Period]
+expandrPeriods i ps = map (\x -> expandr i x) ps
+
+expandlPeriods  :: Int -> [Period] -> [Period]
+expandlPeriods i ps = map (\x -> expandl i x) ps
+
+collapsePeriods :: [Period] -> [Period]
 collapsePeriods x = foldr (<++>) [] (map (\z -> [z]) x)
 
-periodGaps :: BoxPeriod -> BoxPeriod
+periodGaps :: [Period] -> [Period]
 periodGaps x = foldr (<-->) [] (map (\z -> [z]) x)
-
-headList :: [a] -> [a]
-headList (x:_) = [x]
-headList []     = []
 
 tailList :: [a] -> [a]
 tailList (_:xs)   = xs
 tailList []       = []
 
-lastList :: [a] -> [a]
-lastList [x]    = [x]
-lastList (_:xs) = lastList xs
-lastList []     = []
+-- Differences between all periods
+-- [ duration (extentPeriod x y) | x <- [startPoint (head s3)], y <- startPoints (tail s3)]
+
+
+

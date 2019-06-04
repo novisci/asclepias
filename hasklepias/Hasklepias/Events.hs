@@ -14,10 +14,12 @@ import qualified Data.IntMap.Strict as IntContext
 --import Hasklepias.Context
 import Hasklepias.IntervalAlgebra
 
-newtype Pair a b = Pair   { getPair :: (a, b) } deriving (Show)
+newtype Pair a b = Pair { getPair :: (a, b) } deriving (Show)
 
-newtype Event = Event ( Pair { getPeriod :: Period } {getContext :: Context} )
+type MapSS = Map String String
+
+newtype Event = Event ( Pair Period MapSS )
   deriving (Show)
 
-event :: Period -> Map -> Event
-event i c = Event (Pair i c)
+event :: Period -> MapSS -> Event
+event i c = Event (Pair (i, c))

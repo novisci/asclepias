@@ -1,7 +1,7 @@
 module DummyData (
    z0, z1, z2, z4, zs,
    s1, s2, s3,
-   index, enrolled
+   index, enrolled, twoout, features, baselineFilter
 ) where 
 
 import Hasklepias.IntervalAlgebra
@@ -23,21 +23,40 @@ s3 = map toPeriod [(1, 3), (1, 7), (13, 13), (13, 16), (20, 20)]
 {-
  Define index as the end of the second period after 10
 -}
-index = makeFeature (intervalToEndPoint . second . (filter (\x -> (end x) > 10)))
+index :: [Period] -> Period
+index  = endPoint . head . second . (filter (\x -> (end x) > 10))
+
+{-
+ Define interval filters
+-}
+
+baselineFilter :: Period -> ([Period] -> [Period])
+baselineFilter x = filterOverlappedBy (expandl 15 x)
 
 {-
 Define enrolled as the indicator of whether all of the gaps between the union of 
 all periods (+ allowableGap) that are overlapped by the lookbackPeriod are less
 than maxGap
 -}
-
-enrolled lookbackPeriod allowableGap = 
-    all (< allowableGap) . 
-    durations . 
-    periodGaps . 
-    filterOverlappedBy lookbackPeriod . 
-    collapsePeriods
+enrolled allowableGap indexPoint =
+   all (< allowableGap) . 
+   durations . 
+   periodGaps . 
+   baselineFilter indexPoint . 
+   collapsePeriods
 
 {- 
-Define analogous of 2-out 1-in
+Define analogous of 2-out (any two startPoints separated by more than allowableGap)
 -}
+
+twoout allowableGap indexPoint  = 
+   any (== True) .
+   map (\x -> maximum x > allowableGap) . 
+   comparePeriodPairsList (\x -> duration.extentPeriod x) . 
+  -- get the duration of each pair of periods
+  pairPeriods id id . 
+  -- form pairs of startpoints
+  baselineFilter indexPoint .
+  startPoints
+
+features = (index, enrolled 10, twoout 5)

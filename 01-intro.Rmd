@@ -1,6 +1,8 @@
 
 # Introductions
 
+> "A case could be made to the effect that the typical history of a concept, whether it be 'chemical element', 'atom', 'the unconscious' or whatever, involves the initial emergence of the concept as a vague idea, followed by its gradual clarification as the theory in which it plays a part takes a more precise and coherent form" --A.F. Chalmers *What is This Thing Called Science*
+
 Cohorts are a fundamental to many epidemiologic studies. However, converting source data such as insurance claims, electronic medical records, and case report forms into analysis-ready cohorts consumes an inordinate amount of resources in a research pipeline. The process may involve computationally-intensive transformations of source data into a common data model, preparing an analysis plan by researchers, and programmers who translate the analysis plan and wrangle data into analysis-ready files. 
 
 ```

@@ -21,7 +21,7 @@
 --type Periodz  = Period' Int
 
 data Periodz a = Periodz ( Either () (a, a) ) 
-type    PeriodInt = Periodz Int
+type PeriodInt = Periodz Int
 {-
 type Point    = Periodz
 type Moment   = Periodz

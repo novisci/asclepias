@@ -103,7 +103,7 @@ data Period =
 instance Periodic Period where
   {- These functions assume x <= y. TODO: formalize this notion -}
   meets    x y  = (start y) == (end x)  
-  before   x y  = (end x)   < (start y) 
+  before   x y  = (end x)   <  (start y) 
   starts   x y  = (start x) == (start y)
   ends     x y  = (end x)   == (end y)
   during   x y  = (overlaps x y) && (end x) <= (end y)
@@ -123,17 +123,17 @@ instance Show Period where
 type PeriodPairs = [(Period, Period)]
 type PeriodComparator a = (Period -> Period -> a)
 
-{-----
+{-
  Functions for basic manipulations of a single period or element-wise in a 
  list of Periods
------}
+-}
 
 -- |Constructor for Period data from Int
 period :: Int -> Int -> Period
-period a b 
+period a b
   | b < a        = error "b < a" -- TODO: handle this in a more Haskelly way
-  | a == b       = Point a b
-  | b == (a + 1) = Moment a b
+  | b == a       = Point a a
+  | b == (a + 1) = Moment a (a + 1)
   | otherwise    = Interval a b
 
 -- |Creates point from a single Int
@@ -147,7 +147,7 @@ toPeriod x = uncurry period x
 -- | Expands a period to left by l and to the right by r
 -- TODO: handle cases that l or r are negative
 expand :: Int -> Int -> Period -> Period
-expand l r p = period (start p - l) (end p + r)
+expand l r p = period ((start p) - l) ((end p) + r)
 
 -- | Expands a period to left by i
 expandl :: Int -> Period -> Period
@@ -188,10 +188,9 @@ startEndPoint x
     | isPoint x = [x]
     | otherwise = [startPoint x, endPoint x]
 
-
-{-----
+{-
  Functions for comparing and combining multiple Periods
------}
+-}
 
 -- | From a pair of periods form a new period from the min of the start points
 --   to the max of the end points.
@@ -268,10 +267,10 @@ pairPeriods headf tailf (x:xs)
   | otherwise = [[ (s, e) | s <- [headf x], e <- tailf xs]] ++ 
                  pairPeriods headf tailf xs
 
-{-----
+{-
   Functions for deriving new information from a Period, pairs for Periods, or
   lists of Periods
------}
+-}
 
 -- | 
 comparePeriodPairs :: PeriodComparator a -> PeriodPairs -> [a]
@@ -294,9 +293,9 @@ isPoint x = (duration x) == 0
 durations :: [Period] -> [Int]
 durations x = map duration x
 
-{-----
+{-
  Utility functions
-------}
+-}
 
 -- | Returns an empty list in the case of an empty list.
 tailList :: [a] -> [a]

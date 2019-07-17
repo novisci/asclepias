@@ -26,8 +26,8 @@ module Hasklepias.IntervalAlgebra(
   after,
   overlaps,
   overlappedBy,
-  begins,
-  beginedBy,
+  starts,
+  startedBy,
   ends,
   endedBy,
   during,
@@ -67,7 +67,7 @@ class Periodic a where
     mverlaps, mverlappedBy   :: PredicateOf a
     
     -- | Does x begin y? Is x begined by y?
-    begins, beginedBy        :: PredicateOf a
+    starts, startedBy        :: PredicateOf a
     
     -- | Does x end y? Is x ended by y?
     ends, endedBy            :: PredicateOf a
@@ -86,7 +86,7 @@ class Periodic a where
     after         = flip before
     overlappedBy  = flip overlaps
     mverlappedBy  = flip mverlaps
-    beginedBy     = flip begins
+    startedBy     = flip starts
     endedBy       = flip ends
     contains      = flip during
     disjoint x y  = (before x y) || (after x y)
@@ -102,12 +102,11 @@ data Period =
 
 instance Periodic Period where
   {- These functions assume x <= y. TODO: formalize this notion -}
-  meets    x y  = if (duration(x) == 0 && duration(y) == 0)
-    then False else (begin y) == (end x) 
+  meets    x y  = if x == y then False else (begin y) == (end x) 
     -- if statement handles case that points can't meet
     -- TODO: handle this more elegantly in the IA type system
   before   x y  = (end x)   <  (begin y) 
-  begins   x y  = (begin x) == (begin y)
+  starts   x y  = (begin x) == (begin y)
   ends     x y  = (end x)   == (end y)
   during   x y  = (overlaps x y) && (end x) <= (end y)
   overlaps x y  = not ( before x y || after x y)
@@ -115,8 +114,8 @@ instance Periodic Period where
   duration x    = (end x) - (begin x)
 
 instance Ord Period where
-  (<=) x y = (begin x <= begin y) || (begins x y && (end x <= end y))
-  (<)  x y = (begin x < begin y)  || (begins x y && (end x < end y))
+  (<=) x y = (begin x <= begin y) || (starts x y && (end x <= end y))
+  (<)  x y = (begin x < begin y)  || (starts x y && (end x < end y))
   (>=) x y = not (x < y)
   (>)  x y = not (x <= y)
 

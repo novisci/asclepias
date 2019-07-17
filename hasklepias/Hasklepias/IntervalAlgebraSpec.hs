@@ -161,19 +161,10 @@ main = hspec $ do
       {-
       -}
 
-  describe "Interval Algebra operators" $
+  describe "Interval Algebra relationships" $
    do
       it "IAbefore" $ property prop_IAbefore
 
-  {-
-  describe "before" $ do
-    it "return True for a period before another" $
-      IA.before (period 0 1) (period 2 3) `shouldBe` True
-    it "return False for a period after another" $
-      IA.before (period 2 3) (period 0 1) `shouldBe` False
-    it "return False for a period another" $
-      IA.before (period 0 1) (period 1 2) `shouldBe` False
-  -}
 
   describe "after" $ do
     it "return False for a period before another" $

@@ -44,7 +44,7 @@ m1set x a b c = M1set i j k l
   where i = x
         j = expandr (abs a) $ point $ end x 
         k = expandr (abs b) $ point $ end x 
-        l = expandl (abs c) $ point $ start j 
+        l = expandl (abs c) $ point $ begin j 
 
 prop_IAaxiomM1 :: M1set -> Property
 prop_IAaxiomM1 x = 
@@ -79,12 +79,11 @@ prop_IAaxiomM2 x =
     (ii x `meets` ll x) `xor`  
     (not $ null m)      `xor`
     (not $ null n)
-    where m = safePeriod' (end $ ii x) (start $ ll x)
-          n = safePeriod' (end $ kk x) (start $ jj x)
+    where m = safePeriod' (end $ ii x) (begin $ ll x)
+          n = safePeriod' (end $ kk x) (begin $ jj x)
 
 prop_IAaxiomML1 :: Period -> Property
-prop_IAaxiomML1 x =
- (not $ isPoint x) ==> not (x `meets` x)
+prop_IAaxiomML1 x = not (x `meets` x) === True
 
 main :: IO ()
 main = hspec $ do

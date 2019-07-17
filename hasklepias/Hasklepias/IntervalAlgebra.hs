@@ -5,13 +5,13 @@ module Hasklepias.IntervalAlgebra(
   point,
   isPoint,
   toPeriod,
-  start,
+  begin,
   end,
-  startPoint,
-  startPoints,
+  beginPoint,
+  beginPoints,
   endPoint,
   endPoints,
-  startEndPoint,
+  beginEndPoint,
   expandl,
   expandlPeriods,
   expandr,
@@ -26,8 +26,8 @@ module Hasklepias.IntervalAlgebra(
   after,
   overlaps,
   overlappedBy,
-  starts,
-  startedBy,
+  begins,
+  beginedBy,
   ends,
   endedBy,
   during,
@@ -66,8 +66,8 @@ class Periodic a where
     -- | Does x meet or overlap y? Is x met or overlapped by y?
     mverlaps, mverlappedBy   :: PredicateOf a
     
-    -- | Does x start y? Is x started by y?
-    starts, startedBy        :: PredicateOf a
+    -- | Does x begin y? Is x begined by y?
+    begins, beginedBy        :: PredicateOf a
     
     -- | Does x end y? Is x ended by y?
     ends, endedBy            :: PredicateOf a
@@ -86,7 +86,7 @@ class Periodic a where
     after         = flip before
     overlappedBy  = flip overlaps
     mverlappedBy  = flip mverlaps
-    startedBy     = flip starts
+    beginedBy     = flip begins
     endedBy       = flip ends
     contains      = flip during
     disjoint x y  = (before x y) || (after x y)
@@ -95,30 +95,33 @@ class Periodic a where
 -- TODO: Generalize the notion of a Period to derive from arbitrary Ord types
 -- see Toying.hs
 data Period = 
-    Point    { start :: Int, end :: Int}
-  | Moment   { start :: Int, end :: Int}
-  | Interval { start :: Int, end :: Int}
+    Point    { begin :: Int, end :: Int}
+  | Moment   { begin :: Int, end :: Int}
+  | Interval { begin :: Int, end :: Int}
   deriving (Eq, Read)
 
 instance Periodic Period where
   {- These functions assume x <= y. TODO: formalize this notion -}
-  meets    x y  = (start y) == (end x)  
-  before   x y  = (end x)   <  (start y) 
-  starts   x y  = (start x) == (start y)
+  meets    x y  = if (duration(x) == 0 && duration(y) == 0)
+    then False else (begin y) == (end x) 
+    -- if statement handles case that points can't meet
+    -- TODO: handle this more elegantly in the IA type system
+  before   x y  = (end x)   <  (begin y) 
+  begins   x y  = (begin x) == (begin y)
   ends     x y  = (end x)   == (end y)
   during   x y  = (overlaps x y) && (end x) <= (end y)
   overlaps x y  = not ( before x y || after x y)
   mverlaps x y  = meets x y || overlaps x y
-  duration x    = (end x) - (start x)
+  duration x    = (end x) - (begin x)
 
 instance Ord Period where
-  (<=) x y = (start x <= start y) || (starts x y && (end x <= end y))
-  (<)  x y = (start x < start y)  || (starts x y && (end x < end y))
+  (<=) x y = (begin x <= begin y) || (begins x y && (end x <= end y))
+  (<)  x y = (begin x < begin y)  || (begins x y && (end x < end y))
   (>=) x y = not (x < y)
   (>)  x y = not (x <= y)
 
 instance Show Period where
-   show x = "(" ++ show (start x) ++ ", " ++ show (end x) ++ ")"
+   show x = "(" ++ show (begin x) ++ ", " ++ show (end x) ++ ")"
 
 type PeriodPairs = [(Period, Period)]
 type PeriodComparator a = (Period -> Period -> a)
@@ -147,7 +150,7 @@ toPeriod x = uncurry period x
 -- | Expands a period to left by l and to the right by r
 -- TODO: handle cases that l or r are negative
 expand :: Int -> Int -> Period -> Period
-expand l r p = period ((start p) - l) ((end p) + r)
+expand l r p = period ((begin p) - l) ((end p) + r)
 
 -- | Expands a period to left by i
 expandl :: Int -> Period -> Period
@@ -165,13 +168,13 @@ expandr i p = expand 0 i p
 expandrPeriods  :: Int -> [Period] -> [Period]
 expandrPeriods i ps = map (expandr i) ps
 
--- | Contract a period to a Point at its start
-startPoint :: Period -> Period
-startPoint x = point (start x)
+-- | Contract a period to a Point at its begin
+beginPoint :: Period -> Period
+beginPoint x = point (begin x)
 
--- | Contract each period in the list to its start point
-startPoints :: [Period] -> [Period]
-startPoints x = map startPoint x
+-- | Contract each period in the list to its begin point
+beginPoints :: [Period] -> [Period]
+beginPoints x = map beginPoint x
 
 -- | Contract a period to a Point at its end
 endPoint :: Period -> Period
@@ -181,36 +184,36 @@ endPoint x = point (end x)
 endPoints :: [Period] -> [Period]
 endPoints x = map endPoint x
 
--- | Form a list of two points from the start and end of a period. If x is 
+-- | Form a list of two points from the begin and end of a period. If x is 
 --   already a point, returns [x].
-startEndPoint :: Period -> [Period]
-startEndPoint x
+beginEndPoint :: Period -> [Period]
+beginEndPoint x
     | isPoint x = [x]
-    | otherwise = [startPoint x, endPoint x]
+    | otherwise = [beginPoint x, endPoint x]
 
 {-
  Functions for comparing and combining multiple Periods
 -}
 
--- | From a pair of periods form a new period from the min of the start points
+-- | From a pair of periods form a new period from the min of the begin points
 --   to the max of the end points.
 extentPeriod :: Period -> Period -> Period
 extentPeriod p1 p2 = period a b 
-    where a = min (start p1) (start p2)
+    where a = min (begin p1) (begin p2)
           b = max (end p1)   (end p2)
 
 -- | Form the extentPeriod for each element in a PeriodPairs.
 extentPeriods :: PeriodPairs -> [Period]
 extentPeriods x = map (\z -> extentPeriod (fst z) (snd z)) x
 
--- | Link two lists of Periods by creating a linking period from the start of 
+-- | Link two lists of Periods by creating a linking period from the begin of 
 --   the last period in the first list and the end of the first period in the 
 --   second list
 (<<>>) :: [Period] -> [Period] -> [Period]
 (<<>>) xl yl
    | null xl   = yl
    | null yl   = xl
-   | otherwise = init xl ++ [period (start x) (end y)] ++ tailList yl
+   | otherwise = init xl ++ [period (begin x) (end y)] ++ tailList yl
    where x = last xl
          y = head yl
 
@@ -237,13 +240,13 @@ extentPeriods x = map (\z -> extentPeriod (fst z) (snd z)) x
 --   [(1, 1),(7, 13),(16, 20)]
 (<-->) :: [Period] -> [Period] -> [Period]
 (<-->) xl yl
-   | null xl         = startEndPoint y
-   | null yl         = startEndPoint x
+   | null xl         = beginEndPoint y
+   | null yl         = beginEndPoint x
    | x `mverlaps` y  = init xl ++ 
-                       init (startEndPoint x) ++ tail (startEndPoint y) ++
+                       init (beginEndPoint x) ++ tail (beginEndPoint y) ++
                        tailList yl
    | x `before` y    = init xl ++ 
-                       (startEndPoint x) <<>> (startEndPoint y) ++ 
+                       (beginEndPoint x) <<>> (beginEndPoint y) ++ 
                        tailList yl
    where x = last xl
          y = head yl

@@ -106,16 +106,26 @@ instance Periodic Period where
     -- if statement handles case that points can't meet
     -- TODO: handle this more elegantly in the IA type system
   before   x y  = (end x)   <  (begin y) 
-  starts   x y  = (begin x) == (begin y)
+  starts   x y  = if x <= y then (begin x) == (begin y) else False
   ends     x y  = (end x)   == (end y)
   during   x y  = (overlaps x y) && (end x) <= (end y)
-  overlaps x y  = not ( before x y || after x y)
+  overlaps x y  = 
+    if x <= y 
+      then end x < end y && end x > begin y 
+    else False
   mverlaps x y  = meets x y || overlaps x y
   duration x    = (end x) - (begin x)
 
 instance Ord Period where
-  (<=) x y = (begin x <= begin y) || (starts x y && (end x <= end y))
-  (<)  x y = (begin x < begin y)  || (starts x y && (end x < end y))
+  (<=) x y
+    | (begin x) <  (begin y) = True
+    | (begin x) == (begin y) = end x <= end y
+    | otherwise = False
+  (<)  x y 
+    | (begin x) <  (begin y) = True
+    | (begin x) == (begin y) = end x < end y
+    | otherwise = False
+    --  || (starts x y && (end x < end y))
   (>=) x y = not (x < y)
   (>)  x y = not (x <= y)
 
@@ -265,7 +275,7 @@ periodGaps x = foldr (<-->) [] (map (\z -> [z]) x)
 --   where n is the length of the input list. 
 pairPeriods :: (Period -> Period) -> ([Period] -> [Period]) -> [Period] -> [PeriodPairs]
 pairPeriods headf tailf (x:xs) 
-  | null xs    = []
+  | null xs   = []
   | otherwise = [[ (s, e) | s <- [headf x], e <- tailf xs]] ++ 
                  pairPeriods headf tailf xs
 

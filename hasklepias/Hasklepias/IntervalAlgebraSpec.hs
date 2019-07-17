@@ -119,6 +119,29 @@ prop_IAbefore x y =
   IA.before x y ==> (x `meets` z) && (z `meets` y)
     where z = period (end x) (begin y)
 
+prop_IAstarts:: Int -> Int -> Int -> Property
+prop_IAstarts x y z = 
+  IA.starts a b ==> 
+    -- TODO: formulate this check forall not in terms of implication
+    (d `meets` a && a `meets` c && c `meets` e) &&
+    (d `meets` b && b `meets` e)
+    where a = expandr ((abs y) + 1) $ point $ x
+          b = expandr ((abs z) + 1) $ point $ x
+          c = period (end a) (begin e)
+          d = period ((begin a) - 1) (begin a) 
+          e = period (end b) ((end b) + 1)
+
+prop_IAoverlaps:: Period -> Period -> Property
+prop_IAoverlaps a b
+  | ((IA.overlaps a b) == True) = 
+    let c = period (begin a) (begin b)
+        d = period (begin b) (end a)
+        e = period (end a)   (end b)
+    in 
+     ((a == period (begin c) (end d)) &&
+      (b == period (begin d) (end e))) === True
+  | otherwise  = IA.overlaps a b === False 
+
 main :: IO ()
 main = hspec $ do
   describe "Interval Algebra Axioms" $ --modifyMaxDiscardRatio (* 10) $
@@ -161,10 +184,11 @@ main = hspec $ do
       {-
       -}
 
-  describe "Interval Algebra relationships" $
+  describe "Interval Algebra relationships" $ --modifyMaxDiscardRatio (* 10) $
    do
-      it "IAbefore" $ property prop_IAbefore
-
+      it "IAbefore"   $ property prop_IAbefore
+      it "IAstarts"   $ property prop_IAstarts
+      it "IAoverlaps" $ property prop_IAoverlaps
 
   describe "after" $ do
     it "return False for a period before another" $

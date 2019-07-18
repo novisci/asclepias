@@ -161,7 +161,10 @@ toPeriod x = uncurry period x
 -- | Expands a period to left by l and to the right by r
 -- TODO: handle cases that l or r are negative
 expand :: Int -> Int -> Period -> Period
-expand l r p = period ((begin p) - l) ((end p) + r)
+expand l r p = period s e
+  where s = min ((begin p) - l) (begin p)
+        e = max ((end p) + r)   (end p)
+
 
 -- | Expands a period to left by i
 expandl :: Int -> Period -> Period

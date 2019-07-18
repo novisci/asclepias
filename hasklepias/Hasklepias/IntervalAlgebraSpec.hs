@@ -56,7 +56,6 @@ m1set x a b c = M1set p1 p2 p3 p4
   -- only apply to *interval* time and not to points; hence the falsification
   -- shown is not a valid test of the axiom since it includes points.
 
-
 prop_IAaxiomM1 :: M1set -> Property
 prop_IAaxiomM1 x = 
   (i `meets` j && i `meets` k && l `meets` j) ==> (l `meets` k)
@@ -65,7 +64,6 @@ prop_IAaxiomM1 x =
         k = m13 x
         l = m14 x
 
--- | 
 data M2set = M2set {
     m21 :: Period
   , m22 :: Period
@@ -219,12 +217,20 @@ main = hspec $ do
       it "finishes" $ property prop_IAfinishes
       it "overlaps" $ property prop_IAoverlaps
       it "during"   $ property prop_IAduring
+  
+  describe "Period expansions" $ 
+    do
+      it "expandl safely shrinks a period" $
+        expandl (-10) (period 0 10) `shouldBe` period 0 10
+      it "expandr safely shrinks a period" $
+        expandr (-10) (period 0 10) `shouldBe` period 0 10
 
-
+{- Examples of unit testing
   describe "after" $ do
     it "return False for a period before another" $
       IA.before (period 0 1) (period 2 3) `shouldBe` True
     it "return True for a period after another" $
       IA.before (period 2 3) (period 0 1) `shouldBe` False
     it "return False for a period meeting another" $
-      IA.before (period 0 1) (period 1 2) `shouldBe` False
+      IA.before (period 0 1) (period 1 2) `shouldBe` False}
+-}

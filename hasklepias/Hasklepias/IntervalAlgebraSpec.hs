@@ -1,7 +1,7 @@
 module IntervalAlgebraSpec where
 
 import Test.Hspec
-import Test.Hspec.Core.QuickCheck
+--import Test.Hspec.Core.QuickCheck
 import Test.QuickCheck
 import Hasklepias.IntervalAlgebra as IA
 import Control.Monad
@@ -26,10 +26,10 @@ safePeriod' x y
 
 -- | A set used for testing M1 defined so that the M1 condition is true.
 data M1set = M1set { 
-     i :: Period
-   , j :: Period
-   , k :: Period
-   , l :: Period }
+     m11 :: Period
+   , m12 :: Period
+   , m13 :: Period
+   , m14 :: Period }
    deriving (Show)
 
 instance Arbitrary M1set where
@@ -59,14 +59,18 @@ m1set x a b c = M1set p1 p2 p3 p4
 
 prop_IAaxiomM1 :: M1set -> Property
 prop_IAaxiomM1 x = 
-  (i x `meets` j x && i x `meets` k x && l x `meets` j x) ==> (l x `meets` k x)
+  (i `meets` j && i `meets` k && l `meets` j) ==> (l `meets` k)
+  where i = m11 x
+        j = m12 x
+        k = m13 x
+        l = m14 x
 
 -- | 
 data M2set = M2set {
-    ii :: Period
-  , jj :: Period
-  , kk :: Period
-  , ll :: Period }
+    m21 :: Period
+  , m22 :: Period
+  , m23 :: Period
+  , m24 :: Period }
   deriving (Show)
 
 instance Arbitrary M2set where
@@ -86,19 +90,25 @@ m2set x y a b = M2set p1 p2 p3 p4
 
 prop_IAaxiomM2 :: M2set -> Property
 prop_IAaxiomM2 x =
-  (ii x `meets` jj x && kk x `meets` ll x) ==> 
-    (ii x `meets` ll x) `xor`  
-    (not $ null m)      `xor`
+  (i `meets` j && k `meets` l) ==> 
+    (i `meets` l)  `xor`  
+    (not $ null m) `xor`
     (not $ null n)
-    where m = safePeriod' (end $ ii x) (begin $ ll x)
-          n = safePeriod' (end $ kk x) (begin $ jj x)
+    where i = m21 x
+          j = m22 x
+          k = m23 x
+          l = m24 x
+          m = safePeriod' (end $ i) (begin $ l)
+          n = safePeriod' (end $ k) (begin $ j)
 
 prop_IAaxiomML1 :: Period -> Property
 prop_IAaxiomML1 x = not (x `meets` x) === True
 
 prop_IAaxiomML2 :: M2set -> Property
 prop_IAaxiomML2 x =
-  (ii x `meets` jj x) ==> not (jj x `meets` ii x)
+  (i `meets` j) ==> not (j `meets` i)
+  where i = m21 x
+        j = m22 x
 
 prop_IAaxiomM3 :: Period -> Property
 prop_IAaxiomM3 x = 
@@ -108,39 +118,55 @@ prop_IAaxiomM3 x =
 
 prop_IAaxiomM4 :: M2set -> Property
 prop_IAaxiomM4 x = 
-   ((pm `meets` ii x && ii x `meets` jj x && jj x `meets` pn) &&
-   (pm `meets` pk && pk `meets` pn)) === True
-   where pm = expandl 1 $ point $ begin $ ii x
-         pn = expandr 1 $ point $ end $ jj x
-         pk = period (end pm) (begin pn)
+   ((m `meets` i && i `meets` j && j `meets` n) &&
+    (m `meets` k && k `meets` n)) === True
+   where i  = m21 x
+         j  = m22 x
+         m = expandl 1 $ point $ begin $ i
+         n = expandr 1 $ point $ end $ j
+         k = period (end m) (begin n)
 
 prop_IAbefore :: Period -> Period -> Property
-prop_IAbefore x y = 
-  IA.before x y ==> (x `meets` z) && (z `meets` y)
-    where z = period (end x) (begin y)
+prop_IAbefore i j = 
+  IA.before i j ==> (i `meets` k) && (k `meets` j)
+    where k = period (end i) (begin j)
 
-prop_IAstarts:: Int -> Int -> Int -> Property
-prop_IAstarts x y z = 
-  IA.starts a b ==> 
-    -- TODO: formulate this check forall not in terms of implication
-    (d `meets` a && a `meets` c && c `meets` e) &&
-    (d `meets` b && b `meets` e)
-    where a = expandr ((abs y) + 1) $ point $ x
-          b = expandr ((abs z) + 1) $ point $ x
-          c = period (end a) (begin e)
-          d = period ((begin a) - 1) (begin a) 
-          e = period (end b) ((end b) + 1)
+prop_IAstarts:: Period -> Period -> Property
+prop_IAstarts i j
+  | ((IA.starts i j) == True) =
+    let k = period (begin i) (end j)
+    in 
+     ([j] == [i] <<>> [k]) === True
+  | otherwise = IA.starts i j === False
+
+prop_IAfinishes:: Period -> Period -> Property
+prop_IAfinishes i j
+  | ((IA.finishes i j) == True) =
+    let k = period (begin j) (begin i)
+    in 
+     ([j] == [k] <<>> [i]) === True
+  | otherwise = IA.finishes i j === False
 
 prop_IAoverlaps:: Period -> Period -> Property
-prop_IAoverlaps a b
-  | ((IA.overlaps a b) == True) = 
-    let c = period (begin a) (begin b)
-        d = period (begin b) (end a)
-        e = period (end a)   (end b)
+prop_IAoverlaps i j
+  | ((IA.overlaps i j) == True) = 
+    let k = period (begin i) (begin j)
+        l = period (begin j) (end i)
+        m = period (end i)   (end j)
     in 
-     ((a == period (begin c) (end d)) &&
-      (b == period (begin d) (end e))) === True
-  | otherwise  = IA.overlaps a b === False 
+     ((i == period (begin k) (end l)) &&
+      (j == period (begin l) (end m))) === True
+  | otherwise  = IA.overlaps i j === False 
+
+prop_IAduring:: Period -> Period -> Property
+prop_IAduring i j
+  | ((IA.during i j) == True) = 
+    let k = period (begin j) (begin i)
+        l = period (end i) (end j)
+    in 
+     ([j] == [k] <<>> [i] <<>> [l]) === True
+  | otherwise  = IA.during i j === False 
+  
 
 main :: IO ()
 main = hspec $ do
@@ -184,11 +210,16 @@ main = hspec $ do
       {-
       -}
 
-  describe "Interval Algebra relationships" $ --modifyMaxDiscardRatio (* 10) $
+  describe "Interval Algebra relations" $ --modifyMaxDiscardRatio (* 10) $
+  -- https://en.wikipedia.org/wiki/Allen%27s_interval_algebra#Relations 
+  -- contains a visual of these relations
    do
-      it "IAbefore"   $ property prop_IAbefore
-      it "IAstarts"   $ property prop_IAstarts
-      it "IAoverlaps" $ property prop_IAoverlaps
+      it "before"   $ property prop_IAbefore
+      it "starts"   $ property prop_IAstarts
+      it "finishes" $ property prop_IAfinishes
+      it "overlaps" $ property prop_IAoverlaps
+      it "during"   $ property prop_IAduring
+
 
   describe "after" $ do
     it "return False for a period before another" $

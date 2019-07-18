@@ -28,14 +28,16 @@ module Hasklepias.IntervalAlgebra(
   overlappedBy,
   starts,
   startedBy,
-  ends,
-  endedBy,
+  finishes,
+  finishedBy,
   during,
   contains,
   disjoint,
   duration,
   durations,
   pairPeriods,
+  (<<>>),
+  (<++>),
   comparePeriodPairs,
   comparePeriodPairsList
 ) where
@@ -69,8 +71,8 @@ class Periodic a where
     -- | Does x begin y? Is x begined by y?
     starts, startedBy        :: PredicateOf a
     
-    -- | Does x end y? Is x ended by y?
-    ends, endedBy            :: PredicateOf a
+    -- | Does x finishes y? Is x finished by y?
+    finishes, finishedBy     :: PredicateOf a
     
     -- | Is x during y? Does x contain y?
     during, contains         :: PredicateOf a
@@ -87,7 +89,7 @@ class Periodic a where
     overlappedBy  = flip overlaps
     mverlappedBy  = flip mverlaps
     startedBy     = flip starts
-    endedBy       = flip ends
+    finishedBy    = flip finishes
     contains      = flip during
     disjoint x y  = (before x y) || (after x y)
 
@@ -107,8 +109,8 @@ instance Periodic Period where
     -- TODO: handle this more elegantly in the IA type system
   before   x y  = (end x)   <  (begin y) 
   starts   x y  = if x <= y then (begin x) == (begin y) else False
-  ends     x y  = (end x)   == (end y)
-  during   x y  = (overlaps x y) && (end x) <= (end y)
+  finishes x y  = if y <= x then (end x)   == (end y)   else False
+  during   x y  = (begin x) >= (begin y) && (end x) <= (end y)
   overlaps x y  = 
     if x <= y 
       then end x < end y && end x > begin y 

@@ -1,8 +1,13 @@
 module Hasklepias.Context(
   --Context,
   --CardSuitContext,
+  Context,
   card,
-  cardContext
+  cardContext,
+  pokerHand,
+  roundContext,
+  warRound,
+  pokerRound
 ) where
 
 import Prelude hiding (lookup)
@@ -11,26 +16,32 @@ import qualified Data.Map.Strict as M
 
 -- | TODO: define context and its purpose
 --   key = Maybe value, 
-newtype Context a b = Context (M.Map a (Maybe b))
- deriving (Eq, Ord, Show)
+--newtype Context a = Context { getContext :: (M.Map String (Maybe a)) }
+-- deriving (Eq, Ord, Show)
 
-
+data Context a = Context {
+      domain :: String
+    , info   :: a }
+    deriving (Eq, Show) 
 
 {-
   Context Examples
 -}
 
+-- Game + Card
+
 data Game =
       Poker
     | BlackJack
     | War
-    deriving (Show)
+    deriving (Eq, Show)
 
 data Suit = 
      Spades 
    | Diamonds 
    | Hearts
    | Clubs 
+   deriving (Eq)
 
 instance Show Suit where
    show Spades   = "\9824"
@@ -52,6 +63,7 @@ data Rank =
    | Jack 
    | Queen 
    | King
+   deriving (Eq)
 
 instance Show Rank where
     show Ace   = "A" 
@@ -68,21 +80,89 @@ instance Show Rank where
     show Queen = "Q"
     show King  = "K"
 
-
 data Card = Card { 
      suit :: Suit
    , rank :: Rank }
+   deriving (Eq)
 
 instance Show Card where
   show x = (show $ rank x) ++ (show $ suit x)
 
---type PokerHand = Context (M.Map Suit Rank)
---type CardContext = Context (M.Map Game Card)
-type CardContext = Context Game Card
+data GameCard = GameCard {
+      getGame :: Game
+    , getCard :: Maybe Card}
+
+
+instance Show GameCard where
+   show x = (show g) ++ " " ++ (show c)
+    where g = getGame x
+          c = getCard x
+
+
+type CardContext = Context GameCard
 
 card :: Suit -> Rank -> Card
 card s v = Card {suit = s, rank = v}
 
+gameCardContextualizer :: (Game -> Maybe Card -> CardContext)
+gameCardContextualizer g c = Context "gameCard" $ GameCard g c
+
 cardContext :: Game -> Maybe Card -> CardContext
-cardContext g (Just c) = Context $ M.singleton g (Just c)
-cardContext g Nothing  = Context $ M.singleton g Nothing
+cardContext g (Just c) = gameCardContextualizer g $ Just c
+cardContext g Nothing  = gameCardContextualizer g $ Nothing
+
+-- Game + Hand
+data Player =
+    A
+  | B
+  | C
+  deriving (Eq, Ord, Show)
+
+type Cards = [Card]
+
+newtype Hand = Hand { unHand :: Cards } 
+  deriving (Eq)
+
+instance Show Hand where
+  show x = show $ unHand x
+
+type PokerHand = Maybe Hand
+
+pokerHand :: Maybe Cards -> PokerHand
+pokerHand (Just l) 
+    | length l == 5 = Just $ Hand l
+    | otherwise     = Nothing
+pokerHand Nothing   = Nothing
+
+data GameRound = GameRound {
+   pullGame :: Game,
+   getHands :: M.Map Player (Maybe Hand) }
+   deriving (Show, Eq) 
+
+type RoundContext = Context GameRound
+
+
+roundContext :: Game -> [(Player, Maybe Hand)] -> RoundContext
+roundContext g l = Context "gameRound" $ GameRound g (M.fromList l)
+
+warRound :: RoundContext
+warRound = roundContext War [ (A, Just $ Hand [(card Diamonds Two)])
+                            , (B, Nothing)
+                            , (C, Just $ Hand [(card Clubs Ace)])]
+
+pokerRound :: RoundContext
+pokerRound = roundContext Poker 
+   [ (A, pokerHand $ Just 
+      [ card Diamonds Two
+      , card Diamonds Ace
+      , card Diamonds Queen
+      , card Clubs Seven
+      , card Spades Ace])
+    , (B, pokerHand $ Just 
+      [ card Clubs Two])
+    , (C, pokerHand $ Just 
+      [ card Hearts Queen
+      , card Hearts Jack
+      , card Hearts Ten
+      , card Clubs Five
+      , card Spades Seven])]

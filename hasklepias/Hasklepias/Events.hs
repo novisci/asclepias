@@ -4,22 +4,19 @@ module Hasklepias.Events(
 ) where
 
 
-import Prelude hiding (lookup)
-
-import Data.Map.Strict (Map)
-import qualified Data.Map.Strict as Context
-
-import Data.IntMap (IntMap)
-import qualified Data.IntMap.Strict as IntContext
---import Hasklepias.Context
+import Hasklepias.Context
 import Hasklepias.IntervalAlgebra
+import Data.Sequence (Seq, (<|), (|>), (><))
+import qualified Data.Sequence as Seq
 
-newtype Pair a b = Pair { getPair :: (a, b) } deriving (Show)
-
-type MapSS = Map String String
-
-newtype Event = Event ( Pair Period MapSS )
+newtype Event a = Event (Period, Context a)
   deriving (Show)
 
-event :: Period -> MapSS -> Event
-event i c = Event (Pair (i, c))
+event :: Period -> Context a -> Event a
+event i c = Event (i, c)
+
+newtype Events a = Events (Seq a)
+  deriving (Show)
+
+events :: [Event a] -> Events a
+events l = Events $ Seq.fromList l

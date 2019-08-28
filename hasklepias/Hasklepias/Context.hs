@@ -1,24 +1,21 @@
 module Hasklepias.Context(
-  Context,
-  -- CardSuitContext,
-  cardSuit
+    Context
+  , context
+  , getDomain
+  , getInfo
 ) where
 
-import Prelude hiding (lookup)
-
-import Data.Map.Strict (Map)
-import qualified Data.Map.Strict as Context
-
-import Data.IntMap (IntMap)
-import qualified Data.IntMap.Strict as ContextMap
-
-type Context a b = Context.Map String( Context.Map a b )
-
-type CardSuit = Context.Map String String
-
-cardSuit :: String -> Maybe CardSuit
-cardSuit s 
-   | s `elem` ["spades", "diamonds", "hearts", "club"] = Just (Context.fromList [("suit", s)])
-   | otherwise = Nothing
 
 
+-- | TODO: define context and its purpose
+--   key = Maybe value, 
+--newtype Context a = Context { getContext :: (M.Map String (Maybe a)) }
+-- deriving (Eq, Ord, Show)
+
+data Context a = Context {
+      getDomain :: String
+    , getInfo   :: a }
+    deriving (Eq, Show) 
+
+context :: String -> a -> Context a
+context d i = Context d i

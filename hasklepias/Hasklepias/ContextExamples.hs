@@ -91,7 +91,7 @@ card :: Suit -> Rank -> Card
 card s v = Card {suit = s, rank = v}
 
 gameCardContextualizer :: (Game -> Maybe Card -> CardContext)
-gameCardContextualizer g c = context "gameCard" $ GameCard g c
+gameCardContextualizer g c = contextns "gameCard" $ GameCard g c
 
 cardContext :: Game -> Maybe Card -> CardContext
 cardContext g (Just c) = gameCardContextualizer g $ Just c
@@ -129,7 +129,7 @@ type RoundContext = Context GameRound
 
 
 roundContext :: Game -> [(Player, Maybe Hand)] -> RoundContext
-roundContext g l = context "gameRound" $ GameRound g (M.fromList l)
+roundContext g l = contextns "gameRound" $ GameRound g (M.fromList l)
 
 warRound :: RoundContext
 warRound = roundContext War [ (A, Just $ Hand [(card Diamonds Two)])

@@ -1,0 +1,5 @@
+{
+  "domain" : "lab", 
+  "info"   : { "loinc" : "1235" , "value_numeric" : 42 , "units" : "kg" },
+  "source" : { "database" : "example", "table" : "labs", "rowid" : "12345" } 
+}

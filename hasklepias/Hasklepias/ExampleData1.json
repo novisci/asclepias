@@ -4,68 +4,77 @@
      , "info"   : { "id" : "ABCDE" }
      , "source" : { }
    }
- ,
+ , 
  "events" : [
-   {   "start" : 1
-     , "end"   : 1
-     , "domain": "lab"
-     , "info"  : { "loinc" : "1235" , "value" : 42 , "units" : "kg" }
-     , "source": { "database" : "example", "table" : "labs", "rowid" : 12345}
+   {   "period" : { "begin" : 1 , "end" : 1 }
+     , "context"  : {
+         "domain": "lab"
+       , "info"  : { "loinc" : "1235" , "value_numeric" : 42 , "units" : "kg" }
+       , "source": { "database" : "example", "table" : "labs", "rowid" : "12345" }
+     }
    }
- , {  
-      "start" : 4
-    , "end"   : 4
-    , "domain": "lab"
-    , "info"  : { "loinc" : "1235" , "value" : 46 , "units" : "kg" }
-    , "source": { "database" : "example", "table" : "labs", "rowid" : 12349}
+ , {   "period" : { "begin" : 4 , "end" : 4 }
+     , "context"  : {
+         "domain": "lab"
+       , "info"  : { "loinc" : "1235" , "value_numeric" : 46 , "units" : "kg" }
+       , "source": { "database" : "example", "table" : "labs", "rowid" : "12349" }
+     }
    }
- , {  "start" : 10
-    , "end"   : 10
-    , "domain": "lab"
-    , "info"  : { "loinc" : "1235" , "value" : 40 , "units" : "kg" }
-    , "source": { "database" : "example", "table" : "labs", "rowid" : 12356}
+ , {   "period" : { "begin" : 10, "end" : 10 }
+     , "context"  : {
+        "domain": "lab"
+      , "info"  : { "loinc" : "1235" , "value_numeric" : 40 , "units" : "kg" }
+      , "source": { "database" : "example", "table" : "labs", "rowid" : "12356" }
+     }
    }
- , {  "start" : 25
-    , "end"   : 25
-    , "domain": "lab"
-    , "info"  : { "loinc" : "1235" , "value" : 45 , "units" : "kg" }
-    , "source": { "database" : "example", "table" : "labs", "rowid" : 12490}
+ , {  "period" : { "begin" : 25, "end" : 25 }
+    , "context"  : {
+        "domain": "lab"
+      , "info"  : { "loinc" : "1235" , "value_numeric" : 45 , "units" : "kg" }
+      , "source": { "database" : "example", "table" : "labs", "rowid" : "12490" }
+     }
    } 
- , {  "start" : -10
-    , "end"   : 0
-    , "domain": "enrollment"
-    , "info"  : { "plan" : "hmo" }
-    , "source": { "database" : "example", "table" : "plan", "rowid" : 345}
+ , {  "period" : { "begin" : -10, "end" : 0 }
+    , "context"  : {
+        "domain": "enrollment"
+      , "info"  : { "plan" : "hmo" }
+      , "source": { "database" : "example", "table" : "plan", "rowid" : "345" }
+     }
    }
- , {  "start" : 1
-    , "end"   : 10
-    , "domain": "enrollment"
-    , "info"  : { "plan" : "hmo" }
-    , "source": { "database" : "example", "table" : "plan", "rowid" : 348}
+ , {  "period" : { "begin" : 1, "end" : 10 }
+    , "context"  : {
+        "domain": "enrollment"
+      , "info"  : { "plan" : "hmo" }
+      , "source": { "database" : "example", "table" : "plan", "rowid" : "348" }
+     }
    } 
- , {  "start" : 13
-    , "end"   : 20
-    , "domain": "enrollment"
-    , "info"  : {"plan" : "hmo"}
-    , "source": { "database" : "example", "table" : "plan", "rowid" : 401}
+ , {  "period" : { "begin" : 13, "end" : 20 }
+    , "context"  : {
+        "domain": "enrollment"
+      , "info"  : { "plan" : "hmo" }
+      , "source": { "database" : "example", "table" : "plan", "rowid" : "401" }
+     }
    } 
- , {  "start" : 21
-    , "end"   : 30
-    , "domain": "enrollment"
-    , "info"  : {"plan" : "hmo"}
-    , "source": { "database" : "example", "table" : "plan", "rowid" : 425}
+ , {  "period" : { "begin" : 21, "end" : 30 }
+    , "context"  : {
+        "domain": "enrollment"
+      , "info"  : { "plan" : "hmo" }
+      , "source": { "database" : "example", "table" : "plan", "rowid" : "425" }
+     }
    } 
- , {  "start" : 3
-    , "end"   : 3
-    , "domain": "diagnosis"
-    , "info"  : {"location" : "outpatient", "code" : "178.0", "type" : "ICD-9"}
-    , "source": { "database" : "example", "table" : "medical", "rowid" : 695}
+ , {  "period" : { "begin" : 3, "end" : 3 }
+    , "context"  : {
+        "domain": "diagnosis"
+      , "info"  : { "location" : "outpatient", "code" : "178.0", "codebook" : "ICD-9" }
+      , "source": { "database" : "example", "table" : "medical", "rowid" : "695" }
+    }
    }
- , {  "start" : 11
-    , "end"   : 11
-    , "domain": "diagnosis"
-    , "info"  : {"location" : "inpatient", "code" : "v89.1", "type" : "ICD-10"}
-    , "source": { "database" : "example", "table" : "medical", "rowid" : 705}
+ , {  "period" : { "begin" : 11, "end" : 11 }
+    , "context"  : {
+        "domain": "diagnosis"
+      , "info"  : { "location" : "inpatient", "code" : "v89.1", "codebook" : "ICD-10" }
+      , "source": { "database" : "example", "table" : "medical", "rowid" : "705" }
+    }
    } 
  ]
 }

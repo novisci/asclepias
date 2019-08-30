@@ -13,7 +13,11 @@ newtype Event a = Event (Period, Context a)
   deriving (Show)
 
 event :: Period -> Context a -> Event a
-event i c = Event (i, c)
+event p c = Event (p, c)
+
+--
+
+data Lab = Lab {}
 
 newtype Events a = Events (Seq a)
   deriving (Show)

@@ -40,7 +40,7 @@ knitr::opts_chunk$set(echo = FALSE)
 * [cohort](https://gitlab.novisci.com/nsCohort/cohort) R package (inital commit 1/2/2018)
    * used in P0011, P0009, P0018, P0012, P0003
 
-![](commits.png)
+![](img/commits.png)
 
 # What is a cohort?
 

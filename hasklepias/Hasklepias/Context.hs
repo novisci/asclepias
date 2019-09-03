@@ -1,10 +1,7 @@
 module Hasklepias.Context(
-    Context
+    Context(..)
+  , Source
   , context
-  , contextns
-  , getDomain
-  , getInfo
-  , getSource
 ) where
 
 import Prelude hiding (lookup)
@@ -15,19 +12,20 @@ import qualified Data.Map.Strict as M
 type Source = Maybe (M.Map String String)
 
 -- | TODO: define Context and its purpose
+-- info answers "What is the meaning of this data?"
+-- source answers "What is the origin of this data?"
+-- TODO: define a contextualizable typeclass that defines the behavior
+-- of Context instances
 
 data Context a = Context {
-      getDomain :: String
-    , getInfo   :: a 
-    , getSource :: Source}
+      getInfo   :: a 
+    , getSource :: Source }
     deriving (Eq, Show) 
 
 -- | Smart contructor for Context type
 
-context :: String -> a -> Source -> Context a
-context d i s = Context d i s
+context :: a -> Source -> Context a
+context i s = Context  i s
 
--- | Smart contructor for Context type without a Source
 
-contextns :: String -> a -> Context a
-contextns d i = context d i Nothing
+

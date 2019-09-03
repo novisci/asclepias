@@ -33,10 +33,11 @@ data EventDomain =
   deriving (Show)
 
 eventDomainfromJSON :: String -> Value -> Parser EventDomain
-eventDomainfromJSON d o
-    | d == "lab" = (withObject "lab" $ \o -> Lab <$> o .: "loinc" <*> o .: "value_numeric" <*> o .: "units") o
-    | d == "diagnosis" = (withObject "diagnosis" $ \o -> Diagnosis <$> o .: "location" <*> o .: "code" <*> o .: "codebook") o
-    | d == "enrollment" = (withObject "enrollment" $ \o -> Enrollment <$> o .: "plan") o
+eventDomainfromJSON d x
+    | d == "lab" = (withObject "lab" $ \o -> Lab <$> o .: "loinc" <*> o .: "value_numeric" <*> o .: "units") x
+    | d == "diagnosis" = (withObject "diagnosis" $ \o -> Diagnosis <$> o .: "location" <*> o .: "code" <*> o .: "codebook") x
+    | d == "enrollment" = (withObject "enrollment" $ \o -> Enrollment <$> o .: "plan") x
+    | otherwise = fail "what did you expect?"
 --data Lab = InfoLab  deriving (Show)
 
 {-

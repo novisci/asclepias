@@ -26,6 +26,8 @@ module Hasklepias.IntervalAlgebra(
   after,
   overlaps,
   overlappedBy,
+  mverlaps,
+  mverlappedBy,
   starts,
   startedBy,
   finishes,
@@ -91,7 +93,7 @@ class Periodic a where
     startedBy     = flip starts
     finishedBy    = flip finishes
     contains      = flip during
-    disjoint x y  = (before x y) || (after x y)
+    disjoint x y  = before x y || after x y
 
 -- |For now, a Period is defined in terms of Int
 -- TODO: Generalize the notion of a Period to derive from arbitrary Ord types
@@ -104,11 +106,11 @@ data Period =
 
 instance Periodic Period where
   {- These functions assume x <= y. TODO: formalize this notion -}
-  meets    x y  = if x == y then False else (begin y) == (end x) 
+  meets    x y  = (x /= y) && (begin y) == end x
     -- if statement handles case that points can't meet
     -- TODO: handle this more elegantly in the IA type system
-  before   x y  = (end x)   <  (begin y) 
-  starts   x y  = if x <= y then (begin x) == (begin y) else False
+  before   x y  = end x < begin y
+  starts   x y  = (x <= y) && ((begin x) == (begin y))
   finishes x y  = if y <= x then (end x)   == (end y)   else False
   during   x y  = (begin x) >= (begin y) && (end x) <= (end y)
   overlaps x y  = 
@@ -156,31 +158,31 @@ point a = Point a a
 
 -- |Converts a pairs of Int to a Period
 toPeriod :: (Int, Int) -> Period
-toPeriod x = uncurry period x
+toPeriod = uncurry period
 
 -- | Expands a period to left by l and to the right by r
 -- TODO: handle cases that l or r are negative
 expand :: Int -> Int -> Period -> Period
 expand l r p = period s e
-  where s = min ((begin p) - l) (begin p)
-        e = max ((end p) + r)   (end p)
+  where s = min (begin p - l) (begin p)
+        e = max (end p + r)   (end p)
 
 
 -- | Expands a period to left by i
 expandl :: Int -> Period -> Period
-expandl i p = expand i 0 p
+expandl i = expand i 0
 
 -- | Expands each period in a list to the left by i
 expandlPeriods  :: Int -> [Period] -> [Period]
-expandlPeriods i ps = map (expandl i) ps
+expandlPeriods i = map (expandl i)
 
 -- | Expands a period to right by i
 expandr :: Int -> Period -> Period
-expandr i p = expand 0 i p
+expandr = expand 0
 
 -- | Expands each period in a list to the right by i
 expandrPeriods  :: Int -> [Period] -> [Period]
-expandrPeriods i ps = map (expandr i) ps
+expandrPeriods i = map (expandr i)
 
 -- | Contract a period to a Point at its begin
 beginPoint :: Period -> Period
@@ -188,7 +190,7 @@ beginPoint x = point (begin x)
 
 -- | Contract each period in the list to its begin point
 beginPoints :: [Period] -> [Period]
-beginPoints x = map beginPoint x
+beginPoints = map beginPoint
 
 -- | Contract a period to a Point at its end
 endPoint :: Period -> Period
@@ -196,7 +198,7 @@ endPoint x = point (end x)
 
 -- | Contract each period in the list to its end point
 endPoints :: [Period] -> [Period]
-endPoints x = map endPoint x
+endPoints = map endPoint
 
 -- | Form a list of two points from the begin and end of a period. If x is 
 --   already a point, returns [x].
@@ -218,7 +220,7 @@ extentPeriod p1 p2 = period a b
 
 -- | Form the extentPeriod for each element in a PeriodPairs.
 extentPeriods :: PeriodPairs -> [Period]
-extentPeriods x = map (\z -> extentPeriod (fst z) (snd z)) x
+extentPeriods = map (uncurry extentPeriod)
 
 -- | Link two lists of Periods by creating a linking period from the begin of 
 --   the last period in the first list and the end of the first period in the 
@@ -268,11 +270,11 @@ extentPeriods x = map (\z -> extentPeriod (fst z) (snd z)) x
 -- | Traverses over a list of periods collapsing the periods by `<++>` to create
 --   a list of non-overlapping periods.
 collapsePeriods :: [Period] -> [Period]
-collapsePeriods x = foldr (<++>) [] (map (\z -> [z]) x)
+collapsePeriods x = foldr ((<++>) . (\ z -> [z])) [] x
 
 -- | TODO
 periodGaps :: [Period] -> [Period]
-periodGaps x = foldr (<-->) [] (map (\z -> [z]) x)
+periodGaps = foldr ((<-->) . (\ z -> [z])) []
 
 -- | Builds a list of lists of pairs of each successive head Period with the 
 --   remaining tail Periods after applying headf to the head Period and 
@@ -281,8 +283,8 @@ periodGaps x = foldr (<-->) [] (map (\z -> [z]) x)
 pairPeriods :: (Period -> Period) -> ([Period] -> [Period]) -> [Period] -> [PeriodPairs]
 pairPeriods headf tailf (x:xs) 
   | null xs   = []
-  | otherwise = [[ (s, e) | s <- [headf x], e <- tailf xs]] ++ 
-                 pairPeriods headf tailf xs
+  | otherwise = [(s, e) | s <- [headf x], e <- tailf xs] :
+    pairPeriods headf tailf xs
 
 {-
   Functions for deriving new information from a Period, pairs for Periods, or
@@ -291,7 +293,7 @@ pairPeriods headf tailf (x:xs)
 
 -- | 
 comparePeriodPairs :: PeriodComparator a -> PeriodPairs -> [a]
-comparePeriodPairs f x = map (\z -> uncurry f z) x
+comparePeriodPairs f = map (uncurry f)
 
 -- | 
 -- An example:
@@ -300,15 +302,15 @@ comparePeriodPairs f x = map (\z -> uncurry f z) x
 -- comparePeriodPairsList ff zz
 -- [[6,12,15,19],[12,15,19],[3,7],[7]]
 comparePeriodPairsList :: PeriodComparator a -> [PeriodPairs] -> [[a]]
-comparePeriodPairsList f x = map (comparePeriodPairs f) x
+comparePeriodPairsList f = map (comparePeriodPairs f)
 
 -- | Returns True if a Period has length 0. False else.
 isPoint :: Period -> Bool
-isPoint x = (duration x) == 0 
+isPoint x = duration x == 0 
 
 -- | Returns a list of durations from a list of periods.
 durations :: [Period] -> [Int]
-durations x = map duration x
+durations = map duration
 
 {-
  Utility functions

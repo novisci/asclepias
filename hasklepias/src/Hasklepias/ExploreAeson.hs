@@ -10,9 +10,12 @@ import qualified Data.ByteString.Lazy as B
 import qualified Data.HashMap.Strict as HM
 import Data.Aeson
 import Data.Aeson.Types
-import Hasklepias.IntervalAlgebra
+import System.Environment
+--import Hasklepias.IntervalAlgebra
 import Hasklepias.Events
+import Hasklepias.Events.MedicalDomain as MD
 
+{-
 eventDomainfromJSON :: String -> Value -> Parser EventDomain
 eventDomainfromJSON d x
     | d == "lab" = (withObject "lab" $ \o -> labDomain lab <$> o .: "loinc" <*> o .: "value_numeric" <*> o .: "units") x 
@@ -39,10 +42,10 @@ parseEvent = withObject "event" $ \o -> do
     p <- o .: "period"
     per <- parsePeriod p
     return $ event per ctxt
-
+-}
 --newtype Event = Event (Period, EventContext)
 --  deriving (Show)
-
+{-
 instance FromJSON Event where
     parseJSON = parseEvent
 
@@ -55,10 +58,10 @@ parsePeriod = withObject "period" $ \o -> do
     b <- o .: "begin"
     e <- o .: "end"
     return $ period b e
-
+-}
 
 jsonFile :: FilePath
-jsonFile = "Hasklepias/ExampleData0.json"
+jsonFile = "../data/ExampleInsurance.json"
 
 getJSON :: IO B.ByteString
 getJSON = B.readFile jsonFile
@@ -68,7 +71,10 @@ main :: IO ()
 main = do
  -- Get JSON data and decode it
  -- d <- (eitherDecode <$> getJSON) :: IO (Either String EventContext)
- d <- (eitherDecode <$> getJSON) :: IO (Either String Event)
+ d <- (eitherDecode <$> getJSON) :: IO (Either String MD.Insurance)
+ --d <- (eitherDecode <$> getJSON) :: IO (Either String (MD.Insurance))
+ --d <- (eitherDecode <$> getJSON) :: IO (Either String ServiceLocation)
+ --d <- (eitherDecode <$> getJSON) :: IO (Either String Event)
  -- If d is Left, the JSON was malformed.
  -- In that case, we report the error.
  -- Otherwise, we perform the operation of

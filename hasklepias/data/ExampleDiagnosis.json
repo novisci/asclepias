@@ -1,0 +1,6 @@
+{   
+	"location" : "Inpatient"
+  , "code" :  "V125"
+  , "codebook" : "jdkas"
+  , "claim" : {"id" : "kdajf", "cost" : 900} 
+}

@@ -1,0 +1,6 @@
+{   
+	"location" : "Inpatient"
+  , "code" :  "V125"
+  , "codebook" : "jdkas"
+  , "value" : 1.5, "units" :  "kg/l" 
+}

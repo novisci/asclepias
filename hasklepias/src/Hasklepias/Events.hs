@@ -9,8 +9,9 @@ module Hasklepias.Events(
 import Hasklepias.Context
 import Hasklepias.IntervalAlgebra
 import Hasklepias.Events.MedicalDomain
-import Data.Sequence (Seq)
-import qualified Data.Sequence as Seq
+import Data.IntMap.Strict as M
+--import Data.Sequence (Seq)
+--import qualified Data.Sequence as Seq
 
 -- | TODO
 
@@ -19,8 +20,14 @@ import qualified Data.Sequence as Seq
 
 -- | TODO
 
-newtype Event = Event (Period, EventContext)
-  deriving (Show)
+newtype Event = Event { getEvent :: (Period, EventContext) }
+  deriving (Show, Eq)
+
+instance Ord Event where 
+  (<=) (Event x) (Event y) = fst x <= fst y
+  (<)  (Event x) (Event y) = fst x <  fst y
+  (>=) x y = not (x < y)
+  (>)  x y = not (x <= y)
 
 -- | TODO
 
@@ -39,13 +46,12 @@ type EventContext = Context EventDomain
 eventContext :: EventDomain -> Source -> EventContext
 eventContext = Context
 
-
 -- TODO
 
-newtype Events = Events (Seq Event)
+newtype Events = Events (M.IntMap Event)
   deriving (Show)
 
 -- TODO
 
 events :: [Event] -> Events
-events l = Events $ Seq.fromList l
+events l = Events $ M.fromList $ zip [1..length l] l

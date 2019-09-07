@@ -2,6 +2,7 @@
 
 module Hasklepias.Events.MedicalDomain(
    MedicalDomain
+ , domain
  , Claim(..)
  , Code(..)
  , Codebook(..)
@@ -153,6 +154,9 @@ instance AT.FromJSON Demographics where
     i <- makeTextParser "info" id o
     return $ Demographics (unpack f) (unpack i)
 
+instance MedDomain Demographics where
+  domain = DmDomain
+
 -- | Diagnosis types contains information about medical diagnoses
 data Diagnosis = Diagnosis
   {   getDXLocation :: ServiceLocation
@@ -168,6 +172,9 @@ instance AT.FromJSON Diagnosis where
     m <- (o AT..:? "claim")    :: AT.Parser (Maybe Claim)
     p <- (o AT..:? "provider") :: AT.Parser (Maybe Provider)
     return $ Diagnosis l c m p
+
+instance MedDomain Diagnosis where
+  domain = DxDomain
 
 -- | Procedure types contain information about medical procedures
 --
@@ -188,6 +195,9 @@ instance AT.FromJSON Procedure where
     p <- (o AT..:? "provider") :: AT.Parser (Maybe Provider)
     return $ Procedure l c m p
 
+instance MedDomain Procedure where
+  domain = PrDomain
+
 -- | Lab types contain information about laboratory results
 data Lab = Lab
   {   getLabLocation :: ServiceLocation
@@ -205,6 +215,9 @@ instance AT.FromJSON Lab where
     p <- (o AT..:? "provider") :: AT.Parser (Maybe Provider)
     v <- AT.parseJSON (AT.Object o)
     return $ Lab l c m p v
+
+instance MedDomain Lab where
+  domain = LbDomain
 
 -- | Medication types contain information about medication events 
 --   including dosage (as a Value)
@@ -226,6 +239,9 @@ instance AT.FromJSON Medication where
     v <- AT.parseJSON (AT.Object o)
     return $ Medication l c m p v
 
+instance MedDomain Medication where
+  domain = RxDomain
+
 -- | Insurance types contain information about insurance events
 --   such as enrollment
 data Insurance = Insurance
@@ -239,6 +255,9 @@ instance AT.FromJSON Insurance where
     i <- o AT..: "insurer"
     return $ Insurance (unpack p) (unpack i)
 
+instance MedDomain Insurance where
+  domain = InDomain
+
 -- | TODO
 
 data MedicalDomain = 
@@ -249,4 +268,14 @@ data MedicalDomain =
   | RxDomain Medication
   | InDomain Insurance
   deriving (Eq, Show)
+
+-- | Wrap a type in its MedicalDomain
+class MedDomain a where
+  domain   :: a -> MedicalDomain
+--  TODO: figure out an undomain function
+--  undomain :: MedicalDomain -> a
+
+
+
+
 

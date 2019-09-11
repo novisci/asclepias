@@ -1,4 +1,4 @@
-module Hasklepias.IntervalFilter (
+module Hasklepias.IntervalAlgebra.IntervalFilter (
   filterOverlaps,
   filterOverlappedBy,
   filterBefore,

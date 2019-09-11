@@ -18,14 +18,14 @@ type Source = Maybe (M.Map String String)
 -- of Context instances
 
 data Context a = Context {
-      getInfo   :: a 
-    , getSource :: Source }
+      getConcepts :: Maybe [String] 
+    , getFacts    :: Maybe a 
+    , getSource   :: Source }
     deriving (Eq, Show) 
 
 -- | Smart contructor for Context type
 
-context :: a -> Source -> Context a
-context i s = Context  i s
-
+context :: Maybe [String] -> Maybe a -> Source -> Context a
+context = Context
 
 

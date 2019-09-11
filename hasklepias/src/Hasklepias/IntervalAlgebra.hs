@@ -98,6 +98,7 @@ class Periodic a where
 -- |For now, a Period is defined in terms of Int
 -- TODO: Generalize the notion of a Period to derive from arbitrary Ord types
 -- see Toying.hs
+
 data Period = 
     Point    { begin :: Int, end :: Int}
   | Moment   { begin :: Int, end :: Int}

@@ -1,8 +1,9 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Hasklepias.Events.MedicalDomain(
-   MedicalDomain
+module Hasklepias.Context.ClaimsDomain(
+   ClaimsDomain
  , domain
+ , get
  , Claim(..)
  , Code(..)
  , Codebook(..)
@@ -84,8 +85,8 @@ makeCodebook _         = CodebookUnknown
 -- | A Code is a string from a Codebook that makes to some
 --   concept within that codebook\
 data Code = Code 
-  {   getCode       :: String
-    , getCodebook   :: Codebook }
+  {   code       :: String
+    , codebook   :: Codebook }
   deriving (Show, Eq)
 
 instance AT.FromJSON Code where
@@ -97,9 +98,9 @@ instance AT.FromJSON Code where
 -- | A Value is something that is measured. It can have a 
 --   numeric part and/or a text part and/or associated units
 data Value = Value 
-  {   getNumValue   :: Maybe Float
-    , getTxtValue   :: Maybe String
-    , getUnits      :: Maybe String }
+  {   numValue   :: Maybe Float
+    , txtValue   :: Maybe String
+    , units      :: Maybe String }
    deriving (Show, Eq)
 
 instance AT.FromJSON Value where
@@ -114,8 +115,8 @@ instance AT.FromJSON Value where
 --   TODO: what other information do we need? I included Cost here
 --         but this may not be useful or the right place.
 data Claim = Claim 
-  {    getClaimID    :: String
-     , getClaimCost  :: Maybe Float }
+  {    claimID    :: String
+     , claimCost  :: Maybe Float }
     deriving (Show, Eq)
 
 instance AT.FromJSON Claim where
@@ -127,8 +128,8 @@ instance AT.FromJSON Claim where
 -- | Provider
 --   TODO: describe this
 data Provider = Provider
-  {   getProviderNPI :: String
-    , getTaxonomy    :: String }
+  {   providerNPI :: String
+    , providerTaxonomy    :: String }
    deriving (Show, Eq)
 
 instance AT.FromJSON Provider where
@@ -144,8 +145,8 @@ instance AT.FromJSON Provider where
 --   TODO: I don't like this way of handling demographic data,
 --         but it's a place to start.
 data Demographics = Demographics
-  {   getDemoField  :: String
-    , getDemoInfo   :: String } 
+  {   demoField  :: String
+    , demoInfo   :: String } 
   deriving (Show, Eq)
 
 instance AT.FromJSON Demographics where
@@ -154,15 +155,18 @@ instance AT.FromJSON Demographics where
     i <- makeTextParser "info" id o
     return $ Demographics (unpack f) (unpack i)
 
-instance MedDomain Demographics where
+instance ClaimDomain Demographics where
   domain = DmDomain
+  get f (DmDomain x) = f x
+
 
 -- | Diagnosis types contains information about medical diagnoses
+
 data Diagnosis = Diagnosis
-  {   getDXLocation :: ServiceLocation
-    , getDXCode     :: Code
-    , getDXClaim    :: Maybe Claim
-    , getDXProvider :: Maybe Provider }
+  {   dxLocation :: ServiceLocation
+    , dxCode     :: Code
+    , dxClaim    :: Maybe Claim
+    , dxProvider :: Maybe Provider }
   deriving (Show, Eq)
 
 instance AT.FromJSON Diagnosis where
@@ -173,18 +177,19 @@ instance AT.FromJSON Diagnosis where
     p <- (o AT..:? "provider") :: AT.Parser (Maybe Provider)
     return $ Diagnosis l c m p
 
-instance MedDomain Diagnosis where
+instance ClaimDomain Diagnosis where
   domain = DxDomain
+  get f (DxDomain x) = f x
 
 -- | Procedure types contain information about medical procedures
 --
 --   TODO: Diagnoses, Procedures, Labs, and Medications have similar
 --         structures. Should they? Or can a sum type be used?
 data Procedure = Procedure
-  {   getPRLocation :: ServiceLocation
-    , getPRCode     :: Code
-    , getPRClaim    :: Maybe Claim
-    , getPRProvider :: Maybe Provider }
+  {   prLocation :: ServiceLocation
+    , prCode     :: Code
+    , prClaim    :: Maybe Claim
+    , prProvider :: Maybe Provider }
   deriving (Show, Eq)
 
 instance AT.FromJSON Procedure where
@@ -195,16 +200,17 @@ instance AT.FromJSON Procedure where
     p <- (o AT..:? "provider") :: AT.Parser (Maybe Provider)
     return $ Procedure l c m p
 
-instance MedDomain Procedure where
+instance ClaimDomain Procedure where
   domain = PrDomain
+  get f (PrDomain x) = f x
 
 -- | Lab types contain information about laboratory results
 data Lab = Lab
-  {   getLabLocation :: ServiceLocation
-    , getLabCode     :: Code
-    , getLabClaim    :: Maybe Claim
-    , getLabProvider :: Maybe Provider 
-    , getLabValue    :: Value } 
+  {   labLocation :: ServiceLocation
+    , labCode     :: Code
+    , labClaim    :: Maybe Claim
+    , labProvider :: Maybe Provider 
+    , labValue    :: Value } 
   deriving (Show, Eq)
 
 instance AT.FromJSON Lab where
@@ -216,37 +222,39 @@ instance AT.FromJSON Lab where
     v <- AT.parseJSON (AT.Object o)
     return $ Lab l c m p v
 
-instance MedDomain Lab where
+instance ClaimDomain Lab where
   domain = LbDomain
+  get f (LbDomain x) = f x
 
 -- | Medication types contain information about medication events 
 --   including dosage (as a Value)
 
 data Medication = Medication
-  {   getRXLocation  :: ServiceLocation
-    , getRXCode      :: Code
-    , getRXClaim     :: Maybe Claim
-    , getRXProvider  :: Maybe Provider 
-    , getRXDose      :: Value }
+  {   rxLocation  :: ServiceLocation
+    , rxCode      :: Code
+    , rxClaim     :: Maybe Claim
+    , rxProvider  :: Maybe Provider 
+    , rxDose      :: Value }
    deriving (Show, Eq)
 
 instance AT.FromJSON Medication where
   parseJSON = AT.withObject "RX" $ \o -> do
-    l <- AT.parseJSON (AT.Object o)
+    l <- AT.parseJSON (AT.Object o) -- TODO clean up duplication
     c <- AT.parseJSON (AT.Object o)
     m <- (o AT..:? "claim")    :: AT.Parser (Maybe Claim)
     p <- (o AT..:? "provider") :: AT.Parser (Maybe Provider)
     v <- AT.parseJSON (AT.Object o)
     return $ Medication l c m p v
 
-instance MedDomain Medication where
+instance ClaimDomain Medication where
   domain = RxDomain
+  get f (RxDomain x) = f x
 
 -- | Insurance types contain information about insurance events
 --   such as enrollment
 data Insurance = Insurance
-  {   getPlan        :: String
-    , getInsurer     :: String }
+  {   plan        :: String
+    , insurer     :: String }
   deriving (Show, Eq)
 
 instance AT.FromJSON Insurance where
@@ -255,12 +263,14 @@ instance AT.FromJSON Insurance where
     i <- o AT..: "insurer"
     return $ Insurance (unpack p) (unpack i)
 
-instance MedDomain Insurance where
+instance ClaimDomain Insurance where
   domain = InDomain
+  get f (InDomain x) = f x
+
 
 -- | TODO
 
-data MedicalDomain = 
+data ClaimsDomain = 
     DmDomain Demographics
   | DxDomain Diagnosis
   | PrDomain Procedure
@@ -269,11 +279,10 @@ data MedicalDomain =
   | InDomain Insurance
   deriving (Eq, Show)
 
--- | Wrap a type in its MedicalDomain
-class MedDomain a where
-  domain   :: a -> MedicalDomain
---  TODO: figure out an undomain function
---  undomain :: MedicalDomain -> a
+-- | TODO 
+class ClaimDomain a where
+  domain :: a -> ClaimsDomain
+  get    :: (a -> b) -> ClaimsDomain -> b
 
 
 

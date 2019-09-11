@@ -1,11 +1,20 @@
 module Hasklepias.Events.EventsSpec where
 
-import Hasklepias.IntervalAlgebra
 import Hasklepias.Events
-import Hasklepias.Events.MedicalDomain
+import Hasklepias.IntervalAlgebra
+import Test.Hspec
 
-y = eventContext ( domain $ Insurance "x" "y" )  Nothing
-x1 = event ( period 4 5 ) y
-x2 = event ( period 5 6 ) y
+c1 = eventContext Nothing Nothing Nothing
+e1 = event (period 0 1) c1 
+e2 = event (period 2 3) c1
 
-z = events [x1, x2]
+
+main :: IO ()
+main = hspec $ do
+  describe "Tests of Events" $ 
+    do 
+      it "A simple unit test to get the ball rolling" $ e1 < e2 `shouldBe` True
+
+
+
+

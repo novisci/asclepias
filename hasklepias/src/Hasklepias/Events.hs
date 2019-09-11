@@ -1,27 +1,23 @@
 module Hasklepias.Events(
    Event
  , EventContext
+ , getEvent
  , event
  , eventContext
- , events
+-- , events
+ , hasConcept
+ , filterEvents
 ) where
 
 import Hasklepias.Context
 import Hasklepias.IntervalAlgebra
-import Hasklepias.Events.MedicalDomain
-import Data.IntMap.Strict as M
---import Data.Sequence (Seq)
---import qualified Data.Sequence as Seq
-
--- | TODO
-
---newtype ProtoEvent a = ProtoEvent (Period, Context a)
--- deriving (Show)
+import Hasklepias.Context.ClaimsDomain
+--import Data.IntMap.Strict as M
 
 -- | TODO
 
 newtype Event = Event { getEvent :: (Period, EventContext) }
-  deriving (Show, Eq)
+  deriving (Eq)
 
 instance Ord Event where 
   (<=) (Event x) (Event y) = fst x <= fst y
@@ -29,29 +25,55 @@ instance Ord Event where
   (>=) x y = not (x < y)
   (>)  x y = not (x <= y)
 
+instance Show Event where 
+  show x = "{" ++ show (fst $ getEvent x) ++ ", " ++ show (snd $ getEvent x) ++ "}"
+
+-- | TODO 
+
+type EventDomain  = Maybe ClaimsDomain
+type EventContext = Context EventDomain
+
+
 -- | TODO
 
 event :: Period -> EventContext -> Event
 event p c = Event (p, c)
 
 
--- | TODO 
+-- | TODO
 
-type EventDomain  = MedicalDomain
-type EventContext = Context EventDomain
+eventContext :: Maybe [String] -> Maybe EventDomain -> Source -> EventContext
+eventContext = Context
+
+-- | TODO
+hasConcept' :: String -> (EventContext -> Bool)
+hasConcept' name = 
+    \c -> 
+    case (getConcepts c) of 
+        Just concepts -> name `elem` concepts
+        Nothing -> False
+
+hasConcept :: String -> (Event -> Bool)
+hasConcept name = (\x -> hasConcept' name $ snd $ getEvent x)
 
 
 -- | TODO
 
-eventContext :: EventDomain -> Source -> EventContext
-eventContext = Context
+type Events = [Event]
 
--- TODO
+filterEvents ::  Events -> (Event -> Bool) -> Events
+filterEvents e f = filter f e
 
+{-
 newtype Events = Events (M.IntMap Event)
   deriving (Show)
 
--- TODO
+-- | TODO
 
 events :: [Event] -> Events
 events l = Events $ M.fromList $ zip [1..length l] l
+
+-- | TODO
+filterEvents ::  Events -> (Event -> Bool) -> Events
+filterEvents (Events m) f = Events $ M.filter f m
+-}

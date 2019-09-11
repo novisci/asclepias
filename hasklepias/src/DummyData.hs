@@ -7,6 +7,9 @@ module DummyData (
 import Hasklepias.IntervalAlgebra
 import Hasklepias.IntervalFilter
 import Hasklepias.Features
+import Hasklepias.Events
+import Hasklepias.Context
+import Hasklepias.Context.ClaimsDomain
 
 -- Some data to play with
 z0 = period (-1) (-1)
@@ -19,6 +22,20 @@ zs = [z0, z1, z2, z3, z4]
 s1 = map toPeriod [(0, 1), (1, 5), (3, 5), (6, 8), (9, 9), (12, 14), (12, 20)]
 s2 = map toPeriod [(1, 3), (1, 7), (3, 5), (6, 8), (7, 11)]
 s3 = map toPeriod [(1, 3), (1, 7), (13, 13), (13, 16), (20, 20)]
+
+dx = domain $ Diagnosis Inpatient (Code "W61.62" ICD10) Nothing Nothing
+ii = domain $ Insurance "hmo" "ACME Insurance" 
+
+c1 = eventContext (Just ["enrollment"])  ii Nothing
+c2 = eventContext (Just ["duck_struck"]) dx Nothing
+x1 = event ( period 1 5  ) c1
+x2 = event ( period 5 10 ) c1
+x3 = event ( period 9 9  ) c2
+x4 = event ( period 10 15) c1
+
+z  = [x1, x2, x3, x4]
+
+
 
 {-
  Define index as the end of the second period after 10

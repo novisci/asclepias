@@ -1,6 +1,7 @@
 module Hasklepias.Events(
    Event
  , EventContext
+ , Events
  , getEvent
  , event
  , eventContext
@@ -39,7 +40,6 @@ type EventContext = Context EventDomain
 event :: Period -> EventContext -> Event
 event p c = Event (p, c)
 
-
 -- | TODO
 
 eventContext :: Maybe [String] -> Maybe EventDomain -> Source -> EventContext
@@ -58,11 +58,19 @@ hasConcept name = (\x -> hasConcept' name $ snd $ getEvent x)
 
 
 -- | TODO
+-- NOTE (20190911): I (B. Saul) am starting out the Events type as a 
+-- list of the Event type. This may be not be the optimal approach,
+-- especially with regards to lookup/filtering the list. Ideally,
+-- we could do one pass through the ordered container (whatever it is)
+-- to identify events by concept; rather than repeated evaluations of
+-- the lookup predicates. This could be handled by, for example, 
+-- representing Events has a Map with a list of concept indices. 
+-- But it gets us off the ground.
 
 type Events = [Event]
 
-filterEvents ::  Events -> (Event -> Bool) -> Events
-filterEvents e f = filter f e
+filterEvents :: (Event -> Bool) -> Events -> Events
+filterEvents = filter
 
 {-
 newtype Events = Events (M.IntMap Event)

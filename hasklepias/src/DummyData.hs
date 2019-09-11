@@ -1,60 +1,99 @@
 module DummyData (
-   z0, z1, z2, z4, zs,
-   s1, s2, s3,
-   index, enrolled, twoout, features, baselineFilter
+--   z0, z1, z2, z4, zs,
+--   s1, s2, s3,
+   e1,
+   indexPeriod
+   --index, enrolled, twoout, features, baselineFilter
 ) where 
 
+
+import Data.List
 import Hasklepias.IntervalAlgebra
-import Hasklepias.IntervalFilter
-import Hasklepias.Features
+import Hasklepias.IntervalAlgebra.IntervalFilter
+--import Hasklepias.Features
 import Hasklepias.Events
 import Hasklepias.Context
 import Hasklepias.Context.ClaimsDomain
 
--- Some data to play with
-z0 = period (-1) (-1)
-z1 = period 0 1
-z2 = period 5 10
-z3 = period 10 11
-z4 = period 10 15
-zs = [z0, z1, z2, z3, z4]
 
+-- | Sequences of events to play with
 s1 = map toPeriod [(0, 1), (1, 5), (3, 5), (6, 8), (9, 9), (12, 14), (12, 20)]
 s2 = map toPeriod [(1, 3), (1, 7), (3, 5), (6, 8), (7, 11)]
 s3 = map toPeriod [(1, 3), (1, 7), (13, 13), (13, 16), (20, 20)]
+s4 = map toPeriod [(1, 5), (6, 10), (11, 15), (16, 20)]
 
-dx = domain $ Diagnosis Inpatient (Code "W61.62" ICD10) Nothing Nothing
-ii = domain $ Insurance "hmo" "ACME Insurance" 
+c1 = eventContext (Just ["enrollment"])  Nothing Nothing
+c2 = eventContext (Just ["duck_struck"]) Nothing Nothing
+c3 = eventContext (Just ["gator_crushed"]) Nothing Nothing
 
-c1 = eventContext (Just ["enrollment"])  ii Nothing
-c2 = eventContext (Just ["duck_struck"]) dx Nothing
-x1 = event ( period 1 5  ) c1
-x2 = event ( period 5 10 ) c1
-x3 = event ( period 9 9  ) c2
-x4 = event ( period 10 15) c1
+-- | e1 is a subject who is:
+-- repeatedly struck by a duck
+-- enrolled from 1 to 20 a gap of 1 between each 5 day period
 
-z  = [x1, x2, x3, x4]
-
-
+e1 = sort $ (zipWith event s1 $ repeat c2) ++ (zipWith event s4 $ repeat c1)
 
 {-
  Define index as the end of the second period after 10
 -}
-index :: [Period] -> Period
-index  = endPoint . head . second . (filter (\x -> (end x) > 10))
+--index :: [Period] -> Period
+--index  = endPoint . head . second . (filter (\x -> (end x) > 10))
+
+data Feature a =
+    Failure
+  | Success { feature :: a , label :: String}
+
+getPeriods :: Events -> [Period]
+getPeriods = map (\x -> fst $ getEvent x) 
+
+duckStruck :: Events -> Events
+duckStruck = filter (hasConcept "duck_struck")
+
+(!!-)  :: [a] -> Int -> [a]
+xs     !!- n | n < 0 =  []
+[]     !!- _         =  []
+(x:_)  !!- 0         =  [x]
+(_:xs) !!- n         =  xs !!- (n-1)
+
+
+first  x = x !!- 0
+second x = x !!- 1
+third  x = x !!- 2
+fourth x = x !!- 3
+fifth  x = x !!- 4
+
+safeHead :: [a] -> Maybe a
+safeHead []     = Nothing
+safeHead (x:xs) = Just x
+
+{-
+ Define index as the end of the first duck struck period after 10
+-}
+
+defineFeature :: String -> (Events -> Maybe a) -> Feature a
+--defineFeature label f 
+
+indexPeriod :: Events -> Maybe Period
+indexPeriod =
+  fmap endPoint .
+  safeHead . 
+  first . 
+  filter (\x -> (end x) > 10) . 
+  getPeriods . 
+  duckStruck 
 
 {-
  Define interval filters
 -}
 
-baselineFilter :: Period -> ([Period] -> [Period])
-baselineFilter x = filterOverlappedBy (expandl 15 x)
+--baselineFilter :: Period -> ([Period] -> [Period])
+--baselineFilter x = filterOverlappedBy (expandl 15 x)
 
 {-
 Define enrolled as the indicator of whether all of the gaps between the union of 
 all periods (+ allowableGap) that are overlapped by the lookbackPeriod are less
 than maxGap
 -}
+{-
 enrolled allowableGap indexPoint =
    all (< allowableGap) . 
    durations . 
@@ -74,6 +113,7 @@ twoout allowableGap indexPoint  =
   pairPeriods id id . 
   -- form pairs of startpoints
   baselineFilter indexPoint .
-  startPoints
+  beginPoints
 
 features = (index, enrolled 10, twoout 5)
+-}

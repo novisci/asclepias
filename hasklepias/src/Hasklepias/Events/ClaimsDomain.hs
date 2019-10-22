@@ -268,7 +268,7 @@ instance ClaimDomain Insurance where
   get f (InDomain x) = f x
 
 
--- | TODO
+-- | TODO: Describe ClaimsDomain
 
 data ClaimsDomain = 
     DmDomain Demographics

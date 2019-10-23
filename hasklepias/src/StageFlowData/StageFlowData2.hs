@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings, LambdaCase #-}
 module StagedFlowData (
-  s1
+
 ) where 
 
 import Hasklepias.IntervalAlgebra
@@ -18,22 +18,24 @@ import System.CPUTime
 
 --- State ---
 
-type State = Int
+type State = [Bool]
 
-makeState :: Text -> State
-makeState "A" = 2
-makeState "B" = 4
-makeState _   = 0
 
 none :: State
-none = 0
+none = [False, False]
+
+makeState :: Text -> State
+makeState "A" = [True, False]
+makeState "B" = [False, True]
+makeState _   = none
+
 
 -- | Combines two States to create a new State
 
 combineStates :: State -> State -> State
 combineStates s1 s2
    | s1 == s2  = s1
-   | otherwise = s1 + s2
+   | otherwise = zipWith (||) s1 s2
 
 --- Event ---
 
@@ -80,7 +82,8 @@ h (c, o:os) []     = c++o:os
 h (c, [])   []     = c
 h (c, [])   (e:es) = h (c, [e]) es
 h (c, o:os) (e:es) 
-  | isPoint p1     = h (c,  h ([], n) os ) es
+  | isPoint p1 && sSo && sSe
+                   = h (c,  h ([], n) os ) es
   | p1 `before` p2 || p1 `meets`  p2 || isPoint p2
                    = h (c++nh, h ([], nt) os ) es
   | e == o         = h (c, o:os) es
@@ -92,86 +95,81 @@ h (c, o:os) (e:es)
         nt = tail n
         p2 = fst $ unEvent e
         p1 = fst $ unEvent o
+        sSe = (snd $ unEvent e) == (snd $ unEvent $ head n)
+        sSo = (snd $ unEvent o) == (snd $ unEvent $ head n)
 
 -- | TODO:
 
 g :: [Event] -> [Event]
 g = h ([], [])
 
--- | Takes two *ordered* events, e1 <= e2, and "disjoins" them in the case that the
+-- | Takes two *ordered* events, x <= y, and "disjoins" them in the case that the
 --   two events have different states, creating a sequence (list) of new events that 
---   sequentially meet one another. Since e1 <= e2, there are 7 possible interval
---   relations between e1 and e2. If the states of e1 and e2 are equal and e1 is not 
---   before e2, then e1 and e2 are combined into a single event.
+--   sequentially meet one another. Since x <= y, there are 7 possible interval
+--   relations between x and y. If the states of x and y are equal and x is not 
+--   before y, then x and y are combined into a single event.
 
 combineEvents :: Event -> Event -> [Event]
-combineEvents e1 e2 
-   |           p1 == p2           = [  ev p1 s3 ]
-   |           p1 `before` p2     = [  e1
-                                     , evp p1e p2b none, e2 ]
-   | not sS && p1 `starts` p2     = [  ev p1 s3
-                                     , evp p1e p2e s2 ]
-   | not sS && p1 `finishedBy` p2 = [  evp p1b p2b s1
-                                     , ev p2 s3 ]
-   | not sS && p1 `contains` p2   = [  evp p1b p2b s1
-                                     , ev p2 s3
-                                     , evp p2e p1e s1 ]
-   | not sS && p1 `meets` p2      = [  e1
-                                     , e2 ]
-   | not sS && p1 `overlaps` p2   = [  evp p1b p2b s1
-                                     , evp p2b p1e s3
-                                     , evp p1e p2e s2 ]
-   | otherwise                    = [  evp p1b p2e s1 ]      
-   where p1  = fst $ unEvent e1
-         p2  = fst $ unEvent e2
-         s1  = snd $ unEvent e1
-         s2  = snd $ unEvent e2
-         s3  = combineStates s1 s2
-         p1b = begin p1
-         p2b = begin p2
-         p1e = end p1
-         p2e = end p2
-         sS  = s1 == s2
+combineEvents x y
+   |           p1 == p2           = [ ev p1 s3 ]
+   |           p1 `before` p2     = [ x, evp e1 b2 none, y ]
+   | not sS && p1 `starts` p2     = [ ev p1 s3, evp e1 e2 s2 ]
+   | not sS && p1 `finishedBy` p2 = [ evp b1 b2 s1, ev p2 s3 ]
+   | not sS && p1 `contains` p2   = [ evp b1 b2 s1, ev p2 s3, evp e2 e1 s1 ]
+   | not sS && p1 `meets` p2      = [ x, y ]
+   | not sS && p1 `overlaps` p2   = [ evp b1 b2 s1, evp b2 e1 s3, evp e1 e2 s2 ]
+   | otherwise                    = [ evp b1 e2 s1 ]      
+   where p1 = fst $ unEvent x
+         p2 = fst $ unEvent y
+         s1 = snd $ unEvent x
+         s2 = snd $ unEvent y
+         s3 = combineStates s1 s2
+         b1 = begin p1
+         b2 = begin p2
+         e1 = end p1
+         e2 = end p2
+         sS = (s1 == s2)
 
---- Testing ---
+{--- Testing ---}
 
 s0 = 
-  [ evp 0 10  2
-  , evp 2 10  2
-  , evp 5 8   1
-  , evp 6 9   4]
+  [ evp 0 10  [True, False]
+  , evp 2 10  [True, False]
+  , evp 5 8   [False, True]
+  , evp 6 9   [False, True]]
+
 
 s1 =
-  [ evp 0 3  2
-  , evp 5 8  2
-  , evp 5 10 1
-  , evp 8 12 4]
+  [ evp 0 3  [True, False]
+  , evp 5 8  [True, False]
+  , evp 5 10 [True, False]
+  , evp 8 12 [True, False]]
 
 s2 =
-  [ evp 0 3  2
-  , evp 5 8  2
-  , evp 5 10 1
-  , evp 8 12 1]
+  [ evp 0 3  [True, False]
+  , evp 5 8  [True, False]
+  , evp 5 10 [True, False]
+  , evp 8 12 [True, False]]
 
 s3 =
-  [ evp 0 0 1
-  , evp 0 1 1
-  , evp 0 2 1
-  , evp 0 3 1]
+  [ evp 0 0 [True, False]
+  , evp 0 1 [True, False]
+  , evp 0 2 [True, False]
+  , evp 0 3 [True, False]]
 
 s4 =
-  [ evp 0 5 1
-  , evp 1 5 1
-  , evp 2 5 1
-  , evp 3 5 1]
+  [ evp 0 5 [True, False]
+  , evp 1 5 [True, False]
+  , evp 2 5 [True, False]
+  , evp 3 5 [True, False]]
 
 s5 =
-  [ evp 0 5 1
-  , evp 1 5 2
-  , evp 3 3 6
-  , evp 3 5 6]
+  [ evp 0 5 [True, False]
+  , evp 1 5 [True, False]
+  , evp 3 3 [False, True]
+  , evp 3 5 [True, False]]
 
---- IO ---
+{--- IO ---}
 
 inFile :: FilePath
 inFile = "StageFlowData/example_data2.json"

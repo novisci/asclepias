@@ -8,6 +8,7 @@ module DummyData (
 
 
 import Data.List
+import Data.Either
 import Hasklepias.IntervalAlgebra
 import Hasklepias.IntervalAlgebra.IntervalFilter
 --import Hasklepias.Features
@@ -32,16 +33,33 @@ c3 = eventContext (Just ["gator_crushed"]) Nothing Nothing
 
 e1 = sort $ (zipWith event s1 $ repeat c2) ++ (zipWith event s4 $ repeat c1)
 
+-- TODO: what else?
+
+data Feature a = 
+    Left'  {  getReason  :: String } 
+  | Right' {  getFeature :: a 
+            , getLabel   :: String}
+    deriving (Show)
+
+instance Functor Feature where
+  fmap f (Left'  x) = Left' x 
+  fmap f (Right' x l) = Right' (f x) l
+
+defineFeature1 :: String -> (Events -> Maybe a) -> (Events -> Feature a)
+defineFeature1 label derivation = 
+  \e -> 
+  case derivation e of 
+    Just x  -> (Right' x label)
+    Nothing -> (Left' "TODO: add some Some reason")
+
 {-
- Define index as the end of the second period after 10
+defineFeature2 :: String -> (Feature b -> Feature a)
+defineFeature2 label derivation = 
+  \f -> 
+  case derivation f of 
+    Just x  -> (Right' x label)
+    Nothing -> (Left' "TODO: add some Some reason")
 -}
---index :: [Period] -> Period
---index  = endPoint . head . second . (filter (\x -> (end x) > 10))
-
-data Feature a =
-    Failure
-  | Success { feature :: a , label :: String}
-
 getPeriods :: Events -> [Period]
 getPeriods = map (\x -> fst $ getEvent x) 
 
@@ -66,27 +84,33 @@ safeHead []     = Nothing
 safeHead (x:xs) = Just x
 
 {-
- Define index as the end of the first duck struck period after 10
+ Define study periods
 -}
 
-defineFeature :: String -> (Events -> Maybe a) -> Feature a
---defineFeature label f 
+-- | Index is the end of the first duck struck period after 10
 
-indexPeriod :: Events -> Maybe Period
-indexPeriod =
-  fmap endPoint .
-  safeHead . 
-  first . 
-  filter (\x -> (end x) > 10) . 
-  getPeriods . 
-  duckStruck 
+indexPeriod :: Events -> Feature Period
+indexPeriod = defineFeature1
+   "Index Period" $
+   ( fmap endPoint .
+     safeHead . 
+     first . 
+     filter (\x -> (end x) > 10) . 
+     getPeriods . 
+     duckStruck )
 
-{-
- Define interval filters
--}
+-- | Baseline is start of Index - 15
+
+baselinePeriod :: Feature Period -> Feature Period
+baselinePeriod = 
+   ( fmap $ expandl 15)
 
 --baselineFilter :: Period -> ([Period] -> [Period])
 --baselineFilter x = filterOverlappedBy (expandl 15 x)
+
+
+
+
 
 {-
 Define enrolled as the indicator of whether all of the gaps between the union of 

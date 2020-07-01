@@ -1,6 +1,6 @@
 module Main where
 
-import Hasklepias
+-- import Hasklepias
 
 main :: IO ()
-main = someFunc
+main = putStrLn "Hasklepias"

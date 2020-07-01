@@ -1,13 +1,13 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.31.1.
+-- This file has been generated from package.yaml by hpack version 0.33.0.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: a788263eb77812ae5ec2063d49a8afffebcf86f4bf1cc480b7bca595cbace6c4
+-- hash: 8bb725e4a6ad701552e7f8a1241d0500a0d14bf23d9c84375214efdf81203c1f
 
 name:           hasklepias
-version:        0.1.0.0
+version:        0.1.0
 description:    Please see the README on GitHub at <https://github.com/bsaul/hasklepias#readme>
 homepage:       https://github.com/bsaul/hasklepias#readme
 bug-reports:    https://github.com/bsaul/hasklepias/issues
@@ -27,7 +27,7 @@ source-repository head
 
 library
   exposed-modules:
-      Lib
+      Hasklepias
   other-modules:
       Paths_hasklepias
   hs-source-dirs:

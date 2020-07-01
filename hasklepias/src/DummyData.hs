@@ -9,8 +9,8 @@ module DummyData (
 
 import Data.List
 import Data.Either
-import Hasklepias.IntervalAlgebra
-import Hasklepias.IntervalAlgebra.IntervalFilter
+-- import Hasklepias.IntervalAlgebra
+-- import Hasklepias.IntervalAlgebra.IntervalFilter
 --import Hasklepias.Features
 import Hasklepias.Events
 import Hasklepias.Context

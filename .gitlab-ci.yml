@@ -1,0 +1,14 @@
+image: haskell:8.8.3
+
+cache:
+  paths:
+    - .stack
+    - .stack-work
+    - target
+
+test:
+  stage: test
+  script:
+    - cd hasklepias
+    - ghc --version
+    - stack --system-ghc test

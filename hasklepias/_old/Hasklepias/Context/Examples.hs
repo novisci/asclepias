@@ -1,4 +1,4 @@
-module Hasklepias.ContextExamples(
+module Hasklepias.Context.Examples(
   card,
   cardContext,
   pokerHand,

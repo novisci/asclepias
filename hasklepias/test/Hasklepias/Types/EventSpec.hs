@@ -11,7 +11,7 @@ evnt2 = event ( unsafeInterval (2 :: Int) (6 :: Int) ) ( HC.context ["c3", "c4"]
 evnts = [evnt1, evnt2]
 containmentInt = unsafeInterval (0 :: Int) (10 :: Int)
 noncontainmentInt = unsafeInterval (4 :: Int) (10 :: Int)
-
+anotherInt = unsafeInterval (15 :: Int) (20 :: Int)
 
 spec :: Spec 
 spec = do 
@@ -42,3 +42,20 @@ spec = do
       (filterEvents (liftIntervalPredicate contains containmentInt) evnts) `shouldBe` evnts
     it "filterEvents by interval containment" $ 
       (filterEvents (liftIntervalPredicate contains noncontainmentInt) evnts) `shouldBe` []
+
+    it "combineIntervals collapses overlapping intervals" $
+       (combineIntervals [containmentInt, noncontainmentInt]) `shouldBe` [containmentInt]
+    it "combineIntervals collapses overlapping intervals" $
+       (combineIntervals [containmentInt, noncontainmentInt, anotherInt]) `shouldBe` [containmentInt, anotherInt]
+    it "combineIntervals collapses overlapping intervals" $
+       (combineIntervals [containmentInt]) `shouldBe` [containmentInt]
+    it "combineIntervals collapses overlapping intervals" $
+       (combineIntervals [noncontainmentInt]) `shouldBe` [noncontainmentInt]
+
+
+    it "gaps returns gaps" $
+       (gaps [containmentInt, noncontainmentInt]) `shouldBe` []
+    it "gaps returns gaps" $
+       (gaps [containmentInt]) `shouldBe` []
+    it "gaps returns gaps" $
+       (gaps [containmentInt, anotherInt]) `shouldBe` [unsafeInterval (10 :: Int) (15 :: Int)]

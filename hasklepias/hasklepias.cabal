@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 5d4d1683c80d1eabda98f4202eac8edc41441242b6a649e16c3e5f62ec040348
+-- hash: 185007e083cff6b0af000ca072953552611c2a7ba297a63eb1c0358bd2162579
 
 name:           hasklepias
 version:        0.1.0
@@ -28,6 +28,7 @@ source-repository head
 library
   exposed-modules:
       Hasklepias
+      Hasklepias.IntervalOperations
       Hasklepias.Types.Context
       Hasklepias.Types.Event
       Hasklepias.Types.Types
@@ -65,6 +66,7 @@ test-suite hasklepias-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
+      Hasklepias.IntervalOperationsSpec
       Hasklepias.Types.ContextSpec
       Hasklepias.Types.EventSpec
       Paths_hasklepias

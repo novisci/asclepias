@@ -1,4 +1,4 @@
-module Hasklepias.Context.Examples(
+module Hasklepias.Types.Context.Examples(
   card,
   cardContext,
   pokerHand,
@@ -7,7 +7,7 @@ module Hasklepias.Context.Examples(
   pokerRound
 ) where
 
-import Hasklepias.Context
+import Hasklepias.Types.Context
 import Prelude hiding (lookup)
 import qualified Data.Map.Strict as M
 {-

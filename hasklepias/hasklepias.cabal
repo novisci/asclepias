@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 8bb725e4a6ad701552e7f8a1241d0500a0d14bf23d9c84375214efdf81203c1f
+-- hash: 185007e083cff6b0af000ca072953552611c2a7ba297a63eb1c0358bd2162579
 
 name:           hasklepias
 version:        0.1.0
@@ -28,12 +28,21 @@ source-repository head
 library
   exposed-modules:
       Hasklepias
+      Hasklepias.IntervalOperations
+      Hasklepias.Types.Context
+      Hasklepias.Types.Event
+      Hasklepias.Types.Types
   other-modules:
       Paths_hasklepias
   hs-source-dirs:
       src
   build-depends:
-      base >=4.7 && <5
+      aeson >=1.4.0.0 && <2
+    , base >=4.7 && <5
+    , containers >=0.6.0
+    , interval-algebra ==0.1.1
+    , text >=1.2.3
+    , unordered-containers >=0.2.10
   default-language: Haskell2010
 
 executable hasklepias-exe
@@ -44,19 +53,33 @@ executable hasklepias-exe
       app
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      aeson >=1.4.0.0 && <2
+    , base >=4.7 && <5
+    , containers >=0.6.0
     , hasklepias
+    , interval-algebra ==0.1.1
+    , text >=1.2.3
+    , unordered-containers >=0.2.10
   default-language: Haskell2010
 
 test-suite hasklepias-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
+      Hasklepias.IntervalOperationsSpec
+      Hasklepias.Types.ContextSpec
+      Hasklepias.Types.EventSpec
       Paths_hasklepias
   hs-source-dirs:
       test
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      aeson >=1.4.0.0 && <2
+    , base >=4.7 && <5
+    , containers >=0.6.0
     , hasklepias
+    , hspec
+    , interval-algebra ==0.1.1
+    , text >=1.2.3
+    , unordered-containers >=0.2.10
   default-language: Haskell2010

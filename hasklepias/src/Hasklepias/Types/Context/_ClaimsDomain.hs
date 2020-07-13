@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Hasklepias.Context.ClaimsDomain(
+module Hasklepias.Types.Context.ClaimsDomain(
    ClaimsDomain
  , domain
  , get

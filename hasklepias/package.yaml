@@ -21,6 +21,12 @@ description:         Please see the README on GitHub at <https://github.com/bsau
 
 dependencies:
 - base >= 4.7 && < 5
+- interval-algebra == 0.1.1
+- aeson >= 1.4.0.0 && < 2
+- containers >= 0.6.0
+- unordered-containers >= 0.2.10
+- text >= 1.2.3
+
 
 library:
   source-dirs: src
@@ -46,3 +52,4 @@ tests:
     - -with-rtsopts=-N
     dependencies:
     - hasklepias
+    - hspec

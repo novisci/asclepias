@@ -30,16 +30,20 @@ resolver: lts-16.3
 #   - wai
 packages:
 - .
+# - ../../interval-algebra
+
 # Dependency packages to be pulled from upstream that are not in the resolver.
 # These entries can reference officially published versions as well as
 # forks / in-progress versions pinned to a git hash. For example:
 #
-# extra-deps:
-# - acme-missiles-0.3
-# - git: https://github.com/commercialhaskell/stack.git
-#   commit: e7b331f14bcffb8367cd58fbfc8b40ec7642100a
-#
-# extra-deps: []
+extra-deps: 
+  # - ../../interval-algebra
+  - git : https://github.com/novisci/interval-algebra.git
+    commit : 58f59ad14e10dcb221a33fffadf03bbc179ba0bb
+
+local-bin-path: 
+  /usr/local/bin
+
 
 # Override default flag values for local packages and extra-deps
 # flags: {}

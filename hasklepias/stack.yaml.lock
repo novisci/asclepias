@@ -3,7 +3,18 @@
 # For more information, please see the documentation at:
 #   https://docs.haskellstack.org/en/stable/lock_files
 
-packages: []
+packages:
+- completed:
+    name: interval-algebra
+    version: 0.1.1
+    git: https://github.com/novisci/interval-algebra.git
+    pantry-tree:
+      size: 721
+      sha256: 9d1e37c2e73b8a44231ffeafad45bc1eabaf703a5036f3efb9d709292f1e735b
+    commit: 58f59ad14e10dcb221a33fffadf03bbc179ba0bb
+  original:
+    git: https://github.com/novisci/interval-algebra.git
+    commit: 58f59ad14e10dcb221a33fffadf03bbc179ba0bb
 snapshots:
 - completed:
     size: 531696

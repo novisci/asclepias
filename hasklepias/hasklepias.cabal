@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 185007e083cff6b0af000ca072953552611c2a7ba297a63eb1c0358bd2162579
+-- hash: 7bfa43e49f9db8cff6d0df10e3078ea7a4440aa25bad3dcd724ba30ebd07416c
 
 name:           hasklepias
 version:        0.1.0
@@ -31,6 +31,7 @@ library
       Hasklepias.IntervalOperations
       Hasklepias.Types.Context
       Hasklepias.Types.Event
+      Hasklepias.Types.Event.Aeson
       Hasklepias.Types.Types
   other-modules:
       Paths_hasklepias
@@ -39,10 +40,12 @@ library
   build-depends:
       aeson >=1.4.0.0 && <2
     , base >=4.7 && <5
+    , bytestring >=0.10
     , containers >=0.6.0
     , interval-algebra ==0.1.1
     , text >=1.2.3
     , unordered-containers >=0.2.10
+    , vector >=0.12
   default-language: Haskell2010
 
 executable hasklepias-exe
@@ -55,11 +58,13 @@ executable hasklepias-exe
   build-depends:
       aeson >=1.4.0.0 && <2
     , base >=4.7 && <5
+    , bytestring >=0.10
     , containers >=0.6.0
     , hasklepias
     , interval-algebra ==0.1.1
     , text >=1.2.3
     , unordered-containers >=0.2.10
+    , vector >=0.12
   default-language: Haskell2010
 
 test-suite hasklepias-test
@@ -68,6 +73,7 @@ test-suite hasklepias-test
   other-modules:
       Hasklepias.IntervalOperationsSpec
       Hasklepias.Types.ContextSpec
+      Hasklepias.Types.Event.AesonSpec
       Hasklepias.Types.EventSpec
       Paths_hasklepias
   hs-source-dirs:
@@ -76,10 +82,12 @@ test-suite hasklepias-test
   build-depends:
       aeson >=1.4.0.0 && <2
     , base >=4.7 && <5
+    , bytestring >=0.10
     , containers >=0.6.0
     , hasklepias
     , hspec
     , interval-algebra ==0.1.1
     , text >=1.2.3
     , unordered-containers >=0.2.10
+    , vector >=0.12
   default-language: Haskell2010

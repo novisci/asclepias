@@ -37,9 +37,15 @@ packages:
 # forks / in-progress versions pinned to a git hash. For example:
 #
 extra-deps: 
-  # - ../../interval-algebra
+#   # - ../../interval-algebra
   - git : https://github.com/novisci/interval-algebra.git
     commit : 58f59ad14e10dcb221a33fffadf03bbc179ba0bb
+  # - direct-sqlite-2.3.26@sha256:04e835402f1508abca383182023e4e2b9b86297b8533afbd4e57d1a5652e0c23,3718
+  # - haddock-api-2.24.0@sha256:f3dc94da74e99f855ba6401b4f1a8f1ae753d3f076b45b7627a90784bd2d591d,5627
+  # - hdocs-0.5.4.0@sha256:36e692b255e51ed38e0bb65f5ace5df9399217b522c34e2b5ed4e52a6b6097bd,2933
+  # - hlint-2.2.11@sha256:f4eef0d718264824254bf375a85a91a8756b20c4f7d2a4854ffe4e69e8bd1679,4069
+  # - sqlite-simple-0.4.18.0@sha256:3ceea56375c0a3590c814e411a4eb86943f8d31b93b110ca159c90689b6b39e5,3002
+  # - ghc-prim-0.6.1@sha256:4707f24d1d435d00a0a771114cebe760348f60a653bc6b33dca4cff74ad107c6,2371
 
 local-bin-path: 
   /usr/local/bin

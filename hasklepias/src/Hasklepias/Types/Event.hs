@@ -71,7 +71,7 @@ filterEvents :: (IntervalAlgebraic a) =>
                 -> Events a
 filterEvents = filter
 
---
+-- | TODO
 liftIntervalPredicate :: (IntervalAlgebraic a) => 
                 ComparativePredicateOf (Interval a)
                 -> Interval a
@@ -79,8 +79,9 @@ liftIntervalPredicate :: (IntervalAlgebraic a) =>
                 -> Bool
 liftIntervalPredicate f = (\x y -> ( f x (intrvl y) ))
 
---
+-- | TODO
 lift2IntervalPredicate :: (IntervalAlgebraic a) => 
                 ComparativePredicateOf (Interval a)
                 -> ComparativePredicateOf (Event a)
 lift2IntervalPredicate f = (\x y -> ( f (intrvl x) (intrvl y) ))
+

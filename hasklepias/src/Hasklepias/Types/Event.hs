@@ -10,8 +10,11 @@ Stability   : experimental
 
 module Hasklepias.Types.Event(
    Event
+ , Events
  , getEvent
  , event
+ , intrvl
+ , ctxt
  , hasConcept
  , hasConcepts
  , filterEvents

@@ -11,6 +11,7 @@ Stability   : experimental
 module Hasklepias.Types.Context(
     Context(..)
   , context
+  , Concept
   , hasConcept
   , hasConcepts
   , HasConcept

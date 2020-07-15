@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: f2313ef42c447db303ecc00c954d9e0c83bddbb30ee1bec0e2d80efddbf19b37
+-- hash: c92009be2e612f12d1a333f08f3b7f0deb9c68af69bb5d74c16937bbd5ae4d24
 
 name:           hasklepias
 version:        0.1.0
@@ -34,6 +34,7 @@ library
       Hasklepias.Types.Context
       Hasklepias.Types.Event
       Hasklepias.Types.Event.Aeson
+      Hasklepias.Types.Event.Examples
   other-modules:
       Paths_hasklepias
   hs-source-dirs:

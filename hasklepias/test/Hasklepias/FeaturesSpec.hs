@@ -5,6 +5,7 @@ import IntervalAlgebra
 import Hasklepias.Features
 import Hasklepias.Types.Event
 import Hasklepias.Types.Context as HC
+import Data.Time as DT
 import Test.Hspec
 
 evnt1 = event ( unsafeInterval (1 :: Int) (5 :: Int) ) ( HC.context ["c1", "c2"] ) 

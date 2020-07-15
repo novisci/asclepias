@@ -23,7 +23,7 @@ import Hasklepias.IntervalOperations
 data Feature a = 
     Deficient  {  getReason  :: String } 
   | Sufficient {  getName    :: String
-                 ,getData    :: a }
+                , getData    :: a }
     deriving (Show, Eq)
 
 instance Functor Feature where

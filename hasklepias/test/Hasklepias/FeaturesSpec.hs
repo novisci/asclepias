@@ -26,38 +26,56 @@ baselineInterval :: (Num a, IntervalAlgebraic a) =>
 baselineInterval (Deficient  _ )  = Nothing
 baselineInterval (Sufficient _ x) = Just (unsafeInterval (begin x - 90) (begin x))
 
-hasDuckHistory :: (Num a, IntervalAlgebraic a) =>
+makeBaselineFilter :: IntervalAlgebraic a => 
                      Maybe (Interval a) 
+                  -> Maybe (Event a -> Bool)
+makeBaselineFilter Nothing  = Nothing
+makeBaselineFilter (Just x) = Just (\e -> (intrvl e) `in'` x)
+
+
+hasDuckHistory :: (IntervalAlgebraic a) =>
+                     Maybe (Event a -> Bool)
                   -> Events a 
                   -> Feature Bool
 hasDuckHistory Nothing _  = Deficient "No baseline"
 hasDuckHistory (Just x) es = 
       Sufficient "History with Ducks" 
         (not $ null $
-          (filterEvents (\e ->
-             -- liftIntervalPredicate in' x e &&
-             (intrvl e) `in'` x && 
-             e `hasConcepts` ["wasBitByDuck", "wasStruckByDuck"])) 
+          (filterEvents x) $
+          (filterEvents (\e -> 
+            e `hasConcepts` ["wasBitByDuck", "wasStruckByDuck"]))
           es)
 
 hasMacawHistory :: (Num a, IntervalAlgebraic a) =>
-                     Maybe (Interval a) 
+                     Maybe (Event a -> Bool)
                   -> Events a 
                   -> Feature Bool
 hasMacawHistory Nothing _  = Deficient "No baseline"
 hasMacawHistory (Just x) es = 
       Sufficient "History with Macaw" 
         (not $ null $
+          (filterEvents x) $
           (filterEvents (\e ->
-             -- liftIntervalPredicate in' x e &&
-             (intrvl e) `in'` x && 
              e `hasConcepts` ["wasBitByMacaw", "wasStruckByMacaw"])) 
           es)
 
-baselineInterval1 = (baselineInterval.indexExample) exampleEvents1
-baselineInterval2 = (baselineInterval.indexExample) exampleEvents2
 
-
+-- baselineInterval1 = (baselineInterval.indexExample) exampleEvents1
+baselineFilter1 = (makeBaselineFilter.baselineInterval.indexExample) exampleEvents1
+baselineFilter2 = (makeBaselineFilter.baselineInterval.indexExample) exampleEvents2
+{-
+Define enrolled as the indicator of whether all of the gaps between the union of 
+all periods (+ allowableGap) that are overlapped by the lookbackPeriod are less
+than maxGap
+-}
+{-
+enrolled allowableGap indexPoint =
+   all (< allowableGap) . 
+   durations . 
+   periodGaps . 
+   baselineFilter indexPoint . 
+   collapsePeriods
+-}
 
 
 spec :: Spec 
@@ -76,18 +94,18 @@ spec = do
       (baselineInterval (indexExample exampleEvents1)) `shouldBe` 
       (Just (unsafeInterval (-1 :: Int) (89 :: Int)))
     it "hasDuckHistory from exampleEvents1" $ 
-      (hasDuckHistory baselineInterval1 exampleEvents1) `shouldBe` 
+      (hasDuckHistory baselineFilter1 exampleEvents1) `shouldBe` 
       (Sufficient "History with Ducks" True)
     it "hasMacawHistory from exampleEvents1" $ 
-      (hasMacawHistory baselineInterval1 exampleEvents1) `shouldBe` 
+      (hasMacawHistory baselineFilter1 exampleEvents1) `shouldBe` 
       (Sufficient "History with Macaw" False)
 
     it "indexExample of exampleEvents2" $ 
       (indexExample exampleEvents2) `shouldBe`
       (Deficient  "No occurrence of Orca Bite")
     it "hasDuckHistory from exampleEvents1" $ 
-      (hasDuckHistory baselineInterval2 exampleEvents2) `shouldBe` 
+      (hasDuckHistory baselineFilter2 exampleEvents2) `shouldBe` 
       (Deficient  "No baseline")
     it "hasMacawHistory from exampleEvents1" $ 
-      (hasMacawHistory baselineInterval2 exampleEvents2) `shouldBe` 
+      (hasMacawHistory baselineFilter2 exampleEvents2) `shouldBe` 
       (Deficient  "No baseline")

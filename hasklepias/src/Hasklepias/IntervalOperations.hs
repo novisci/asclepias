@@ -55,3 +55,5 @@ combineIntervals l = unBox $ foldr ((<>) . (\z -> Box [z])) (Box []) l
 gaps :: (IntervalAlgebraic a) => [Interval a] -> [Interval a] 
 gaps l = catMaybes $ map (\x -> (fst x) >< (snd x)) $ (zip <*> tail) l 
 
+
+

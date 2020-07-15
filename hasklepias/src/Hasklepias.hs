@@ -2,20 +2,22 @@
 module Hasklepias (
 ) where
 import IntervalAlgebra
-import Hasklepias.Types.Event.Aeson
-import Data.Aeson
-import qualified Data.ByteString.Lazy as B
-import qualified Data.ByteString.Char8 as C
+import Hasklepias.Types
 
 
-testInputs :: B.ByteString
-testInputs = 
-      "[\"abc\", 0, 1, \"Diagnosis\",\
-      \[\"someThing\"],\
-      \{\"domain\":\"Diagnosis\",\"time\":{\"begin\":0,\"end\":1}}]\n\
-      \[\"abc\", 5, 6, \"Diagnosis\",\
-      \[\"someThing\"],\
-      \{\"domain\":\"Diagnosis\",\"time\":{\"begin\":5,\"end\":6}}]"
+-- import Data.Aeson
+-- import qualified Data.ByteString.Lazy as B
+-- import qualified Data.ByteString.Char8 as C
+
+
+-- testInputs :: B.ByteString
+-- testInputs = 
+--       "[\"abc\", 0, 1, \"Diagnosis\",\
+--       \[\"someThing\"],\
+--       \{\"domain\":\"Diagnosis\",\"time\":{\"begin\":0,\"end\":1}}]\n\
+--       \[\"abc\", 5, 6, \"Diagnosis\",\
+--       \[\"someThing\"],\
+--       \{\"domain\":\"Diagnosis\",\"time\":{\"begin\":5,\"end\":6}}]"
 
 
 

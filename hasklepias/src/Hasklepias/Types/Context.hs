@@ -12,6 +12,7 @@ module Hasklepias.Types.Context(
     Context(..)
   , context
   , Concept
+  , Concepts
   , hasConcept
   , hasConcepts
   , HasConcept

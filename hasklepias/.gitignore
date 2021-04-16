@@ -1,2 +1,6 @@
 .stack-work/
+*sublime*
+*code-workspace
 *~
+cabal.project.local
+dist-newstyle*

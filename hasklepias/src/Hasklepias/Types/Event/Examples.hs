@@ -30,10 +30,13 @@ toEvent :: (IntervalAlgebraic a) => EventData a -> Event a
 toEvent x = event (unsafeInterval (t1 x) (t2 x)) (context $ [t3 x])
 
 toEvents :: (IntervalAlgebraic a) => [EventData a] -> Events a
-toEvents = sort.(map toEvent)
+toEvents = sort.map toEvent
 
+t1 :: (a, b, c) -> a
 t1 (x , _ , _) = x
+t2 :: (a, b, c) -> b
 t2 (_ , x , _) = x
+t3 :: (a, b, c) -> c
 t3 (_ , _ , x) = x
 
 exampleEvents1Data :: [EventData Int]

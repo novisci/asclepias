@@ -26,14 +26,14 @@ import Data.List (union)
 -- At this time, 'facts' and 'source' are simply stubs to be fleshed out in 
 -- later versions of 'Hasklepias'. 
 data Context = Context {
-      getConcepts :: Concepts 
+      getConcepts :: Concepts
     , getFacts    :: Maybe Facts
-    , getSource   :: Maybe Source 
-} deriving (Eq, Show) 
+    , getSource   :: Maybe Source
+} deriving (Eq, Show)
 
 -- | Defines composability of @Context@s.
-instance Semigroup Context where 
-    x <> y = context (unBox $ (Box $ getConcepts x) <> ( Box $ getConcepts y))
+instance Semigroup Context where
+    x <> y = context (unBox $ Box (getConcepts x) <> Box (getConcepts y))
 
 -- | Smart contructor for Context type
 --
@@ -45,7 +45,7 @@ context x = Context x Nothing Nothing
 The 'HasConcept' typeclass provides predicate functions for determining whether
 an 'a' has a concept.
 -}
-class HasConcept a where 
+class HasConcept a where
     -- | Does an 'a' have a particular 'Concept'?
     hasConcept  :: a -> Concept -> Bool
 

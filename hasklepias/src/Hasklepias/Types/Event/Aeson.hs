@@ -25,6 +25,7 @@ import qualified Data.ByteString.Lazy as B
 import qualified Data.ByteString.Char8 as C
 import Data.Either (rights)
 
+-- TODO use parseInterval instead of unsafeInterval
 instance FromJSON (Interval Int) where
     parseJSON = withObject "Time" $ \o -> do
         t <- o .: "time"

@@ -14,6 +14,7 @@ module Hasklepias.Types.Event(
  , getEvent
  , event
  , intrvl
+ , intervals
  , ctxt
  , hasConcept
  , hasConcepts
@@ -24,24 +25,28 @@ module Hasklepias.Types.Event(
 ) where
 
 import IntervalAlgebra
-import Hasklepias.Types.Context
+    ( ComparativePredicateOf,
+      Interval,
+      IntervalAlgebraic,
+      Intervallic )
+import Hasklepias.Types.Context ( HasConcept(..), Context )
 
 -- | An Event @a@ is simply a pair @(Interval a, Context)@
 newtype Event a =  Event { getEvent :: (Interval a, Context) }
   deriving (Eq)
 
-instance (Intervallic a) => Ord (Event a) where 
+instance (Intervallic a) => Ord (Event a) where
   (<=) (Event x) (Event y) = fst x <= fst y
   (<)  (Event x) (Event y) = fst x <  fst y
   (>=) x y = not (x < y)
   (>)  x y = not (x <= y)
 
-instance (Intervallic a, Show a) => Show (Event a) where 
-  show x = "{" ++ show (fst $ getEvent x) ++ ", " ++ 
+instance (Intervallic a, Show a) => Show (Event a) where
+  show x = "{" ++ show (fst $ getEvent x) ++ ", " ++
                   show (snd $ getEvent x) ++ "}"
 
 instance HasConcept (Event a) where
-    hasConcept x y = (snd $ getEvent x) `hasConcept` y
+    hasConcept x y = snd (getEvent x) `hasConcept` y
 
 -- | A smart constructor for 'Event a's.
 event :: (IntervalAlgebraic a) => Interval a -> Context -> Event a
@@ -68,23 +73,26 @@ ctxt = snd.getEvent
 type Events a = [Event a]
 
 -- | Filter @Events a@ by a predicate function
-filterEvents :: (IntervalAlgebraic a) => 
-                (Event a -> Bool) 
-                -> Events a 
+filterEvents :: (IntervalAlgebraic a) =>
+                (Event a -> Bool)
+                -> Events a
                 -> Events a
 filterEvents = filter
 
 -- | TODO
-liftIntervalPredicate :: (IntervalAlgebraic a) => 
+liftIntervalPredicate :: (IntervalAlgebraic a) =>
                 ComparativePredicateOf (Interval a)
                 -> Interval a
                 -> Event a
                 -> Bool
-liftIntervalPredicate f = (\x y -> ( f x (intrvl y) ))
+liftIntervalPredicate f x y = f x (intrvl y)
 
 -- | TODO
-lift2IntervalPredicate :: (IntervalAlgebraic a) => 
+lift2IntervalPredicate :: (IntervalAlgebraic a) =>
                 ComparativePredicateOf (Interval a)
                 -> ComparativePredicateOf (Event a)
-lift2IntervalPredicate f = (\x y -> ( f (intrvl x) (intrvl y) ))
+lift2IntervalPredicate f x y = f (intrvl x) (intrvl y)
 
+-- | TODO
+intervals :: Events a -> [Interval a]
+intervals = map intrvl

@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-|
-Module      : Example Hasklepias Event Type
+Module      : Example Hasklepias Events
 Description : TODO
 Copyright   : (c) NoviSci, Inc 2020
 License     : BSD3
@@ -8,7 +8,7 @@ Maintainer  : bsaul@novisci.com
 Stability   : experimental
 -}
 
-module Hasklepias.Types.Event.Examples (
+module ExampleEvents (
       exampleEvents1
     , exampleEvents2
 ) where
@@ -55,14 +55,15 @@ exampleEvents1Data = [
   , (46, 47, "wasBitByDuck")
   , (49, 50, "wasBitByDuck")
   , (51, 52, "wasBitByDuck")
-  , (89, 90, "wasBitByOrca")
+  , (60, 61, "wasBitByOrca")
   , (91, 92, "wasStuckByCow")
   , (5,  6,  "hadMinorSurgery")
   , (52, 53, "hadMajorSurgery")
   , (5,  10, "tookAntibiotics")
   , (52, 60, "wasHospitalized")
-  , (52, 60, "tookAntibiotics")
-  , (63, 73, "tookAntibiotics")
+  , (45, 51, "tookAntibiotics")
+  , (60, 73, "tookAntibiotics")
+  , (80, 83, "tookAntibiotics")
   , (95, 96, "died")
  ]
 

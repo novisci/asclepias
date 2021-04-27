@@ -21,7 +21,8 @@ module Hasklepias.Types.Event(
  , filterEvents
  , liftIntervalPredicate
  , lift2IntervalPredicate
-
+ , liftIntervalFilter
+ , makeEventFilter
 ) where
 
 import IntervalAlgebra
@@ -74,25 +75,46 @@ type Events a = [Event a]
 
 -- | Filter @Events a@ by a predicate function
 filterEvents :: (IntervalAlgebraic a) =>
-                (Event a -> Bool)
-                -> Events a
-                -> Events a
+    (Event a -> Bool)
+    -> Events a
+    -> Events a
 filterEvents = filter
 
 -- | TODO
 liftIntervalPredicate :: (IntervalAlgebraic a) =>
-                ComparativePredicateOf (Interval a)
-                -> Interval a
-                -> Event a
-                -> Bool
+    ComparativePredicateOf (Interval a)
+    -> Interval a
+    -> Event a
+    -> Bool
 liftIntervalPredicate f x y = f x (intrvl y)
 
 -- | TODO
 lift2IntervalPredicate :: (IntervalAlgebraic a) =>
-                ComparativePredicateOf (Interval a)
-                -> ComparativePredicateOf (Event a)
+       ComparativePredicateOf (Interval a)
+    -> ComparativePredicateOf (Event a)
 lift2IntervalPredicate f x y = f (intrvl x) (intrvl y)
 
--- | TODO
+-- | Extracts the interval part of each 'Event' into a list of intervals.
 intervals :: Events a -> [Interval a]
 intervals = map intrvl
+
+-- | TODO
+makeEventFilter :: (IntervalAlgebraic a) =>
+       ComparativePredicateOf (Interval a) -- ^ an 'IntervalAlgebraic' predicate
+    -> Interval a -- ^ an interval to compare to intervals in the input eventsa
+    -> (Context -> Bool) -- ^ predicate on a 'Context'
+    -> Events a
+    -> Events a
+makeEventFilter fi i fc = filterEvents (\x -> liftIntervalPredicate fi i x && 
+                                              fc (ctxt x) )
+
+-- | Lifts a 'Interval' predicate to create a filter of events.
+liftIntervalFilter :: (IntervalAlgebraic a) =>
+       ComparativePredicateOf (Interval a) -- ^ an 'IntervalAlgebraic' predicate
+    -> Interval a -- ^ an interval to compare to intervals in the input events
+    -> Events a
+    -> Events a
+liftIntervalFilter f i = makeEventFilter f i (const True)
+
+
+

@@ -13,9 +13,8 @@ module Hasklepias.Types.Context(
   , context
   , Concept
   , Concepts
-  , hasConcept
-  , hasConcepts
-  , HasConcept
+  , HasConcept(..)
+  , emptyContext
 ) where
 
 import Data.Text (Text)
@@ -40,6 +39,10 @@ instance Semigroup Context where
 -- At this time, the 'facts' and 'source' are both 'Nothing'.
 context :: [Concept] -> Context
 context x = Context x Nothing Nothing
+
+-- | Just an empty Context
+emptyContext :: Context
+emptyContext = Context [] Nothing Nothing
 
 {-
 The 'HasConcept' typeclass provides predicate functions for determining whether

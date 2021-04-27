@@ -12,5 +12,6 @@ test:
   script:
     - ghc --version
     - cabal --version
+    - cabal update
     - cabal test --test-show-details=always 
 

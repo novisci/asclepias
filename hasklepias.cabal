@@ -7,7 +7,7 @@ bug-reports:    https://github.com/bsaul/hasklepias/issues
 author:         Bradley Saul
 maintainer:     bsaul@novisci.com
 copyright:      NoviSci, Inc
-category:       Data Science,
+category:       Data Science
 synopsis:       TODO
 license:        BSD-3-Clause
 license-file:   LICENSE

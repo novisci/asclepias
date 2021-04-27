@@ -1,3 +1,3 @@
-# Project Asclepias 
+# What is Hasklepias?
 
-An attempt to express the ideas of cohort construction purely as mathematical functions and sets.
+An implementation of the asclepias language in [Haskell](https://www.haskell.org/).

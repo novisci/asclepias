@@ -5,3 +5,8 @@
 *.Rproj
 *.DS_Store
 *.sublime*
+.stack-work/
+*~
+dist-newstyle*
+*code-workspace
+cabal.project.local

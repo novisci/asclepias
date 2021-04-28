@@ -35,7 +35,7 @@ dropEventFilter :: (IntervalAlgebraic a)=>
 dropEventFilter f l = (intervals . f) (fmap (`event` emptyContext) l)
 
 {-
-Index is define as the first occurrence of an Orca bite.
+Index is defined as the first occurrence of an Orca bite.
 -}
 index:: (IntervalAlgebraic a) =>
      Events a

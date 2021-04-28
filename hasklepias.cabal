@@ -8,7 +8,7 @@ author:         Bradley Saul
 maintainer:     bsaul@novisci.com
 copyright:      NoviSci, Inc
 category:       Data Science
-synopsis:       TODO
+synopsis:       Define features from events
 license:        BSD-3-Clause
 license-file:   LICENSE
 build-type:     Simple

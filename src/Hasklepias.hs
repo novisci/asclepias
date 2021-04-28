@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Hasklepias (
       module Hasklepias.Types
-    , module Hasklepias.Features
+    , module Hasklepias.Functions
     , module IntervalAlgebra
     , module IntervalAlgebra.IntervalUtilities
 ) where
@@ -9,5 +9,5 @@ module Hasklepias (
 import IntervalAlgebra
 import IntervalAlgebra.IntervalUtilities
 import Hasklepias.Types
-import Hasklepias.Features
+import Hasklepias.Functions
 

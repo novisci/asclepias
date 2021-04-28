@@ -1,6 +1,6 @@
 cabal-version:  2.2
 name:           hasklepias
-version:        0.1.0
+version:        0.1.1
 description:    Please see the README on GitHub at <https://github.com/novisci/asclepias#readme>
 homepage:       https://github.com/novisci/asclepias/#readme
 bug-reports:    https://github.com/novisci/asclepias/issues
@@ -23,8 +23,9 @@ source-repository head
 library
   exposed-modules:
       Hasklepias
-      Hasklepias.Features
+      Hasklepias.Functions
       Hasklepias.Types
+      Hasklepias.Types.Feature
       Hasklepias.Types.Context
       Hasklepias.Types.Event
       Hasklepias.Types.Event.Aeson
@@ -50,7 +51,7 @@ test-suite hasklepias-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
-      Hasklepias.FeaturesSpec
+      Hasklepias.FunctionsSpec
       Hasklepias.Types.ContextSpec
       Hasklepias.Types.Event.AesonSpec
       Hasklepias.Types.EventSpec

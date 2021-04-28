@@ -1,6 +1,6 @@
 {-# LANGUAGE FlexibleInstances, OverloadedStrings #-}
 {-|
-Module      : Hasklepias Features
+Module      : Hasklepias Feature building functions 
 Description : TODO
 Copyright   : (c) NoviSci, Inc 2020
 License     : BSD3
@@ -8,14 +8,10 @@ Maintainer  : bsaul@novisci.com
 Stability   : experimental
 -}
 
-module Hasklepias.Features(
-
-    -- * Types
-      Feature(..)
-    , MissingReason(..)
+module Hasklepias.Functions(
 
     -- * Functions for composing functions
-    , safeHead
+      safeHead
     , safeLast
     , isNotEmpty
     , makeConceptsFilter
@@ -26,34 +22,24 @@ module Hasklepias.Features(
     , overFilter
     , atleastNofX
     , twoXOrOneY
+    , intervals
+    , hasConcept
+    , hasConcepts
+    , filterEvents
+    , liftIntervalPredicate
+    , lift2IntervalPredicate
+    , liftIntervalFilter
+    , makeEventFilter
 ) where
 
 import IntervalAlgebra
     ( IntervalAlgebraic(..), ComparativePredicateOf, Interval
     , IntervalFilterable(..)
     , IntervalRelation(..) )
-import Hasklepias.Types.Event
-    ( Events, Event
-    , hasConcepts, filterEvents, liftIntervalPredicate, liftIntervalFilter
-    , ctxt )
+import Hasklepias.Types.Feature
+import Hasklepias.Types.Event( Events, Event, intrvl, ctxt )
 import Hasklepias.Types.Context as HC
-    ( Concept, HasConcept(hasConcepts), Context )
-
-{- | 
-  At this time, a 'Feature' is simply a synonym for @'Either' 'MissingReason' a@, 
-  where @d@ can be any type of data derivable from 'Events'.
--}
-type Feature d = Either MissingReason d
-
-{- | 
-  A 'Feature' may be missing for any number of reasons. 
--}
-data MissingReason =
-    InsufficientData
-  | Excluded
-  | Other String
-  | Unknown
-  deriving (Eq, Read, Show)
+    ( Concept, HasConcept(hasConcept, hasConcepts), Context )
 
 
 -- | Safely gets the 'head' of a list.
@@ -126,3 +112,49 @@ overContainment = predicate $ toSet [Contains, StartedBy, FinishedBy, Equals]
 -- | TODO
 overFilter :: IntervalAlgebraic a => Interval a -> Events a -> Events a
 overFilter = liftIntervalFilter overContainment 
+
+-- | Filter @Events a@ by a predicate function
+filterEvents :: (IntervalAlgebraic a) =>
+    (Event a -> Bool)
+    -> Events a
+    -> Events a
+filterEvents = filter
+
+-- | TODO
+liftIntervalPredicate :: (IntervalAlgebraic a) =>
+    ComparativePredicateOf (Interval a)
+    -> Interval a
+    -> Event a
+    -> Bool
+liftIntervalPredicate f x y = f x (intrvl y)
+
+-- | TODO
+lift2IntervalPredicate :: (IntervalAlgebraic a) =>
+       ComparativePredicateOf (Interval a)
+    -> ComparativePredicateOf (Event a)
+lift2IntervalPredicate f x y = f (intrvl x) (intrvl y)
+
+-- | Extracts the interval part of each 'Event' into a list of intervals.
+intervals :: Events a -> [Interval a]
+intervals = map intrvl
+
+-- | TODO
+makeEventFilter :: (IntervalAlgebraic a) =>
+       ComparativePredicateOf (Interval a) -- ^ an 'IntervalAlgebraic' predicate
+    -> Interval a -- ^ an interval to compare to intervals in the input eventsa
+    -> (Context -> Bool) -- ^ predicate on a 'Context'
+    -> Events a
+    -> Events a
+makeEventFilter fi i fc = filterEvents (\x -> liftIntervalPredicate fi i x && 
+                                              fc (ctxt x) )
+
+-- | Lifts a 'Interval' predicate to create a filter of events.
+liftIntervalFilter :: (IntervalAlgebraic a) =>
+       ComparativePredicateOf (Interval a) -- ^ an 'IntervalAlgebraic' predicate
+    -> Interval a -- ^ an interval to compare to intervals in the input events
+    -> Events a
+    -> Events a
+liftIntervalFilter f i = makeEventFilter f i (const True)
+
+
+

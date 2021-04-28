@@ -2,6 +2,7 @@
 module Hasklepias.Types.EventSpec (spec) where
 
 import IntervalAlgebra
+import Hasklepias.Functions
 import Hasklepias.Types.Event
 import Hasklepias.Types.Context as HC
 import Test.Hspec

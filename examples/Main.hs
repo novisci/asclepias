@@ -8,7 +8,6 @@ module Main(
 import Hasklepias
 import ExampleEvents
 import ExampleFeatures1
--- import ExampleEvents
 import Test.Hspec ( hspec )
 
 main :: IO ()

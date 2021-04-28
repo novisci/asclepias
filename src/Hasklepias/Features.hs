@@ -41,9 +41,9 @@ import Hasklepias.Types.Context as HC
 
 {- | 
   At this time, a 'Feature' is simply a synonym for @'Either' 'MissingReason' a@, 
-  where @a@ can be any type of data derivable from 'Events'.
+  where @d@ can be any type of data derivable from 'Events'.
 -}
-type Feature a = Either MissingReason a
+type Feature d = Either MissingReason d
 
 {- | 
   A 'Feature' may be missing for any number of reasons. 

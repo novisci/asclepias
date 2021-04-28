@@ -21,11 +21,6 @@ module ExampleFeatures1(
   , pack
 ) where
 
--- import IntervalAlgebra
--- import IntervalAlgebra.IntervalUtilities
--- import Hasklepias.Features
--- import Hasklepias.Types.Event
--- import Hasklepias.Types.Context
 import Hasklepias
 import ExampleEvents
 import Test.Hspec

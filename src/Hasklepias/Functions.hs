@@ -1,7 +1,6 @@
-{-# LANGUAGE FlexibleInstances, OverloadedStrings #-}
 {-|
 Module      : Hasklepias Feature building functions 
-Description : TODO
+Description : Functions for composing features. 
 Copyright   : (c) NoviSci, Inc 2020
 License     : BSD3
 Maintainer  : bsaul@novisci.com
@@ -36,7 +35,6 @@ import IntervalAlgebra
     ( IntervalAlgebraic(..), ComparativePredicateOf, Interval
     , IntervalFilterable(..)
     , IntervalRelation(..) )
-import Hasklepias.Types.Feature
 import Hasklepias.Types.Event( Events, Event, intrvl, ctxt )
 import Hasklepias.Types.Context as HC
     ( Concept, HasConcept(hasConcept, hasConcepts), Context )

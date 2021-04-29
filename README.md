@@ -54,4 +54,14 @@ Just {(1, 10), Context {getConcepts = ["enrollment"], getFacts = Nothing, getSou
 24
 *Main> combineIntervals $ intervals exampleEvents1
 [(1, 10),(11, 20),(21, 30),(31, 40),(45, 100)]
+*Main> mapM_ print exampleEvents1
+{(1, 10), Context {getConcepts = fromList ["enrollment"], getFacts = Nothing, getSource = Nothing}}
+{(2, 3), Context {getConcepts = fromList ["wasScratchedByCat"], getFacts = Nothing, getSource = Nothing}}
+{(5, 6), Context {getConcepts = fromList ["hadMinorSurgery"], getFacts = Nothing, getSource = Nothing}}
+{(5, 10), Context {getConcepts = fromList ["tookAntibiotics"], getFacts = Nothing, getSource = Nothing}}
+{(11, 20), Context {getConcepts = fromList ["enrollment"], getFacts = Nothing, getSource = Nothing}}
+{(21, 30), Context {getConcepts = fromList ["enrollment"], getFacts = Nothing, getSource = Nothing}}
+{(31, 40), Context {getConcepts = fromList ["enrollment"], getFacts = Nothing, getSource = Nothing}}
+{(45, 46), Context {getConcepts = fromList ["wasStruckByDuck"], getFacts = Nothing, getSource = Nothing}}
+<<<result truncated>>>
 ```

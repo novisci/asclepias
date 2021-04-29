@@ -93,7 +93,7 @@ Define features that identify whether a subject as bit/struck by a duck and
 bit/struck by a macaw.
 -}
 makeHasAnyHistoryFeature :: (IntervalAlgebraic a) =>
-       Concepts
+       [Concept]
     -> Feature (Interval a)
     -> Events a
     -> Feature (Bool, Maybe (Interval a))

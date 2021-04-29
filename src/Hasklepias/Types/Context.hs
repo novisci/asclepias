@@ -27,10 +27,10 @@ import Data.Text (Text)
 import Data.List (any)
 import Data.Set (Set, fromList, union, empty, map, toList, member)
 
--- | A @Context@ consists of three parts: 'concepts', 'facts', and 'source'. 
+-- | A @Context@ consists of three parts: @concepts@, @facts@, and @source@. 
 -- 
--- At this time, 'facts' and 'source' are simply stubs to be fleshed out in 
--- later versions of 'Hasklepias'. 
+-- At this time, @facts@ and @source@ are simply stubs to be fleshed out in 
+-- later versions of hasklepias. 
 data Context = Context {
       getConcepts :: Concepts
     , getFacts    :: Maybe Facts
@@ -51,8 +51,8 @@ instance HasConcept Context where
 
 -- | Smart contructor for Context type
 --
--- Creates 'Context' from a list of 'Concept's. At this time, the 'facts' and
--- 'source' are both set to 'Nothing'.
+-- Creates 'Context' from a list of 'Concept's. At this time, the @facts@ and
+-- @source@ are both set to 'Nothing'.
 context :: [Concept] -> Context
 context x = Context (fromList x) Nothing Nothing
 
@@ -60,18 +60,20 @@ context x = Context (fromList x) Nothing Nothing
 emptyContext :: Context
 emptyContext = Context mempty Nothing Nothing
 
--- | Concepts are textual "tags" for contexts.
+-- | A @Concept@ is textual "tag" for a context.
 type Concept  = Text
+
+-- | @Concepts@ is a 'Set' of 'Concepts's.
 type Concepts = Set Concept
 
 {- |
 The 'HasConcept' typeclass provides predicate functions for determining whether
-an 'a' has a concept.
+an @a@ has a concept.
 -}
 class HasConcept a where
-    -- | Does an 'a' have a particular 'Concept'?
+    -- | Does an @a@ have a particular 'Concept'?
     hasConcept  :: a -> Concept -> Bool
 
-    -- | Does an 'a' have any of a list of 'Concept's?
+    -- | Does an @a@ have any of a list of 'Concept's?
     hasConcepts :: a -> [Concept] -> Bool
     hasConcepts x = any (\c -> x `hasConcept` c) 

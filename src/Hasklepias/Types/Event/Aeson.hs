@@ -1,7 +1,7 @@
 {-# LANGUAGE FlexibleInstances, OverloadedStrings #-}
 {-|
-Module      : Parsing Hasklepias Event Type
-Description : Specifies the Event type and related functions
+Module      : Functions for Parsing Hasklepias Event data
+Description : Defines FromJSON instances for Events.
 Copyright   : (c) NoviSci, Inc 2020
 License     : BSD3
 Maintainer  : bsaul@novisci.com
@@ -9,9 +9,7 @@ Stability   : experimental
 -}
 
 module Hasklepias.Types.Event.Aeson(
-      Context(..)
-    , Event(..)
-    , parseEventIntLines
+      parseEventIntLines
     , parseEventDayLines
 ) where
 
@@ -53,7 +51,8 @@ instance FromJSON (Event Day) where
             parseJSON (v ! 5) <*>
             parseJSON (v ! 4)
 
--- | TODO
+-- |  Parse @Event Int@ from json lines.
+-- 
 -- This function and the event parsing in general needs a lot of work to be 
 -- production-ready. But this is good enough for prototyping.
 parseEventIntLines :: B.ByteString -> [Event Int]
@@ -61,6 +60,7 @@ parseEventIntLines l =
     rights $ map (\x -> eitherDecode $ B.fromStrict x :: Either String (Event Int))
         (C.lines $ B.toStrict l)
 
+-- |  Parse @Event Day@ from json lines.
 parseEventDayLines :: B.ByteString -> [Event Day]
 parseEventDayLines l =
     rights $ map (\x -> eitherDecode $ B.fromStrict x :: Either String (Event Day))

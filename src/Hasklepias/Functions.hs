@@ -1,6 +1,6 @@
 {-|
 Module      : Hasklepias Feature building functions 
-Description : TODO
+Description : Functions for composing features. 
 Copyright   : (c) NoviSci, Inc 2020
 License     : BSD3
 Maintainer  : bsaul@novisci.com

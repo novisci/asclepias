@@ -10,9 +10,8 @@ Stability   : experimental
 -}
 
 module Hasklepias.Types.Event(
-   Event
+   Event(getEvent)
  , Events
- , getEvent
  , event
  , intrvl
  , ctxt

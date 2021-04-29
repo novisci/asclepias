@@ -22,7 +22,7 @@ import GHC.Show ( Show )
 import Data.Either ( Either )
 
 {- | A 'Feature' is simply a synonym for @'Either' 'MissingReason' d@, where 
-  @d@ can be any type of data derivable from 'Events'.
+  @d@ can be any type of data derivable from 'Hasklepias.Event.Events'.
 -}
 type Feature d = Either MissingReason d
 

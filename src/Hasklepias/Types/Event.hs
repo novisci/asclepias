@@ -1,7 +1,8 @@
-{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE NoImplicitPrelude #-}
 {-|
 Module      : Hasklepias Event Type
-Description : Specifies the Event type and related functions
+Description : Defines the Event type and its component types, constructors, 
+              and class instance
 Copyright   : (c) NoviSci, Inc 2020
 License     : BSD3
 Maintainer  : bsaul@novisci.com
@@ -17,10 +18,13 @@ module Hasklepias.Types.Event(
  , ctxt
 ) where
 
+import GHC.Base(Eq, Ord(..), (++), ($), not, (.))
+import GHC.Show ( Show(show) )
+import Data.Tuple ( fst, snd )
 import IntervalAlgebra( Interval, IntervalAlgebraic, Intervallic )
 import Hasklepias.Types.Context ( HasConcept(..), Context )
 
--- | An Event @a@ is simply a pair @(Interval a, Context)@
+-- | An Event @a@ is simply a pair @(Interval a, Context)@.
 newtype Event a =  Event { getEvent :: (Interval a, Context) }
   deriving (Eq)
 
@@ -31,8 +35,7 @@ instance (Intervallic a) => Ord (Event a) where
   (>)  x y = not (x <= y)
 
 instance (Intervallic a, Show a) => Show (Event a) where
-  show x = "{" ++ show (fst $ getEvent x) ++ ", " ++
-                  show (snd $ getEvent x) ++ "}"
+  show x = "{" ++ show (fst $ getEvent x) ++ ", " ++ show (snd $ getEvent x) ++ "}"
 
 instance HasConcept (Event a) where
     hasConcept x y = snd (getEvent x) `hasConcept` y
@@ -58,5 +61,5 @@ ctxt = snd.getEvent
 -- to identify events by concept; rather than repeated evaluations of
 -- the lookup predicates. This could be handled by, for example, 
 -- representing Events has a Map with a list of concept indices. 
--- But it gets us off the ground.
+-- But this gets us off the ground.
 type Events a = [Event a]

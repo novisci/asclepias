@@ -1,4 +1,3 @@
-{-# LANGUAGE FlexibleInstances, OverloadedStrings #-}
 {-|
 Module      : Hasklepias Feature building functions 
 Description : TODO
@@ -36,7 +35,6 @@ import IntervalAlgebra
     ( IntervalAlgebraic(..), ComparativePredicateOf, Interval
     , IntervalFilterable(..)
     , IntervalRelation(..) )
-import Hasklepias.Types.Feature
 import Hasklepias.Types.Event( Events, Event, intrvl, ctxt )
 import Hasklepias.Types.Context as HC
     ( Concept, HasConcept(hasConcept, hasConcepts), Context )

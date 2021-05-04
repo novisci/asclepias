@@ -25,6 +25,8 @@ import Hasklepias
 import ExampleEvents
 import Test.Hspec
 import Data.Text(pack)
+import Data.Maybe ( fromMaybe )
+import Control.Monad
 
 {- Helper functions used below -}
 
@@ -69,24 +71,24 @@ flwup = fmap (beginerval 30 . begin) . index
 Define enrolled as the indicator of whether all of the gaps between the union of 
 all enrollment intervals (+ allowableGap) 
 -}
-enrolled :: (IntervalSizeable a b, IntervalCombinable a, IntervalFilterable [] a) =>
+enrolled :: (IntervalSizeable a b, IntervalCombinable a) =>
       Feature (Interval a)
    -> Events a
    -> Feature Bool
 enrolled (Left  _) _ = Left Excluded
 enrolled (Right i) l = Right $ enrolled' 8 i l
 
-enrolled' :: (IntervalSizeable a b, IntervalCombinable a, IntervalFilterable [] a) =>
+enrolled' :: (IntervalSizeable a b, IntervalCombinable a) =>
       b  -- ^ allowable gap between enrollment intervals
    -> Interval a -- ^ baseline interval
    -> Events a
    -> Bool
 enrolled' allowableGap i =
-       (\x -> isNotEmpty x && (all(< allowableGap).durations ) x)
-      .gapsWithin i
-      .combineIntervals
-      .intervals
-      .makeConceptsFilter ["enrollment"]
+        maybe False (all (< allowableGap) . durations)
+      . gapsWithin i
+      . combineIntervals
+      . intervals
+      . makeConceptsFilter ["enrollment"]
 
 {-
 Define features that identify whether a subject as bit/struck by a duck and
@@ -134,8 +136,7 @@ twoMinorOrOneMajor feat l =
 
 -- | Time from end of baseline to end of most recent Antibiotics
 --   with 5 day grace period
-timeSinceLastAntibiotics :: (IntervalAlgebraic a, IntervalCombinable a, IntervalSizeable a b,
-                            IntervalFilterable [] a) =>
+timeSinceLastAntibiotics :: (IntervalAlgebraic a, IntervalCombinable a, IntervalSizeable a b) =>
          Feature (Interval a)
       -> Events a
       -> Feature (Maybe b)
@@ -143,8 +144,7 @@ timeSinceLastAntibiotics (Left _) _   = Left Excluded
 timeSinceLastAntibiotics (Right i) es = Right $ timeSinceLastAntibiotics' i es
 
 
-timeSinceLastAntibiotics' :: (IntervalAlgebraic a, IntervalCombinable a, IntervalSizeable a b,
-                            IntervalFilterable [] a) =>
+timeSinceLastAntibiotics' :: (IntervalAlgebraic a, IntervalCombinable a, IntervalSizeable a b) =>
       Interval a -> Events a -> Maybe b
 timeSinceLastAntibiotics' blinterval =
    safeLast                                   -- want the last one
@@ -157,8 +157,7 @@ timeSinceLastAntibiotics' blinterval =
 
 
 -- | Count of hospital events in a interval and duration of the last one
-countOfHospitalEvents :: (IntervalCombinable a, IntervalSizeable a b,
-                          IntervalFilterable [] a) =>
+countOfHospitalEvents :: (IntervalCombinable a, IntervalSizeable a b) =>
      Feature (Interval a)
   -> Events a
   -> Feature (Int, Maybe b)
@@ -178,23 +177,24 @@ so = unionPredicates [startedBy, overlappedBy]
 --   and time from start of follow up
 --   This needs to be generalized as Nothing could either indicate they didn't 
 --   discontinue or that they simply got no antibiotics records.
-discontinuation :: (IntervalSizeable a b, IntervalCombinable a, IntervalFilterable [] a) =>
+discontinuation :: (IntervalSizeable a b, IntervalCombinable a) =>
      Feature (Interval a)
   -> Events a
   -> Feature (Maybe (a, b))
+--   -> Feature (Maybe (Interval a))
 discontinuation (Left _) _    = Left Excluded
 discontinuation (Right i) es  = Right $
-   (fmap (\x -> (begin x, diff (begin x) (begin i))) -- we want the begin of this interval 
-  .safeHead                  -- if there are any gaps the first one is the first discontinuation
-  .gapsWithin i              -- find gaps to intervals clipped to i
-  .emptyIfNone (so i)        -- if none of the intervals start or overlap 
-                             -- the followup, then never started antibiotics
-  .combineIntervals          -- combine overlapping intervals
-  .map (expandr 5)           -- allow grace period
-  .intervals                 -- extract intervals
-  .makeConceptsFilter        -- filter to only antibiotics events
-    ["tookAntibiotics"])
-  es
+      (\x -> Just (begin x           -- we want the begin of this interval 
+                  , diff (begin x) (begin i)))
+      =<< safeHead                   -- if there are any gaps the first one is the first discontinuation
+      =<< gapsWithin i               -- find gaps to intervals clipped to i
+      =<< (nothingIfNone (so i)      -- if none of the intervals start or overlap 
+                                     -- the followup, then never started antibiotics
+         . combineIntervals          -- combine overlapping intervals
+         . map (expandr 5)           -- allow grace period
+         . intervals                 -- extract intervals
+         . makeConceptsFilter        -- filter to only antibiotics events
+            ["tookAntibiotics"]) es
 
 
 getUnitFeatures ::

@@ -33,7 +33,6 @@ module Hasklepias.Functions(
 
 import IntervalAlgebra
     ( IntervalAlgebraic(..), ComparativePredicateOf, Interval
-    , IntervalFilterable(..)
     , IntervalRelation(..) )
 import Hasklepias.Types.Event( Events, Event, intrvl, ctxt )
 import Hasklepias.Types.Context as HC

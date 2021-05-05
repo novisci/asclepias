@@ -1,7 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE AllowAmbiguousTypes #-}
-{-# LANGUAGE FlexibleContexts #-}
 {-|
 Module      : ExampleFeatures1
 Description : Demostrates how to define features using Hasklepias
@@ -10,6 +6,11 @@ License     : BSD3
 Maintainer  : bsaul@novisci.com
 Stability   : experimental
 -}
+
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE AllowAmbiguousTypes #-}
+{-# LANGUAGE FlexibleContexts #-}
 
 module ExampleFeatures1(
     exampleFeatures1Spec
@@ -26,11 +27,11 @@ import ExampleEvents
 import Test.Hspec
 import Data.Text(pack)
 import Data.Maybe ( fromMaybe )
-import Control.Monad
+-- import Control.Monad
 
 {- Helper functions used below -}
 
-dropEventFilter :: (IntervalAlgebraic a)=>
+dropEventFilter :: (IntervalAlgebraic Interval a)=>
      (Events a -> Events a)
   -> [Interval a]
   -> [Interval a]
@@ -39,13 +40,13 @@ dropEventFilter f l = (intervals . f) (fmap (`event` emptyContext) l)
 {-
 Index is defined as the first occurrence of an Orca bite.
 -}
-index:: (IntervalAlgebraic a) =>
+index:: (IntervalAlgebraic Interval a) =>
      Events a
   -> Feature (Interval a)
 index es =
     case firstConceptOccurrence ["wasBitByOrca"] es of
         Nothing -> Left $ Other "No occurrence of Orca bite"
-        Just x  -> Right (intrvl x)
+        Just x  -> Right (getInterval x)
 
 {-  
 The baseline interval is the interval (b - 60, b), where b is the begin of 
@@ -53,17 +54,17 @@ index. Here, baseline is defined as function that takes a filtration function
 as an argument, so that the baseline feature can be used to filter events
 based on different predicate functions.
 -}
-baseline :: (IntervalAlgebraic a, IntervalSizeable a b) =>
+baseline :: (IntervalAlgebraic Interval a, IntervalSizeable a b) =>
      Feature (Interval a) -- ^ pass the result of index to get a baseline filter
   -> Feature (Interval a)
 baseline = fmap (enderval 60 . begin)
 
-bline :: (IntervalAlgebraic a, IntervalSizeable a b) =>
+bline :: (IntervalAlgebraic Interval a, IntervalSizeable a b) =>
      Events a
   -> Feature (Interval a)
 bline = baseline.index
 
-flwup :: (IntervalAlgebraic a, IntervalSizeable a b) =>
+flwup :: (IntervalAlgebraic Interval a, IntervalSizeable a b) =>
      Events a
   -> Feature (Interval a)
 flwup = fmap (beginerval 30 . begin) . index
@@ -94,7 +95,8 @@ enrolled' allowableGap i =
 Define features that identify whether a subject as bit/struck by a duck and
 bit/struck by a macaw.
 -}
-makeHasAnyHistoryFeature :: (IntervalAlgebraic a) =>
+makeHasAnyHistoryFeature :: (IntervalAlgebraic Interval a
+                             , IntervalAlgebraic (PairedInterval Context) a) =>
        [Concept]
     -> Feature (Interval a)
     -> Events a
@@ -103,16 +105,20 @@ makeHasAnyHistoryFeature cnpts feat es =
   case feat of
    (Left x ) -> Left Excluded
    (Right i) -> Right (isNotEmpty candidates, safeLast $ intervals candidates)
-      where candidates = makeEventFilter overContainment i (`hasConcepts` cnpts) es
+      where candidates = makePairedFilter enclose i (`hasConcepts` cnpts) es
 
-hasDuckHistory :: (IntervalAlgebraic a, IntervalSizeable a b) =>
+hasDuckHistory :: (IntervalAlgebraic Interval a
+                  , IntervalSizeable a b
+                  , IntervalAlgebraic (PairedInterval Context) a) =>
        Events a
     -> Feature (Bool, Maybe (Interval a))
 hasDuckHistory x = makeHasAnyHistoryFeature
    ["wasBitByDuck", "wasStruckByDuck"]
    (bline x ) x
 
-hasMacawHistory :: (IntervalAlgebraic a, IntervalSizeable a b) =>
+hasMacawHistory :: (IntervalAlgebraic Interval a
+                  , IntervalSizeable a b
+                  , IntervalAlgebraic (PairedInterval Context) a) =>
       Events a
     -> Feature (Bool, Maybe (Interval a))
 hasMacawHistory x = makeHasAnyHistoryFeature
@@ -124,19 +130,20 @@ Define an event that identifies whether the subject has two minor or one major
 surgery 
 -}
 
-twoMinorOrOneMajor :: (IntervalAlgebraic a) =>
+twoMinorOrOneMajor :: (IntervalAlgebraic Interval a
+                      , IntervalAlgebraic (PairedInterval Context) a) =>
      Feature (Interval a)
   -> Events a
   -> Feature Bool
 twoMinorOrOneMajor feat l =
  case feat of
    Left x  -> Left Excluded
-   Right i -> Right $ twoXOrOneY ["hadMinorSurgery"] ["hadMajorSurgery"] (overFilter i l)
+   Right i -> Right $ twoXOrOneY ["hadMinorSurgery"] ["hadMajorSurgery"] (filterEnclose i l)
 
 
 -- | Time from end of baseline to end of most recent Antibiotics
 --   with 5 day grace period
-timeSinceLastAntibiotics :: (IntervalAlgebraic a, IntervalCombinable a, IntervalSizeable a b) =>
+timeSinceLastAntibiotics :: (IntervalAlgebraic Interval a, IntervalCombinable a, IntervalSizeable a b) =>
          Feature (Interval a)
       -> Events a
       -> Feature (Maybe b)
@@ -144,7 +151,7 @@ timeSinceLastAntibiotics (Left _) _   = Left Excluded
 timeSinceLastAntibiotics (Right i) es = Right $ timeSinceLastAntibiotics' i es
 
 
-timeSinceLastAntibiotics' :: (IntervalAlgebraic a, IntervalCombinable a, IntervalSizeable a b) =>
+timeSinceLastAntibiotics' :: (IntervalAlgebraic Interval a, IntervalCombinable a, IntervalSizeable a b) =>
       Interval a -> Events a -> Maybe b
 timeSinceLastAntibiotics' blinterval =
    safeLast                                   -- want the last one
@@ -170,7 +177,7 @@ countOfHospitalEvents (Right i) es = Right $
             .makeConceptsFilter ["wasHospitalized"])  -- filter to only antibiotics events
             es
 
-so :: (IntervalAlgebraic a)=> ComparativePredicateOf (Interval a)
+so :: (IntervalAlgebraic Interval a)=> ComparativePredicateOf (Interval a)
 so = unionPredicates [startedBy, overlappedBy]
 
 -- | time of distcontinuation of antibiotics

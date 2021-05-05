@@ -1,4 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
 {-|
 Module      : Example Hasklepias Events
 Description : TODO
@@ -7,6 +6,7 @@ License     : BSD3
 Maintainer  : bsaul@novisci.com
 Stability   : experimental
 -}
+{-# LANGUAGE OverloadedStrings #-}
 
 module ExampleEvents (
       exampleEvents1
@@ -26,10 +26,10 @@ exampleEvents2 = toEvents exampleEvents2Data
 
 type EventData a = (a, a, Concept)
 
-toEvent :: (IntervalAlgebraic a) => EventData a -> Event a
+toEvent :: EventData a -> Event a
 toEvent x = event (unsafeInterval (t1 x) (t2 x)) (context $ [t3 x])
 
-toEvents :: (IntervalAlgebraic a) => [EventData a] -> Events a
+toEvents :: (Ord a, Show a) => [EventData a] -> Events a
 toEvents = sort.map toEvent
 
 t1 :: (a, b, c) -> a

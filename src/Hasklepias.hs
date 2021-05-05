@@ -13,10 +13,12 @@ module Hasklepias (
     , module Hasklepias.Functions
     , module IntervalAlgebra
     , module IntervalAlgebra.IntervalUtilities
+    , module IntervalAlgebra.PairedInterval
 ) where
 
 import IntervalAlgebra
 import IntervalAlgebra.IntervalUtilities
+import IntervalAlgebra.PairedInterval
 import Hasklepias.Types
 import Hasklepias.Functions
 

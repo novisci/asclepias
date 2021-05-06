@@ -15,7 +15,8 @@ module ExampleEvents (
 import IntervalAlgebra
 import Hasklepias.Types.Event
 import Hasklepias.Types.Context
-import Data.List
+import Data.List ( sort )
+import Data.Text(Text)
 
 
 exampleEvents1 :: Events Int
@@ -24,10 +25,10 @@ exampleEvents1 = toEvents exampleEvents1Data
 exampleEvents2 :: Events Int
 exampleEvents2 = toEvents exampleEvents2Data
 
-type EventData a = (a, a, Concept)
+type EventData a = (a, a, Text)
 
 toEvent :: EventData a -> Event a
-toEvent x = event (unsafeInterval (t1 x) (t2 x)) (context $ [t3 x])
+toEvent x = event (unsafeInterval (t1 x) (t2 x)) (context $ packConcepts [t3 x])
 
 toEvents :: (Ord a, Show a) => [EventData a] -> Events a
 toEvents = sort.map toEvent

@@ -25,7 +25,7 @@ module ExampleFeatures1(
 import Hasklepias
 import ExampleEvents
 import Test.Hspec
-import Data.Text(pack)
+import Data.Text(pack, Text)
 import Data.Maybe ( fromMaybe )
 -- import Control.Monad
 
@@ -97,7 +97,7 @@ bit/struck by a macaw.
 -}
 makeHasAnyHistoryFeature :: (IntervalAlgebraic Interval a
                              , IntervalAlgebraic (PairedInterval Context) a) =>
-       [Concept]
+       [Text]
     -> Feature (Interval a)
     -> Events a
     -> Feature (Bool, Maybe (Interval a))

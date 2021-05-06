@@ -38,6 +38,9 @@ instance FromJSON (Interval Day) where
         e <- t .: "end"
         return (unsafeInterval (b :: Day) (e :: Day))
 
+instance FromJSON Concept where
+    parseJSON c = packConcept <$> parseJSON  c
+
 instance FromJSON Context where
     parseJSON v = context <$> parseJSON v
 

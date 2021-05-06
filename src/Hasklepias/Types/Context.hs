@@ -16,15 +16,19 @@ module Hasklepias.Types.Context(
 
   , Concept
   , Concepts
+  , packConcept
+  , unpackConcept
+  , packConcepts
+  , unpackConcepts
   , HasConcept(..)
 ) where
 
-import GHC.Base (Eq, Bool, Maybe(..), ($))
-import GHC.Show ( Show )
+import GHC.Base (Eq, Ord, Bool, Maybe(..), ($))
+import GHC.Show ( Show(show) )
 import Data.Semigroup ( Semigroup((<>)) )
 import Data.Monoid ( (<>), Monoid(mempty) )
 import Data.Text (Text)
-import Data.List (any)
+import Data.List (any, map)
 import Data.Set (Set, fromList, union, empty, map, toList, member)
 
 -- | A @Context@ consists of three parts: @concepts@, @facts@, and @source@. 
@@ -47,24 +51,43 @@ instance Monoid Context where
     mempty = emptyContext
 
 instance HasConcept Context where
-    hasConcept ctxt concept = member concept (getConcepts ctxt)
+    hasConcept ctxt concept = member (packConcept concept) (getConcepts ctxt)
 
 -- | Smart contructor for Context type
 --
 -- Creates 'Context' from a list of 'Concept's. At this time, the @facts@ and
 -- @source@ are both set to 'Nothing'.
-context :: [Concept] -> Context
-context x = Context (fromList x) Nothing Nothing
+context :: Concepts -> Context
+context x = Context x Nothing Nothing
 
 -- | Just an empty Context
 emptyContext :: Context
 emptyContext = Context mempty Nothing Nothing
 
 -- | A @Concept@ is textual "tag" for a context.
-type Concept  = Text
+newtype Concept = Concept Text deriving (Eq, Ord)
+
+instance Show Concept where
+    show (Concept x) = show x
+
+-- | Pack text into a concept
+packConcept :: Text -> Concept
+packConcept = Concept
+
+-- | Unpack text from a concept
+unpackConcept :: Concept -> Text 
+unpackConcept (Concept x) =  x
 
 -- | @Concepts@ is a 'Set' of 'Concepts's.
 type Concepts = Set Concept
+
+-- | Put a list of text into a set concepts.
+packConcepts :: [Text] -> Concepts
+packConcepts x = fromList $ Data.List.map packConcept x
+
+-- | Take a set of concepts to a list of text.
+unpackConcepts :: Concepts -> [Text]
+unpackConcepts x = toList $ Data.Set.map unpackConcept x 
 
 {- |
 The 'HasConcept' typeclass provides predicate functions for determining whether
@@ -72,8 +95,8 @@ an @a@ has a concept.
 -}
 class HasConcept a where
     -- | Does an @a@ have a particular 'Concept'?
-    hasConcept  :: a -> Concept -> Bool
+    hasConcept  :: a -> Text -> Bool
 
     -- | Does an @a@ have any of a list of 'Concept's?
-    hasConcepts :: a -> [Concept] -> Bool
+    hasConcepts :: a -> [Text] -> Bool
     hasConcepts x = any (\c -> x `hasConcept` c) 

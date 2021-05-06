@@ -88,6 +88,7 @@ test-suite examples
   other-modules:
       ExampleEvents
       ExampleFeatures1
+      ExampleFeatures2
   hs-source-dirs:
       examples
   build-depends:

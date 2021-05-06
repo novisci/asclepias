@@ -11,6 +11,7 @@ Stability   : experimental
 module ExampleEvents (
       exampleEvents1
     , exampleEvents2
+    , exampleEvents3
 ) where
 import IntervalAlgebra
 import Hasklepias.Types.Event
@@ -24,6 +25,9 @@ exampleEvents1 = toEvents exampleEvents1Data
 
 exampleEvents2 :: Events Int
 exampleEvents2 = toEvents exampleEvents2Data
+
+exampleEvents3 :: Events Int 
+exampleEvents3 = toEvents exampleEvents3Data
 
 type EventData a = (a, a, Text)
 
@@ -85,4 +89,33 @@ exampleEvents2Data = [
   , (15, 16, "wasDiagnosedWithSciurophobia")
   , (20, 21, "hadSquirrelContact")
   , (20, 21, "hadAnxietyAttack")
+ ]
+
+
+exampleEvents3Data :: [EventData Int]
+exampleEvents3Data = [
+    (1,  10, "enrollment")
+  , (11, 20, "enrollment")
+  , (21, 30, "enrollment")
+  , (31, 40, "enrollment")
+  , (45, 50, "enrollment")
+  , (51, 60, "enrollment")
+  , (61, 63, "enrollment")
+  , (71, 80, "enrollment")
+  , (81, 100, "enrollment")
+  , (2,  3,  "wasScratchedByCat")
+  , (45, 46, "wasStruckByDuck")
+  , (46, 47, "wasBitByDuck")
+  , (49, 50, "wasBitByDuck")
+  , (51, 52, "wasBitByDuck")
+  , (60, 61, "wasBitByOrca")
+  , (91, 92, "wasStuckByCow")
+  , (5,  6,  "hadMinorSurgery")
+  , (52, 53, "hadMajorSurgery")
+  , (5,  10, "tookAntibiotics")
+  , (52, 60, "wasHospitalized")
+  , (45, 55, "tookAntibiotics")
+  , (58, 73, "tookAntibiotics")
+  , (80, 83, "tookAntibiotics")
+  , (95, 96, "died")
  ]

@@ -29,3 +29,5 @@
 *Hasklepias> transformToMeetingSequence (map packConcept ["B", "I"]) x
 [{(-44, -30), fromList []},{(-30, -29), fromList ["B","I"]},{(-29, -25), fromList []},{(-25, -17), fromList ["I"]},{(-17, -16), fromList ["B","I"]},{(-16, 5), fromList ["I"]},{(5, 18), fromList []},{(18, 19), fromList ["I"]},{(19, 20), fromList ["B"]},{(20, 30), fromList []},{(30, 31), fromList ["B"]}]
 ```
+
+* Adds an example of `transformToMeetingSequence` could be used to derive a feature that is the list of durations that a subject was both hospitalized and on antibiotics at the same time in the `examples/ExampleFeatures2` module.

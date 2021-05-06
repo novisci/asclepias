@@ -17,12 +17,8 @@ module Hasklepias.Functions(
     , makeConceptsFilter
     , nthConceptOccurrence
     , firstConceptOccurrence
-    -- , withinFilter
-    -- , overContainment
-    -- , overFilter
     , atleastNofX
     , twoXOrOneY
-    -- , intervals
     , hasConcept
     , hasConcepts
     , filterEvents
@@ -44,7 +40,7 @@ import IntervalAlgebra.IntervalUtilities
 import Hasklepias.Types.Event( Events, Event, ctxt )
 import Hasklepias.Types.Context as HC
     ( Concept, HasConcept(hasConcept, hasConcepts), Context )
-
+import Data.Text(Text)
 
 -- | Safely gets the 'head' of a list.
 safeHead :: [a] -> Maybe a
@@ -62,7 +58,7 @@ isNotEmpty = not.null
 
 -- | Filter 'Events' to those that have any of the provided concepts.
 makeConceptsFilter ::
-       [Concept] -- ^ the list of concepts by which to filter 
+       [Text] -- ^ the list of concepts by which to filter 
     -> Events a
     -> Events a
 makeConceptsFilter cpts = filterEvents (`hasConcepts` cpts)
@@ -72,7 +68,7 @@ makeConceptsFilter cpts = filterEvents (`hasConcepts` cpts)
 --  'lastConceptOccurrence'.
 nthConceptOccurrence ::
        (Events a -> Maybe (Event a)) -- ^ function used to select a single event
-    -> [Concept]
+    -> [Text]
     -> Events a
     -> Maybe (Event a)
 nthConceptOccurrence f c = f.makeConceptsFilter c
@@ -80,7 +76,7 @@ nthConceptOccurrence f c = f.makeConceptsFilter c
 -- | Finds the *first* occurrence of an 'Event' with at least one of the concepts.
 --   Assumes the input 'Events' list is appropriately sorted.
 firstConceptOccurrence ::
-      [Concept]
+      [Text]
     -> Events a
     -> Maybe (Event a)
 firstConceptOccurrence = nthConceptOccurrence safeHead
@@ -88,7 +84,7 @@ firstConceptOccurrence = nthConceptOccurrence safeHead
 -- | Finds the *last* occurrence of an 'Event' with at least one of the concepts.
 --   Assumes the input 'Events' list is appropriately sorted.
 lastConceptOccurrence ::
-      [Concept]
+      [Text]
     -> Events a
     -> Maybe (Event a)
 lastConceptOccurrence = nthConceptOccurrence safeLast
@@ -96,26 +92,15 @@ lastConceptOccurrence = nthConceptOccurrence safeLast
 -- | Does 'Events' have at least @n@ events with any of the Concept in @x@.
 atleastNofX ::
       Int -- ^ n
-   -> [Concept] -- ^ x
+   -> [Text] -- ^ x
    -> Events a -> Bool
 atleastNofX n x es = length (makeConceptsFilter x es) >= n
 
 -- | TODO
-twoXOrOneY :: [Concept] -> [Concept] -> Events a -> Bool
+twoXOrOneY :: [Text] -> [Text] -> Events a -> Bool
 twoXOrOneY x y es = atleastNofX 2 x es ||
                     atleastNofX 1 y es
 
--- -- | TODO
--- withinFilter :: Interval a -> Events a -> Events a
--- withinFilter = liftIntervalFilter within
-
--- -- | TODO
--- overContainment :: (IntervalAlgebraic Interval a) => ComparativePredicateOf (Interval a)
--- overContainment = predicate $ toSet [Contains, StartedBy, FinishedBy, Equals]
-
--- -- | TODO
--- overFilter :: Interval a -> Events a -> Events a
--- overFilter = liftIntervalFilter overContainment 
 
 -- | Filter @Events a@ by a predicate function
 filterEvents ::

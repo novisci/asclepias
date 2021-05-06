@@ -7,6 +7,7 @@ Maintainer  : bsaul@novisci.com
 Stability   : experimental
 -}
 
+{-# LANGUAGE FlexibleContexts #-}
 module Hasklepias.Functions(
 
     -- * Functions for composing functions
@@ -16,12 +17,8 @@ module Hasklepias.Functions(
     , makeConceptsFilter
     , nthConceptOccurrence
     , firstConceptOccurrence
-    , withinFilter
-    , overContainment
-    , overFilter
     , atleastNofX
     , twoXOrOneY
-    , intervals
     , hasConcept
     , hasConcepts
     , filterEvents
@@ -29,16 +26,21 @@ module Hasklepias.Functions(
     , lift2IntervalPredicate
     , liftIntervalFilter
     , makeEventFilter
+    , makePairedFilter
 ) where
 
 import IntervalAlgebra
-    ( IntervalAlgebraic(..), ComparativePredicateOf, Interval
-    , IntervalFilterable(..)
+    ( Intervallic(..)
+    , IntervalAlgebraic(..)
+    , ComparativePredicateOf
+    , Interval
     , IntervalRelation(..) )
-import Hasklepias.Types.Event( Events, Event, intrvl, ctxt )
+import IntervalAlgebra.PairedInterval
+import IntervalAlgebra.IntervalUtilities
+import Hasklepias.Types.Event( Events, Event, ctxt )
 import Hasklepias.Types.Context as HC
     ( Concept, HasConcept(hasConcept, hasConcepts), Context )
-
+import Data.Text(Text)
 
 -- | Safely gets the 'head' of a list.
 safeHead :: [a] -> Maybe a
@@ -55,8 +57,8 @@ isNotEmpty :: [a] -> Bool
 isNotEmpty = not.null
 
 -- | Filter 'Events' to those that have any of the provided concepts.
-makeConceptsFilter :: (IntervalAlgebraic a) =>
-       [Concept] -- ^ the list of concepts by which to filter 
+makeConceptsFilter ::
+       [Text] -- ^ the list of concepts by which to filter 
     -> Events a
     -> Events a
 makeConceptsFilter cpts = filterEvents (`hasConcepts` cpts)
@@ -64,90 +66,101 @@ makeConceptsFilter cpts = filterEvents (`hasConcepts` cpts)
 -- | Filter 'Events' to a single @'Maybe' 'Event'@, based on a provided function,
 --   with the provided concepts. For example, see 'firstConceptOccurrence' and
 --  'lastConceptOccurrence'.
-nthConceptOccurrence :: (IntervalAlgebraic a) =>
+nthConceptOccurrence ::
        (Events a -> Maybe (Event a)) -- ^ function used to select a single event
-    -> [Concept]
+    -> [Text]
     -> Events a
     -> Maybe (Event a)
 nthConceptOccurrence f c = f.makeConceptsFilter c
 
 -- | Finds the *first* occurrence of an 'Event' with at least one of the concepts.
 --   Assumes the input 'Events' list is appropriately sorted.
-firstConceptOccurrence :: (IntervalAlgebraic a) =>
-      [Concept]
+firstConceptOccurrence ::
+      [Text]
     -> Events a
     -> Maybe (Event a)
 firstConceptOccurrence = nthConceptOccurrence safeHead
 
 -- | Finds the *last* occurrence of an 'Event' with at least one of the concepts.
 --   Assumes the input 'Events' list is appropriately sorted.
-lastConceptOccurrence :: (IntervalAlgebraic a) =>
-      [Concept]
+lastConceptOccurrence ::
+      [Text]
     -> Events a
     -> Maybe (Event a)
 lastConceptOccurrence = nthConceptOccurrence safeLast
 
 -- | Does 'Events' have at least @n@ events with any of the Concept in @x@.
-atleastNofX :: (IntervalAlgebraic a) => 
+atleastNofX ::
       Int -- ^ n
-   -> [Concept] -- ^ x
+   -> [Text] -- ^ x
    -> Events a -> Bool
 atleastNofX n x es = length (makeConceptsFilter x es) >= n
 
 -- | TODO
-twoXOrOneY :: (IntervalAlgebraic a) => [Concept] -> [Concept] -> Events a -> Bool
+twoXOrOneY :: [Text] -> [Text] -> Events a -> Bool
 twoXOrOneY x y es = atleastNofX 2 x es ||
                     atleastNofX 1 y es
 
--- | TODO
-withinFilter :: (IntervalAlgebraic a) => Interval a -> Events a -> Events a
-withinFilter = liftIntervalFilter within
-
--- | TODO
-overContainment :: IntervalAlgebraic a => ComparativePredicateOf (Interval a)
-overContainment = predicate $ toSet [Contains, StartedBy, FinishedBy, Equals]
-
--- | TODO
-overFilter :: IntervalAlgebraic a => Interval a -> Events a -> Events a
-overFilter = liftIntervalFilter overContainment 
 
 -- | Filter @Events a@ by a predicate function
-filterEvents :: (IntervalAlgebraic a) =>
+filterEvents ::
     (Event a -> Bool)
     -> Events a
     -> Events a
 filterEvents = filter
 
 -- | TODO
-liftIntervalPredicate :: (IntervalAlgebraic a) =>
+liftIntervalPredicate :: (Ord a) =>
     ComparativePredicateOf (Interval a)
     -> Interval a
     -> Event a
     -> Bool
-liftIntervalPredicate f x y = f x (intrvl y)
+liftIntervalPredicate f x y = f x (getInterval y)
 
 -- | TODO
-lift2IntervalPredicate :: (IntervalAlgebraic a) =>
+lift2IntervalPredicate ::  (Ord a) =>
        ComparativePredicateOf (Interval a)
     -> ComparativePredicateOf (Event a)
-lift2IntervalPredicate f x y = f (intrvl x) (intrvl y)
+lift2IntervalPredicate f x y = f (getInterval x) (getInterval y)
 
--- | Extracts the interval part of each 'Event' into a list of intervals.
-intervals :: Events a -> [Interval a]
-intervals = map intrvl
 
 -- | TODO
-makeEventFilter :: (IntervalAlgebraic a) =>
+makeEventFilter ::  (Ord a) =>
        ComparativePredicateOf (Interval a) -- ^ an 'IntervalAlgebraic' predicate
     -> Interval a -- ^ an interval to compare to intervals in the input eventsa
     -> (Context -> Bool) -- ^ predicate on a 'Context'
     -> Events a
     -> Events a
-makeEventFilter fi i fc = filterEvents (\x -> liftIntervalPredicate fi i x && 
+makeEventFilter fi i fc = filterEvents (\x -> liftIntervalPredicate fi i x &&
                                               fc (ctxt x) )
 
+
+-- | Takes a predicate of intervals and a predicate on the data part of a 
+--   paired interval to create a single predicate such that both input
+--   predicates should hold.
+makePairPredicate' :: (IntervalAlgebraic (PairedInterval b) a
+                     , IntervalAlgebraic Interval a
+                     , IntervalAlgebraic i0 a) =>
+       ComparativePredicateOf (Interval a)
+    -> i0 a
+    -> (b -> Bool)
+    -> (PairedInterval b a -> Bool)
+makePairPredicate' pi i pd x = compareIntervals pi i x && pd (pairData x)
+
+
+makePairedFilter :: ( IntervalAlgebraic Interval a
+                     , IntervalAlgebraic i0 a
+                     , IntervalAlgebraic (PairedInterval b) a
+                     ) =>
+               ComparativePredicateOf (Interval a)
+            -> i0 a
+            -> (b -> Bool)
+            -> [PairedInterval b a]
+            -> [PairedInterval b a]
+makePairedFilter fi i fc = filter (makePairPredicate' fi i fc)
+
 -- | Lifts a 'Interval' predicate to create a filter of events.
-liftIntervalFilter :: (IntervalAlgebraic a) =>
+liftIntervalFilter ::  (Ord a) =>
        ComparativePredicateOf (Interval a) -- ^ an 'IntervalAlgebraic' predicate
     -> Interval a -- ^ an interval to compare to intervals in the input events
     -> Events a

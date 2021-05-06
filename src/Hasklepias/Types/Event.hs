@@ -1,4 +1,3 @@
-{-# LANGUAGE NoImplicitPrelude #-}
 {-|
 Module      : Hasklepias Event Type
 Description : Defines the Event type and its component types, constructors, 
@@ -8,48 +7,71 @@ License     : BSD3
 Maintainer  : bsaul@novisci.com
 Stability   : experimental
 -}
+{-# LANGUAGE NoImplicitPrelude #-}
+{-# LANGUAGE TypeSynonymInstances #-}
+{-# LANGUAGE FlexibleInstances #-}
 
 module Hasklepias.Types.Event(
-   Event(getEvent)
+   Event
  , Events
+ , ConceptEvent
  , event
- , intrvl
  , ctxt
+ , toConceptEvent
+ , mkConceptEvent
 ) where
 
 import GHC.Base(Eq, Ord(..), (++), ($), not, (.))
 import GHC.Show ( Show(show) )
-import Data.Tuple ( fst, snd )
-import IntervalAlgebra( Interval, IntervalAlgebraic, Intervallic )
-import Hasklepias.Types.Context ( HasConcept(..), Context )
+import IntervalAlgebra
+    ( Interval
+    , IntervalAlgebraic
+    , Intervallic (getInterval) )
+import IntervalAlgebra.PairedInterval
+    ( PairedInterval
+    , mkPairedInterval
+    , pairData)
+import Hasklepias.Types.Context
+    ( HasConcept(..)
+    , Concepts
+    , packConcept
+    , Context (getConcepts) )
+import Data.Set ( member )
 
 -- | An Event @a@ is simply a pair @(Interval a, Context)@.
-newtype Event a =  Event { getEvent :: (Interval a, Context) }
-  deriving (Eq)
+type Event a = PairedInterval Context a
 
-instance (Intervallic a) => Ord (Event a) where
-  (<=) (Event x) (Event y) = fst x <= fst y
-  (<)  (Event x) (Event y) = fst x <  fst y
-  (>=) x y = not (x < y)
-  (>)  x y = not (x <= y)
-
-instance (Intervallic a, Show a) => Show (Event a) where
-  show x = "{" ++ show (fst $ getEvent x) ++ ", " ++ show (snd $ getEvent x) ++ "}"
+instance (Ord a, Show a) => Show (Event a) where
+  show x = "{" ++ show (getInterval x) ++ ", " ++ show (ctxt x) ++ "}"
 
 instance HasConcept (Event a) where
-    hasConcept x y = snd (getEvent x) `hasConcept` y
+    hasConcept x y = ctxt x `hasConcept` y
 
 -- | A smart constructor for 'Event a's.
-event :: (IntervalAlgebraic a) => Interval a -> Context -> Event a
-event i c = Event (i, c)
-
--- | Access the 'Interval a' of an 'Event a'.
-intrvl :: Event a -> Interval a
-intrvl = fst.getEvent
+event :: Interval a -> Context -> Event a
+event i c = mkPairedInterval c i
 
 -- | Access the 'Context' of an 'Event a'.
 ctxt :: Event a -> Context
-ctxt = snd.getEvent
+ctxt = pairData
+
+-- | An event containing only concepts and an interval
+type ConceptEvent a = PairedInterval Concepts a
+
+instance (Ord a, Show a) => Show (ConceptEvent a) where
+  show x = "{" ++ show (getInterval x) ++ ", " ++ show (pairData x) ++ "}"
+
+instance HasConcept (ConceptEvent a) where
+    hasConcept e concept = member (packConcept concept) (pairData e)
+
+-- | Drops an @Event@ to a @ConceptEvent@ by moving the concepts in the data
+--   position in the paired interval and throwing out the facts and source.
+toConceptEvent :: (Ord a) => Event a -> ConceptEvent a
+toConceptEvent e = mkPairedInterval (getConcepts $ ctxt e) (getInterval e)
+
+-- |
+mkConceptEvent :: (Ord a) => Interval a -> Concepts -> ConceptEvent a
+mkConceptEvent i c = mkPairedInterval c i
 
 -- | A @List@ of @Event a@
 -- 

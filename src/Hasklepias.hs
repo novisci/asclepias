@@ -11,12 +11,16 @@ Stability   : experimental
 module Hasklepias (
       module Hasklepias.Types
     , module Hasklepias.Functions
+    , module Hasklepias.Transformations
     , module IntervalAlgebra
     , module IntervalAlgebra.IntervalUtilities
+    , module IntervalAlgebra.PairedInterval
 ) where
 
 import IntervalAlgebra
 import IntervalAlgebra.IntervalUtilities
+import IntervalAlgebra.PairedInterval
 import Hasklepias.Types
 import Hasklepias.Functions
+import Hasklepias.Transformations
 

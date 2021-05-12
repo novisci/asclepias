@@ -2,6 +2,7 @@
 
 ## 0.4.0
 
+* Adds a rudimentary `ToJSON` instance for `Feature`s so that data can be encoded and output from the software. This is pretty rough; e.g. encoding an `Interval Int` feature produces: `"{\"getFeature\":{\"Right\":{\"end\":10,\"begin\":0}}}"`. Future versions will clean this up and remove the unnecessary `getFeature` and `Right`.
 * Removes the `Transformations` module and `transformToMeetingSequence` function. The same functionality is available by using the `formMeetingSequence` function from `interval-algebra`. See `examples/ExampleFeatures2` for the updated example.
 * Adds the `toConceptEventOf` function which creates a `ConceptEvent` but takes the `intersection` of `Concepts` in the first argument and concepts in the context of the `Event` in the second argument to form the new `ConceptEvent`. This is a way to keep only those concepts you need in the event.
 

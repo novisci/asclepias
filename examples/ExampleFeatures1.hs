@@ -46,8 +46,8 @@ index:: (IntervalAlgebraic Interval a) =>
   -> Feature (Interval a)
 index es =
     case firstConceptOccurrence ["wasBitByOrca"] es of
-        Nothing -> Left $ Other "No occurrence of Orca bite"
-        Just x  -> Right (getInterval x)
+        Nothing -> Feature $ Left $ Other "No occurrence of Orca bite"
+        Just x  -> Feature $ Right (getInterval x)
 
 {-  
 The baseline interval is the interval (b - 60, b), where b is the begin of 
@@ -77,8 +77,8 @@ enrolled :: (IntervalSizeable a b, IntervalCombinable Interval a) =>
       Feature (Interval a)
    -> Events a
    -> Feature Bool
-enrolled (Left  _) _ = Left Excluded
-enrolled (Right i) l = Right $ enrolled' 8 i l
+enrolled (Feature (Left  _)) _ = Feature $ Left Excluded
+enrolled (Feature (Right i)) l = Feature $ Right $ enrolled' 8 i l
 
 enrolled' :: (IntervalSizeable a b, IntervalCombinable Interval a) =>
       b  -- ^ allowable gap between enrollment intervals
@@ -102,10 +102,10 @@ makeHasAnyHistoryFeature :: (IntervalAlgebraic Interval a
     -> Feature (Interval a)
     -> Events a
     -> Feature (Bool, Maybe (Interval a))
-makeHasAnyHistoryFeature cnpts feat es =
+makeHasAnyHistoryFeature cnpts (Feature feat) es =
   case feat of
-   (Left x ) -> Left Excluded
-   (Right i) -> Right (isNotEmpty candidates, safeLast $ intervals candidates)
+   (Left x ) -> Feature $ Left Excluded
+   (Right i) -> Feature $ Right (isNotEmpty candidates, safeLast $ intervals candidates)
       where candidates = makePairedFilter enclose i (`hasConcepts` cnpts) es
 
 hasDuckHistory :: (IntervalAlgebraic Interval a
@@ -136,10 +136,10 @@ twoMinorOrOneMajor :: (IntervalAlgebraic Interval a
      Feature (Interval a)
   -> Events a
   -> Feature Bool
-twoMinorOrOneMajor feat l =
+twoMinorOrOneMajor (Feature feat) l =
  case feat of
-   Left x  -> Left Excluded
-   Right i -> Right $ twoXOrOneY ["hadMinorSurgery"] ["hadMajorSurgery"] (filterEnclose i l)
+   Left x  -> Feature $ Left Excluded
+   Right i -> Feature $ Right $ twoXOrOneY ["hadMinorSurgery"] ["hadMajorSurgery"] (filterEnclose i l)
 
 
 -- | Time from end of baseline to end of most recent Antibiotics
@@ -150,8 +150,8 @@ timeSinceLastAntibiotics :: ( IntervalAlgebraic Interval a
          Feature (Interval a)
       -> Events a
       -> Feature (Maybe b)
-timeSinceLastAntibiotics (Left _) _   = Left Excluded
-timeSinceLastAntibiotics (Right i) es = Right $ timeSinceLastAntibiotics' i es
+timeSinceLastAntibiotics (Feature (Left _)) _   = Feature $ Left Excluded
+timeSinceLastAntibiotics (Feature (Right i)) es = Feature $ Right $ timeSinceLastAntibiotics' i es
 
 
 timeSinceLastAntibiotics' :: ( IntervalAlgebraic Interval a
@@ -173,8 +173,8 @@ countOfHospitalEvents :: (IntervalCombinable Interval a, IntervalSizeable a b) =
      Feature (Interval a)
   -> Events a
   -> Feature (Int, Maybe b)
-countOfHospitalEvents (Left _) _   = Left Excluded
-countOfHospitalEvents (Right i) es = Right $
+countOfHospitalEvents (Feature (Left _)) _   = Feature $ Left Excluded
+countOfHospitalEvents (Feature (Right i)) es = Feature $ Right $
             ((\x -> (length x, duration <$> safeLast x))
             .filterNotDisjoint i                    -- filter to intervals not disjoint from interval
             .combineIntervals                       -- combine overlapping intervals
@@ -194,8 +194,8 @@ discontinuation :: (IntervalSizeable a b, IntervalCombinable Interval a) =>
   -> Events a
   -> Feature (Maybe (a, b))
 --   -> Feature (Maybe (Interval a))
-discontinuation (Left _) _    = Left Excluded
-discontinuation (Right i) es  = Right $
+discontinuation (Feature (Left _)) _    = Feature $ Left Excluded
+discontinuation (Feature (Right i)) es  = Feature $ Right $
       (\x -> Just (begin x           -- we want the begin of this interval 
                   , diff (begin x) (begin i)))
       =<< safeHead                   -- if there are any gaps the first one is the first discontinuation
@@ -236,24 +236,24 @@ exampleFeatures1Spec = do
 
     it "getUnitFeatures from exampleEvents1" $
       getUnitFeatures exampleEvents1 `shouldBe`
-      ( Right (beginerval 1 (60 :: Int))
-      , Right True
-      , Right (True, Just $ beginerval 1 (51 :: Int))
-      , Right (False, Nothing)
-      , Right True
-      , Right $ Just 4
-      , Right (1, Just 8)
-      , Right $ Just (78, 18)
+      ( Feature $ Right (beginerval 1 (60 :: Int))
+      , Feature $ Right True
+      , Feature $ Right (True, Just $ beginerval 1 (51 :: Int))
+      , Feature $ Right (False, Nothing)
+      , Feature $ Right True
+      , Feature $ Right $ Just 4
+      , Feature $ Right (1, Just 8)
+      , Feature $ Right $ Just (78, 18)
       )
 
     it "getUnitFeatures from exampleEvents2" $
       getUnitFeatures exampleEvents2 `shouldBe`
-      ( Left (Other "No occurrence of Orca bite")
-      , Left Excluded
-      , Left Excluded
-      , Left Excluded
-      , Left Excluded
-      , Left Excluded
-      , Left Excluded
-      , Left Excluded
+      ( Feature $ Left (Other "No occurrence of Orca bite")
+      , Feature $ Left Excluded
+      , Feature $ Left Excluded
+      , Feature $ Left Excluded
+      , Feature $ Left Excluded
+      , Feature $ Left Excluded
+      , Feature $ Left Excluded
+      , Feature $ Left Excluded
       )

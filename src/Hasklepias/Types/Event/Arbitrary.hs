@@ -25,6 +25,7 @@ import Test.QuickCheck (
     , suchThat 
     , orderedList  )
 import GHC.Base(Int, Ord, liftM2, fmap, IO, ($), (==) )
+import GHC.Show ( Show )
 import Data.List(length)
 import IntervalAlgebra ( Interval )
 import IntervalAlgebra.Arbitrary ()
@@ -35,7 +36,7 @@ import Hasklepias.Types.Context.Arbitrary ()
 instance (Arbitrary (Interval a)) => Arbitrary (Event a) where
     arbitrary = liftM2 event arbitrary arbitrary
 
-instance (Ord a, Arbitrary (Interval a)) => Arbitrary (ConceptEvent a) where
+instance (Ord a, Show a, Arbitrary (Interval a)) => Arbitrary (ConceptEvent a) where
     arbitrary = fmap toConceptEvent arbitrary
 
 -- | Generate @n@ @Event Int@

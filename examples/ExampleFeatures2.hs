@@ -12,6 +12,7 @@ Stability   : experimental
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE FlexibleContexts #-}
 
+{-# LANGUAGE MonoLocalBinds #-}
 module ExampleFeatures2(
     exampleFeatures2Spec
 ) where
@@ -27,7 +28,6 @@ hasAllConcepts :: [Concept] -> Concepts -> Bool
 hasAllConcepts c s = all (`member` s) c
 
 durationOfHospitalizedAntibiotics:: (IntervalAlgebraic (PairedInterval Concepts) a
-                                    , IntervalAlgebraic (PairedInterval State) a
                                     , IntervalAlgebraic Interval a
                                     , IntervalSizeable a b) =>
      Events a
@@ -36,8 +36,8 @@ durationOfHospitalizedAntibiotics es
     | null y    =  Left $ Other "no cases"
     | otherwise = Right $ durations y
     where concepts = map packConcept ["wasHospitalized", "tookAntibiotics"]
-          x = transformToMeetingSequence concepts (map toConceptEvent es)
-          y = filter (hasAllConcepts concepts . pairData) x 
+          x = formMeetingSequence (map (toConceptEventOf concepts) es)
+          y = filter (hasAllConcepts concepts . getPairData) x 
 
 
 exampleFeatures2Spec :: Spec

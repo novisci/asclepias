@@ -1,15 +1,14 @@
 <!DOCTYPE html>
-<html >
-
+<html lang="" xml:lang="">
 <head>
 
-  <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>Chapter 6 Toy Example | Project Asclepias</title>
-  <meta name="description" content="Chapter 6 Toy Example | Project Asclepias">
-  <meta name="generator" content="bookdown  and GitBook 2.6.7">
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>Chapter 5 Toy Example | Project Asclepias</title>
+  <meta name="description" content="Chapter 5 Toy Example | Project Asclepias" />
+  <meta name="generator" content="bookdown 0.21 and GitBook 2.6.7" />
 
-  <meta property="og:title" content="Chapter 6 Toy Example | Project Asclepias" />
+  <meta property="og:title" content="Chapter 5 Toy Example | Project Asclepias" />
   <meta property="og:type" content="book" />
   
   
@@ -17,7 +16,7 @@
   
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="Chapter 6 Toy Example | Project Asclepias" />
+  <meta name="twitter:title" content="Chapter 5 Toy Example | Project Asclepias" />
   
   
   
@@ -25,13 +24,14 @@
 
 
 
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   
   
-<link rel="prev" href="features-observational-units-and-cohorts.html">
-<link rel="next" href="specifications.html">
+<link rel="prev" href="features-observational-units-and-cohorts.html"/>
+<link rel="next" href="specifications.html"/>
+<script src="libs/header-attrs-2.6/header-attrs.js"></script>
 <script src="libs/jquery-2.2.3/jquery.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
 <link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
@@ -39,6 +39,9 @@
 <link href="libs/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
 <link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
 <link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-clipboard.css" rel="stylesheet" />
+
+
 
 
 
@@ -49,28 +52,26 @@
 
 
 <style type="text/css">
-a.sourceLine { display: inline-block; line-height: 1.25; }
-a.sourceLine { pointer-events: none; color: inherit; text-decoration: inherit; }
-a.sourceLine:empty { height: 1.2em; position: absolute; }
-.sourceCode { overflow: visible; }
-code.sourceCode { white-space: pre; position: relative; }
-div.sourceCode { margin: 1em 0; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
 pre.sourceCode { margin: 0; }
 @media screen {
 div.sourceCode { overflow: auto; }
 }
 @media print {
-code.sourceCode { white-space: pre-wrap; }
-a.sourceLine { text-indent: -1em; padding-left: 1em; }
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
 }
-pre.numberSource a.sourceLine
-  { position: relative; }
-pre.numberSource a.sourceLine:empty
-  { position: absolute; }
-pre.numberSource a.sourceLine::before
-  { content: attr(data-line-number);
-    position: absolute; left: -5em; text-align: right; vertical-align: baseline;
-    border: none; pointer-events: all;
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
     -webkit-touch-callout: none; -webkit-user-select: none;
     -khtml-user-select: none; -moz-user-select: none;
     -ms-user-select: none; user-select: none;
@@ -79,9 +80,9 @@ pre.numberSource a.sourceLine::before
   }
 pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
 div.sourceCode
-  {  }
+  {   }
 @media screen {
-a.sourceLine::before { text-decoration: underline; }
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 code span.al { color: #ff0000; font-weight: bold; } /* Alert */
 code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
@@ -127,43 +128,43 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 
 <ul class="summary">
 <li class="chapter" data-level="" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i>Preface</a></li>
-<li class="chapter" data-level="1" data-path="introductions.html"><a href="introductions.html"><i class="fa fa-check"></i><b>1</b> Introductions</a><ul>
-<li class="chapter" data-level="1.1" data-path="introductions.html"><a href="introductions.html#emerging-current-approaches"><i class="fa fa-check"></i><b>1.1</b> Emerging, current approaches</a></li>
-<li class="chapter" data-level="1.2" data-path="introductions.html"><a href="introductions.html#asceplias-is-different"><i class="fa fa-check"></i><b>1.2</b> Asceplias is different</a></li>
-<li class="chapter" data-level="1.3" data-path="introductions.html"><a href="introductions.html#towards-flexible-architectures"><i class="fa fa-check"></i><b>1.3</b> Towards flexible architectures</a></li>
+<li class="chapter" data-level="1" data-path="design.html"><a href="design.html"><i class="fa fa-check"></i><b>1</b> Design</a>
+<ul>
+<li class="chapter" data-level="1.1" data-path="design.html"><a href="design.html#what-is-does-not-do"><i class="fa fa-check"></i><b>1.1</b> What is does not do</a></li>
+<li class="chapter" data-level="1.2" data-path="design.html"><a href="design.html#from-here"><i class="fa fa-check"></i><b>1.2</b> From here</a></li>
 </ul></li>
-<li class="chapter" data-level="2" data-path="design.html"><a href="design.html"><i class="fa fa-check"></i><b>2</b> Design</a><ul>
-<li class="chapter" data-level="2.1" data-path="design.html"><a href="design.html#what-is-does-not-do"><i class="fa fa-check"></i><b>2.1</b> What is does not do</a></li>
-<li class="chapter" data-level="2.2" data-path="design.html"><a href="design.html#from-here"><i class="fa fa-check"></i><b>2.2</b> From here</a></li>
+<li class="chapter" data-level="2" data-path="data-types.html"><a href="data-types.html"><i class="fa fa-check"></i><b>2</b> Data Types</a>
+<ul>
+<li class="chapter" data-level="2.1" data-path="data-types.html"><a href="data-types.html#interval"><i class="fa fa-check"></i><b>2.1</b> Interval</a></li>
+<li class="chapter" data-level="2.2" data-path="data-types.html"><a href="data-types.html#context"><i class="fa fa-check"></i><b>2.2</b> Context</a></li>
+<li class="chapter" data-level="2.3" data-path="data-types.html"><a href="data-types.html#contextualized-set"><i class="fa fa-check"></i><b>2.3</b> Contextualized Set</a></li>
+<li class="chapter" data-level="2.4" data-path="data-types.html"><a href="data-types.html#events"><i class="fa fa-check"></i><b>2.4</b> Events</a></li>
+<li class="chapter" data-level="2.5" data-path="data-types.html"><a href="data-types.html#event-history"><i class="fa fa-check"></i><b>2.5</b> Event History</a></li>
+<li class="chapter" data-level="2.6" data-path="data-types.html"><a href="data-types.html#subject"><i class="fa fa-check"></i><b>2.6</b> Subject</a></li>
+<li class="chapter" data-level="2.7" data-path="data-types.html"><a href="data-types.html#population"><i class="fa fa-check"></i><b>2.7</b> Population</a></li>
 </ul></li>
-<li class="chapter" data-level="3" data-path="data-types.html"><a href="data-types.html"><i class="fa fa-check"></i><b>3</b> Data Types</a><ul>
-<li class="chapter" data-level="3.1" data-path="data-types.html"><a href="data-types.html#interval"><i class="fa fa-check"></i><b>3.1</b> Interval</a></li>
-<li class="chapter" data-level="3.2" data-path="data-types.html"><a href="data-types.html#context"><i class="fa fa-check"></i><b>3.2</b> Context</a></li>
-<li class="chapter" data-level="3.3" data-path="data-types.html"><a href="data-types.html#contextualized-set"><i class="fa fa-check"></i><b>3.3</b> Contextualized Set</a></li>
-<li class="chapter" data-level="3.4" data-path="data-types.html"><a href="data-types.html#events"><i class="fa fa-check"></i><b>3.4</b> Events</a></li>
-<li class="chapter" data-level="3.5" data-path="data-types.html"><a href="data-types.html#event-history"><i class="fa fa-check"></i><b>3.5</b> Event History</a></li>
-<li class="chapter" data-level="3.6" data-path="data-types.html"><a href="data-types.html#subject"><i class="fa fa-check"></i><b>3.6</b> Subject</a></li>
-<li class="chapter" data-level="3.7" data-path="data-types.html"><a href="data-types.html#population"><i class="fa fa-check"></i><b>3.7</b> Population</a></li>
+<li class="chapter" data-level="3" data-path="function-types.html"><a href="function-types.html"><i class="fa fa-check"></i><b>3</b> Function Types</a>
+<ul>
+<li class="chapter" data-level="3.1" data-path="function-types.html"><a href="function-types.html#accessors"><i class="fa fa-check"></i><b>3.1</b> Accessors</a></li>
+<li class="chapter" data-level="3.2" data-path="function-types.html"><a href="function-types.html#predicates"><i class="fa fa-check"></i><b>3.2</b> Predicates</a></li>
+<li class="chapter" data-level="3.3" data-path="function-types.html"><a href="function-types.html#filters"><i class="fa fa-check"></i><b>3.3</b> Filters</a></li>
 </ul></li>
-<li class="chapter" data-level="4" data-path="function-types.html"><a href="function-types.html"><i class="fa fa-check"></i><b>4</b> Function Types</a><ul>
-<li class="chapter" data-level="4.1" data-path="function-types.html"><a href="function-types.html#accessors"><i class="fa fa-check"></i><b>4.1</b> Accessors</a></li>
-<li class="chapter" data-level="4.2" data-path="function-types.html"><a href="function-types.html#predicates"><i class="fa fa-check"></i><b>4.2</b> Predicates</a></li>
-<li class="chapter" data-level="4.3" data-path="function-types.html"><a href="function-types.html#filters"><i class="fa fa-check"></i><b>4.3</b> Filters</a></li>
+<li class="chapter" data-level="4" data-path="features-observational-units-and-cohorts.html"><a href="features-observational-units-and-cohorts.html"><i class="fa fa-check"></i><b>4</b> Features, observational units, and Cohorts</a>
+<ul>
+<li class="chapter" data-level="4.1" data-path="features-observational-units-and-cohorts.html"><a href="features-observational-units-and-cohorts.html#features-and-feature-sets"><i class="fa fa-check"></i><b>4.1</b> Features and Feature sets</a></li>
+<li class="chapter" data-level="4.2" data-path="features-observational-units-and-cohorts.html"><a href="features-observational-units-and-cohorts.html#observational-unit"><i class="fa fa-check"></i><b>4.2</b> Observational Unit</a></li>
+<li class="chapter" data-level="4.3" data-path="features-observational-units-and-cohorts.html"><a href="features-observational-units-and-cohorts.html#cohort"><i class="fa fa-check"></i><b>4.3</b> Cohort</a></li>
 </ul></li>
-<li class="chapter" data-level="5" data-path="features-observational-units-and-cohorts.html"><a href="features-observational-units-and-cohorts.html"><i class="fa fa-check"></i><b>5</b> Features, observational units, and Cohorts</a><ul>
-<li class="chapter" data-level="5.1" data-path="features-observational-units-and-cohorts.html"><a href="features-observational-units-and-cohorts.html#features-and-feature-sets"><i class="fa fa-check"></i><b>5.1</b> Features and Feature sets</a></li>
-<li class="chapter" data-level="5.2" data-path="features-observational-units-and-cohorts.html"><a href="features-observational-units-and-cohorts.html#observational-unit"><i class="fa fa-check"></i><b>5.2</b> Observational Unit</a></li>
-<li class="chapter" data-level="5.3" data-path="features-observational-units-and-cohorts.html"><a href="features-observational-units-and-cohorts.html#cohort"><i class="fa fa-check"></i><b>5.3</b> Cohort</a></li>
+<li class="chapter" data-level="5" data-path="toy-example.html"><a href="toy-example.html"><i class="fa fa-check"></i><b>5</b> Toy Example</a>
+<ul>
+<li class="chapter" data-level="5.1" data-path="toy-example.html"><a href="toy-example.html#spade1heart"><i class="fa fa-check"></i><b>5.1</b> 2spade1heart</a></li>
+<li class="chapter" data-level="5.2" data-path="toy-example.html"><a href="toy-example.html#foreverdiamonds"><i class="fa fa-check"></i><b>5.2</b> foreverDiamonds</a></li>
+<li class="chapter" data-level="5.3" data-path="toy-example.html"><a href="toy-example.html#flush"><i class="fa fa-check"></i><b>5.3</b> flush</a></li>
+<li class="chapter" data-level="5.4" data-path="toy-example.html"><a href="toy-example.html#clubtrump"><i class="fa fa-check"></i><b>5.4</b> clubTrump</a></li>
+<li class="chapter" data-level="5.5" data-path="toy-example.html"><a href="toy-example.html#fullofhearts"><i class="fa fa-check"></i><b>5.5</b> fullOfHearts</a></li>
 </ul></li>
-<li class="chapter" data-level="6" data-path="toy-example.html"><a href="toy-example.html"><i class="fa fa-check"></i><b>6</b> Toy Example</a><ul>
-<li class="chapter" data-level="6.1" data-path="toy-example.html"><a href="toy-example.html#spade1heart"><i class="fa fa-check"></i><b>6.1</b> 2spade1heart</a></li>
-<li class="chapter" data-level="6.2" data-path="toy-example.html"><a href="toy-example.html#foreverdiamonds"><i class="fa fa-check"></i><b>6.2</b> foreverDiamonds</a></li>
-<li class="chapter" data-level="6.3" data-path="toy-example.html"><a href="toy-example.html#flush"><i class="fa fa-check"></i><b>6.3</b> flush</a></li>
-<li class="chapter" data-level="6.4" data-path="toy-example.html"><a href="toy-example.html#clubtrump"><i class="fa fa-check"></i><b>6.4</b> clubTrump</a></li>
-<li class="chapter" data-level="6.5" data-path="toy-example.html"><a href="toy-example.html#fullofhearts"><i class="fa fa-check"></i><b>6.5</b> fullOfHearts</a></li>
-</ul></li>
-<li class="chapter" data-level="7" data-path="specifications.html"><a href="specifications.html"><i class="fa fa-check"></i><b>7</b> Specifications</a></li>
-<li class="chapter" data-level="8" data-path="working-example.html"><a href="working-example.html"><i class="fa fa-check"></i><b>8</b> Working example</a></li>
+<li class="chapter" data-level="6" data-path="specifications.html"><a href="specifications.html"><i class="fa fa-check"></i><b>6</b> Specifications</a></li>
+<li class="chapter" data-level="7" data-path="working-example.html"><a href="working-example.html"><i class="fa fa-check"></i><b>7</b> Working example</a></li>
 </ul>
 
       </nav>
@@ -181,10 +182,10 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
           <div class="page-inner">
 
             <section class="normal" id="section-">
-<div id="toy-example" class="section level1">
-<h1><span class="header-section-number">Chapter 6</span> Toy Example</h1>
+<div id="toy-example" class="section level1" number="5">
+<h1><span class="header-section-number">Chapter 5</span> Toy Example</h1>
 <p>This example uses data for the single subject defined above to define a <span class="math inline">\(n = 1\)</span> feature set. The subject’s index event is defined as the start of the first <span class="math inline">\(\heartsuit\)</span> after the start of the first <span class="math inline">\(\spadesuit\)</span> (i.e <span class="math inline">\(\text{index}(W) = \mathsf{F}^{\star}(W)\)</span>).</p>
-<pre class="sourceCode r"><code class="sourceCode r">index &lt;-<span class="st"> </span>fstar</code></pre>
+<div class="sourceCode" id="cb66"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb66-1"><a href="toy-example.html#cb66-1" aria-hidden="true" tabindex="-1"></a>index <span class="ot">&lt;-</span> fstar</span></code></pre></div>
 <p>Define the following features:</p>
 <table>
 <colgroup>
@@ -228,8 +229,8 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </tbody>
 </table>
 <p>Now let’s express each of these features mathematically.</p>
-<div id="spade1heart" class="section level2">
-<h2><span class="header-section-number">6.1</span> 2spade1heart</h2>
+<div id="spade1heart" class="section level2" number="5.1">
+<h2><span class="header-section-number">5.1</span> 2spade1heart</h2>
 <p>Let’s define a few more functions that operate on <span class="math inline">\(w\)</span> and <span class="math inline">\(\Xi\)</span>.</p>
 <table>
 <colgroup>
@@ -252,65 +253,65 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </tr>
 </tbody>
 </table>
-<pre class="sourceCode r"><code class="sourceCode r">ANY &lt;-<span class="st"> </span><span class="cf">function</span>(x) <span class="kw">length</span>(x) <span class="op">&gt;</span><span class="st"> </span><span class="dv">0</span>
-
-compare_head_to_tail_cast &lt;-<span class="st"> </span><span class="cf">function</span>(compareFUN){
-  
-  <span class="kw">force</span>(compareFUN)
-  
-  f &lt;-<span class="st"> </span><span class="cf">function</span>(el){
-    <span class="cf">switch</span>(
-      <span class="dt">EXPR =</span> <span class="kw">as.character</span>(<span class="kw">length</span>(el)),
-      <span class="st">&quot;0&quot;</span>  =<span class="st"> </span><span class="kw">list</span>(),
-      <span class="st">&quot;1&quot;</span>  =<span class="st"> </span><span class="kw">list</span>(<span class="ot">FALSE</span>),
-      <span class="kw">Map</span>(<span class="cf">function</span>(x, h) { <span class="kw">compareFUN</span>(x, <span class="dt">h =</span> h) }, el[<span class="op">-</span>1L], <span class="dt">h =</span> el[1L]) <span class="op">%&gt;%</span>
-<span class="st">        </span><span class="kw">Reduce</span>(<span class="st">`</span><span class="dt">|</span><span class="st">`</span>, .) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">list</span>() <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">append</span>(<span class="kw">f</span>(el[<span class="op">-</span>1L])))
-  }
-  
-  f
-
-}
-
-compare_function_cast &lt;-<span class="st"> </span><span class="cf">function</span>(relation, bound){
-  <span class="cf">function</span>(x, h){
-    <span class="kw">relation</span>( <span class="kw">s</span>(x) <span class="op">-</span><span class="st"> </span><span class="kw">s</span>(h), bound)
-  }
-}
-
-t2spade1heart &lt;-<span class="st"> </span><span class="cf">function</span>(W){
-  <span class="kw">a_cast</span>(<span class="kw">c</span>(<span class="st">&quot;interval&quot;</span>, <span class="st">&quot;a&quot;</span>)) <span class="op">%&gt;%</span>
-<span class="st">   </span><span class="kw">p_cast</span>(<span class="st">`</span><span class="dt">&lt;</span><span class="st">`</span>, <span class="kw">index</span>(W)) <span class="op">%&gt;%</span>
-<span class="st">    </span><span class="kw">l_cast</span>() <span class="op">%&gt;%</span>
-<span class="st">    </span>{
-     {.(<span class="kw">Lsuit_cast</span>(<span class="st">&quot;spade&quot;</span>)(W))} <span class="op">%&gt;%</span>
-<span class="st">     </span>{
-       w &lt;-<span class="st"> </span>.
-       <span class="kw">compare_function_cast</span>(<span class="st">`</span><span class="dt">&gt;=</span><span class="st">`</span>, <span class="dv">3</span>) <span class="op">%&gt;%</span>
-<span class="st">        </span><span class="kw">compare_head_to_tail_cast</span>() <span class="op">%&gt;%</span>
-<span class="st">         </span>{ w[<span class="kw">unlist</span>(.(w))] } 
-     } <span class="op">%&gt;%</span>
-<span class="st">        </span><span class="kw">ANY</span>()  <span class="op">||</span>
-<span class="st">     </span>{.(<span class="kw">Lsuit_cast</span>(<span class="st">&quot;club&quot;</span>)(W))} <span class="op">%&gt;%</span>
-<span class="st">        </span><span class="kw">ANY</span>()
-    }
-}
-
-<span class="co"># No clubs before index</span>
-W1 &lt;-<span class="st"> </span>W[<span class="op">-</span><span class="dv">7</span>]
-W3 &lt;-<span class="st"> </span>W2 &lt;-<span class="st"> </span>W1
-W2[[<span class="dv">6</span>]] &lt;-<span class="st"> </span><span class="kw">event</span>(<span class="dt">interval =</span> <span class="kw">interval</span>(<span class="dt">a =</span> 17L, <span class="dt">b =</span> 17L), 
-               <span class="dt">context =</span> <span class="kw">context</span>(<span class="dt">suit =</span> <span class="kw">suit</span>(<span class="st">&quot;spade&quot;</span>), <span class="dt">value =</span> <span class="st">&quot;2&quot;</span>))
-W3[[<span class="dv">5</span>]] &lt;-<span class="st"> </span><span class="kw">event</span>(<span class="dt">interval =</span> <span class="kw">interval</span>(<span class="dt">a =</span> 8L, <span class="dt">b =</span> 8L), 
-               <span class="dt">context =</span> <span class="kw">context</span>(<span class="dt">suit =</span> <span class="kw">suit</span>(<span class="st">&quot;spade&quot;</span>), <span class="dt">value =</span> <span class="st">&quot;2&quot;</span>))
-
-<span class="kw">t2spade1heart</span>(W)</code></pre>
+<div class="sourceCode" id="cb67"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb67-1"><a href="toy-example.html#cb67-1" aria-hidden="true" tabindex="-1"></a>ANY <span class="ot">&lt;-</span> <span class="cf">function</span>(x) <span class="fu">length</span>(x) <span class="sc">&gt;</span> <span class="dv">0</span></span>
+<span id="cb67-2"><a href="toy-example.html#cb67-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb67-3"><a href="toy-example.html#cb67-3" aria-hidden="true" tabindex="-1"></a>compare_head_to_tail_cast <span class="ot">&lt;-</span> <span class="cf">function</span>(compareFUN){</span>
+<span id="cb67-4"><a href="toy-example.html#cb67-4" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb67-5"><a href="toy-example.html#cb67-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">force</span>(compareFUN)</span>
+<span id="cb67-6"><a href="toy-example.html#cb67-6" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb67-7"><a href="toy-example.html#cb67-7" aria-hidden="true" tabindex="-1"></a>  f <span class="ot">&lt;-</span> <span class="cf">function</span>(el){</span>
+<span id="cb67-8"><a href="toy-example.html#cb67-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">switch</span>(</span>
+<span id="cb67-9"><a href="toy-example.html#cb67-9" aria-hidden="true" tabindex="-1"></a>      <span class="at">EXPR =</span> <span class="fu">as.character</span>(<span class="fu">length</span>(el)),</span>
+<span id="cb67-10"><a href="toy-example.html#cb67-10" aria-hidden="true" tabindex="-1"></a>      <span class="st">&quot;0&quot;</span>  <span class="ot">=</span> <span class="fu">list</span>(),</span>
+<span id="cb67-11"><a href="toy-example.html#cb67-11" aria-hidden="true" tabindex="-1"></a>      <span class="st">&quot;1&quot;</span>  <span class="ot">=</span> <span class="fu">list</span>(<span class="cn">FALSE</span>),</span>
+<span id="cb67-12"><a href="toy-example.html#cb67-12" aria-hidden="true" tabindex="-1"></a>      <span class="fu">Map</span>(<span class="cf">function</span>(x, h) { <span class="fu">compareFUN</span>(x, <span class="at">h =</span> h) }, el[<span class="sc">-</span>1L], <span class="at">h =</span> el[1L]) <span class="sc">%&gt;%</span></span>
+<span id="cb67-13"><a href="toy-example.html#cb67-13" aria-hidden="true" tabindex="-1"></a>        <span class="fu">Reduce</span>(<span class="st">`</span><span class="at">|</span><span class="st">`</span>, .) <span class="sc">%&gt;%</span> <span class="fu">list</span>() <span class="sc">%&gt;%</span> <span class="fu">append</span>(<span class="fu">f</span>(el[<span class="sc">-</span>1L])))</span>
+<span id="cb67-14"><a href="toy-example.html#cb67-14" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb67-15"><a href="toy-example.html#cb67-15" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb67-16"><a href="toy-example.html#cb67-16" aria-hidden="true" tabindex="-1"></a>  f</span>
+<span id="cb67-17"><a href="toy-example.html#cb67-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb67-18"><a href="toy-example.html#cb67-18" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb67-19"><a href="toy-example.html#cb67-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb67-20"><a href="toy-example.html#cb67-20" aria-hidden="true" tabindex="-1"></a>compare_function_cast <span class="ot">&lt;-</span> <span class="cf">function</span>(relation, bound){</span>
+<span id="cb67-21"><a href="toy-example.html#cb67-21" aria-hidden="true" tabindex="-1"></a>  <span class="cf">function</span>(x, h){</span>
+<span id="cb67-22"><a href="toy-example.html#cb67-22" aria-hidden="true" tabindex="-1"></a>    <span class="fu">relation</span>( <span class="fu">s</span>(x) <span class="sc">-</span> <span class="fu">s</span>(h), bound)</span>
+<span id="cb67-23"><a href="toy-example.html#cb67-23" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb67-24"><a href="toy-example.html#cb67-24" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb67-25"><a href="toy-example.html#cb67-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb67-26"><a href="toy-example.html#cb67-26" aria-hidden="true" tabindex="-1"></a>t2spade1heart <span class="ot">&lt;-</span> <span class="cf">function</span>(W){</span>
+<span id="cb67-27"><a href="toy-example.html#cb67-27" aria-hidden="true" tabindex="-1"></a>  <span class="fu">a_cast</span>(<span class="fu">c</span>(<span class="st">&quot;interval&quot;</span>, <span class="st">&quot;a&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb67-28"><a href="toy-example.html#cb67-28" aria-hidden="true" tabindex="-1"></a>   <span class="fu">p_cast</span>(<span class="st">`</span><span class="at">&lt;</span><span class="st">`</span>, <span class="fu">index</span>(W)) <span class="sc">%&gt;%</span></span>
+<span id="cb67-29"><a href="toy-example.html#cb67-29" aria-hidden="true" tabindex="-1"></a>    <span class="fu">l_cast</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb67-30"><a href="toy-example.html#cb67-30" aria-hidden="true" tabindex="-1"></a>    {</span>
+<span id="cb67-31"><a href="toy-example.html#cb67-31" aria-hidden="true" tabindex="-1"></a>     {.(<span class="fu">Lsuit_cast</span>(<span class="st">&quot;spade&quot;</span>)(W))} <span class="sc">%&gt;%</span></span>
+<span id="cb67-32"><a href="toy-example.html#cb67-32" aria-hidden="true" tabindex="-1"></a>     {</span>
+<span id="cb67-33"><a href="toy-example.html#cb67-33" aria-hidden="true" tabindex="-1"></a>       w <span class="ot">&lt;-</span> .</span>
+<span id="cb67-34"><a href="toy-example.html#cb67-34" aria-hidden="true" tabindex="-1"></a>       <span class="fu">compare_function_cast</span>(<span class="st">`</span><span class="at">&gt;=</span><span class="st">`</span>, <span class="dv">3</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb67-35"><a href="toy-example.html#cb67-35" aria-hidden="true" tabindex="-1"></a>        <span class="fu">compare_head_to_tail_cast</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb67-36"><a href="toy-example.html#cb67-36" aria-hidden="true" tabindex="-1"></a>         { w[<span class="fu">unlist</span>(.(w))] } </span>
+<span id="cb67-37"><a href="toy-example.html#cb67-37" aria-hidden="true" tabindex="-1"></a>     } <span class="sc">%&gt;%</span></span>
+<span id="cb67-38"><a href="toy-example.html#cb67-38" aria-hidden="true" tabindex="-1"></a>        <span class="fu">ANY</span>()  <span class="sc">||</span></span>
+<span id="cb67-39"><a href="toy-example.html#cb67-39" aria-hidden="true" tabindex="-1"></a>     {.(<span class="fu">Lsuit_cast</span>(<span class="st">&quot;club&quot;</span>)(W))} <span class="sc">%&gt;%</span></span>
+<span id="cb67-40"><a href="toy-example.html#cb67-40" aria-hidden="true" tabindex="-1"></a>        <span class="fu">ANY</span>()</span>
+<span id="cb67-41"><a href="toy-example.html#cb67-41" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb67-42"><a href="toy-example.html#cb67-42" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb67-43"><a href="toy-example.html#cb67-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb67-44"><a href="toy-example.html#cb67-44" aria-hidden="true" tabindex="-1"></a><span class="co"># No clubs before index</span></span>
+<span id="cb67-45"><a href="toy-example.html#cb67-45" aria-hidden="true" tabindex="-1"></a>W1 <span class="ot">&lt;-</span> W[<span class="sc">-</span><span class="dv">7</span>]</span>
+<span id="cb67-46"><a href="toy-example.html#cb67-46" aria-hidden="true" tabindex="-1"></a>W3 <span class="ot">&lt;-</span> W2 <span class="ot">&lt;-</span> W1</span>
+<span id="cb67-47"><a href="toy-example.html#cb67-47" aria-hidden="true" tabindex="-1"></a>W2[[<span class="dv">6</span>]] <span class="ot">&lt;-</span> <span class="fu">event</span>(<span class="at">interval =</span> <span class="fu">interval</span>(<span class="at">a =</span> 17L, <span class="at">b =</span> 17L), </span>
+<span id="cb67-48"><a href="toy-example.html#cb67-48" aria-hidden="true" tabindex="-1"></a>               <span class="at">context =</span> <span class="fu">context</span>(<span class="at">suit =</span> <span class="fu">suit</span>(<span class="st">&quot;spade&quot;</span>), <span class="at">value =</span> <span class="st">&quot;2&quot;</span>))</span>
+<span id="cb67-49"><a href="toy-example.html#cb67-49" aria-hidden="true" tabindex="-1"></a>W3[[<span class="dv">5</span>]] <span class="ot">&lt;-</span> <span class="fu">event</span>(<span class="at">interval =</span> <span class="fu">interval</span>(<span class="at">a =</span> 8L, <span class="at">b =</span> 8L), </span>
+<span id="cb67-50"><a href="toy-example.html#cb67-50" aria-hidden="true" tabindex="-1"></a>               <span class="at">context =</span> <span class="fu">context</span>(<span class="at">suit =</span> <span class="fu">suit</span>(<span class="st">&quot;spade&quot;</span>), <span class="at">value =</span> <span class="st">&quot;2&quot;</span>))</span>
+<span id="cb67-51"><a href="toy-example.html#cb67-51" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb67-52"><a href="toy-example.html#cb67-52" aria-hidden="true" tabindex="-1"></a><span class="fu">t2spade1heart</span>(W)</span></code></pre></div>
 <pre><code>## [1] TRUE</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">t2spade1heart</span>(W1)</code></pre>
-<pre><code>## [1] FALSE</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">t2spade1heart</span>(W2)</code></pre>
+<div class="sourceCode" id="cb69"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb69-1"><a href="toy-example.html#cb69-1" aria-hidden="true" tabindex="-1"></a><span class="fu">t2spade1heart</span>(W1)</span></code></pre></div>
 <pre><code>## [1] TRUE</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">t2spade1heart</span>(W3)</code></pre>
-<pre><code>## [1] FALSE</code></pre>
+<div class="sourceCode" id="cb71"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb71-1"><a href="toy-example.html#cb71-1" aria-hidden="true" tabindex="-1"></a><span class="fu">t2spade1heart</span>(W2)</span></code></pre></div>
+<pre><code>## [1] TRUE</code></pre>
+<div class="sourceCode" id="cb73"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb73-1"><a href="toy-example.html#cb73-1" aria-hidden="true" tabindex="-1"></a><span class="fu">t2spade1heart</span>(W3)</span></code></pre></div>
+<pre><code>## [1] TRUE</code></pre>
 <p>This code will certainly be cleaned up, a key point is that the function is composed of a pattern: <code>filter W -&gt; apply function</code>:</p>
 <pre><code>        clubs         spades
            |            |
@@ -329,8 +330,8 @@ W3[[<span class="dv">5</span>]] &lt;-<span class="st"> </span><span class="kw">e
 features:
    id: any A or any B</code></pre>
 </div>
-<div id="foreverdiamonds" class="section level2">
-<h2><span class="header-section-number">6.2</span> foreverDiamonds</h2>
+<div id="foreverdiamonds" class="section level2" number="5.2">
+<h2><span class="header-section-number">5.2</span> foreverDiamonds</h2>
 <pre><code>any periods of diamonds
 
 </code></pre>
@@ -345,175 +346,169 @@ features:
 \end{aligned}
 \]</span></p>
 <p>Let’s look at the <span class="math inline">\(\text{scangap}\)</span> function and the patterns it can be composed of. First, we have a function performing the nuts and bolts of the set comprehension (e.g., <span class="math inline">\(\text{if } x_{i} \leq y_{i - 1} + c \text{ then } x_{i - 1} \text{ else } x_{i}\)</span>), which be somewhat kludglily patterned as:</p>
-<pre class="sourceCode r"><code class="sourceCode r">check_gap_cast &lt;-<span class="st"> </span><span class="cf">function</span>(<span class="dt">cc =</span> <span class="dv">0</span>, <span class="dt">pos =</span> <span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">1</span>, <span class="dv">1</span>)) {
-  <span class="cf">function</span>(a, b){
-    <span class="cf">if</span> (b[pos[<span class="dv">1</span>]] <span class="op">&lt;=</span><span class="st"> </span>(a[pos[<span class="dv">2</span>]] <span class="op">+</span><span class="st"> </span>cc)) a[pos[<span class="dv">3</span>]] <span class="cf">else</span> b[pos[<span class="dv">4</span>]]
-  }
-}</code></pre>
+<div class="sourceCode" id="cb78"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb78-1"><a href="toy-example.html#cb78-1" aria-hidden="true" tabindex="-1"></a>check_gap_cast <span class="ot">&lt;-</span> <span class="cf">function</span>(<span class="at">cc =</span> <span class="dv">0</span>, <span class="at">pos =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">1</span>, <span class="dv">1</span>)) {</span>
+<span id="cb78-2"><a href="toy-example.html#cb78-2" aria-hidden="true" tabindex="-1"></a>  <span class="cf">function</span>(a, b){</span>
+<span id="cb78-3"><a href="toy-example.html#cb78-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (b[pos[<span class="dv">1</span>]] <span class="sc">&lt;=</span> (a[pos[<span class="dv">2</span>]] <span class="sc">+</span> cc)) a[pos[<span class="dv">3</span>]] <span class="cf">else</span> b[pos[<span class="dv">4</span>]]</span>
+<span id="cb78-4"><a href="toy-example.html#cb78-4" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb78-5"><a href="toy-example.html#cb78-5" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
 <p>So that <code>check_gap_cast(cc = 10, pos = c(1, 2, 1, 1))</code> yields <span class="math inline">\(f(x, y) = \text{if } x_{i} \leq y_{i - 1} + 10 \text{ then } x_{i - 1} \text{ else } x_{i}\)</span> and <code>check_gap_cast(cc = 0, pos = c(2, 2, 2, 2))</code> yields <span class="math inline">\(f&#39;(x, y) = \text{if } y_{i} \leq y_{i - 1} \text{ then } y_{i - 1} \text{ else } y_{i}\)</span>.</p>
 <p>Then we can apply that pattern to create the scangap function.</p>
-<pre class="sourceCode r"><code class="sourceCode r">scangap_cast &lt;-<span class="st"> </span><span class="cf">function</span>(cc){
-  <span class="cf">function</span>(l){
-    <span class="kw">Reduce</span>(
-      <span class="dt">f =</span> <span class="cf">function</span>(x, y){
-        <span class="kw">c</span>(<span class="kw">check_gap_cast</span>(cc, <span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">1</span>, <span class="dv">1</span>))(x, y), 
-          <span class="kw">check_gap_cast</span>(<span class="dv">0</span>, <span class="kw">c</span>(<span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">2</span>))(x, y))
-        },
-    <span class="dt">x =</span> l, <span class="dt">accumulate =</span> <span class="ot">TRUE</span>)
-  }
-}
-
-<span class="kw">scangap_cast</span>(<span class="dv">10</span>)(<span class="kw">head</span>(Wdt<span class="op">$</span>xy))</code></pre>
+<div class="sourceCode" id="cb79"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb79-1"><a href="toy-example.html#cb79-1" aria-hidden="true" tabindex="-1"></a>scangap_cast <span class="ot">&lt;-</span> <span class="cf">function</span>(cc){</span>
+<span id="cb79-2"><a href="toy-example.html#cb79-2" aria-hidden="true" tabindex="-1"></a>  <span class="cf">function</span>(l){</span>
+<span id="cb79-3"><a href="toy-example.html#cb79-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">Reduce</span>(</span>
+<span id="cb79-4"><a href="toy-example.html#cb79-4" aria-hidden="true" tabindex="-1"></a>      <span class="at">f =</span> <span class="cf">function</span>(x, y){</span>
+<span id="cb79-5"><a href="toy-example.html#cb79-5" aria-hidden="true" tabindex="-1"></a>        <span class="fu">c</span>(<span class="fu">check_gap_cast</span>(cc, <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">1</span>, <span class="dv">1</span>))(x, y), </span>
+<span id="cb79-6"><a href="toy-example.html#cb79-6" aria-hidden="true" tabindex="-1"></a>          <span class="fu">check_gap_cast</span>(<span class="dv">0</span>, <span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">2</span>))(x, y))</span>
+<span id="cb79-7"><a href="toy-example.html#cb79-7" aria-hidden="true" tabindex="-1"></a>        },</span>
+<span id="cb79-8"><a href="toy-example.html#cb79-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> l, <span class="at">accumulate =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb79-9"><a href="toy-example.html#cb79-9" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb79-10"><a href="toy-example.html#cb79-10" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb79-11"><a href="toy-example.html#cb79-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb79-12"><a href="toy-example.html#cb79-12" aria-hidden="true" tabindex="-1"></a><span class="fu">scangap_cast</span>(<span class="dv">10</span>)(<span class="fu">head</span>(Wdt<span class="sc">$</span>xy))</span></code></pre></div>
 <pre><code>## [[1]]
-## [1] 1 6
+## [1]  8 18
 ## 
 ## [[2]]
-## [1] 1 6
+## [1]  8 18
 ## 
 ## [[3]]
-## [1] 1 6
+## [1]  8 24
 ## 
 ## [[4]]
-## [1] 1 7
+## [1]  8 38
 ## 
 ## [[5]]
-## [1]  1 12
+## [1]  8 38
 ## 
 ## [[6]]
-## [1]  1 17</code></pre>
+## [1]  8 46</code></pre>
 <p>In summary, scangap return a set of tuples the same length as the input <span class="math inline">\(W\)</span>, where the start and end of each <span class="math inline">\(w_i \in W\)</span> have been updated depending on <span class="math inline">\(w_{i - 1}\)</span> extending the period until a time gap of 10 units occurs.</p>
 <p>Now, we can identify which of those periods are the non overlapping periods by scanning the modified periods from the right, accumulating an indicator of whether each period is the longest segment of a period; then we can use set (list) comprehension to filter to the unique periods.</p>
 <p>For example, (warning: this is klunky and could be cleaned up), but in <code>R</code>:</p>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Finds the longest non-overlapping periods</span>
-scan_periods_cast &lt;-<span class="st"> </span><span class="cf">function</span>(cc){
-  <span class="cf">function</span>(l){
-     <span class="kw">Map</span>(
-       <span class="cf">function</span>(x) <span class="kw">as.logical</span>(x[<span class="dv">3</span>]),
-       <span class="kw">Reduce</span>(
-         <span class="dt">f =</span> <span class="cf">function</span>(a, b) <span class="kw">c</span>(a, (a[<span class="dv">2</span>] <span class="op">+</span><span class="st"> </span>cc <span class="op">&lt;=</span><span class="st"> </span>b[<span class="dv">1</span>]) <span class="op">*</span><span class="st"> </span><span class="dv">1</span>),
-         <span class="dt">x =</span> l[<span class="op">-</span><span class="kw">length</span>(l)],
-         <span class="dt">init =</span> <span class="kw">c</span>(l[[<span class="kw">length</span>(l)]], <span class="dv">1</span>), <span class="dt">accumulate =</span> <span class="ot">TRUE</span>, <span class="dt">right =</span> <span class="ot">TRUE</span>)
-     )
-  }
-}
-
-period_cast &lt;-<span class="st"> </span><span class="cf">function</span>(cc){
-  ff &lt;-<span class="st"> </span><span class="kw">scan_periods_cast</span>(cc)
-  gg &lt;-<span class="st"> </span><span class="kw">scangap_cast</span>(cc)
-  <span class="cf">function</span>(l){
-    <span class="kw">gg</span>(l)[<span class="kw">unlist</span>(<span class="kw">ff</span>(<span class="kw">gg</span>(l)))]
-  }
-}
-
-<span class="kw">period_cast</span>(<span class="dv">10</span>)(Wdt<span class="op">$</span>xy)</code></pre>
+<div class="sourceCode" id="cb81"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb81-1"><a href="toy-example.html#cb81-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Finds the longest non-overlapping periods</span></span>
+<span id="cb81-2"><a href="toy-example.html#cb81-2" aria-hidden="true" tabindex="-1"></a>scan_periods_cast <span class="ot">&lt;-</span> <span class="cf">function</span>(cc){</span>
+<span id="cb81-3"><a href="toy-example.html#cb81-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">function</span>(l){</span>
+<span id="cb81-4"><a href="toy-example.html#cb81-4" aria-hidden="true" tabindex="-1"></a>     <span class="fu">Map</span>(</span>
+<span id="cb81-5"><a href="toy-example.html#cb81-5" aria-hidden="true" tabindex="-1"></a>       <span class="cf">function</span>(x) <span class="fu">as.logical</span>(x[<span class="dv">3</span>]),</span>
+<span id="cb81-6"><a href="toy-example.html#cb81-6" aria-hidden="true" tabindex="-1"></a>       <span class="fu">Reduce</span>(</span>
+<span id="cb81-7"><a href="toy-example.html#cb81-7" aria-hidden="true" tabindex="-1"></a>         <span class="at">f =</span> <span class="cf">function</span>(a, b) <span class="fu">c</span>(a, (a[<span class="dv">2</span>] <span class="sc">+</span> cc <span class="sc">&lt;=</span> b[<span class="dv">1</span>]) <span class="sc">*</span> <span class="dv">1</span>),</span>
+<span id="cb81-8"><a href="toy-example.html#cb81-8" aria-hidden="true" tabindex="-1"></a>         <span class="at">x =</span> l[<span class="sc">-</span><span class="fu">length</span>(l)],</span>
+<span id="cb81-9"><a href="toy-example.html#cb81-9" aria-hidden="true" tabindex="-1"></a>         <span class="at">init =</span> <span class="fu">c</span>(l[[<span class="fu">length</span>(l)]], <span class="dv">1</span>), <span class="at">accumulate =</span> <span class="cn">TRUE</span>, <span class="at">right =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb81-10"><a href="toy-example.html#cb81-10" aria-hidden="true" tabindex="-1"></a>     )</span>
+<span id="cb81-11"><a href="toy-example.html#cb81-11" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb81-12"><a href="toy-example.html#cb81-12" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb81-13"><a href="toy-example.html#cb81-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb81-14"><a href="toy-example.html#cb81-14" aria-hidden="true" tabindex="-1"></a>period_cast <span class="ot">&lt;-</span> <span class="cf">function</span>(cc){</span>
+<span id="cb81-15"><a href="toy-example.html#cb81-15" aria-hidden="true" tabindex="-1"></a>  ff <span class="ot">&lt;-</span> <span class="fu">scan_periods_cast</span>(cc)</span>
+<span id="cb81-16"><a href="toy-example.html#cb81-16" aria-hidden="true" tabindex="-1"></a>  gg <span class="ot">&lt;-</span> <span class="fu">scangap_cast</span>(cc)</span>
+<span id="cb81-17"><a href="toy-example.html#cb81-17" aria-hidden="true" tabindex="-1"></a>  <span class="cf">function</span>(l){</span>
+<span id="cb81-18"><a href="toy-example.html#cb81-18" aria-hidden="true" tabindex="-1"></a>    <span class="fu">gg</span>(l)[<span class="fu">unlist</span>(<span class="fu">ff</span>(<span class="fu">gg</span>(l)))]</span>
+<span id="cb81-19"><a href="toy-example.html#cb81-19" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb81-20"><a href="toy-example.html#cb81-20" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb81-21"><a href="toy-example.html#cb81-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb81-22"><a href="toy-example.html#cb81-22" aria-hidden="true" tabindex="-1"></a><span class="fu">period_cast</span>(<span class="dv">10</span>)(Wdt<span class="sc">$</span>xy)</span></code></pre></div>
 <pre><code>## [[1]]
-## [1]  1 67
-## 
-## [[2]]
-## [1] 82 95</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">period_cast</span>(<span class="dv">10</span>)(<span class="kw">head</span>(Wdt<span class="op">$</span>xy))</code></pre>
+## [1]   8 100</code></pre>
+<div class="sourceCode" id="cb83"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb83-1"><a href="toy-example.html#cb83-1" aria-hidden="true" tabindex="-1"></a><span class="fu">period_cast</span>(<span class="dv">10</span>)(<span class="fu">head</span>(Wdt<span class="sc">$</span>xy))</span></code></pre></div>
 <pre><code>## [[1]]
-## [1]  1 17</code></pre>
+## [1]  8 46</code></pre>
 <p>Now we have need a function that limits our periods to just those that overlap another period <span class="math inline">\(pd\)</span> (e.g. a lookback period). This is the <span class="math inline">\(pdperiod\)</span> function.</p>
-<pre class="sourceCode r"><code class="sourceCode r">pdperiod &lt;-<span class="st"> </span><span class="cf">function</span>(l, p){
-  <span class="kw">Filter</span>(
-    <span class="dt">f =</span> <span class="cf">function</span>(z) { <span class="op">!</span>(p[<span class="dv">2</span>] <span class="op">&lt;</span><span class="st"> </span>z[<span class="dv">1</span>]) <span class="op">&amp;&amp;</span><span class="st"> </span><span class="op">!</span>(p[<span class="dv">1</span>] <span class="op">&gt;</span><span class="st"> </span>z[<span class="dv">2</span>]) },
-    <span class="dt">x =</span> l
-  )  
-}
-
-<span class="kw">period_cast</span>(<span class="dv">10</span>)(Wdt<span class="op">$</span>xy) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">pdperiod</span>(<span class="dt">p =</span> <span class="kw">c</span>(<span class="dv">4</span>, <span class="dv">10</span>))</code></pre>
+<div class="sourceCode" id="cb85"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb85-1"><a href="toy-example.html#cb85-1" aria-hidden="true" tabindex="-1"></a>pdperiod <span class="ot">&lt;-</span> <span class="cf">function</span>(l, p){</span>
+<span id="cb85-2"><a href="toy-example.html#cb85-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">Filter</span>(</span>
+<span id="cb85-3"><a href="toy-example.html#cb85-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">f =</span> <span class="cf">function</span>(z) { <span class="sc">!</span>(p[<span class="dv">2</span>] <span class="sc">&lt;</span> z[<span class="dv">1</span>]) <span class="sc">&amp;&amp;</span> <span class="sc">!</span>(p[<span class="dv">1</span>] <span class="sc">&gt;</span> z[<span class="dv">2</span>]) },</span>
+<span id="cb85-4"><a href="toy-example.html#cb85-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> l</span>
+<span id="cb85-5"><a href="toy-example.html#cb85-5" aria-hidden="true" tabindex="-1"></a>  )  </span>
+<span id="cb85-6"><a href="toy-example.html#cb85-6" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb85-7"><a href="toy-example.html#cb85-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb85-8"><a href="toy-example.html#cb85-8" aria-hidden="true" tabindex="-1"></a><span class="fu">period_cast</span>(<span class="dv">10</span>)(Wdt<span class="sc">$</span>xy) <span class="sc">%&gt;%</span> <span class="fu">pdperiod</span>(<span class="at">p =</span> <span class="fu">c</span>(<span class="dv">4</span>, <span class="dv">10</span>))</span></code></pre></div>
 <pre><code>## [[1]]
-## [1]  1 67</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">period_cast</span>(<span class="dv">10</span>)(Wdt<span class="op">$</span>xy) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">pdperiod</span>(<span class="dt">p =</span> <span class="kw">c</span>(<span class="op">-</span><span class="dv">10</span>, <span class="dv">10</span>))</code></pre>
+## [1]   8 100</code></pre>
+<div class="sourceCode" id="cb87"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb87-1"><a href="toy-example.html#cb87-1" aria-hidden="true" tabindex="-1"></a><span class="fu">period_cast</span>(<span class="dv">10</span>)(Wdt<span class="sc">$</span>xy) <span class="sc">%&gt;%</span> <span class="fu">pdperiod</span>(<span class="at">p =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">10</span>, <span class="dv">10</span>))</span></code></pre></div>
 <pre><code>## [[1]]
-## [1]  1 67</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">period_cast</span>(<span class="dv">10</span>)(Wdt<span class="op">$</span>xy) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">pdperiod</span>(<span class="dt">p =</span> <span class="kw">c</span>(<span class="op">-</span><span class="dv">10</span>, <span class="dv">90</span>))</code></pre>
+## [1]   8 100</code></pre>
+<div class="sourceCode" id="cb89"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb89-1"><a href="toy-example.html#cb89-1" aria-hidden="true" tabindex="-1"></a><span class="fu">period_cast</span>(<span class="dv">10</span>)(Wdt<span class="sc">$</span>xy) <span class="sc">%&gt;%</span> <span class="fu">pdperiod</span>(<span class="at">p =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">10</span>, <span class="dv">90</span>))</span></code></pre></div>
 <pre><code>## [[1]]
-## [1]  1 67
-## 
-## [[2]]
-## [1] 82 95</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Define a couple of helper function</span>
-s &lt;-<span class="st"> </span><span class="cf">function</span>(p) p[<span class="dv">1</span>]
-e &lt;-<span class="st"> </span><span class="cf">function</span>(p) p[<span class="dv">2</span>]
-
-h &lt;-<span class="st"> </span><span class="cf">function</span>(p1, p2){
-  <span class="cf">if</span>(<span class="kw">s</span>(p2) <span class="op">&lt;</span><span class="st"> </span><span class="kw">s</span>(p1) <span class="op">&amp;&amp;</span><span class="st"> </span><span class="kw">e</span>(p2) <span class="op">&lt;=</span><span class="st"> </span><span class="kw">e</span>(p1)){
-    <span class="kw">list</span>(<span class="kw">c</span>(<span class="kw">e</span>(p2), <span class="kw">e</span>(p1)))
-  } <span class="cf">else</span> <span class="cf">if</span>(<span class="kw">s</span>(p1) <span class="op">&lt;=</span><span class="st"> </span><span class="kw">s</span>(p2) <span class="op">&amp;&amp;</span><span class="st"> </span><span class="kw">e</span>(p1) <span class="op">&lt;</span><span class="st"> </span><span class="kw">e</span>(p2)){
-    <span class="kw">list</span>(<span class="kw">c</span>(<span class="kw">s</span>(p1), <span class="kw">s</span>(p2)))
-  } <span class="cf">else</span> <span class="cf">if</span>(<span class="kw">s</span>(p1) <span class="op">&lt;=</span><span class="st"> </span><span class="kw">s</span>(p2) <span class="op">&amp;&amp;</span><span class="st"> </span><span class="kw">e</span>(p2) <span class="op">&lt;=</span><span class="st"> </span><span class="kw">e</span>(p1)){
-    <span class="kw">list</span>(<span class="kw">c</span>(<span class="kw">s</span>(p1), <span class="kw">s</span>(p2)), <span class="kw">c</span>(<span class="kw">e</span>(p2), <span class="kw">e</span>(p1)))
-  } <span class="cf">else</span> {
-    <span class="ot">NULL</span>
-  }
-}
-
-f &lt;-<span class="st"> </span><span class="cf">function</span>(l, p2){
-  out  &lt;-<span class="st"> </span>l[<span class="op">-</span><span class="kw">length</span>(l)]
-  p1   &lt;-<span class="st"> </span>l[[<span class="kw">length</span>(l)]]
-  hold &lt;-<span class="st"> </span><span class="kw">h</span>(p1, p2)
-  <span class="kw">append</span>(out, hold)
-}
-
-<span class="kw">h</span>(<span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">10</span>), <span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">5</span>))
-<span class="kw">h</span>(<span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">10</span>), <span class="kw">c</span>(<span class="dv">2</span>, <span class="dv">5</span>))
-<span class="kw">h</span>(<span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">10</span>), <span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">11</span>))
-
-pds &lt;-<span class="st"> </span><span class="kw">list</span>(
-  <span class="kw">c</span>(<span class="dv">2</span>, <span class="dv">5</span>),
-  <span class="kw">c</span>(<span class="dv">10</span>, <span class="dv">15</span>),
-  <span class="kw">c</span>(<span class="dv">16</span>, <span class="dv">17</span>)
-)
-
-gap_cast &lt;-<span class="st"> </span><span class="cf">function</span>(pd){
-  <span class="cf">function</span>(periods){
-    <span class="kw">Reduce</span>(f, periods, <span class="dt">init =</span> <span class="kw">list</span>(pd))
-  }
-}</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">shift_period &lt;-<span class="st"> </span><span class="cf">function</span>(p, x){
-  x <span class="op">+</span><span class="st"> </span>p
-}
-
-lookback &lt;-<span class="st"> </span><span class="kw">shift_period</span>(<span class="kw">c</span>(<span class="op">-</span><span class="dv">25</span>, <span class="dv">0</span>), <span class="kw">index</span>(W))
-
-preindex_gaps &lt;-<span class="st"> </span><span class="kw">gap_cast</span>(lookback)
-
-<span class="co"># period_cast(10)(Wdt$xy) %&gt;% </span>
-<span class="co">#   clip_period(p = lookback) </span>
-<span class="co"># </span>
-<span class="co"># h(lookback, c(1, 67))</span>
-<span class="co"># %&gt;%</span>
-<span class="co">#   Reduce(f, ., init = list(lookback))</span></code></pre>
+## [1]   8 100</code></pre>
+<div class="sourceCode" id="cb91"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb91-1"><a href="toy-example.html#cb91-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Define a couple of helper function</span></span>
+<span id="cb91-2"><a href="toy-example.html#cb91-2" aria-hidden="true" tabindex="-1"></a>s <span class="ot">&lt;-</span> <span class="cf">function</span>(p) p[<span class="dv">1</span>]</span>
+<span id="cb91-3"><a href="toy-example.html#cb91-3" aria-hidden="true" tabindex="-1"></a>e <span class="ot">&lt;-</span> <span class="cf">function</span>(p) p[<span class="dv">2</span>]</span>
+<span id="cb91-4"><a href="toy-example.html#cb91-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb91-5"><a href="toy-example.html#cb91-5" aria-hidden="true" tabindex="-1"></a>h <span class="ot">&lt;-</span> <span class="cf">function</span>(p1, p2){</span>
+<span id="cb91-6"><a href="toy-example.html#cb91-6" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span>(<span class="fu">s</span>(p2) <span class="sc">&lt;</span> <span class="fu">s</span>(p1) <span class="sc">&amp;&amp;</span> <span class="fu">e</span>(p2) <span class="sc">&lt;=</span> <span class="fu">e</span>(p1)){</span>
+<span id="cb91-7"><a href="toy-example.html#cb91-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">list</span>(<span class="fu">c</span>(<span class="fu">e</span>(p2), <span class="fu">e</span>(p1)))</span>
+<span id="cb91-8"><a href="toy-example.html#cb91-8" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> <span class="cf">if</span>(<span class="fu">s</span>(p1) <span class="sc">&lt;=</span> <span class="fu">s</span>(p2) <span class="sc">&amp;&amp;</span> <span class="fu">e</span>(p1) <span class="sc">&lt;</span> <span class="fu">e</span>(p2)){</span>
+<span id="cb91-9"><a href="toy-example.html#cb91-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">list</span>(<span class="fu">c</span>(<span class="fu">s</span>(p1), <span class="fu">s</span>(p2)))</span>
+<span id="cb91-10"><a href="toy-example.html#cb91-10" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> <span class="cf">if</span>(<span class="fu">s</span>(p1) <span class="sc">&lt;=</span> <span class="fu">s</span>(p2) <span class="sc">&amp;&amp;</span> <span class="fu">e</span>(p2) <span class="sc">&lt;=</span> <span class="fu">e</span>(p1)){</span>
+<span id="cb91-11"><a href="toy-example.html#cb91-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">list</span>(<span class="fu">c</span>(<span class="fu">s</span>(p1), <span class="fu">s</span>(p2)), <span class="fu">c</span>(<span class="fu">e</span>(p2), <span class="fu">e</span>(p1)))</span>
+<span id="cb91-12"><a href="toy-example.html#cb91-12" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> {</span>
+<span id="cb91-13"><a href="toy-example.html#cb91-13" aria-hidden="true" tabindex="-1"></a>    <span class="cn">NULL</span></span>
+<span id="cb91-14"><a href="toy-example.html#cb91-14" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb91-15"><a href="toy-example.html#cb91-15" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb91-16"><a href="toy-example.html#cb91-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb91-17"><a href="toy-example.html#cb91-17" aria-hidden="true" tabindex="-1"></a>f <span class="ot">&lt;-</span> <span class="cf">function</span>(l, p2){</span>
+<span id="cb91-18"><a href="toy-example.html#cb91-18" aria-hidden="true" tabindex="-1"></a>  out  <span class="ot">&lt;-</span> l[<span class="sc">-</span><span class="fu">length</span>(l)]</span>
+<span id="cb91-19"><a href="toy-example.html#cb91-19" aria-hidden="true" tabindex="-1"></a>  p1   <span class="ot">&lt;-</span> l[[<span class="fu">length</span>(l)]]</span>
+<span id="cb91-20"><a href="toy-example.html#cb91-20" aria-hidden="true" tabindex="-1"></a>  hold <span class="ot">&lt;-</span> <span class="fu">h</span>(p1, p2)</span>
+<span id="cb91-21"><a href="toy-example.html#cb91-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">append</span>(out, hold)</span>
+<span id="cb91-22"><a href="toy-example.html#cb91-22" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb91-23"><a href="toy-example.html#cb91-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb91-24"><a href="toy-example.html#cb91-24" aria-hidden="true" tabindex="-1"></a><span class="fu">h</span>(<span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">10</span>), <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">5</span>))</span>
+<span id="cb91-25"><a href="toy-example.html#cb91-25" aria-hidden="true" tabindex="-1"></a><span class="fu">h</span>(<span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">10</span>), <span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">5</span>))</span>
+<span id="cb91-26"><a href="toy-example.html#cb91-26" aria-hidden="true" tabindex="-1"></a><span class="fu">h</span>(<span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">10</span>), <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">11</span>))</span>
+<span id="cb91-27"><a href="toy-example.html#cb91-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb91-28"><a href="toy-example.html#cb91-28" aria-hidden="true" tabindex="-1"></a>pds <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb91-29"><a href="toy-example.html#cb91-29" aria-hidden="true" tabindex="-1"></a>  <span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">5</span>),</span>
+<span id="cb91-30"><a href="toy-example.html#cb91-30" aria-hidden="true" tabindex="-1"></a>  <span class="fu">c</span>(<span class="dv">10</span>, <span class="dv">15</span>),</span>
+<span id="cb91-31"><a href="toy-example.html#cb91-31" aria-hidden="true" tabindex="-1"></a>  <span class="fu">c</span>(<span class="dv">16</span>, <span class="dv">17</span>)</span>
+<span id="cb91-32"><a href="toy-example.html#cb91-32" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb91-33"><a href="toy-example.html#cb91-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb91-34"><a href="toy-example.html#cb91-34" aria-hidden="true" tabindex="-1"></a>gap_cast <span class="ot">&lt;-</span> <span class="cf">function</span>(pd){</span>
+<span id="cb91-35"><a href="toy-example.html#cb91-35" aria-hidden="true" tabindex="-1"></a>  <span class="cf">function</span>(periods){</span>
+<span id="cb91-36"><a href="toy-example.html#cb91-36" aria-hidden="true" tabindex="-1"></a>    <span class="fu">Reduce</span>(f, periods, <span class="at">init =</span> <span class="fu">list</span>(pd))</span>
+<span id="cb91-37"><a href="toy-example.html#cb91-37" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb91-38"><a href="toy-example.html#cb91-38" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb92"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb92-1"><a href="toy-example.html#cb92-1" aria-hidden="true" tabindex="-1"></a>shift_period <span class="ot">&lt;-</span> <span class="cf">function</span>(p, x){</span>
+<span id="cb92-2"><a href="toy-example.html#cb92-2" aria-hidden="true" tabindex="-1"></a>  x <span class="sc">+</span> p</span>
+<span id="cb92-3"><a href="toy-example.html#cb92-3" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb92-4"><a href="toy-example.html#cb92-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb92-5"><a href="toy-example.html#cb92-5" aria-hidden="true" tabindex="-1"></a>lookback <span class="ot">&lt;-</span> <span class="fu">shift_period</span>(<span class="fu">c</span>(<span class="sc">-</span><span class="dv">25</span>, <span class="dv">0</span>), <span class="fu">index</span>(W))</span>
+<span id="cb92-6"><a href="toy-example.html#cb92-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb92-7"><a href="toy-example.html#cb92-7" aria-hidden="true" tabindex="-1"></a>preindex_gaps <span class="ot">&lt;-</span> <span class="fu">gap_cast</span>(lookback)</span>
+<span id="cb92-8"><a href="toy-example.html#cb92-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb92-9"><a href="toy-example.html#cb92-9" aria-hidden="true" tabindex="-1"></a><span class="co"># period_cast(10)(Wdt$xy) %&gt;% </span></span>
+<span id="cb92-10"><a href="toy-example.html#cb92-10" aria-hidden="true" tabindex="-1"></a><span class="co">#   clip_period(p = lookback) </span></span>
+<span id="cb92-11"><a href="toy-example.html#cb92-11" aria-hidden="true" tabindex="-1"></a><span class="co"># </span></span>
+<span id="cb92-12"><a href="toy-example.html#cb92-12" aria-hidden="true" tabindex="-1"></a><span class="co"># h(lookback, c(1, 67))</span></span>
+<span id="cb92-13"><a href="toy-example.html#cb92-13" aria-hidden="true" tabindex="-1"></a><span class="co"># %&gt;%</span></span>
+<span id="cb92-14"><a href="toy-example.html#cb92-14" aria-hidden="true" tabindex="-1"></a><span class="co">#   Reduce(f, ., init = list(lookback))</span></span></code></pre></div>
 <p>Now let’s build foreverDiamonds</p>
-<pre class="sourceCode r"><code class="sourceCode r">Ldiamond &lt;-<span class="st"> </span><span class="kw">Lsuit_cast</span>(<span class="st">&quot;diamond&quot;</span>)
-
-foreverDiamonds &lt;-<span class="st"> </span><span class="cf">function</span>(W){
-  <span class="kw">Ldiamond</span>(W) <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">    </span>A_prd <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">    </span>{ <span class="kw">period_cast</span>(<span class="dv">10</span>)(.) } <span class="op">%&gt;%</span>
-<span class="st">    </span>preindex_gaps <span class="op">%&gt;%</span>
-<span class="st">    </span>{ <span class="kw">length</span>(.) <span class="op">&gt;</span><span class="st"> </span><span class="dv">0</span>}
-}
-
-<span class="kw">foreverDiamonds</span>(W)</code></pre>
+<div class="sourceCode" id="cb93"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb93-1"><a href="toy-example.html#cb93-1" aria-hidden="true" tabindex="-1"></a>Ldiamond <span class="ot">&lt;-</span> <span class="fu">Lsuit_cast</span>(<span class="st">&quot;diamond&quot;</span>)</span>
+<span id="cb93-2"><a href="toy-example.html#cb93-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb93-3"><a href="toy-example.html#cb93-3" aria-hidden="true" tabindex="-1"></a>foreverDiamonds <span class="ot">&lt;-</span> <span class="cf">function</span>(W){</span>
+<span id="cb93-4"><a href="toy-example.html#cb93-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">Ldiamond</span>(W) <span class="sc">%&gt;%</span> </span>
+<span id="cb93-5"><a href="toy-example.html#cb93-5" aria-hidden="true" tabindex="-1"></a>    A_prd <span class="sc">%&gt;%</span> </span>
+<span id="cb93-6"><a href="toy-example.html#cb93-6" aria-hidden="true" tabindex="-1"></a>    { <span class="fu">period_cast</span>(<span class="dv">10</span>)(.) } <span class="sc">%&gt;%</span></span>
+<span id="cb93-7"><a href="toy-example.html#cb93-7" aria-hidden="true" tabindex="-1"></a>    preindex_gaps <span class="sc">%&gt;%</span></span>
+<span id="cb93-8"><a href="toy-example.html#cb93-8" aria-hidden="true" tabindex="-1"></a>    { <span class="fu">length</span>(.) <span class="sc">&gt;</span> <span class="dv">0</span>}</span>
+<span id="cb93-9"><a href="toy-example.html#cb93-9" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb93-10"><a href="toy-example.html#cb93-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb93-11"><a href="toy-example.html#cb93-11" aria-hidden="true" tabindex="-1"></a><span class="fu">foreverDiamonds</span>(W)</span></code></pre></div>
 <p>Note that another pattern emerged! <code>Lw</code> is exactly the same pattern as the first part of <code>index</code>!</p>
 </div>
-<div id="flush" class="section level2">
-<h2><span class="header-section-number">6.3</span> flush</h2>
+<div id="flush" class="section level2" number="5.3">
+<h2><span class="header-section-number">5.3</span> flush</h2>
 <ul>
 <li><span class="math inline">\(\text{flush}(W, \text{index})\)</span></li>
 </ul>
 </div>
-<div id="clubtrump" class="section level2">
-<h2><span class="header-section-number">6.4</span> clubTrump</h2>
+<div id="clubtrump" class="section level2" number="5.4">
+<h2><span class="header-section-number">5.4</span> clubTrump</h2>
 <ul>
 <li><span class="math inline">\(\text{clubTrump}(W, \text{index})\)</span></li>
 </ul>
 </div>
-<div id="fullofhearts" class="section level2">
-<h2><span class="header-section-number">6.5</span> fullOfHearts</h2>
+<div id="fullofhearts" class="section level2" number="5.5">
+<h2><span class="header-section-number">5.5</span> fullOfHearts</h2>
 
 </div>
 </div>
@@ -528,11 +523,13 @@ foreverDiamonds &lt;-<span class="st"> </span><span class="cf">function</span>(W
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>
 <script src="libs/gitbook-2.6.7/js/lunr.js"></script>
+<script src="libs/gitbook-2.6.7/js/clipboard.min.js"></script>
 <script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
 <script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
 <script src="libs/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
 <script src="libs/gitbook-2.6.7/js/plugin-bookdown.js"></script>
 <script src="libs/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-clipboard.js"></script>
 <script>
 gitbook.require(["gitbook"], function(gitbook) {
 gitbook.start({
@@ -540,12 +537,11 @@ gitbook.start({
 "github": false,
 "facebook": true,
 "twitter": true,
-"google": false,
 "linkedin": false,
 "weibo": false,
 "instapaper": false,
 "vk": false,
-"all": ["facebook", "google", "twitter", "linkedin", "weibo", "instapaper"]
+"all": ["facebook", "twitter", "linkedin", "weibo", "instapaper"]
 },
 "fontsettings": {
 "theme": "white",
@@ -557,6 +553,10 @@ gitbook.start({
 "text": null
 },
 "history": {
+"link": null,
+"text": null
+},
+"view": {
 "link": null,
 "text": null
 },
@@ -575,8 +575,9 @@ gitbook.start({
     script.type = "text/javascript";
     var src = "true";
     if (src === "" || src === "true") src = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML";
-    if (location.protocol !== "file:" && /^https?:/.test(src))
-      src = src.replace(/^https?:/, '');
+    if (location.protocol !== "file:")
+      if (/^https?:/.test(src))
+        src = src.replace(/^https?:/, '');
     script.src = src;
     document.getElementsByTagName("head")[0].appendChild(script);
   })();

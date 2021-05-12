@@ -12,6 +12,7 @@ Stability   : experimental
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE FlexibleContexts #-}
 
+{-# LANGUAGE MonoLocalBinds #-}
 module ExampleFeatures1(
     exampleFeatures1Spec
   , dropEventFilter
@@ -72,14 +73,14 @@ flwup = fmap (beginerval 30 . begin) . index
 Define enrolled as the indicator of whether all of the gaps between the union of 
 all enrollment intervals (+ allowableGap) 
 -}
-enrolled :: (IntervalSizeable a b, IntervalCombinable a) =>
+enrolled :: (IntervalSizeable a b, IntervalCombinable Interval a) =>
       Feature (Interval a)
    -> Events a
    -> Feature Bool
 enrolled (Left  _) _ = Left Excluded
 enrolled (Right i) l = Right $ enrolled' 8 i l
 
-enrolled' :: (IntervalSizeable a b, IntervalCombinable a) =>
+enrolled' :: (IntervalSizeable a b, IntervalCombinable Interval a) =>
       b  -- ^ allowable gap between enrollment intervals
    -> Interval a -- ^ baseline interval
    -> Events a
@@ -143,7 +144,9 @@ twoMinorOrOneMajor feat l =
 
 -- | Time from end of baseline to end of most recent Antibiotics
 --   with 5 day grace period
-timeSinceLastAntibiotics :: (IntervalAlgebraic Interval a, IntervalCombinable a, IntervalSizeable a b) =>
+timeSinceLastAntibiotics :: ( IntervalAlgebraic Interval a
+                            , IntervalCombinable Interval a
+                            , IntervalSizeable a b) =>
          Feature (Interval a)
       -> Events a
       -> Feature (Maybe b)
@@ -151,7 +154,9 @@ timeSinceLastAntibiotics (Left _) _   = Left Excluded
 timeSinceLastAntibiotics (Right i) es = Right $ timeSinceLastAntibiotics' i es
 
 
-timeSinceLastAntibiotics' :: (IntervalAlgebraic Interval a, IntervalCombinable a, IntervalSizeable a b) =>
+timeSinceLastAntibiotics' :: ( IntervalAlgebraic Interval a
+                            , IntervalCombinable Interval a
+                            , IntervalSizeable a b) =>
       Interval a -> Events a -> Maybe b
 timeSinceLastAntibiotics' blinterval =
    safeLast                                   -- want the last one
@@ -164,7 +169,7 @@ timeSinceLastAntibiotics' blinterval =
 
 
 -- | Count of hospital events in a interval and duration of the last one
-countOfHospitalEvents :: (IntervalCombinable a, IntervalSizeable a b) =>
+countOfHospitalEvents :: (IntervalCombinable Interval a, IntervalSizeable a b) =>
      Feature (Interval a)
   -> Events a
   -> Feature (Int, Maybe b)
@@ -184,7 +189,7 @@ so = unionPredicates [startedBy, overlappedBy]
 --   and time from start of follow up
 --   This needs to be generalized as Nothing could either indicate they didn't 
 --   discontinue or that they simply got no antibiotics records.
-discontinuation :: (IntervalSizeable a b, IntervalCombinable a) =>
+discontinuation :: (IntervalSizeable a b, IntervalCombinable Interval a) =>
      Feature (Interval a)
   -> Events a
   -> Feature (Maybe (a, b))
@@ -231,9 +236,9 @@ exampleFeatures1Spec = do
 
     it "getUnitFeatures from exampleEvents1" $
       getUnitFeatures exampleEvents1 `shouldBe`
-      ( Right (unsafeInterval (60 :: Int) (61 ::Int))
+      ( Right (beginerval 1 (60 :: Int))
       , Right True
-      , Right (True, Just $ unsafeInterval (51 :: Int) (52 :: Int))
+      , Right (True, Just $ beginerval 1 (51 :: Int))
       , Right (False, Nothing)
       , Right True
       , Right $ Just 4

@@ -1,5 +1,10 @@
 # Changelog for hasklepias
 
+## 0.4.0
+
+* Removes the `Transformations` module and `transformToMeetingSequence` function. The same functionality is available by using the `formMeetingSequence` function from `interval-algebra`. See `examples/ExampleFeatures2` for the updated example.
+* Adds the `toConceptEventOf` function which creates a `ConceptEvent` but takes the `intersection` of `Concepts` in the first argument and concepts in the context of the `Event` in the second argument to form the new `ConceptEvent`. This is a way to keep only those concepts you need in the event.
+
 ## 0.3.0
 
 * Updates code as needed to work with interval-algebra v0.6.2. In particular, the `Event a` is now a synonym for `PairedInterval Context a`, hence any methods that work on the `PairedInterval` also work for the `Event` type.

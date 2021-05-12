@@ -42,12 +42,12 @@ testInputsDay =
       \{\"domain\":\"Diagnosis\",\
       \ \"time\":{\"begin\":\"2020-01-05\",\"end\":\"2020-01-06\"}}]"
 
-testOutInt1 = event (unsafeInterval (0 :: Int) (1 :: Int)) (HC.context $ packConcepts ["someThing"])
-testOutInt2 = event (unsafeInterval (5 :: Int) (6 :: Int)) (HC.context $ packConcepts ["someThing"])
+testOutInt1 = event (beginerval 1 (0 :: Int)) (HC.context $ packConcepts ["someThing"])
+testOutInt2 = event (beginerval 1 (5 :: Int)) (HC.context $ packConcepts ["someThing"])
 
-testOutDay1 = event (unsafeInterval (fromGregorian 2020 1 1) (fromGregorian 2020 1 2))
+testOutDay1 = event (beginerval 1 (fromGregorian 2020 1 1))
                      (HC.context $ packConcepts ["someThing"])
-testOutDay2 = event (unsafeInterval (fromGregorian 2020 1 5) (fromGregorian 2020 1 6)) 
+testOutDay2 = event (beginerval 1 (fromGregorian 2020 1 5)) 
                (HC.context $ packConcepts [ "someThing"])
 
 

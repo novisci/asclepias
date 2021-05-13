@@ -12,6 +12,7 @@ module ExampleEvents (
       exampleEvents1
     , exampleEvents2
     , exampleEvents3
+    , exampleEvents4
 ) where
   
 import IntervalAlgebra ( beginerval, IntervalSizeable )
@@ -28,6 +29,9 @@ exampleEvents2 = toEvents exampleEvents2Data
 
 exampleEvents3 :: Events Int 
 exampleEvents3 = toEvents exampleEvents3Data
+
+exampleEvents4 :: Events Int 
+exampleEvents4 = toEvents exampleEvents4Data
 
 type EventData a = (a, a, Text)
 
@@ -118,4 +122,14 @@ exampleEvents3Data = [
   , (3, 80,  "tookAntibiotics")
   , (1, 95,  "died") 
  ]
- 
+
+exampleEvents4Data :: [EventData Int]
+exampleEvents4Data = [
+    (1, 1,   "c1")
+  , (3, 11,  "c1")
+  , (9, 16,  "c1")
+  , (9, 31,  "c1")
+  , (5, 45,  "c1")
+  , (1, 10,  "c2")
+  , (1, 13,  "c2")
+ ]

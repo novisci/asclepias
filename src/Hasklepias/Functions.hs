@@ -28,6 +28,8 @@ module Hasklepias.Functions(
     , liftIntervalFilter
     , makeEventFilter
     , makePairedFilter
+    , allPairs
+    , splitByConcepts
 ) where
 
 import IntervalAlgebra
@@ -43,6 +45,7 @@ import Hasklepias.Types.Event( Events, Event, ctxt, ConceptEvent )
 import Hasklepias.Types.Context as HC
     ( Concept, Concepts, HasConcept(hasConcept, hasConcepts), Context )
 import Data.Text(Text)
+import Control.Applicative
 
 -- | Safely gets the 'head' of a list.
 safeHead :: [a] -> Maybe a
@@ -169,5 +172,17 @@ liftIntervalFilter ::  (Ord a, Show a) =>
     -> Events a
 liftIntervalFilter f i = makeEventFilter f i (const True)
 
+-- | Generate all pair-wise combinations from two lists.
+allPairs :: [a] -> [a] -> [(a, a)]
+allPairs = liftA2 (,)
 
 
+-- | Split an @Events a@ into a pair of @Events a@. The first element contains
+--   events have any of the concepts in the first argument, similarly for the
+--   second element.
+splitByConcepts :: [Text] 
+        -> [Text]
+        -> Events a
+        -> (Events a, Events a)
+splitByConcepts c1 c2 es = ( filter (`hasConcepts` c1) es
+                           , filter (`hasConcepts` c2) es)

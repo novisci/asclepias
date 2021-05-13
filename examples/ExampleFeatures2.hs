@@ -1,17 +1,15 @@
 {-|
-Module      : ExampleFeatures1
+Module      : ExampleFeatures2
 Description : Demostrates how to define features using Hasklepias
 Copyright   : (c) NoviSci, Inc 2020
 License     : BSD3
 Maintainer  : bsaul@novisci.com
-Stability   : experimental
 -}
 
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE FlexibleContexts #-}
-
 {-# LANGUAGE MonoLocalBinds #-}
 module ExampleFeatures2(
     exampleFeatures2Spec

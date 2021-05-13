@@ -22,7 +22,7 @@ instance (ToJSON a, Ord a, Show a)=> ToJSON (Interval a) where
         object ["begin" .= begin x, "end" .= end x]
 instance ToJSON MissingReason 
 instance (ToJSON d)=> ToJSON (Feature d) where
-    toJSON (Feature x) = case x of 
+    toJSON  x = case getFeature x of 
       (Left l)  -> toJSON l
       (Right r) -> toJSON r
 

@@ -13,12 +13,12 @@ module ExampleEvents (
     , exampleEvents2
     , exampleEvents3
 ) where
-import IntervalAlgebra
-import Hasklepias.Types.Event
-import Hasklepias.Types.Context
+  
+import IntervalAlgebra ( beginerval, IntervalSizeable )
+import Hasklepias.Types.Event ( event, Event, Events )
+import Hasklepias.Types.Context ( context, packConcepts )
 import Data.List ( sort )
 import Data.Text(Text)
-
 
 exampleEvents1 :: Events Int
 exampleEvents1 = toEvents exampleEvents1Data
@@ -90,7 +90,6 @@ exampleEvents2Data = [
   , (1, 20,  "hadSquirrelContact")
   , (1, 20,  "hadAnxietyAttack")
  ]
-
 
 exampleEvents3Data :: [EventData Int]
 exampleEvents3Data = [

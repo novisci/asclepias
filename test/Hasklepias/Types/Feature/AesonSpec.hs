@@ -22,8 +22,8 @@ index:: (IntervalAlgebraic Interval a) =>
   -> Feature (Interval a)
 index es =
     case firstConceptOccurrence ["enrollment"] es of
-        Nothing -> Feature $ Left $ Other "No Enrollment"
-        Just x  -> Feature $ Right (getInterval x)
+        Nothing -> featureL (Other "No Enrollment")
+        Just x  -> featureR (getInterval x)
 
 
 spec :: Spec

@@ -33,8 +33,8 @@ durationOfHospitalizedAntibiotics:: (IntervalAlgebraic (PairedInterval Concepts)
      Events a
   -> Feature [b]
 durationOfHospitalizedAntibiotics es
-    | null y    = Feature $ Left $ Other "no cases"
-    | otherwise = Feature $ Right $ durations y
+    | null y    = featureL $ Other "no cases"
+    | otherwise = featureR $ durations y
     where concepts = map packConcept ["wasHospitalized", "tookAntibiotics"]
           x = formMeetingSequence (map (toConceptEventOf concepts) es)
           y = filter (hasAllConcepts concepts . getPairData) x 
@@ -45,8 +45,8 @@ exampleFeatures2Spec = do
 
     it "durationOfHospitalizedAntibiotics from exampleEvents1" $
         durationOfHospitalizedAntibiotics exampleEvents1 `shouldBe` 
-            Feature (Left (Other "no cases"))
+            featureL (Other "no cases")
 
     it "durationOfHospitalizedAntibiotics from exampleEvents3" $
         durationOfHospitalizedAntibiotics exampleEvents3 `shouldBe` 
-            Feature (Right [3, 2])
+            featureR [3, 2]

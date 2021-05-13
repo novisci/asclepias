@@ -12,13 +12,14 @@ module ExampleEvents (
       exampleEvents1
     , exampleEvents2
     , exampleEvents3
+    , exampleEvents4
 ) where
-import IntervalAlgebra
-import Hasklepias.Types.Event
-import Hasklepias.Types.Context
+  
+import IntervalAlgebra ( beginerval, IntervalSizeable )
+import Hasklepias.Types.Event ( event, Event, Events )
+import Hasklepias.Types.Context ( context, packConcepts )
 import Data.List ( sort )
 import Data.Text(Text)
-
 
 exampleEvents1 :: Events Int
 exampleEvents1 = toEvents exampleEvents1Data
@@ -29,12 +30,15 @@ exampleEvents2 = toEvents exampleEvents2Data
 exampleEvents3 :: Events Int 
 exampleEvents3 = toEvents exampleEvents3Data
 
+exampleEvents4 :: Events Int 
+exampleEvents4 = toEvents exampleEvents4Data
+
 type EventData a = (a, a, Text)
 
-toEvent :: EventData a -> Event a
-toEvent x = event (unsafeInterval (t1 x) (t2 x)) (context $ packConcepts [t3 x])
+toEvent :: (IntervalSizeable a a) => EventData a -> Event a
+toEvent x = event (beginerval (t1 x) (t2 x)) (context $ packConcepts [t3 x])
 
-toEvents :: (Ord a, Show a) => [EventData a] -> Events a
+toEvents :: (Ord a, Show a, IntervalSizeable a a) => [EventData a] -> Events a
 toEvents = sort.map toEvent
 
 t1 :: (a, b, c) -> a
@@ -46,76 +50,86 @@ t3 (_ , _ , x) = x
 
 exampleEvents1Data :: [EventData Int]
 exampleEvents1Data = [
-    (1,  10, "enrollment")
-  , (11, 20, "enrollment")
-  , (21, 30, "enrollment")
-  , (31, 40, "enrollment")
-  , (45, 50, "enrollment")
-  , (51, 60, "enrollment")
-  , (61, 63, "enrollment")
-  , (71, 80, "enrollment")
-  , (81, 100, "enrollment")
-  , (2,  3,  "wasScratchedByCat")
-  , (45, 46, "wasStruckByDuck")
-  , (46, 47, "wasBitByDuck")
-  , (49, 50, "wasBitByDuck")
-  , (51, 52, "wasBitByDuck")
-  , (60, 61, "wasBitByOrca")
-  , (91, 92, "wasStuckByCow")
-  , (5,  6,  "hadMinorSurgery")
-  , (52, 53, "hadMajorSurgery")
-  , (5,  10, "tookAntibiotics")
-  , (52, 60, "wasHospitalized")
-  , (45, 51, "tookAntibiotics")
-  , (60, 73, "tookAntibiotics")
-  , (80, 83, "tookAntibiotics")
-  , (95, 96, "died")
+    (9, 1,   "enrollment")
+  , (9, 11,  "enrollment")
+  , (9, 21,  "enrollment")
+  , (9, 31,  "enrollment")
+  , (5, 45,  "enrollment")
+  , (9, 51,  "enrollment")
+  , (2, 61,  "enrollment")
+  , (9, 71,  "enrollment")
+  , (19, 81, "enrollment")
+  , (1, 2,   "wasScratchedByCat")
+  , (1, 45,  "wasStruckByDuck")
+  , (1, 46,  "wasBitByDuck")
+  , (1, 49,  "wasBitByDuck")
+  , (1,  51, "wasBitByDuck")
+  , (1, 60,  "wasBitByOrca")
+  , (1, 91,  "wasStuckByCow")
+  , (1, 5,   "hadMinorSurgery")
+  , (1, 52,  "hadMajorSurgery")
+  , (5, 5,   "tookAntibiotics")
+  , (8, 52,  "wasHospitalized")
+  , (6, 45,  "tookAntibiotics")
+  , (13, 60, "tookAntibiotics")
+  , (3, 80,  "tookAntibiotics")
+  , (1, 95,  "died")
  ]
 
 exampleEvents2Data :: [EventData Int]
 exampleEvents2Data = [
-    (1,  10, "enrollment")
-  , (21, 35, "enrollment")
-  , (31, 40, "enrollment")
-  , (45, 59, "enrollment")
-  , (51, 60, "enrollment")
-  , (61, 63, "enrollment")
-  , (71, 80, "enrollment")
-  , (2,  3,  "wasPeckedByChicken")
-  , (3,  4,  "wasPeckedByChicken")
-  , (4,  5,  "wasPeckedByChicken")
-  , (5,  6,  "wasPeckedByChicken")
-  , (10, 11, "wasInjuredBySquirrel")
-  , (15, 16, "wasDiagnosedWithSciurophobia")
-  , (20, 21, "hadSquirrelContact")
-  , (20, 21, "hadAnxietyAttack")
+    (9, 1,   "enrollment")
+  , (14, 21, "enrollment")
+  , (9, 31,  "enrollment")
+  , (14, 45, "enrollment")
+  , (9, 60,  "enrollment")
+  , (2, 61,  "enrollment")
+  , (9, 80,  "enrollment")
+  , (1, 2,   "wasPeckedByChicken")
+  , (1, 3,   "wasPeckedByChicken")
+  , (1, 4,   "wasPeckedByChicken")
+  , (1, 5,   "wasPeckedByChicken")
+  , (1, 10,  "wasInjuredBySquirrel")
+  , (1, 15,  "wasDiagnosedWithSciurophobia")
+  , (1, 20,  "hadSquirrelContact")
+  , (1, 20,  "hadAnxietyAttack")
  ]
-
 
 exampleEvents3Data :: [EventData Int]
 exampleEvents3Data = [
-    (1,  10, "enrollment")
-  , (11, 20, "enrollment")
-  , (21, 30, "enrollment")
-  , (31, 40, "enrollment")
-  , (45, 50, "enrollment")
-  , (51, 60, "enrollment")
-  , (61, 63, "enrollment")
-  , (71, 80, "enrollment")
-  , (81, 100, "enrollment")
-  , (2,  3,  "wasScratchedByCat")
-  , (45, 46, "wasStruckByDuck")
-  , (46, 47, "wasBitByDuck")
-  , (49, 50, "wasBitByDuck")
-  , (51, 52, "wasBitByDuck")
-  , (60, 61, "wasBitByOrca")
-  , (91, 92, "wasStuckByCow")
-  , (5,  6,  "hadMinorSurgery")
-  , (52, 53, "hadMajorSurgery")
-  , (5,  10, "tookAntibiotics")
-  , (52, 60, "wasHospitalized")
-  , (45, 55, "tookAntibiotics")
-  , (58, 73, "tookAntibiotics")
-  , (80, 83, "tookAntibiotics")
-  , (95, 96, "died")
+    (9, 1,   "enrollment")
+  , (9, 11,  "enrollment")
+  , (9, 21,  "enrollment")
+  , (9, 31,  "enrollment")
+  , (5, 45,  "enrollment")
+  , (9, 51,  "enrollment")
+  , (2, 61,  "enrollment")
+  , (9, 71,  "enrollment")
+  , (19, 81, "enrollment")
+  , (1, 2,   "wasScratchedByCat")
+  , (1, 45,  "wasStruckByDuck")
+  , (1, 46,  "wasBitByDuck")
+  , (1, 49,  "wasBitByDuck")
+  , (1, 51,  "wasBitByDuck")
+  , (1, 60,  "wasBitByOrca")
+  , (1, 91,  "wasStuckByCow")
+  , (1, 5,   "hadMinorSurgery")
+  , (1, 52,  "hadMajorSurgery")
+  , (5, 5,   "tookAntibiotics")
+  , (8, 52,  "wasHospitalized")
+  , (10, 45, "tookAntibiotics")
+  , (15, 58, "tookAntibiotics")
+  , (3, 80,  "tookAntibiotics")
+  , (1, 95,  "died") 
+ ]
+
+exampleEvents4Data :: [EventData Int]
+exampleEvents4Data = [
+    (1, 1,   "c1")
+  , (3, 11,  "c1")
+  , (9, 16,  "c1")
+  , (9, 31,  "c1")
+  , (5, 45,  "c1")
+  , (1, 10,  "c2")
+  , (1, 13,  "c2")
  ]

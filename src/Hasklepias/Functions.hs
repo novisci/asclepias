@@ -8,6 +8,7 @@ Stability   : experimental
 -}
 
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE MonoLocalBinds #-}
 module Hasklepias.Functions(
 
     -- * Functions for composing functions
@@ -27,20 +28,24 @@ module Hasklepias.Functions(
     , liftIntervalFilter
     , makeEventFilter
     , makePairedFilter
+    , allPairs
+    , splitByConcepts
 ) where
 
 import IntervalAlgebra
     ( Intervallic(..)
     , IntervalAlgebraic(..)
     , ComparativePredicateOf
+    , IntervalSizeable(..)
     , Interval
     , IntervalRelation(..) )
 import IntervalAlgebra.PairedInterval
 import IntervalAlgebra.IntervalUtilities
-import Hasklepias.Types.Event( Events, Event, ctxt )
+import Hasklepias.Types.Event( Events, Event, ctxt, ConceptEvent )
 import Hasklepias.Types.Context as HC
-    ( Concept, HasConcept(hasConcept, hasConcepts), Context )
+    ( Concept, Concepts, HasConcept(hasConcept, hasConcepts), Context )
 import Data.Text(Text)
+import Control.Applicative
 
 -- | Safely gets the 'head' of a list.
 safeHead :: [a] -> Maybe a
@@ -110,7 +115,7 @@ filterEvents ::
 filterEvents = filter
 
 -- | TODO
-liftIntervalPredicate :: (Ord a) =>
+liftIntervalPredicate :: (Ord a, Show a) =>
     ComparativePredicateOf (Interval a)
     -> Interval a
     -> Event a
@@ -118,14 +123,14 @@ liftIntervalPredicate :: (Ord a) =>
 liftIntervalPredicate f x y = f x (getInterval y)
 
 -- | TODO
-lift2IntervalPredicate ::  (Ord a) =>
+lift2IntervalPredicate ::  (Ord a, Show a) =>
        ComparativePredicateOf (Interval a)
     -> ComparativePredicateOf (Event a)
 lift2IntervalPredicate f x y = f (getInterval x) (getInterval y)
 
 
 -- | TODO
-makeEventFilter ::  (Ord a) =>
+makeEventFilter ::  (Ord a, Show a) =>
        ComparativePredicateOf (Interval a) -- ^ an 'IntervalAlgebraic' predicate
     -> Interval a -- ^ an interval to compare to intervals in the input eventsa
     -> (Context -> Bool) -- ^ predicate on a 'Context'
@@ -145,7 +150,7 @@ makePairPredicate' :: (IntervalAlgebraic (PairedInterval b) a
     -> i0 a
     -> (b -> Bool)
     -> (PairedInterval b a -> Bool)
-makePairPredicate' pi i pd x = compareIntervals pi i x && pd (pairData x)
+makePairPredicate' pi i pd x = compareIntervals pi i x && pd (getPairData x)
 
 
 makePairedFilter :: ( IntervalAlgebraic Interval a
@@ -160,12 +165,24 @@ makePairedFilter :: ( IntervalAlgebraic Interval a
 makePairedFilter fi i fc = filter (makePairPredicate' fi i fc)
 
 -- | Lifts a 'Interval' predicate to create a filter of events.
-liftIntervalFilter ::  (Ord a) =>
+liftIntervalFilter ::  (Ord a, Show a) =>
        ComparativePredicateOf (Interval a) -- ^ an 'IntervalAlgebraic' predicate
     -> Interval a -- ^ an interval to compare to intervals in the input events
     -> Events a
     -> Events a
 liftIntervalFilter f i = makeEventFilter f i (const True)
 
+-- | Generate all pair-wise combinations from two lists.
+allPairs :: [a] -> [a] -> [(a, a)]
+allPairs = liftA2 (,)
 
 
+-- | Split an @Events a@ into a pair of @Events a@. The first element contains
+--   events have any of the concepts in the first argument, similarly for the
+--   second element.
+splitByConcepts :: [Text] 
+        -> [Text]
+        -> Events a
+        -> (Events a, Events a)
+splitByConcepts c1 c2 es = ( filter (`hasConcepts` c1) es
+                           , filter (`hasConcepts` c2) es)

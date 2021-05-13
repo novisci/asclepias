@@ -1,5 +1,24 @@
 # Changelog for hasklepias
 
+## 0.4.0
+
+* Adds the `FeatureDefinition` to represent common patterns for building `Feature`s:
+
+```haskell
+data FeatureDefinition e a d =
+    EF  (Events a -> Feature d)
+  | FEF (Feature e -> Events a -> Feature d)
+```
+
+* Provides an initial set of functions designed to make defining `Feature`s easier, namely `defineEF` and `defineFEF`. These functions construct `FeatureDefinition`s of using `EF` and `FEF` constructors, respectively. The example features in `examples/ExampleFeatures1` demonstrate their use.
+* Adds the `allPairs` function to form all pairs of elements of two lists.
+* Adds the `splitByConcepts` to split a container of events into a pair such that first element contains
+events have any of the first argument's concepts, and similarly for the second element.
+* Demonstrates how `allPairs` and `splitByConcepts` might be used in the `examples/ExampleFeatures3` module.
+* Adds a rudimentary `ToJSON` instance for `Feature`s so that data can be encoded and output from the software. This is pretty rough; e.g. encoding an `Interval Int` feature produces: `"{\"end\":10,\"begin\":0}"`.
+* Removes the `Transformations` module and `transformToMeetingSequence` function. The same functionality is available by using the `formMeetingSequence` function from `interval-algebra`. See `examples/ExampleFeatures2` for the updated example.
+* Adds the `toConceptEventOf` function which creates a `ConceptEvent` but takes the `intersection` of `Concepts` in the first argument and concepts in the context of the `Event` in the second argument to form the new `ConceptEvent`. This is a way to keep only those concepts you need in the event.
+
 ## 0.3.0
 
 * Updates code as needed to work with interval-algebra v0.6.2. In particular, the `Event a` is now a synonym for `PairedInterval Context a`, hence any methods that work on the `PairedInterval` also work for the `Event` type.

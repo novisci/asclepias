@@ -18,6 +18,7 @@ module Hasklepias.Types.Event(
  , event
  , ctxt
  , toConceptEvent
+ , toConceptEventOf
  , mkConceptEvent
 ) where
 
@@ -30,19 +31,20 @@ import IntervalAlgebra
 import IntervalAlgebra.PairedInterval
     ( PairedInterval
     , mkPairedInterval
-    , pairData)
+    , getPairData)
 import Hasklepias.Types.Context
     ( HasConcept(..)
     , Concepts
+    , Concept
     , packConcept
     , Context (getConcepts) )
-import Data.Set ( member )
+import Data.Set ( member, fromList, intersection )
 
 -- | An Event @a@ is simply a pair @(Interval a, Context)@.
 type Event a = PairedInterval Context a
 
-instance (Ord a, Show a) => Show (Event a) where
-  show x = "{" ++ show (getInterval x) ++ ", " ++ show (ctxt x) ++ "}"
+-- instance (Ord a, Show a) => Show (Event a) where
+--   show x = "{" ++ show (getInterval x) ++ ", " ++ show (ctxt x) ++ "}"
 
 instance HasConcept (Event a) where
     hasConcept x y = ctxt x `hasConcept` y
@@ -53,24 +55,27 @@ event i c = mkPairedInterval c i
 
 -- | Access the 'Context' of an 'Event a'.
 ctxt :: Event a -> Context
-ctxt = pairData
+ctxt = getPairData
 
 -- | An event containing only concepts and an interval
 type ConceptEvent a = PairedInterval Concepts a
 
-instance (Ord a, Show a) => Show (ConceptEvent a) where
-  show x = "{" ++ show (getInterval x) ++ ", " ++ show (pairData x) ++ "}"
+-- instance (Ord a, Show a) => Show (ConceptEvent a) where
+--   show x = "{" ++ show (getInterval x) ++ ", " ++ show (getPairData x) ++ "}"
 
 instance HasConcept (ConceptEvent a) where
-    hasConcept e concept = member (packConcept concept) (pairData e)
+    hasConcept e concept = member (packConcept concept) (getPairData e)
 
 -- | Drops an @Event@ to a @ConceptEvent@ by moving the concepts in the data
 --   position in the paired interval and throwing out the facts and source.
-toConceptEvent :: (Ord a) => Event a -> ConceptEvent a
+toConceptEvent :: (Show a, Ord a) => Event a -> ConceptEvent a
 toConceptEvent e = mkPairedInterval (getConcepts $ ctxt e) (getInterval e)
 
+toConceptEventOf :: (Show a, Ord a) => [Concept] -> Event a -> ConceptEvent a
+toConceptEventOf cpts e = mkPairedInterval (intersection (fromList cpts) (getConcepts $ ctxt e)) (getInterval e)
+
 -- |
-mkConceptEvent :: (Ord a) => Interval a -> Concepts -> ConceptEvent a
+mkConceptEvent :: (Show a, Ord a) => Interval a -> Concepts -> ConceptEvent a
 mkConceptEvent i c = mkPairedInterval c i
 
 -- | A @List@ of @Event a@

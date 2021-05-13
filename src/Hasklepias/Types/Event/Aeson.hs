@@ -1,4 +1,3 @@
-{-# LANGUAGE FlexibleInstances, OverloadedStrings #-}
 {-|
 Module      : Functions for Parsing Hasklepias Event data
 Description : Defines FromJSON instances for Events.
@@ -7,6 +6,7 @@ License     : BSD3
 Maintainer  : bsaul@novisci.com
 Stability   : experimental
 -}
+{-# LANGUAGE FlexibleInstances, OverloadedStrings #-}
 
 module Hasklepias.Types.Event.Aeson(
       parseEventIntLines
@@ -21,22 +21,23 @@ import Data.Time
 import Data.Vector ((!))
 import qualified Data.ByteString.Lazy as B
 import qualified Data.ByteString.Char8 as C
-import Data.Either (rights)
+import Data.Either (rights, fromRight)
 
--- TODO use parseInterval instead of unsafeInterval
 instance FromJSON (Interval Int) where
     parseJSON = withObject "Time" $ \o -> do
         t <- o .: "time"
         b <- t .: "begin"
         e <- t .: "end"
-        return (unsafeInterval (b :: Int) (e :: Int))
+        return $ beginerval (diff e b) b
+        --(parseInterval (b :: Day) (e :: Day))
 
 instance FromJSON (Interval Day) where
     parseJSON = withObject "Time" $ \o -> do
         t <- o .: "time"
         b <- t .: "begin"
         e <- t .: "end"
-        return (unsafeInterval (b :: Day) (e :: Day))
+        return  $ beginerval (diff e b) b 
+        --(parseInterval (b :: Day) (e :: Day))
 
 instance FromJSON Concept where
     parseJSON c = packConcept <$> parseJSON  c

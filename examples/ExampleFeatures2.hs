@@ -1,17 +1,16 @@
 {-|
-Module      : ExampleFeatures1
+Module      : ExampleFeatures2
 Description : Demostrates how to define features using Hasklepias
 Copyright   : (c) NoviSci, Inc 2020
 License     : BSD3
 Maintainer  : bsaul@novisci.com
-Stability   : experimental
 -}
 
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE FlexibleContexts #-}
-
+{-# LANGUAGE MonoLocalBinds #-}
 module ExampleFeatures2(
     exampleFeatures2Spec
 ) where
@@ -27,24 +26,25 @@ hasAllConcepts :: [Concept] -> Concepts -> Bool
 hasAllConcepts c s = all (`member` s) c
 
 durationOfHospitalizedAntibiotics:: (IntervalAlgebraic (PairedInterval Concepts) a
-                                    , IntervalAlgebraic (PairedInterval State) a
                                     , IntervalAlgebraic Interval a
                                     , IntervalSizeable a b) =>
      Events a
   -> Feature [b]
 durationOfHospitalizedAntibiotics es
-    | null y    =  Left $ Other "no cases"
-    | otherwise = Right $ durations y
+    | null y    = featureL $ Other "no cases"
+    | otherwise = featureR $ durations y
     where concepts = map packConcept ["wasHospitalized", "tookAntibiotics"]
-          x = transformToMeetingSequence concepts (map toConceptEvent es)
-          y = filter (hasAllConcepts concepts . pairData) x 
+          x = formMeetingSequence (map (toConceptEventOf concepts) es)
+          y = filter (hasAllConcepts concepts . getPairData) x 
 
 
 exampleFeatures2Spec :: Spec
 exampleFeatures2Spec = do
 
     it "durationOfHospitalizedAntibiotics from exampleEvents1" $
-        durationOfHospitalizedAntibiotics exampleEvents1 `shouldBe` Left (Other "no cases") 
+        durationOfHospitalizedAntibiotics exampleEvents1 `shouldBe` 
+            featureL (Other "no cases")
 
     it "durationOfHospitalizedAntibiotics from exampleEvents3" $
-        durationOfHospitalizedAntibiotics exampleEvents3 `shouldBe` Right [3, 2]
+        durationOfHospitalizedAntibiotics exampleEvents3 `shouldBe` 
+            featureR [3, 2]

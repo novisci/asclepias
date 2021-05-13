@@ -4,7 +4,6 @@ Description : Re-exports all the Hasklepias type modules
 Copyright   : (c) NoviSci, Inc 2020
 License     : BSD3
 Maintainer  : bsaul@novisci.com
-Stability   : experimental
 -}
 module Hasklepias.Types (
       module Hasklepias.Types.Context

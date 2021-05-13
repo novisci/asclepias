@@ -8,22 +8,22 @@ import Hasklepias.Types.Context as HC
 import Test.Hspec ( it, shouldBe, Spec )
 
 evnt1 :: Event Int
-evnt1 = event ( unsafeInterval (1 :: Int) (5 :: Int) )
+evnt1 = event ( beginerval 4 (1 :: Int))
               ( HC.context $ packConcepts ["c1", "c2"] )
 evnt2 :: Event Int
-evnt2 = event ( unsafeInterval (2 :: Int) (6 :: Int) )
+evnt2 = event ( beginerval 4 (2 :: Int)  )
               ( HC.context $ packConcepts ["c3", "c4"] )
 evnts :: [Event Int]
 evnts = [evnt1, evnt2]
 
 containmentInt :: Interval Int
-containmentInt = unsafeInterval (0 :: Int) (10 :: Int)
+containmentInt = beginerval 10 (0 :: Int) 
 
 noncontainmentInt :: Interval Int
-noncontainmentInt = unsafeInterval (4 :: Int) (10 :: Int)
+noncontainmentInt = beginerval 6 (4 :: Int) 
 
 anotherInt :: Interval Int
-anotherInt = unsafeInterval (15 :: Int) (20 :: Int)
+anotherInt = beginerval 5 (15 :: Int) 
 
 spec :: Spec
 spec = do

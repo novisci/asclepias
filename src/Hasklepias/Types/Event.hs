@@ -5,11 +5,11 @@ Description : Defines the Event type and its component types, constructors,
 Copyright   : (c) NoviSci, Inc 2020
 License     : BSD3
 Maintainer  : bsaul@novisci.com
-Stability   : experimental
 -}
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE Safe #-}
 
 module Hasklepias.Types.Event(
    Event
@@ -22,23 +22,24 @@ module Hasklepias.Types.Event(
  , mkConceptEvent
 ) where
 
-import GHC.Base(Eq, Ord(..), (++), ($), not, (.))
-import GHC.Show ( Show(show) )
-import IntervalAlgebra
-    ( Interval
-    , IntervalAlgebraic
-    , Intervallic (getInterval) )
-import IntervalAlgebra.PairedInterval
-    ( PairedInterval
-    , mkPairedInterval
-    , getPairData)
-import Hasklepias.Types.Context
-    ( HasConcept(..)
-    , Concepts
-    , Concept
-    , packConcept
-    , Context (getConcepts) )
-import Data.Set ( member, fromList, intersection )
+import GHC.Show                         ( Show(show) )
+import Data.Function                    ( ($) )
+import Data.Set                         ( member, fromList, intersection )
+import Data.Ord                         ( Ord )
+import IntervalAlgebra                  ( Interval
+                                        , IntervalAlgebraic
+                                        , Intervallic (getInterval) )
+import IntervalAlgebra.PairedInterval   ( PairedInterval
+                                        , mkPairedInterval
+                                        , getPairData )
+import Hasklepias.Types.Context         ( HasConcept(..)
+                                        , Concepts
+                                        , Concept
+                                        , packConcept
+                                        , Context (getConcepts)
+                                        , fromConcepts
+                                        , toConcepts )
+
 
 -- | An Event @a@ is simply a pair @(Interval a, Context)@.
 type Event a = PairedInterval Context a
@@ -64,7 +65,7 @@ type ConceptEvent a = PairedInterval Concepts a
 --   show x = "{" ++ show (getInterval x) ++ ", " ++ show (getPairData x) ++ "}"
 
 instance HasConcept (ConceptEvent a) where
-    hasConcept e concept = member (packConcept concept) (getPairData e)
+    hasConcept e concept = member (packConcept concept) (fromConcepts $ getPairData e)
 
 -- | Drops an @Event@ to a @ConceptEvent@ by moving the concepts in the data
 --   position in the paired interval and throwing out the facts and source.
@@ -72,7 +73,10 @@ toConceptEvent :: (Show a, Ord a) => Event a -> ConceptEvent a
 toConceptEvent e = mkPairedInterval (getConcepts $ ctxt e) (getInterval e)
 
 toConceptEventOf :: (Show a, Ord a) => [Concept] -> Event a -> ConceptEvent a
-toConceptEventOf cpts e = mkPairedInterval (intersection (fromList cpts) (getConcepts $ ctxt e)) (getInterval e)
+toConceptEventOf cpts e =
+    mkPairedInterval
+        (toConcepts $ intersection (fromList cpts) (fromConcepts $ getConcepts $ ctxt e))
+        (getInterval e)
 
 -- |
 mkConceptEvent :: (Show a, Ord a) => Interval a -> Concepts -> ConceptEvent a

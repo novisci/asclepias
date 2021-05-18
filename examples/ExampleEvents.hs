@@ -4,7 +4,6 @@ Description : TODO
 Copyright   : (c) NoviSci, Inc 2020
 License     : BSD3
 Maintainer  : bsaul@novisci.com
-Stability   : experimental
 -}
 {-# LANGUAGE OverloadedStrings #-}
 

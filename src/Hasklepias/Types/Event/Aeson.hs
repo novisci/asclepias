@@ -4,7 +4,6 @@ Description : Defines FromJSON instances for Events.
 Copyright   : (c) NoviSci, Inc 2020
 License     : BSD3
 Maintainer  : bsaul@novisci.com
-Stability   : experimental
 -}
 {-# LANGUAGE FlexibleInstances, OverloadedStrings #-}
 
@@ -14,10 +13,17 @@ module Hasklepias.Types.Event.Aeson(
 ) where
 
 import IntervalAlgebra
+    ( beginerval, Interval, IntervalSizeable(diff) )
 import Hasklepias.Types.Context
-import Hasklepias.Types.Event
+    ( Concepts, Concept, Context, context, packConcept, toConcepts )
+import Hasklepias.Types.Event ( Event, event )
 import Data.Aeson
-import Data.Time
+    ( eitherDecode,
+      (.:),
+      withObject,
+      FromJSON(parseJSON),
+      Value(Array) )
+import Data.Time ( Day )
 import Data.Vector ((!))
 import qualified Data.ByteString.Lazy as B
 import qualified Data.ByteString.Char8 as C
@@ -41,6 +47,9 @@ instance FromJSON (Interval Day) where
 
 instance FromJSON Concept where
     parseJSON c = packConcept <$> parseJSON  c
+
+instance FromJSON Concepts where
+    parseJSON c = toConcepts <$> parseJSON c
 
 instance FromJSON Context where
     parseJSON v = context <$> parseJSON v

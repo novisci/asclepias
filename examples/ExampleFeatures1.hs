@@ -11,6 +11,8 @@ Maintainer  : bsaul@novisci.com
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE MonoLocalBinds #-}
+{-# LANGUAGE NoImplicitPrelude #-}
+
 module ExampleFeatures1(
     exampleFeatures1Spec
 ) where
@@ -18,13 +20,11 @@ module ExampleFeatures1(
 import Hasklepias
 import ExampleEvents
 import Test.Hspec
-import Data.Text(Text)
-import Data.Maybe ( fromMaybe )
+
 
 {-
 Index is defined as the first occurrence of an Orca bite.
 -}
-
 indexDef :: (IntervalAlgebraic Interval a) =>
           FeatureDefinition e a (Interval a)
 indexDef = defineEF
@@ -75,7 +75,7 @@ makeHxDef :: (IntervalAlgebraic Interval a) =>
                [Text] -> FeatureDefinition (Interval a) a (Bool, Maybe (Interval a))
 makeHxDef cnpts = defineFEF Excluded
    ( \i es ->
-      (isNotEmpty (f i es), safeLast $ intervals (f i es))
+      (isNotEmpty (f i es), lastMay $ intervals (f i es))
    )
    where f i x = makePairedFilter enclose i (`hasConcepts` cnpts) x
 
@@ -103,7 +103,7 @@ timeSinceLastAntibioticsDef :: ( IntervalAlgebraic Interval a
          FeatureDefinition (Interval a) a (Maybe b)
 timeSinceLastAntibioticsDef = defineFEF Excluded
       ( \i es ->
-           ( safeLast                                 -- want the last one
+           ( lastMay                                -- want the last one
            . map (max 0 . diff (end i) . end)       -- distances between end of baseline and antibiotic intervals
            . filterNotDisjoint i                    -- filter to intervals not disjoint from baseline interval
            . combineIntervals                       -- combine overlapping intervals
@@ -119,7 +119,7 @@ countOfHospitalEventsDef :: (IntervalCombinable Interval a
                             FeatureDefinition (Interval a) a (Int, Maybe b)
 countOfHospitalEventsDef = defineFEF Excluded
       ( \i es ->
-            ((\x -> (length x, duration <$> safeLast x))
+            ((\x -> (length x, duration <$> lastMay x))
             .filterNotDisjoint i                    -- filter to intervals not disjoint from interval
             .combineIntervals                       -- combine overlapping intervals
             .intervals                              -- extract intervals
@@ -141,7 +141,7 @@ discontinuationDef = defineFEF Excluded
       ( \i es ->
           (\x -> Just (begin x       -- we want the begin of this interval 
                  , diff (begin x) (begin i)))
-      =<< safeHead                   -- if there are any gaps the first one is the first discontinuation
+      =<< headMay                    -- if there are any gaps the first one is the first discontinuation
       =<< gapsWithin i               -- find gaps to intervals clipped to i
       =<< (nothingIfNone (so i)      -- if none of the intervals start or overlap 
                                      -- the followup, then never started antibiotics

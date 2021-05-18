@@ -48,7 +48,7 @@ The option flag `--repl-options -itest` allows to make changes to the files in t
 In `ghci` you have access to all exposed functions in `hasklepias`, `interval-algebra`, and those in the `examples` folders. For example, `exampleEvents1` is a list of events used to check some of the example features, which you can interact with:
 
 ```sh
-*Main> safeHead exampleEvents1
+*Main> headMay exampleEvents1
 Just {(1, 10), Context {getConcepts = ["enrollment"], getFacts = Nothing, getSource = Nothing}}
 *Main> length exampleEvents1
 24

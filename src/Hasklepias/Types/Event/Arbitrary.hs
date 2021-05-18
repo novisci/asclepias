@@ -8,9 +8,7 @@ Stability   : experimental
 -}
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE FlexibleInstances #-}
-
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE UndecidableInstances #-}
 module Hasklepias.Types.Event.Arbitrary(
      generateEventsInt
 ) where
@@ -24,8 +22,13 @@ import Test.QuickCheck (
     , resize
     , suchThat 
     , orderedList  )
-import GHC.Base(Int, Ord, liftM2, fmap, IO, ($), (==) )
 import GHC.Show ( Show )
+import GHC.IO ( IO )
+import Control.Monad ( Functor(fmap), liftM2 )
+import Data.Eq ( Eq((==)) )
+import Data.Function (($))
+import Data.Int ( Int )
+import Data.Ord ( Ord )
 import Data.List(length)
 import IntervalAlgebra ( Interval )
 import IntervalAlgebra.Arbitrary ()
@@ -41,4 +44,5 @@ instance (Ord a, Show a, Arbitrary (Interval a)) => Arbitrary (ConceptEvent a) w
 
 -- | Generate @n@ @Event Int@
 generateEventsInt :: Int -> IO [Event Int]
-generateEventsInt i = generate $ suchThat (orderedList :: Gen [Event Int]) (\x -> length x == i)
+generateEventsInt i = 
+    generate $ suchThat (orderedList :: Gen [Event Int]) (\x -> length x == i)

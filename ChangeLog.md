@@ -1,5 +1,13 @@
 # Changelog for hasklepias
 
+## 0.4.1
+
+* Modifies the example in `example/ExampleFeatures3` to use the pipe `|>` operator.
+* Adds the `hasAllConcepts` function to the `HasConcepts` class.
+* Adds a `Reexports` module with the goal to re-export everything one might need from other Haskell libraries to build a cohort.
+* Removes a number of unneeded/unused functions from the `Functions` module.
+* Adds the `Safe` language extension to modules where possible.
+
 ## 0.4.0
 
 * Adds the `FeatureDefinition` to represent common patterns for building `Feature`s:

@@ -5,13 +5,14 @@ Description : Defines the Feature type and its component types, constructors,
 Copyright   : (c) NoviSci, Inc 2020
 License     : BSD3
 Maintainer  : bsaul@novisci.com
-Stability   : experimental
 -}
 
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE MonoLocalBinds #-}
+{-# LANGUAGE Safe #-}
+
 module Hasklepias.Types.Feature(
     -- * Types
       Feature
@@ -27,16 +28,17 @@ module Hasklepias.Types.Feature(
 
 ) where
 
-import GHC.Base(String, Eq, undefined)
-import GHC.Read ( Read )
-import GHC.Show ( Show )
-import GHC.Generics
-import Data.Either ( Either(..) )
-import Data.Functor ( Functor(fmap) )
-import Data.Function ( ($), (.) )
-import Data.Maybe ( Maybe(..) )
-import Hasklepias.Types.Event
-import IntervalAlgebra
+import GHC.Read                   ( Read )
+import GHC.Show                   ( Show )
+import GHC.Generics               ( Generic )
+import Data.Either                ( Either(..) )
+import Data.Eq                    ( Eq )
+import Data.Functor               ( Functor(fmap) )
+import Data.Function              ( ($), (.) )
+import Data.Maybe                 ( Maybe(..) )
+import Data.String                ( String )
+import Hasklepias.Types.Event     ( Events )
+import IntervalAlgebra            ( Interval, IntervalAlgebraic )
 
 {- | A 'Feature' is a @'Either' 'MissingReason' d@, where @d@ can be any type 
      of data derivable from 'Hasklepias.Event.Events'.

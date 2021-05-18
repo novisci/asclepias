@@ -11,6 +11,7 @@ Maintainer  : bsaul@novisci.com
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE MonoLocalBinds #-}
+{-# LANGUAGE NoImplicitPrelude #-}
 module ExampleFeatures2(
     exampleFeatures2Spec
 ) where
@@ -18,12 +19,6 @@ module ExampleFeatures2(
 import Hasklepias
 import ExampleEvents
 import Test.Hspec
-import Data.Text(pack, Text)
-import Data.Maybe ( fromMaybe )
-import Data.Set(member)
-
-hasAllConcepts :: [Concept] -> Concepts -> Bool
-hasAllConcepts c s = all (`member` s) c
 
 durationOfHospitalizedAntibiotics:: (IntervalAlgebraic (PairedInterval Concepts) a
                                     , IntervalAlgebraic Interval a
@@ -33,9 +28,10 @@ durationOfHospitalizedAntibiotics:: (IntervalAlgebraic (PairedInterval Concepts)
 durationOfHospitalizedAntibiotics es
     | null y    = featureL $ Other "no cases"
     | otherwise = featureR $ durations y
-    where concepts = map packConcept ["wasHospitalized", "tookAntibiotics"]
+    where conceptsText = ["wasHospitalized", "tookAntibiotics"] 
+          concepts = map packConcept conceptsText
           x = formMeetingSequence (map (toConceptEventOf concepts) es)
-          y = filter (hasAllConcepts concepts . getPairData) x 
+          y = filter (\z -> hasAllConcepts (getPairData z) conceptsText ) x 
 
 
 exampleFeatures2Spec :: Spec

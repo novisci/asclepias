@@ -3,11 +3,11 @@
 _Asclepias (n)_:
 
 1. The genus of North American milkweeds, named after Linnaeus after the greek god of healing, Asclepius.
-2. A language and software project for defining and generating epidemiological cohorts from streams of events.
+2. A language and software project for defining and deriving features from temporally ordered events using the [interval algebra](https://hackage.haskell.org/package/interval-algebra-0.8.0).
 
 ## Current status
 
-The initial versions of `hasklepias` will focus on the ability to derive features from a sorted collection of events. As of the initial release (`v0.1.0`), developers can experiment with feature definitions (see below and the `examples` directory).
+The initial versions of `hasklepias` will focus on the ability to derive features from a sorted collection of events. At this time, developers can experiment with feature definitions (see the `examples` directory).
 
 ## Getting started
 
@@ -17,10 +17,10 @@ You can use any development environment you chose, but for maximum coding pleasu
 
 ## Defining features
 
-At this time, `hasklepias` can be used for experimenting with `Feature` definitions. A `Feature d` is currently a synonym for an [`Either`](https://hackage.haskell.org/package/base-4.15.0.0/docs/Data-Either.html) type:
+At this time, `hasklepias` can be used for experimenting with `Feature` definitions. A `Feature d` is currently a wrapper of an [`Either`](https://hackage.haskell.org/package/base-4.15.0.0/docs/Data-Either.html) type:
 
 ```haskell
-type Feature d = Either MissingReason d
+type Feature d = Feature { getFeature :: Either MissingReason d }
 ```
 
 The `Either` type means there are two possibilities for the type of a `Feature`. The `Left` can be a `MissingReason`, which is a sum type enumerating the reasons that the data is missing:

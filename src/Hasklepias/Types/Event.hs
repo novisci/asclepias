@@ -27,10 +27,10 @@ import Data.Function                    ( ($) )
 import Data.Set                         ( member, fromList, intersection )
 import Data.Ord                         ( Ord )
 import IntervalAlgebra                  ( Interval
-                                        , IntervalAlgebraic
+                                        , Intervallic
                                         , Intervallic (getInterval) )
 import IntervalAlgebra.PairedInterval   ( PairedInterval
-                                        , mkPairedInterval
+                                        , makePairedInterval
                                         , getPairData )
 import Hasklepias.Types.Context         ( HasConcept(..)
                                         , Concepts
@@ -52,7 +52,7 @@ instance HasConcept (Event a) where
 
 -- | A smart constructor for 'Event a's.
 event :: Interval a -> Context -> Event a
-event i c = mkPairedInterval c i
+event i c = makePairedInterval c i
 
 -- | Access the 'Context' of an 'Event a'.
 ctxt :: Event a -> Context
@@ -70,17 +70,17 @@ instance HasConcept (ConceptEvent a) where
 -- | Drops an @Event@ to a @ConceptEvent@ by moving the concepts in the data
 --   position in the paired interval and throwing out the facts and source.
 toConceptEvent :: (Show a, Ord a) => Event a -> ConceptEvent a
-toConceptEvent e = mkPairedInterval (getConcepts $ ctxt e) (getInterval e)
+toConceptEvent e = makePairedInterval (getConcepts $ ctxt e) (getInterval e)
 
 toConceptEventOf :: (Show a, Ord a) => [Concept] -> Event a -> ConceptEvent a
 toConceptEventOf cpts e =
-    mkPairedInterval
+    makePairedInterval
         (toConcepts $ intersection (fromList cpts) (fromConcepts $ getConcepts $ ctxt e))
         (getInterval e)
 
 -- |
 mkConceptEvent :: (Show a, Ord a) => Interval a -> Concepts -> ConceptEvent a
-mkConceptEvent i c = mkPairedInterval c i
+mkConceptEvent i c = makePairedInterval c i
 
 -- | A @List@ of @Event a@
 -- 

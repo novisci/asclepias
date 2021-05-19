@@ -1,5 +1,9 @@
 # Changelog for hasklepias
 
+## 0.4.2
+
+* Updates `interval-algebra` to 0.8.0
+
 ## 0.4.1
 
 * Modifies the example in `example/ExampleFeatures3` to use the pipe `|>` operator.

@@ -38,7 +38,7 @@ import Data.Function              ( ($), (.) )
 import Data.Maybe                 ( Maybe(..) )
 import Data.String                ( String )
 import Hasklepias.Types.Event     ( Events )
-import IntervalAlgebra            ( Interval, IntervalAlgebraic )
+import IntervalAlgebra            ( Interval, Intervallic )
 
 {- | A 'Feature' is a @'Either' 'MissingReason' d@, where @d@ can be any type 
      of data derivable from 'Hasklepias.Event.Events'.
@@ -72,7 +72,7 @@ data FeatureDefinition e a d =
   | FEF (Feature e -> Events a -> Feature d)
 
 -- | Define an 'EF' FeatureDefinition
-defineEF :: (IntervalAlgebraic Interval a) =>
+defineEF :: (Intervallic Interval a) =>
              MissingReason 
           -- ^ The reason if @f@ returns 'Nothing' 
           -> (Events a -> Maybe c) 
@@ -95,7 +95,7 @@ defineEF r f g = EF (\es ->
 applyEF :: FeatureDefinition e a d -> Events a -> Feature d
 applyEF (EF f) = f
 
-defineFEF :: (IntervalAlgebraic Interval a) =>
+defineFEF :: (Intervallic Interval a) =>
              MissingReason
           -- ^ The reason if the input 'Feature' is a 'Left'.
           -> (e -> Events a -> d)

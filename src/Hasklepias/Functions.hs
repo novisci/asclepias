@@ -35,11 +35,12 @@ module Hasklepias.Functions(
 
 import Data.Text                            ( Text )
 import Control.Applicative                  ( Applicative(liftA2) )
-import IntervalAlgebra                      ( IntervalAlgebraic(..)
-                                            , ComparativePredicateOf
+import IntervalAlgebra                      ( Intervallic(..)
+                                            , ComparativePredicateOf1
+                                            , ComparativePredicateOf2
                                             , Interval )
 import IntervalAlgebra.PairedInterval       ( PairedInterval, getPairData )
-import IntervalAlgebra.IntervalUtilities    ( compareIntervals )
+-- import IntervalAlgebra.IntervalUtilities    ( compareIntervals )
 import Hasklepias.Types.Event               ( Events
                                             , Event
                                             , ConceptEvent
@@ -109,25 +110,22 @@ twoXOrOneY x y es = atleastNofX 2 x es ||
 -- | Takes a predicate of intervals and a predicate on the data part of a 
 --   paired interval to create a single predicate such that both input
 --   predicates should hold.
-makePairPredicate :: (IntervalAlgebraic (PairedInterval b) a
-                     , IntervalAlgebraic Interval a
-                     , IntervalAlgebraic i0 a) =>
-       ComparativePredicateOf (Interval a)
+makePairPredicate :: ( Intervallic (PairedInterval b) a
+                     , Intervallic i0 a) =>
+       ComparativePredicateOf2 (i0 a) ((PairedInterval b) a)
     -> i0 a
     -> (b -> Bool)
     -> (PairedInterval b a -> Bool)
-makePairPredicate pi i pd x = compareIntervals pi i x && pd (getPairData x)
+makePairPredicate pi i pd x =  pi i x && pd (getPairData x)
 
 -- | 
-makePairedFilter :: ( IntervalAlgebraic Interval a
-                     , IntervalAlgebraic i0 a
-                     , IntervalAlgebraic (PairedInterval b) a
-                     ) =>
-               ComparativePredicateOf (Interval a)
-            -> i0 a
-            -> (b -> Bool)
-            -> [PairedInterval b a]
-            -> [PairedInterval b a]
+makePairedFilter :: ( Intervallic i0 a
+                    , Intervallic (PairedInterval b) a) =>
+       ComparativePredicateOf2 (i0 a) ((PairedInterval b) a)
+    -> i0 a
+    -> (b -> Bool)
+    -> [PairedInterval b a]
+    -> [PairedInterval b a]
 makePairedFilter fi i fc = filter (makePairPredicate fi i fc)
 
 -- | Generate all pair-wise combinations from two lists.

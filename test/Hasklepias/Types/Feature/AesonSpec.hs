@@ -17,7 +17,7 @@ import qualified Data.ByteString.Lazy as B
 ex1 :: Events Int
 ex1 = [event (beginerval 10 0) (context $ packConcepts ["enrollment"])]
 
-index:: (IntervalAlgebraic Interval a) =>
+index:: (Intervallic Interval a) =>
      Events a
   -> Feature (Interval a)
 index es =

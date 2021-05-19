@@ -20,8 +20,8 @@ import Hasklepias
 import ExampleEvents
 import Test.Hspec
 
-durationOfHospitalizedAntibiotics:: (IntervalAlgebraic (PairedInterval Concepts) a
-                                    , IntervalAlgebraic Interval a
+durationOfHospitalizedAntibiotics:: (Intervallic (PairedInterval Concepts) a
+                                    , Intervallic Interval a
                                     , IntervalSizeable a b) =>
      Events a
   -> Feature [b]

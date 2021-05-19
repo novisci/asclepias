@@ -30,7 +30,7 @@ module Hasklepias.Types.Feature(
 
 import GHC.Read                   ( Read )
 import GHC.Show                   ( Show )
-import GHC.Generics               ( Generic )
+import GHC.Generics               ( Generic, D )
 import Data.Either                ( Either(..) )
 import Data.Eq                    ( Eq )
 import Data.Functor               ( Functor(fmap) )
@@ -76,11 +76,11 @@ defineEF :: (Intervallic Interval a) =>
              MissingReason 
           -- ^ The reason if @f@ returns 'Nothing' 
           -> (Events a -> Maybe c) 
-          -- ^ A function that maps events to Maybe some intermediary type. 
+          -- ^ A function that maps events to an some intermediary Maybe type. 
           --   In the case that this function returns 'Nothing', you get a 
           --   @Left@ feature with the provided @MissingReason@. Otherwise, 
-          --   the 'Just' result is passed to @g@ for final transformation 
-          --   to the desired @Feature@ type.
+          --   the 'Just' result is passed to the next function for final
+          --   transformation to the desired @Feature@ type.
           -> (c -> d)              
           -- ^ A function that transforms the intermediary data to the desired 
           --   type.

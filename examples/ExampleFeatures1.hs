@@ -25,7 +25,7 @@ import Test.Hspec
 {-
 Index is defined as the first occurrence of an Orca bite.
 -}
-indexDef :: (IntervalAlgebraic Interval a) =>
+indexDef :: (Intervallic Interval a) =>
           FeatureDefinition e a (Interval a)
 indexDef = defineEF
       (Other "No occurrence of Orca bite")
@@ -38,17 +38,17 @@ index. Here, baseline is defined as function that takes a filtration function
 as an argument, so that the baseline feature can be used to filter events
 based on different predicate functions.
 -}
-baseline :: (IntervalAlgebraic Interval a, IntervalSizeable a b) =>
+baseline :: (Intervallic Interval a, IntervalSizeable a b) =>
      Feature (Interval a) -- ^ pass the result of index to get a baseline filter
   -> Feature (Interval a)
 baseline = fmap (enderval 60 . begin)
 
-bline :: (IntervalAlgebraic Interval a, IntervalSizeable a b) =>
+bline :: (Intervallic Interval a, IntervalSizeable a b) =>
      Events a
   -> Feature (Interval a)
 bline = baseline . applyEF indexDef
 
-flwup :: (IntervalAlgebraic Interval a, IntervalSizeable a b) =>
+flwup :: (Intervallic Interval a, IntervalSizeable a b) =>
      Events a
   -> Feature (Interval a)
 flwup = fmap (beginerval 30 . begin) . applyEF indexDef
@@ -71,7 +71,7 @@ enrolledDef allowableGap = defineFEF Excluded
 Define features that identify whether a subject as bit/struck by a duck and
 bit/struck by a macaw.
 -}
-makeHxDef :: (IntervalAlgebraic Interval a) =>
+makeHxDef :: (Intervallic Interval a) =>
                [Text] -> FeatureDefinition (Interval a) a (Bool, Maybe (Interval a))
 makeHxDef cnpts = defineFEF Excluded
    ( \i es ->
@@ -79,17 +79,17 @@ makeHxDef cnpts = defineFEF Excluded
    )
    where f i x = makePairedFilter enclose i (`hasConcepts` cnpts) x
 
-duckHxDef :: (IntervalAlgebraic Interval a) =>
+duckHxDef :: (Intervallic Interval a) =>
           FeatureDefinition (Interval a) a (Bool, Maybe (Interval a))
 duckHxDef = makeHxDef ["wasBitByDuck", "wasStruckByDuck"]
 
-macawHxDef :: (IntervalAlgebraic Interval a) =>
+macawHxDef :: (Intervallic Interval a) =>
           FeatureDefinition (Interval a) a (Bool, Maybe (Interval a))
 macawHxDef = makeHxDef ["wasBitByMacaw", "wasStruckByMacaw"]
 
 -- | Define an event that identifies whether the subject has two minor or one major
 --   surgery.
-twoMinorOrOneMajorDef :: (IntervalAlgebraic Interval a) =>
+twoMinorOrOneMajorDef :: (Intervallic Interval a) =>
          FeatureDefinition (Interval a) a Bool
 twoMinorOrOneMajorDef = defineFEF Excluded
       ( \i es ->
@@ -98,7 +98,7 @@ twoMinorOrOneMajorDef = defineFEF Excluded
 
 -- | Time from end of baseline to end of most recent Antibiotics
 --   with 5 day grace period
-timeSinceLastAntibioticsDef :: ( IntervalAlgebraic Interval a
+timeSinceLastAntibioticsDef :: ( Intervallic Interval a
                                , IntervalSizeable a b) =>
          FeatureDefinition (Interval a) a (Maybe b)
 timeSinceLastAntibioticsDef = defineFEF Excluded
@@ -131,11 +131,11 @@ countOfHospitalEventsDef = defineFEF Excluded
 --   and time from start of follow up
 --   This needs to be generalized as Nothing could either indicate they didn't 
 --   discontinue or that they simply got no antibiotics records.
-so :: (IntervalAlgebraic Interval a)=> ComparativePredicateOf (Interval a)
+so :: (Intervallic Interval a)=> ComparativePredicateOf1 (Interval a)
 so = unionPredicates [startedBy, overlappedBy]
 
 discontinuationDef :: (IntervalSizeable a b
-                      , IntervalAlgebraic Interval a) =>
+                      , Intervallic Interval a) =>
                       FeatureDefinition (Interval a) a (Maybe (a, b))
 discontinuationDef = defineFEF Excluded
       ( \i es ->

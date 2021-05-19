@@ -22,7 +22,7 @@ import ExampleEvents ( exampleEvents4 )
 import Test.Hspec
 
 
-examplePairComparison :: (IntervalAlgebraic Interval a
+examplePairComparison :: (Intervallic Interval a
               , IntervalSizeable a b) =>
                FeatureDefinition (Interval a) a (Bool, Maybe a)
 examplePairComparison = defineFEF Unknown

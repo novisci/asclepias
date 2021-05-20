@@ -15,6 +15,7 @@ module Hasklepias.Reexports (
       module Control.Monad
     , module Control.Applicative
     , module Data.Bool
+    , module Data.Time.Calendar 
     , module Data.Int
     , module Data.Maybe
     , module Data.Function
@@ -33,7 +34,7 @@ import safe Data.Bool                       ( Bool(..)
                                             , (&&), not, (||)
                                             , bool
                                             , otherwise )
-import safe Data.Function                   ( (.), ($) )
+import safe Data.Function                   ( (.), ($), const )
 import safe Data.Functor                    ( fmap )
 import safe Data.Int                        ( Int )
 import safe Data.List                       ( all, map, filter, length, null )
@@ -49,6 +50,7 @@ import safe Data.Maybe                      ( Maybe(..),
                                               maybeToList )
 import safe Data.Ord                        ( Ord((>=), (<), (>), (<=))
                                             , max, min )
+import safe Data.Time.Calendar              ( Day, fromGregorian, MonthOfYear, Year )
 import safe Data.Text                       ( pack, Text )
 import safe Data.Tuple                      ( fst, snd, uncurry, curry )
 import safe Flow                            ( (!>), (.>), (<!), (<.), (<|), (|>) )

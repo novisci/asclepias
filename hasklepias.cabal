@@ -1,6 +1,6 @@
 cabal-version:  2.2
 name:           hasklepias
-version:        0.4.2
+version:        0.4.3
 description:    Please see the README on GitHub at <https://github.com/novisci/asclepias#readme>
 homepage:       https://github.com/novisci/asclepias/#readme
 bug-reports:    https://github.com/novisci/asclepias/issues
@@ -47,7 +47,7 @@ library
     , flow == 1.0.22
     , interval-algebra == 0.8.0
     , text >=1.2.3
-    , time >=1.9
+    , time >=1.11
     , unordered-containers >=0.2.10
     , safe >= 0.3
     , vector >=0.12
@@ -79,7 +79,7 @@ test-suite hasklepias-test
     , hspec
     , interval-algebra == 0.8.0
     , text >=1.2.3
-    , time >=1.9
+    , time >=1.11
     , unordered-containers >=0.2.10
     , vector >=0.12
     , QuickCheck
@@ -104,7 +104,7 @@ test-suite examples
     , text >=1.2.3
     , bytestring >=0.10
     , containers >=0.6.0
-    , time >=1.9
+    , time >=1.11
     , aeson >=1.4.0.0 && <2
     , unordered-containers >=0.2.10
     , vector >=0.12

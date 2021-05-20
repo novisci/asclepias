@@ -15,13 +15,13 @@ Maintainer  : bsaul@novisci.com
 
 module Hasklepias.Types.Feature(
     -- * Types
-      Feature
-    , getFeature
+      Feature(..)
     , MissingReason(..)
     , FeatureDefinition(..)
     , applyEF
     , defineEF
     , defineFEF
+    , defineFEF2
     , applyFEF
     , featureR
     , featureL
@@ -106,6 +106,19 @@ defineFEF r g = FEF (\(Feature feat) es ->
   case feat of
     (Left _)  -> featureL r
     (Right x) -> featureR (g x es)
+  )
+
+defineFEF2 :: (Intervallic Interval a) =>
+             MissingReason
+          -- ^ The reason if the input 'Feature' is a 'Left'.
+          -> (e -> Events a -> Feature d)
+          -- ^ A function that tranforms the data of a 'Right' input 'Feature'
+          --   and a collection of events into the desired type.
+          -> FeatureDefinition e a d
+defineFEF2 r g = FEF (\(Feature feat) es ->
+  case feat of
+    (Left _)  -> featureL r
+    (Right x) -> g x es
   )
 
 -- | Extract a 'FEF' FeatureDefinition

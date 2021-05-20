@@ -1,5 +1,12 @@
 # Changelog for hasklepias
 
+## 0.4.3
+
+* Exports `Feature` constructor.
+* Adds `defineFEF2` function for creating a feature definition where the provided function returns a `Feature d` rather than just a `d`.
+* Generalizes `allPairs` from type `[a] -> [a] -> [(a, a)]` to `[a] -> [b] -> [(a, b)]`.
+* Reexports a few functions and types from `Data.Time.Calendar`. Also reexports `const` from `Data.Function`.
+
 ## 0.4.2
 
 * Updates `interval-algebra` to 0.8.0

@@ -129,7 +129,7 @@ makePairedFilter :: ( Intervallic i0 a
 makePairedFilter fi i fc = filter (makePairPredicate fi i fc)
 
 -- | Generate all pair-wise combinations from two lists.
-allPairs :: [a] -> [a] -> [(a, a)]
+allPairs :: [a] -> [b] -> [(a, b)]
 allPairs = liftA2 (,)
 
 -- | Split an @Events a@ into a pair of @Events a@. The first element contains

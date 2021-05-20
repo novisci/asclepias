@@ -15,6 +15,7 @@ module Hasklepias.Reexports (
       module Control.Monad
     , module Control.Applicative
     , module Data.Bool
+    , module Data.Time.Calendar 
     , module Data.Int
     , module Data.Maybe
     , module Data.Function

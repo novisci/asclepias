@@ -1,5 +1,12 @@
 # Changelog for hasklepias
 
+## 0.5.0
+
+* Changes what was the `Feature` type into `FeatureData`. The `Feature` type becomes a container for `FeatureData` with a name and attributes.
+* Adds the `FeatureSpec` type which contains `FeatureDefinition`s plus a name and attributes. The name and attributes are mapped directly into the resulting `Feature` when a `FeatureSpec` is evaluated, while the `FeatureDefinition` is evaluated into `FeatureData`. The `evalEFFeature`, `evalFEFFeature`, and `evalFFFFeature` are provided for evaluating a `FeatureSpec` according the corresponding `FeatureDefinition`.
+* Adds additional functions to reexports.
+* Adds `witherable` dependency to use a more general `filter` function.
+
 ## 0.4.4
 
 * Adds the `FFF` option to `FeatureDefinition` to define `(Feature f -> Feature e -> Feature d)` along with corresponding `defineFFF` and `applyFFF`.
@@ -14,7 +21,7 @@
 
 ## 0.4.2
 
-* Updates `interval-algebra` to 0.8.0
+* Updates `interval-algebra` to 0.8.0.
 
 ## 0.4.1
 

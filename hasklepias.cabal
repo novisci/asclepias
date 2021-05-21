@@ -1,6 +1,6 @@
 cabal-version:  2.2
 name:           hasklepias
-version:        0.4.4
+version:        0.5.0
 description:    Please see the README on GitHub at <https://github.com/novisci/asclepias#readme>
 homepage:       https://github.com/novisci/asclepias/#readme
 bug-reports:    https://github.com/novisci/asclepias/issues
@@ -52,6 +52,7 @@ library
     , safe >= 0.3
     , vector >=0.12
     , QuickCheck
+    , witherable >= 0.4
   default-language: Haskell2010
 
 test-suite hasklepias-test

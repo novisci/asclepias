@@ -20,7 +20,7 @@ You can use any development environment you chose, but for maximum coding pleasu
 At this time, `hasklepias` can be used for experimenting with `Feature` definitions. A `Feature d` is currently a wrapper of an [`Either`](https://hackage.haskell.org/package/base-4.15.0.0/docs/Data-Either.html) type:
 
 ```haskell
-type Feature d = Feature { getFeature :: Either MissingReason d }
+type Feature d = Feature { getFeatureData :: Either MissingReason d }
 ```
 
 The `Either` type means there are two possibilities for the type of a `Feature`. The `Left` can be a `MissingReason`, which is a sum type enumerating the reasons that the data is missing:

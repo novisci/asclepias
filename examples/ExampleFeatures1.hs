@@ -7,8 +7,6 @@ Maintainer  : bsaul@novisci.com
 -}
 
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE NoImplicitPrelude #-}
@@ -35,22 +33,22 @@ indexDef = defineEF
 {-  
 The baseline interval is the interval (b - 60, b), where b is the begin of 
 index. Here, baseline is defined as function that takes a filtration function
-as an argument, so that the baseline feature can be used to filter events
+as an argument, so that the baseline FeatureData can be used to filter events
 based on different predicate functions.
 -}
 baseline :: (Intervallic Interval a, IntervalSizeable a b) =>
-     Feature (Interval a) -- ^ pass the result of index to get a baseline filter
-  -> Feature (Interval a)
+     FeatureData (Interval a) -- ^ pass the result of index to get a baseline filter
+  -> FeatureData (Interval a)
 baseline = fmap (enderval 60 . begin)
 
 bline :: (Intervallic Interval a, IntervalSizeable a b) =>
      Events a
-  -> Feature (Interval a)
+  -> FeatureData (Interval a)
 bline = baseline . applyEF indexDef
 
 flwup :: (Intervallic Interval a, IntervalSizeable a b) =>
      Events a
-  -> Feature (Interval a)
+  -> FeatureData (Interval a)
 flwup = fmap (beginerval 30 . begin) . applyEF indexDef
 
 {-
@@ -154,14 +152,14 @@ discontinuationDef = defineFEF Excluded
 
 getUnitFeatures ::
       Events Int
-  -> (Feature (Interval Int)
-     , Feature Bool
-     , Feature (Bool, Maybe (Interval Int))
-     , Feature (Bool, Maybe (Interval Int))
-     , Feature Bool
-     , Feature (Maybe Int)
-     , Feature (Int, Maybe Int)
-     , Feature (Maybe (Int, Int))
+  -> (FeatureData (Interval Int)
+     , FeatureData Bool
+     , FeatureData (Bool, Maybe (Interval Int))
+     , FeatureData (Bool, Maybe (Interval Int))
+     , FeatureData Bool
+     , FeatureData (Maybe Int)
+     , FeatureData (Int, Maybe Int)
+     , FeatureData (Maybe (Int, Int))
      )
 getUnitFeatures x = (
     applyEF  indexDef x

@@ -12,7 +12,8 @@ Maintainer  : bsaul@novisci.com
 module Hasklepias.Reexports (
 
     -- * Re-exports
-      module Control.Monad
+      module GHC.Num
+    , module Control.Monad
     , module Control.Applicative
     , module Data.Bool
     , module Data.Time.Calendar 
@@ -28,16 +29,18 @@ module Hasklepias.Reexports (
     , module Flow
 ) where
 
+import safe GHC.Num                         ( Integer )
 import safe Control.Monad                   ( (=<<) )
 import safe Control.Applicative             ( (<$>) )
 import safe Data.Bool                       ( Bool(..)
                                             , (&&), not, (||)
                                             , bool
                                             , otherwise )
-import safe Data.Function                   ( (.), ($), const )
+import safe Data.Function                   ( (.), ($), const, id )
 import safe Data.Functor                    ( fmap )
 import safe Data.Int                        ( Int )
-import safe Data.List                       ( all, map, filter, length, null )
+import safe Data.List                       ( all, map, filter, length, null
+                                            , zipWith )
 import safe Data.Maybe                      ( Maybe(..),
                                               maybe,
                                               isJust,
@@ -50,7 +53,9 @@ import safe Data.Maybe                      ( Maybe(..),
                                               maybeToList )
 import safe Data.Ord                        ( Ord((>=), (<), (>), (<=))
                                             , max, min )
-import safe Data.Time.Calendar              ( Day, fromGregorian, MonthOfYear, Year )
+import safe Data.Time.Calendar              ( Day, MonthOfYear, Year
+                                            , fromGregorian
+                                            , diffDays )
 import safe Data.Text                       ( pack, Text )
 import safe Data.Tuple                      ( fst, snd, uncurry, curry )
 import safe Flow                            ( (!>), (.>), (<!), (<.), (<|), (|>) )

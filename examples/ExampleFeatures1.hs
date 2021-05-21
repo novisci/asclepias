@@ -26,7 +26,7 @@ import Test.Hspec
 Index is defined as the first occurrence of an Orca bite.
 -}
 indexDef :: (Intervallic Interval a) =>
-          FeatureDefinition e a (Interval a)
+          FeatureDefinition * e a (Interval a)
 indexDef = defineEF
       (Other "No occurrence of Orca bite")
       (firstConceptOccurrence ["wasBitByOrca"])
@@ -57,7 +57,7 @@ flwup = fmap (beginerval 30 . begin) . applyEF indexDef
 Define enrolled as the indicator of whether all of the gaps between the union of 
 all enrollment intervals (+ allowableGap) 
 -}
-enrolledDef :: IntervalSizeable a b => b -> FeatureDefinition (Interval a) a Bool
+enrolledDef :: IntervalSizeable a b => b -> FeatureDefinition * (Interval a) a Bool
 enrolledDef allowableGap = defineFEF Excluded
    (  \i ->
         maybe False (all (< allowableGap) . durations)
@@ -72,7 +72,7 @@ Define features that identify whether a subject as bit/struck by a duck and
 bit/struck by a macaw.
 -}
 makeHxDef :: (Intervallic Interval a) =>
-               [Text] -> FeatureDefinition (Interval a) a (Bool, Maybe (Interval a))
+               [Text] -> FeatureDefinition * (Interval a) a (Bool, Maybe (Interval a))
 makeHxDef cnpts = defineFEF Excluded
    ( \i es ->
       (isNotEmpty (f i es), lastMay $ intervals (f i es))
@@ -80,17 +80,17 @@ makeHxDef cnpts = defineFEF Excluded
    where f i x = makePairedFilter enclose i (`hasConcepts` cnpts) x
 
 duckHxDef :: (Intervallic Interval a) =>
-          FeatureDefinition (Interval a) a (Bool, Maybe (Interval a))
+          FeatureDefinition * (Interval a) a (Bool, Maybe (Interval a))
 duckHxDef = makeHxDef ["wasBitByDuck", "wasStruckByDuck"]
 
 macawHxDef :: (Intervallic Interval a) =>
-          FeatureDefinition (Interval a) a (Bool, Maybe (Interval a))
+          FeatureDefinition * (Interval a) a (Bool, Maybe (Interval a))
 macawHxDef = makeHxDef ["wasBitByMacaw", "wasStruckByMacaw"]
 
 -- | Define an event that identifies whether the subject has two minor or one major
 --   surgery.
 twoMinorOrOneMajorDef :: (Intervallic Interval a) =>
-         FeatureDefinition (Interval a) a Bool
+         FeatureDefinition * (Interval a) a Bool
 twoMinorOrOneMajorDef = defineFEF Excluded
       ( \i es ->
           twoXOrOneY ["hadMinorSurgery"] ["hadMajorSurgery"] (filterEnclose i es)
@@ -100,7 +100,7 @@ twoMinorOrOneMajorDef = defineFEF Excluded
 --   with 5 day grace period
 timeSinceLastAntibioticsDef :: ( Intervallic Interval a
                                , IntervalSizeable a b) =>
-         FeatureDefinition (Interval a) a (Maybe b)
+         FeatureDefinition * (Interval a) a (Maybe b)
 timeSinceLastAntibioticsDef = defineFEF Excluded
       ( \i es ->
            ( lastMay                                -- want the last one
@@ -116,7 +116,7 @@ timeSinceLastAntibioticsDef = defineFEF Excluded
 -- | Count of hospital events in a interval and duration of the last one
 countOfHospitalEventsDef :: (IntervalCombinable Interval a
                             , IntervalSizeable a b) =>
-                            FeatureDefinition (Interval a) a (Int, Maybe b)
+                            FeatureDefinition * (Interval a) a (Int, Maybe b)
 countOfHospitalEventsDef = defineFEF Excluded
       ( \i es ->
             ((\x -> (length x, duration <$> lastMay x))
@@ -136,7 +136,7 @@ so = unionPredicates [startedBy, overlappedBy]
 
 discontinuationDef :: (IntervalSizeable a b
                       , Intervallic Interval a) =>
-                      FeatureDefinition (Interval a) a (Maybe (a, b))
+                      FeatureDefinition * (Interval a) a (Maybe (a, b))
 discontinuationDef = defineFEF Excluded
       ( \i es ->
           (\x -> Just (begin x       -- we want the begin of this interval 

@@ -29,14 +29,14 @@ module Hasklepias.Types.Context(
 import GHC.Show                 ( Show(show) )
 import Data.Bool                ( Bool )
 import Data.Eq                  ( Eq )
-import Data.Function            ((.), ($))
+import Data.Function            ( (.), ($) )
 import Data.List                ( all, any, map )
 import Data.Maybe               ( Maybe(Nothing) )
 import Data.Monoid              ( (<>), Monoid(mempty) )
 import Data.Ord                 ( Ord )
 import Data.Semigroup           ( Semigroup((<>)) )
-import Data.Text                (Text)
-import Data.Set                 (Set
+import Data.Text                ( Text )
+import Data.Set                 ( Set
                                 , fromList, union, empty, map, toList, member)
 
 -- | A @Context@ consists of three parts: @concepts@, @facts@, and @source@. 

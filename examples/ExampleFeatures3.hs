@@ -7,8 +7,6 @@ Maintainer  : bsaul@novisci.com
 -}
 
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE NoImplicitPrelude #-}
@@ -43,7 +41,7 @@ examplePairComparison = defineFEF Unknown
     )
 
 
-flwup :: Feature (Interval Int)
+flwup :: FeatureData (Interval Int)
 flwup = featureR $ beginerval 50 0
 
 exampleFeatures3Spec :: Spec

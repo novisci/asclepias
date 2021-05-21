@@ -19,7 +19,7 @@ ex1 = [event (beginerval 10 0) (context $ packConcepts ["enrollment"])]
 
 index:: (Intervallic Interval a) =>
      Events a
-  -> Feature (Interval a)
+  -> FeatureData (Interval a)
 index es =
     case firstConceptOccurrence ["enrollment"] es of
         Nothing -> featureL (Other "No Enrollment")

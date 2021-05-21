@@ -7,8 +7,6 @@ Maintainer  : bsaul@novisci.com
 -}
 
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE NoImplicitPrelude #-}
@@ -24,7 +22,7 @@ durationOfHospitalizedAntibiotics:: (Intervallic (PairedInterval Concepts) a
                                     , Intervallic Interval a
                                     , IntervalSizeable a b) =>
      Events a
-  -> Feature [b]
+  -> FeatureData [b]
 durationOfHospitalizedAntibiotics es
     | null y    = featureL $ Other "no cases"
     | otherwise = featureR $ durations y

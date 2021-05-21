@@ -24,7 +24,7 @@ import Test.Hspec
 
 examplePairComparison :: (Intervallic Interval a
               , IntervalSizeable a b) =>
-               FeatureDefinition (Interval a) a (Bool, Maybe a)
+               FeatureDefinition * (Interval a) a (Bool, Maybe a)
 examplePairComparison = defineFEF Unknown
     ( \i es ->
        es

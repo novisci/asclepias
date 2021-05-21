@@ -18,11 +18,13 @@ module Hasklepias.Types.Feature(
       Feature(..)
     , MissingReason(..)
     , FeatureDefinition(..)
-    , applyEF
     , defineEF
     , defineFEF
     , defineFEF2
+    , defineFFF
+    , applyEF
     , applyFEF
+    , applyFFF
     , featureR
     , featureL
 
@@ -30,7 +32,7 @@ module Hasklepias.Types.Feature(
 
 import GHC.Read                   ( Read )
 import GHC.Show                   ( Show )
-import GHC.Generics               ( Generic, D )
+import GHC.Generics               ( Generic )
 import Data.Either                ( Either(..) )
 import Data.Eq                    ( Eq )
 import Data.Functor               ( Functor(fmap) )
@@ -67,9 +69,10 @@ data MissingReason =
 
 -- | A type to hold common feature definitions; i.e. functions that return 
 --  features.
-data FeatureDefinition e a d =
+data FeatureDefinition f e a d =
     EF  (Events a -> Feature d)
   | FEF (Feature e -> Events a -> Feature d)
+  | FFF (Feature f -> Feature e -> Feature d)
 
 -- | Define an 'EF' FeatureDefinition
 defineEF :: (Intervallic Interval a) =>
@@ -84,7 +87,7 @@ defineEF :: (Intervallic Interval a) =>
           -> (c -> d)              
           -- ^ A function that transforms the intermediary data to the desired 
           --   type.
-          -> FeatureDefinition e a d
+          -> FeatureDefinition * e a d
 defineEF r f g = EF (\es ->
   case f es of
     Nothing -> featureL r
@@ -92,29 +95,31 @@ defineEF r f g = EF (\es ->
   )
 
 -- | Extract an 'EF' FeatureDefinition.
-applyEF :: FeatureDefinition e a d -> Events a -> Feature d
+applyEF :: FeatureDefinition * * a d -> Events a -> Feature d
 applyEF (EF f) = f
 
+-- | TODO
 defineFEF :: (Intervallic Interval a) =>
              MissingReason
           -- ^ The reason if the input 'Feature' is a 'Left'.
           -> (e -> Events a -> d)
           -- ^ A function that tranforms the data of a 'Right' input 'Feature'
           --   and a collection of events into the desired type.
-          -> FeatureDefinition e a d
+          -> FeatureDefinition * e a d
 defineFEF r g = FEF (\(Feature feat) es ->
   case feat of
     (Left _)  -> featureL r
     (Right x) -> featureR (g x es)
   )
 
+-- | TODO
 defineFEF2 :: (Intervallic Interval a) =>
              MissingReason
           -- ^ The reason if the input 'Feature' is a 'Left'.
           -> (e -> Events a -> Feature d)
           -- ^ A function that tranforms the data of a 'Right' input 'Feature'
           --   and a collection of events into the desired type.
-          -> FeatureDefinition e a d
+          -> FeatureDefinition * e a d
 defineFEF2 r g = FEF (\(Feature feat) es ->
   case feat of
     (Left _)  -> featureL r
@@ -122,5 +127,23 @@ defineFEF2 r g = FEF (\(Feature feat) es ->
   )
 
 -- | Extract a 'FEF' FeatureDefinition
-applyFEF :: FeatureDefinition e a d -> Feature e -> Events a -> Feature d
+applyFEF :: FeatureDefinition * e a d -> Feature e -> Events a -> Feature d
 applyFEF (FEF f) = f
+
+-- | TODO
+defineFFF :: 
+        MissingReason
+    ->  MissingReason      
+    -> (f -> e -> d) 
+    -> FeatureDefinition f e * d
+defineFFF r1 r2 g = FFF (\(Feature feat1) (Feature feat2) ->
+    case ( feat1, feat2 ) of 
+      ( Left _ , Left _ ) -> featureL r1
+      ( Left _ , _      ) -> featureL r1
+      ( _      , Left _ ) -> featureL r2
+      ( Right x, Right y) -> featureR $ g x y
+  )
+
+-- | Extract a 'FFF' FeatureDefinition
+applyFFF :: FeatureDefinition f e * d -> Feature f -> Feature e -> Feature d
+applyFFF (FFF f) = f

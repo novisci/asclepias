@@ -1,5 +1,10 @@
 # Changelog for hasklepias
 
+## 0.4.4
+
+* Adds the `FFF` option to `FeatureDefinition` to define `(Feature f -> Feature e -> Feature d)` along with corresponding `defineFFF` and `applyFFF`.
+* Adds `zipWith`, `id`, and `Integer` to re-exports.
+
 ## 0.4.3
 
 * Exports `Feature` constructor.

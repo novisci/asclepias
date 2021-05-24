@@ -8,7 +8,6 @@ Maintainer  : bsaul@novisci.com
 
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE NoImplicitPrelude #-}
 
 module ExampleFeatures1(
@@ -107,11 +106,11 @@ makeHxDef cnpts = define
    )
    where f i x = makePairedFilter enclose i (`hasConcepts` cnpts) x
 
-duckHxDef :: (Intervallic Interval a) =>
+duckHxDef :: (Ord a) =>
           FeatureDefinition (FeatureData (Interval a), Events a) (Bool, Maybe (Interval a))
 duckHxDef = makeHxDef ["wasBitByDuck", "wasStruckByDuck"]
 
-macawHxDef :: (Intervallic Interval a) =>
+macawHxDef :: (Ord a) =>
           FeatureDefinition (FeatureData (Interval a), Events a) (Bool, Maybe (Interval a))
 macawHxDef = makeHxDef ["wasBitByMacaw", "wasStruckByMacaw"]
 
@@ -166,7 +165,7 @@ countOfHospitalEventsDef = define
 --   and time from start of follow up
 --   This needs to be generalized as Nothing could either indicate they didn't 
 --   discontinue or that they simply got no antibiotics records.
-so :: (Intervallic Interval a)=> ComparativePredicateOf1 (Interval a)
+so :: Ord a => ComparativePredicateOf1 (Interval a)
 so = unionPredicates [startedBy, overlappedBy]
 
 discontinuationDef :: (IntervalSizeable a b) =>

@@ -1,6 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE MonoLocalBinds #-}
 module Hasklepias.Types.Feature.AesonSpec (spec) where
 
 import IntervalAlgebra
@@ -17,7 +16,7 @@ import qualified Data.ByteString.Lazy as B
 ex1 :: Events Int
 ex1 = [event (beginerval 10 0) (context $ packConcepts ["enrollment"])]
 
-index:: (Intervallic Interval a) =>
+index:: (Ord a) =>
      Events a
   -> FeatureData (Interval a)
 index es =

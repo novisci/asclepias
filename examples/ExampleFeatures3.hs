@@ -8,7 +8,6 @@ Maintainer  : bsaul@novisci.com
 
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE NoImplicitPrelude #-}
 
 module ExampleFeatures3(

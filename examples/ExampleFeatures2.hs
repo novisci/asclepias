@@ -18,15 +18,13 @@ import Hasklepias
 import ExampleEvents
 import Test.Hspec
 
-durationOfHospitalizedAntibiotics:: (Intervallic (PairedInterval Concepts) a
-                                    , Show a
-                                    , Intervallic Interval a
+durationOfHospitalizedAntibiotics:: ( Show a
                                     , IntervalSizeable a b) =>
      Events a
   -> FeatureData [b]
 durationOfHospitalizedAntibiotics es
-    | null y    = featureL $ Other "no cases"
-    | otherwise = featureR $ durations y
+    | null y    = featureDataL $ Other "no cases"
+    | otherwise = featureDataR $ durations y
     where conceptsText = ["wasHospitalized", "tookAntibiotics"] 
           concepts = map packConcept conceptsText
           x = formMeetingSequence (map (toConceptEventOf concepts) es)
@@ -38,8 +36,8 @@ exampleFeatures2Spec = do
 
     it "durationOfHospitalizedAntibiotics from exampleEvents1" $
         durationOfHospitalizedAntibiotics exampleEvents1 `shouldBe` 
-            featureL (Other "no cases")
+            featureDataL (Other "no cases")
 
     it "durationOfHospitalizedAntibiotics from exampleEvents3" $
         durationOfHospitalizedAntibiotics exampleEvents3 `shouldBe` 
-            featureR [3, 2]
+            featureDataR [3, 2]

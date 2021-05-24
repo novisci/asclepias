@@ -13,8 +13,10 @@ module Hasklepias.Reexports (
 
     -- * Re-exports
       module GHC.Num
+    , module GHC.Generic
     , module Control.Monad
     , module Control.Applicative
+    , module Data.Aeson
     , module Data.Bool
     , module Data.Either
     , module Data.Eq
@@ -24,6 +26,7 @@ module Hasklepias.Reexports (
     , module Data.Functor
     , module Data.List
     , module Data.Ord
+    , module Data.Show
     , module Data.Time.Calendar 
     , module Data.Text
     , module Data.Tuple
@@ -33,8 +36,10 @@ module Hasklepias.Reexports (
 ) where
 
 import safe GHC.Num                         ( Integer )
-import safe Control.Monad                   ( (=<<) )
+import safe GHC.Generic                     ( Generic )
+import safe Control.Monad                   ( (=<<), Functor(fmap) )
 import safe Control.Applicative             ( (<$>) )
+import Data.Aeson                           ( ToJSON(..) )
 import safe Data.Bool                       ( Bool(..)
                                             , (&&), not, (||)
                                             , bool
@@ -63,6 +68,7 @@ import safe Data.Maybe                      ( Maybe(..),
                                               maybeToList )
 import safe Data.Ord                        ( Ord((>=), (<), (>), (<=))
                                             , max, min )
+import safe Data.Show                       ( Show(..) )
 import safe Data.Time.Calendar              ( Day, MonthOfYear, Year
                                             , fromGregorian
                                             , diffDays )

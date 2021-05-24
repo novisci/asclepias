@@ -10,7 +10,6 @@ Maintainer  : bsaul@novisci.com
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE Safe #-}
 
 module Hasklepias.Types.Feature(
@@ -36,7 +35,7 @@ module Hasklepias.Types.Feature(
 
 import GHC.Read                   ( Read )
 import GHC.Show                   ( Show )
-import GHC.Generics               ( Generic, D )
+import GHC.Generics               ( Generic )
 import Data.Either                ( Either(..) )
 import Data.Eq                    ( Eq )
 import Data.Functor               ( Functor(fmap) )

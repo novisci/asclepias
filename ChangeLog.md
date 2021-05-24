@@ -1,5 +1,10 @@
 # Changelog for hasklepias
 
+## 0.5.1
+
+* Adds `Show`, `Functor`, `ToJSON`, and `Generic` to Reexports.
+* Updates `interval-algebra` to `0.8.1`.
+
 ## 0.5.0
 
 * Changes what was the `Feature` type into `FeatureData`. The `Feature` type becomes a container for `FeatureData` with a name and attributes.

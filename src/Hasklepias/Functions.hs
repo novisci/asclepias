@@ -10,7 +10,6 @@ Provides functions used in defining 'Feature's.
 
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE Safe #-}
 
 module Hasklepias.Functions(

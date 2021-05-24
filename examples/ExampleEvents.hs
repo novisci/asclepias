@@ -34,7 +34,7 @@ exampleEvents4 = toEvents exampleEvents4Data
 
 type EventData a = (a, a, Text)
 
-toEvent :: (IntervalSizeable a a) => EventData a -> Event a
+toEvent :: (IntervalSizeable a a, Show a) => EventData a -> Event a
 toEvent x = event (beginerval (t1 x) (t2 x)) (context $ packConcepts [t3 x])
 
 toEvents :: (Ord a, Show a, IntervalSizeable a a) => [EventData a] -> Events a

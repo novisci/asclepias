@@ -13,6 +13,8 @@ module Hasklepias.Reexports (
 
     -- * Re-exports
       module GHC.Num
+    , module GHC.Generics
+    , module GHC.Show
     , module Control.Monad
     , module Control.Applicative
     , module Data.Bool
@@ -33,7 +35,9 @@ module Hasklepias.Reexports (
 ) where
 
 import safe GHC.Num                         ( Integer )
-import safe Control.Monad                   ( (=<<) )
+import safe GHC.Generics                    ( Generic )
+import safe GHC.Show                        ( Show(..) )
+import safe Control.Monad                   ( (=<<), Functor(fmap) )
 import safe Control.Applicative             ( (<$>) )
 import safe Data.Bool                       ( Bool(..)
                                             , (&&), not, (||)

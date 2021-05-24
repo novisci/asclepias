@@ -10,7 +10,6 @@ Provides functions used in defining 'Feature's.
 
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE Safe #-}
 
 module Hasklepias.Functions(
@@ -110,8 +109,7 @@ twoXOrOneY x y es = atleastNofX 2 x es ||
 -- | Takes a predicate of intervals and a predicate on the data part of a 
 --   paired interval to create a single predicate such that both input
 --   predicates should hold.
-makePairPredicate :: ( Intervallic (PairedInterval b) a
-                     , Intervallic i0 a) =>
+makePairPredicate ::  Ord a =>
        ComparativePredicateOf2 (i0 a) ((PairedInterval b) a)
     -> i0 a
     -> (b -> Bool)
@@ -119,8 +117,7 @@ makePairPredicate :: ( Intervallic (PairedInterval b) a
 makePairPredicate pi i pd x =  pi i x && pd (getPairData x)
 
 -- | 
-makePairedFilter :: ( Intervallic i0 a
-                    , Intervallic (PairedInterval b) a) =>
+makePairedFilter :: Ord a => 
        ComparativePredicateOf2 (i0 a) ((PairedInterval b) a)
     -> i0 a
     -> (b -> Bool)

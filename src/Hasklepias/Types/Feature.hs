@@ -10,6 +10,7 @@ Maintainer  : bsaul@novisci.com
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE PolyKinds #-}
 {-# LANGUAGE Safe #-}
 
 module Hasklepias.Types.Feature(
@@ -41,6 +42,7 @@ import Data.Eq                    ( Eq )
 import Data.Functor               ( Functor(fmap) )
 import Data.Function              ( ($), (.) )
 import Data.Maybe                 ( Maybe(..) )
+import Data.Ord                   ( Ord )
 import Data.Text                  ( Text )
 import Hasklepias.Types.Event     ( Events )
 import IntervalAlgebra            ( Interval, Intervallic )
@@ -103,7 +105,7 @@ data FeatureDefinition f e a d =
   | FFF (FeatureData f -> FeatureData e -> FeatureData d)
 
 -- | Define an 'EF' FeatureDefinition
-defineEF :: (Intervallic Interval a) =>
+defineEF ::  Ord a =>
              MissingReason 
           -- ^ The reason if @f@ returns 'Nothing' 
           -> (Events a -> Maybe c) 
@@ -127,7 +129,7 @@ applyEF :: FeatureDefinition * * a d -> Events a -> FeatureData d
 applyEF (EF f) = f
 
 -- | TODO
-defineFEF :: (Intervallic Interval a) =>
+defineFEF :: Ord a => 
              MissingReason
           -- ^ The reason if the input 'Feature' is a 'Left'.
           -> (e -> Events a -> d)
@@ -141,7 +143,7 @@ defineFEF r g = FEF (\(FeatureData feat) es ->
   )
 
 -- | TODO
-defineFEF2 :: (Intervallic Interval a) =>
+defineFEF2 :: Ord a =>
              MissingReason
           -- ^ The reason if the input 'Feature' is a 'Left'.
           -> (e -> Events a -> FeatureData d)

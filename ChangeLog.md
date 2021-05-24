@@ -2,8 +2,8 @@
 
 ## 0.5.1
 
-* Adds `Show`, `Functor`, `ToJSON`, and `Generic` to Reexports.
-* Updates `interval-algebra` to `0.8.1`.
+* Adds `Show`, `Functor`, and `Generic` to Reexports.
+* Updates `interval-algebra` to `0.8.2`.
 
 ## 0.5.0
 

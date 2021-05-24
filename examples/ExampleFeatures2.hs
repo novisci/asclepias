@@ -19,6 +19,7 @@ import ExampleEvents
 import Test.Hspec
 
 durationOfHospitalizedAntibiotics:: (Intervallic (PairedInterval Concepts) a
+                                    , Show a
                                     , Intervallic Interval a
                                     , IntervalSizeable a b) =>
      Events a

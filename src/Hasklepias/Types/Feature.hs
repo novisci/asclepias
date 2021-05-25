@@ -67,7 +67,7 @@ data (Show b) => Feature b d = Feature {
         getName :: Text
       , getAttr :: b
       , getData :: FeatureData d
-      }
+      } deriving (Eq)
 
 {- | 'FeatureData' is @'Either' 'MissingReason' d@, where @d@ can be any type 
      of data derivable from 'Hasklepias.Event.Events'.

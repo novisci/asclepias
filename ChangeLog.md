@@ -1,5 +1,9 @@
 # Changelog for hasklepias
 
+## 0.6.1
+
+* Adds `derving Eq` to `Feature` type.
+
 ## 0.6.0
 
 * Adds `PolyKinds` extension to `Feature` module to enable poly-kind inputs to `FeatureDefinition`s. Adds a related `Defineable` typeclass with `define` and `eval` functions as a common interface for defining new definitions and evaluating them.

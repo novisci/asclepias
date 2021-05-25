@@ -1,5 +1,14 @@
 image: registry.novisci.com/nsstat/statocker/haskell:8.10.4
 
+
+before_script:
+  - export VERSION=$(grep -e '^version:' hasklepias.cabal | sed 's/version:[[:space:]]*//g')
+  - export NAME=$(grep -e '^name:' hasklepias.cabal | sed 's/name:[[:space:]]*//g')
+
+stages:
+  - test
+  - docker
+
 variables:
   PKG: hasklepias 
 
@@ -14,4 +23,13 @@ test:
     - cabal --version
     - cabal update
     - cabal test --test-show-details=always 
+
+docker-release:
+  stage: release
+  image: docker:19.03.8
+  script:
+    - docker info
+    - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin  $CI_REGISTRY
+    - docker build . --build-arg version=$VERSION --tag $CI_REGISTRY_IMAGE/$NAME:latest --tag $CI_REGISTRY_IMAGE/$NAME:$VERSION
+    - docker push $CI_REGISTRY_IMAGE/$NAME
 

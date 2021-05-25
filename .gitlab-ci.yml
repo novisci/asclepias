@@ -24,8 +24,8 @@ test:
     - cabal update
     - cabal test --test-show-details=always 
 
-docker-release:
-  stage: release
+docker:
+  stage: docker
   image: docker:19.03.8
   script:
     - docker info

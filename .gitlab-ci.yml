@@ -7,7 +7,7 @@ before_script:
 
 stages:
   - test
-  - docker
+  # - docker
 
 variables:
   PKG: hasklepias 
@@ -24,12 +24,12 @@ test:
     - cabal update
     - cabal test --test-show-details=always 
 
-docker:
-  stage: docker
-  image: docker:19.03.8
-  script:
-    - docker info
-    - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin  $CI_REGISTRY
-    - docker build . --build-arg version=$VERSION --tag $CI_REGISTRY_IMAGE/$NAME:latest --tag $CI_REGISTRY_IMAGE/$NAME:$VERSION
-    - docker push $CI_REGISTRY_IMAGE/$NAME
+# docker:
+#   stage: docker
+#   image: docker:19.03.8
+#   script:
+#     - docker info
+#     - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin  $CI_REGISTRY
+#     - docker build . --build-arg version=$VERSION --tag $CI_REGISTRY_IMAGE/$NAME:latest --tag $CI_REGISTRY_IMAGE/$NAME:$VERSION
+#     - docker push $CI_REGISTRY_IMAGE/$NAME
 

@@ -37,8 +37,8 @@ module Hasklepias.Reexports (
 import safe GHC.Num                         ( Integer )
 import safe GHC.Generics                    ( Generic )
 import safe GHC.Show                        ( Show(..) )
-import safe Control.Monad                   ( (=<<), Functor(fmap) )
-import safe Control.Applicative             ( (<$>) )
+import safe Control.Monad                   ( Functor(fmap), Monad(..) )
+import safe Control.Applicative             ( (<$>), Applicative(..) )
 import safe Data.Bool                       ( Bool(..)
                                             , (&&), not, (||)
                                             , bool

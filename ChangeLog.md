@@ -1,12 +1,17 @@
 # Changelog for hasklepias
 
+## 0.7.0
+
+* Modifies the way that `Feature`s are defined and evaluated. For one, the dependency between `Events` and `Feature`s is eliminated, thus decoupling the defining of Features from the input data type. There are now 4 functions for defining features:
+`define0`, `define1`, `define2`, and `define2d`, and 3 functions for evaluating `eval0`, `eval1`, and `eval2` (and corresponding `evalSpec*`). These functions will hopefully be combined into a single interface at later time. See the function signatures for the types of functions passed to a `define*` function. Examples will be forthcoming as the API stabilizes.
+
 ## 0.6.1
 
 * Adds `derving Eq` to `Feature` type.
 
 ## 0.6.0
 
-* Adds `PolyKinds` extension to `Feature` module to enable poly-kind inputs to `FeatureDefinition`s. Adds a related `Defineable` typeclass with `define` and `eval` functions as a common interface for defining new definitions and evaluating them.
+* Adds `PolyKinds` extension to `Feature` module to enable poly-kind inputs to `FeatureDefinition`s. Adds a related `Defineable` typeclass with `define` and `eval` functions as a common interface for defining new definitions and evaluating them. 
 * Removes `defineEF` and `applyEF` function (and other similar functions). The functionality is now handled by the `Defineable` class.
 
 ## 0.5.1

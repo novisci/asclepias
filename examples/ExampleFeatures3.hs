@@ -33,11 +33,9 @@ examplePairComparison i es =
         (\pr -> fst pr `concur`             -- where "c1" event concurs with +/- 3
             expand 3 3 (snd pr) )           -- of any "c2" event 
     |> fmap fst
-    |> intervals                        -- get the intervals of any "c1" events
     |> (\x ->
         ( isNotEmpty x                  -- are there any?
         , fmap begin (lastMay x)))      -- if exists, keep the begin of the last "c1" interval
-
 
 flwup :: FeatureData (Interval Int)
 flwup = featureDataR $ beginerval 50 0
@@ -49,4 +47,3 @@ exampleFeatures3Spec = do
         liftA2 examplePairComparison flwup (pure exampleEvents4)
              `shouldBe`
         featureDataR (True, Just 16)
-

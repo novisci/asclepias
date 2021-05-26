@@ -21,7 +21,6 @@ import Data.Bifunctor
 import Control.Applicative
 import Control.Monad
 
-
 {-
 Index is defined as the first occurrence of an Orca bite.
 -}
@@ -30,6 +29,9 @@ indexDef events =
   case firstConceptOccurrence ["wasBitByOrca"] events of
         Nothing -> featureDataL (Other "No occurrence of Orca bite")
         Just x  -> featureDataR (getInterval x)
+
+indexSpec :: (Ord a) => FeatureSpec Text (*) (Events a) (Interval a)
+indexSpec = makeFeatureSpec "index" "" (define0 indexDef)
 
 {-  
 The baseline interval is the interval (b - 60, b), where b is the begin of 
@@ -78,7 +80,6 @@ makeHxDef :: (Ord a) =>
 makeHxDef cnpts i events =
    (isNotEmpty (f i events), lastMay $ intervals (f i events))
    where f i x = makePairedFilter enclose i (`hasConcepts` cnpts) x
-
 
 duckHxDef :: (Ord a) =>
          Interval a

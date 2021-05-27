@@ -15,7 +15,7 @@
 
 ## 0.6.0
 
-* Adds `PolyKinds` extension to `Feature` module to enable poly-kind inputs to `FeatureDefinition`s. Adds a related `Defineable` typeclass with `define` and `eval` functions as a common interface for defining new definitions and evaluating them. 
+* Adds `PolyKinds` extension to `Feature` module to enable poly-kind inputs to `FeatureDefinition`s. Adds a related `Defineable` typeclass with `define` and `eval` functions as a common interface for defining new definitions and evaluating them.
 * Removes `defineEF` and `applyEF` function (and other similar functions). The functionality is now handled by the `Defineable` class.
 
 ## 0.5.1

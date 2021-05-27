@@ -11,9 +11,10 @@ Maintainer  : bsaul@novisci.com
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE Safe #-}
 {-# LANGUAGE FlexibleInstances #-}
-
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE OverloadedStrings #-}
+
 module Hasklepias.Types.Feature(
     -- * Types
       FeatureSpec(..)
@@ -26,6 +27,7 @@ module Hasklepias.Types.Feature(
     , featureDataL
     , define0
     , define1
+    , define1d
     , define2
     , define2d
     , eval0
@@ -40,11 +42,11 @@ import safe GHC.Read                   ( Read )
 import safe GHC.Show                   ( Show(show) )
 import safe GHC.Generics               ( Generic, D )
 import safe Control.Applicative        ( Applicative(..) )
-import safe Control.Monad              ( Functor(..), Monad(..), join, liftM2)
+import safe Control.Monad              ( Functor(..), Monad(..), join, liftM, liftM2)
 import safe Data.Either                ( Either(..) )
 import safe Data.Eq                    ( Eq )
 import safe Data.Function              ( ($), (.) )
-import safe Data.List             ( (++) )  
+import safe Data.List             ( (++) )
 import safe Data.Maybe                 ( Maybe(..), maybe )
 import safe Data.Ord                   ( Ord )
 import safe Data.Text                  ( Text )
@@ -82,7 +84,7 @@ data (Show b) => Feature b d = MkFeature {
       , getData :: FeatureData d
       } deriving (Eq)
 
-instance (Show b, Show d) => Show (Feature d b) where 
+instance (Show b, Show d) => Show (Feature b d) where
     show x = "(" ++ show (getName x) ++ ": (" ++ show (getAttr x) ++ ") "  ++ show (getData x) ++ " )\n"
 
 instance (Show b) => Functor (Feature b) where
@@ -102,8 +104,10 @@ instance Applicative FeatureData where
   liftA2 f (MkFeatureData x) (MkFeatureData y) = MkFeatureData ( liftA2 f x y )
 
 instance Monad FeatureData where
-  return = MkFeatureData . return
-  x >>= f = do x >>= f
+  (MkFeatureData x) >>= f = 
+    case fmap f x of
+         Left l  -> featureDataL l
+         Right v -> v
 
 -- | Create the 'Right' side of 'FeatureData'.
 featureDataR :: d -> FeatureData d
@@ -121,7 +125,6 @@ data MissingReason =
   | Unknown
   deriving (Eq, Read, Show, Generic)
 
-
 -- TODO: the code below should be generalized so that there is a single define/eval
 --       interface.
 -- | A type to hold FeatureData definitions; i.e. functions that return 
@@ -131,32 +134,46 @@ data FeatureDefinition f e d =
   | FD1 (FeatureData e -> FeatureData d)
   | FD2 (FeatureData f -> FeatureData e -> FeatureData d)
 
+-- | TODO
 define0 :: (e -> FeatureData d) -> FeatureDefinition * e d
 define0 = FD0
 
+-- | TODO
 eval0 :: FeatureDefinition * e d -> e -> FeatureData d
 eval0 (FD0 f) = f
 
+-- | TODO
 evalSpec0 :: (Show b) => FeatureSpec b * e d -> e -> Feature b d
 evalSpec0 (MkFeatureSpec nm attr def) y = MkFeature nm attr (eval0 def y)
 
+-- | TODO
 define1 :: (e -> d) -> FeatureDefinition * e d
 define1 f = FD1 $ fmap f
 
+-- | TODO
+define1d :: (e -> FeatureData d) -> FeatureDefinition * e d
+define1d f = FD1 (>>= f)
+
+-- | TODO
 eval1 :: FeatureDefinition * e d -> FeatureData e -> FeatureData d
 eval1 (FD1 f) = f
 
+-- | TODO
 evalSpec1 :: (Show b) => FeatureSpec b * e d -> Feature b e -> Feature b d
 evalSpec1 (MkFeatureSpec nm attr def) y = MkFeature nm attr (eval1 def (getData y))
 
+-- | TODO
 define2 :: (f -> e -> d) -> FeatureDefinition f e d
 define2 f =  FD2 $ liftA2 f
 
-define2d :: (f -> e -> FeatureData d) -> FeatureDefinition f e d 
+-- | TODO
+define2d :: (f -> e -> FeatureData d) -> FeatureDefinition f e d
 define2d f = FD2 (\x y -> join (liftM2 f x y))
 
+-- | TODO
 eval2 :: FeatureDefinition f e d -> FeatureData f -> FeatureData e -> FeatureData d
-eval2 (FD2 f) = f 
+eval2 (FD2 f) = f
 
+-- | TODO
 evalSpec2 :: (Show b) => FeatureSpec b f e d -> Feature b f -> Feature b e -> Feature b d
 evalSpec2 (MkFeatureSpec nm attr def) y z = MkFeature nm attr (eval2 def (getData y) (getData z))

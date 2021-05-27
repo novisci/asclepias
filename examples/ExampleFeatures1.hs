@@ -161,7 +161,8 @@ getUnitFeatures ::
      , FeatureData (Maybe (Int, Int))
      )
 getUnitFeatures x = (
-    indexDef x
+    -- indexDef x
+    evs >>= indexDef
   , liftA2 (enrolledDef 8) (bline x) evs
   , liftA2 duckHxDef  (bline x) evs
   , liftA2 macawHxDef (bline x) evs

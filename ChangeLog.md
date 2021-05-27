@@ -1,5 +1,9 @@
 # Changelog for hasklepias
 
+## 0.7.1
+
+* Fixes bug in `FeatureData` `Monad` instance, so you don't get infinite recursion.
+
 ## 0.7.0
 
 * Modifies the way that `Feature`s are defined and evaluated. For one, the dependency between `Events` and `Feature`s is eliminated, thus decoupling the defining of Features from the input data type. There are now 4 functions for defining features:

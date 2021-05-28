@@ -23,7 +23,7 @@ durationOfHospitalizedAntibiotics:: ( Show a
   -> FeatureData [b]
 durationOfHospitalizedAntibiotics es
     | null y    = featureDataL $ Other "no cases"
-    | otherwise = featureDataR $ durations y
+    | otherwise = pure $ durations y
     where conceptsText = ["wasHospitalized", "tookAntibiotics"] 
           concepts = map packConcept conceptsText
           x = formMeetingSequence (map (toConceptEventOf concepts) es)
@@ -39,4 +39,4 @@ exampleFeatures2Spec = do
 
     it "durationOfHospitalizedAntibiotics from exampleEvents3" $
         durationOfHospitalizedAntibiotics exampleEvents3 `shouldBe` 
-            featureDataR [3, 2]
+            pure [3, 2]

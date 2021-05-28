@@ -26,12 +26,12 @@ Index is defined as the first occurrence of an Orca bite.
 -}
 indexDef :: (Ord a) => Events a -> FeatureData (Interval a)
 indexDef events =
-  case firstConceptOccurrence ["wasBitByOrca"] events of
+  case firstConceptOccurrence ["wasBitByOrca"]  events of
         Nothing -> featureDataL (Other "No occurrence of Orca bite")
-        Just x  -> featureDataR (getInterval x)
+        Just x  -> pure (getInterval x)
 
-indexSpec :: (Ord a) => FeatureSpec Text (*) (Events a) (Interval a)
-indexSpec = makeFeatureSpec "index" "" (define0 indexDef)
+-- indexSpec :: (Ord a) => FeatureSpec Text (*) (Events a) (Interval a)
+-- indexSpec = makeFeatureSpec "index" "" (define indexDef)
 
 {-  
 The baseline interval is the interval (b - 60, b), where b is the begin of 
@@ -178,14 +178,14 @@ exampleFeatures1Spec = do
 
     it "getUnitFeatures from exampleEvents1" $
       getUnitFeatures exampleEvents1 `shouldBe`
-      ( featureDataR (beginerval 1 (60 :: Int))
-      , featureDataR True
-      , featureDataR (True, Just $ beginerval 1 (51 :: Int))
-      , featureDataR (False, Nothing)
-      , featureDataR True
-      , featureDataR $ Just 4
-      , featureDataR (1, Just 8)
-      , featureDataR $ Just (78, 18)
+      ( pure (beginerval 1 (60 :: Int))
+      , pure True
+      , pure (True, Just $ beginerval 1 (51 :: Int))
+      , pure (False, Nothing)
+      , pure True
+      , pure $ Just 4
+      , pure (1, Just 8)
+      , pure $ Just (78, 18)
       )
 
     it "getUnitFeatures from exampleEvents2" $

@@ -1,5 +1,9 @@
 # Changelog for hasklepias
 
+## 0.7.2
+
+* Adds `Criteria` module which provides specialized functions and types for working with boolean `Feature`s which are meant to be used to determine whether a subject is included or excluded from cohorts.
+
 ## 0.7.1
 
 * Fixes bug in `FeatureData` `Monad` instance, so you don't get infinite recursion.

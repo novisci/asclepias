@@ -10,6 +10,7 @@ module Hasklepias.Types (
       module Hasklepias.Types.Context
     , module Hasklepias.Types.Event
     , module Hasklepias.Types.Feature
+    , module Hasklepias.Types.Feature.Criteria
     , module Hasklepias.Types.Event.Arbitrary
  
 ) where
@@ -18,3 +19,4 @@ import Hasklepias.Types.Event
 import Hasklepias.Types.Event.Arbitrary
 import Hasklepias.Types.Context
 import Hasklepias.Types.Feature
+import Hasklepias.Types.Feature.Criteria

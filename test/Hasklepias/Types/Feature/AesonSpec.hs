@@ -22,12 +22,12 @@ index:: (Ord a) =>
 index es =
     case firstConceptOccurrence ["enrollment"] es of
         Nothing -> featureDataL (Other "No Enrollment")
-        Just x  -> featureDataR (getInterval x)
+        Just x  -> pure (getInterval x)
 
 
 spec :: Spec
 spec = do
     it "an Int event is parsed correctly" $
-       encode (index ex1)  `shouldBe` "{\"end\":10,\"begin\":0}"
+       encode (index ex1)  `shouldBe` "[{\"end\":10,\"begin\":0}]"
 
 

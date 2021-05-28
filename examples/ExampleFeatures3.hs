@@ -38,7 +38,7 @@ examplePairComparison i es =
         , fmap begin (lastMay x)))      -- if exists, keep the begin of the last "c1" interval
 
 flwup :: FeatureData (Interval Int)
-flwup = featureDataR $ beginerval 50 0
+flwup = pure $ beginerval 50 0
 
 exampleFeatures3Spec :: Spec
 exampleFeatures3Spec = do
@@ -46,4 +46,4 @@ exampleFeatures3Spec = do
     it "examplePairComparison"  $
         liftA2 examplePairComparison flwup (pure exampleEvents4)
              `shouldBe`
-        featureDataR (True, Just 16)
+        pure (True, Just 16)

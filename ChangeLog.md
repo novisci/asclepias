@@ -1,5 +1,9 @@
 # Changelog for hasklepias
 
+## 0.7.3
+
+* Refactors the `eval*` function for Features so that there is a single `eval` not two.
+
 ## 0.7.2
 
 * Adds `Criteria` module which provides specialized functions and types for working with boolean `Feature`s which are meant to be used to determine whether a subject is included or excluded from cohorts.

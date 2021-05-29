@@ -12,12 +12,16 @@ Maintainer  : bsaul@novisci.com
 {-# LANGUAGE Safe #-}
 {-# LANGUAGE OverloadedStrings #-}
 
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE FlexibleInstances #-}
+
 module Hasklepias.Types.Feature(
     -- * Types
       FeatureSpec(..)
     , Feature(..)
     , FeatureData(..)
     , MissingReason(..)
+    -- , FeatureDefinition(..)
     , FeatureDefinition(..)
     , makeFeatureSpec
     , featureDataR
@@ -26,8 +30,7 @@ module Hasklepias.Types.Feature(
     , defineM
     , define2
     , defineM2
-    , eval1
-    , eval2
+    , eval
 ) where
 
 import safe GHC.Read                   ( Read )
@@ -43,6 +46,8 @@ import safe Data.Maybe                 ( Maybe(..), maybe )
 import safe Data.Ord                   ( Ord )
 import safe Data.Traversable           ( Traversable(..) )
 import safe Data.Text                  ( Text )
+import safe Data.Tuple                 ( uncurry, curry )
+
 -- import safe Test.QuickCheck       ( Property )
 
 {- | A 'FeatureSpec' contains all the information needed to derive a 'Feature':
@@ -50,10 +55,10 @@ import safe Data.Text                  ( Text )
       * its attributes
       * the function needed to derive a feature (i.e. the 'FeatureDefinition')
 -}
-data (Show b) => FeatureSpec b f e d = MkFeatureSpec {
+data (Show b) => FeatureSpec b di d0 = MkFeatureSpec {
         getSpecName :: Text
       , getSpecAttr :: b
-      , getDefn :: FeatureDefinition f e d
+      , getDefn :: FeatureDefinition di d0
       -- To add in future: an optional list of properties to check
       -- , getProp :: Maybe [Feature d -> Events a -> Property] 
     }
@@ -62,8 +67,8 @@ data (Show b) => FeatureSpec b f e d = MkFeatureSpec {
 makeFeatureSpec :: Show b =>
      Text
   -> b
-  -> FeatureDefinition f e d
-  -> FeatureSpec b f e d
+  -> FeatureDefinition di d0
+  -> FeatureSpec b di d0
 makeFeatureSpec = MkFeatureSpec
 
 {- | A 'Feature' contains the following:
@@ -123,28 +128,23 @@ data MissingReason =
 
 -- TODO: the code below should be generalized so that there is a single define/eval
 --       interface and the recursive structure is realizing and not hacked together.
-data FeatureDefinition d2 d1 d0 =
-    FD0 (FeatureData d0)
-  | FD1 (FeatureData d1 -> FeatureData d0)
-  | FD2 (FeatureData d2 -> FeatureData d1 -> FeatureData d0)
+newtype FeatureDefinition di d0 = MkFeatureDefinition (di -> FeatureData d0)
 
-eval1 :: FeatureDefinition * d1 d0 -> FeatureData d1 -> FeatureData d0
-eval1 (FD0 x) _ = x
-eval1 (FD1 f) x = f x
+class Eval di d0 where
+  eval :: FeatureDefinition di d0 -> di -> FeatureData d0
+  eval (MkFeatureDefinition f) = f
 
-eval2 :: FeatureDefinition d2 d1 d0 -> FeatureData d2 -> FeatureData d1 -> FeatureData d0
-eval2 (FD0 x) _ _ = x
-eval2 (FD1 f) x y = f y
-eval2 (FD2 f) x y = f x y
+instance Eval (FeatureData d1) d0 where
+instance Eval (FeatureData d2, FeatureData d1) d0 where
 
-defineM :: (d1 -> FeatureData d0) -> FeatureDefinition * d1 d0
-defineM f = FD1 (>>= f)
+defineM :: (d1 -> FeatureData d0) -> FeatureDefinition (FeatureData d1) d0
+defineM f = MkFeatureDefinition (>>= f)
 
-defineM2 :: (d2 -> d1 -> FeatureData d0) -> FeatureDefinition d2 d1 d0
-defineM2 f = FD2 (\x y -> join (liftA2 f x y))
+defineM2 :: (d2 -> d1 -> FeatureData d0) -> FeatureDefinition (FeatureData d2, FeatureData d1) d0
+defineM2 f = MkFeatureDefinition (\ (x, y) -> join (liftA2 f x y))
 
-define :: (d1 -> d0) -> FeatureDefinition * d1 d0
-define f = FD1 (fmap f)
+define :: (d1 -> d0) -> FeatureDefinition (FeatureData d1) d0
+define f = MkFeatureDefinition (fmap f)
 
-define2 :: (d2 -> d1 -> d0) -> FeatureDefinition d2 d1 d0
-define2 f = FD2 (liftA2 f)
+define2 :: (d2 -> d1 -> d0) -> FeatureDefinition (FeatureData d2, FeatureData d1) d0
+define2 f = MkFeatureDefinition $ uncurry (liftA2 f)

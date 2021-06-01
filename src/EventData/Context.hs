@@ -8,10 +8,14 @@ Maintainer  : bsaul@novisci.com
 -}
 
 {-# LANGUAGE NoImplicitPrelude #-}
-{-# LANGUAGE Safe #-}
+-- {-# LANGUAGE Safe #-}
+{-# LANGUAGE TemplateHaskell #-}
 
 module EventData.Context(
-    Context(getConcepts)
+    Context(..)
+  , concepts
+  , facts
+  , source
   , context
   , emptyContext
 
@@ -26,6 +30,7 @@ module EventData.Context(
   , HasConcept(..)
 ) where
 
+import Control.Lens             ( makeLenses )
 import GHC.Show                 ( Show(show) )
 import Data.Bool                ( Bool )
 import Data.Eq                  ( Eq )
@@ -38,29 +43,29 @@ import Data.Semigroup           ( Semigroup((<>)) )
 import Data.Text                ( Text )
 import Data.Set                 ( Set
                                 , fromList, union, empty, map, toList, member)
+import EventData.Context.Domain ( Domain )
 
 -- | A @Context@ consists of three parts: @concepts@, @facts@, and @source@. 
 -- 
 -- At this time, @facts@ and @source@ are simply stubs to be fleshed out in 
 -- later versions of hasklepias. 
 data Context = Context {
-      getConcepts :: Concepts
-    , getFacts    :: Maybe Facts
-    , getSource   :: Maybe Source
+      _concepts :: Concepts
+    , _facts    :: Maybe Domain
+    , _source   :: Maybe Source
 } deriving (Eq, Show)
 
-data Facts  = Facts  deriving (Eq, Show)
 data Source = Source deriving (Eq, Show)
 
 instance Semigroup Context where
-    x <> y = Context (getConcepts x <> getConcepts y) Nothing Nothing
+    x <> y = Context (_concepts x <> _concepts y) Nothing Nothing
 
 instance Monoid Context where
     mempty = emptyContext
 
 instance HasConcept Context where
     hasConcept ctxt concept = 
-        member (packConcept concept) (fromConcepts $ getConcepts ctxt)
+        member (packConcept concept) (fromConcepts $ _concepts ctxt)
 
 -- | Smart contructor for Context type
 --
@@ -130,3 +135,5 @@ class HasConcept a where
 
 instance HasConcept Concepts where
     hasConcept (Concepts e) concept = member (packConcept concept) e
+
+makeLenses ''Context

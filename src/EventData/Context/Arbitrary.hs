@@ -8,7 +8,7 @@ Maintainer  : bsaul@novisci.com
 
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE Safe #-}
+-- {-# LANGUAGE Safe #-}
 
 module EventData.Context.Arbitrary() where
 

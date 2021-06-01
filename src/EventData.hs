@@ -9,7 +9,7 @@ Maintainer  : bsaul@novisci.com
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE Safe #-}
+-- {-# LANGUAGE Safe #-}
 
 module EventData(
    Event
@@ -20,6 +20,7 @@ module EventData(
  , toConceptEvent
  , toConceptEventOf
  , mkConceptEvent
+ , module EventData.Context
 ) where
 
 import GHC.Show                         ( Show(show) )
@@ -36,7 +37,7 @@ import EventData.Context                ( HasConcept(..)
                                         , Concepts
                                         , Concept
                                         , packConcept
-                                        , Context (getConcepts)
+                                        , Context(..)
                                         , fromConcepts
                                         , toConcepts )
 
@@ -70,12 +71,12 @@ instance HasConcept (ConceptEvent a) where
 -- | Drops an @Event@ to a @ConceptEvent@ by moving the concepts in the data
 --   position in the paired interval and throwing out the facts and source.
 toConceptEvent :: (Show a, Ord a) => Event a -> ConceptEvent a
-toConceptEvent e = makePairedInterval (getConcepts $ ctxt e) (getInterval e)
+toConceptEvent e = makePairedInterval (_concepts $ ctxt e) (getInterval e)
 
 toConceptEventOf :: (Show a, Ord a) => [Concept] -> Event a -> ConceptEvent a
 toConceptEventOf cpts e =
     makePairedInterval
-        (toConcepts $ intersection (fromList cpts) (fromConcepts $ getConcepts $ ctxt e))
+        (toConcepts $ intersection (fromList cpts) (fromConcepts $ _concepts $ ctxt e))
         (getInterval e)
 
 -- |

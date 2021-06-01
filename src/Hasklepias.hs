@@ -10,7 +10,7 @@ Maintainer  : bsaul@novisci.com
 module Hasklepias (
       module EventData
     , module EventData.Aeson
-    , module EventData.Context
+    -- , module EventData.Context
     , module FeatureCompose
     , module FeatureCompose.Criteria
     , module FeatureCompose.Aeson
@@ -25,7 +25,7 @@ import IntervalAlgebra
 import IntervalAlgebra.IntervalUtilities
 import IntervalAlgebra.PairedInterval
 import EventData
-import EventData.Context
+-- import EventData.Context
 import EventData.Aeson
 import FeatureCompose
 import FeatureCompose.Aeson

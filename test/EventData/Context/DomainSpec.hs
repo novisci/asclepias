@@ -2,12 +2,12 @@
 module EventData.Context.DomainSpec (spec) where
 
 import EventData.Context.Domain
-import EventData.Context.Domain.Demographics
 import Test.Hspec                       ( it, shouldBe, Spec )
 import Control.Lens                     ( preview, (^.), (^?), (.~), over )
 import Control.Monad                    ( join )
 import Data.Aeson                       ( decode )
 import Data.Text                        ( Text, unpack )
+import Data.Text.Read                   ( rational )
 import qualified Data.ByteString.Lazy as B
 
 dmo :: Domain
@@ -20,8 +20,7 @@ jsonOtherTest :: B.ByteString
 jsonOtherTest = "{\"domain\":\"Labs\",\"facts\":{\"code\":{\"code\":\"XYZ\"}}}"
 
 myIntMap :: Text -> Maybe Integer -- TODO: this is ridiculous
-myIntMap "1987" = Just 1987
-myIntMap _ = Nothing
+myIntMap x =  fmap floor (either (const Nothing) (Just . fst) (Data.Text.Read.rational x))
 
 spec :: Spec
 spec = do

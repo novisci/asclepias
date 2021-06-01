@@ -21,7 +21,7 @@ module EventData.Context.Domain.Demographics(
     , info
 ) where
 
-import Foundation               ( drop, Show, Eq, Maybe )
+import Prelude                  ( drop, Show, Eq, Maybe )
 import Control.Lens             ( makeLenses )
 import GHC.Generics             ( Generic )
 import Data.Text                ( Text )

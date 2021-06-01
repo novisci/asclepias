@@ -1,5 +1,5 @@
 {-|
-Module      : Generate arbitrary events
+Module      : Generate arbitrary events 
 Description : Functions for generating arbitrary events
 Copyright   : (c) NoviSci, Inc 2020
 License     : BSD3
@@ -9,7 +9,7 @@ Stability   : experimental
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE FlexibleContexts #-}
-module Hasklepias.Types.Event.Arbitrary(
+module EventData.Arbitrary(
      generateEventsInt
 ) where
 
@@ -32,9 +32,9 @@ import Data.Ord ( Ord )
 import Data.List(length)
 import IntervalAlgebra ( Interval )
 import IntervalAlgebra.Arbitrary ()
-import Hasklepias.Types.Event
+import EventData
     ( event, Event, ConceptEvent, toConceptEvent )
-import Hasklepias.Types.Context.Arbitrary ()
+import EventData.Context.Arbitrary ()
 
 instance (Arbitrary (Interval a)) => Arbitrary (Event a) where
     arbitrary = liftM2 event arbitrary arbitrary

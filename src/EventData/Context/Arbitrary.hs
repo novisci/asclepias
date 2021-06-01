@@ -1,6 +1,6 @@
 {-|
-Module      : Generate arbitrary events
-Description : Functions for generating arbitrary events
+Module      : Generate arbitrary contexts
+Description : Functions for generating arbitrary context 
 Copyright   : (c) NoviSci, Inc 2020
 License     : BSD3
 Maintainer  : bsaul@novisci.com
@@ -10,14 +10,14 @@ Maintainer  : bsaul@novisci.com
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE Safe #-}
 
-module Hasklepias.Types.Context.Arbitrary() where
+module EventData.Context.Arbitrary() where
 
 import Test.QuickCheck              ( Arbitrary(arbitrary), elements, sublistOf ) 
 import Data.Function                ( (.) )
 import Data.Functor                 ( Functor(fmap) )
 import Data.List                    ( map )
 import Data.Set                     ( fromList )
-import Hasklepias.Types.Context     ( Concept
+import EventData.Context            ( Concept
                                     , Concepts
                                     , Context
                                     , context

@@ -1,5 +1,5 @@
 {-|
-Module      : Hasklepias Feature Type
+Module      : Define and evaluate Features 
 Description : Defines the Feature type and its component types, constructors, 
               and class instances
 Copyright   : (c) NoviSci, Inc 2020
@@ -15,7 +15,7 @@ Maintainer  : bsaul@novisci.com
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE FlexibleInstances #-}
 
-module Hasklepias.Types.Feature(
+module FeatureCompose(
     -- * Types
       FeatureSpec(..)
     , Feature(..)

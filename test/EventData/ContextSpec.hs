@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
-module Hasklepias.Types.ContextSpec (spec) where
+module EventData.ContextSpec (spec) where
 
-import Hasklepias.Types.Context as HC
+import EventData.Context as HC
 import Test.Hspec ( shouldBe, it, Spec )
 import Data.Set(fromList)
 

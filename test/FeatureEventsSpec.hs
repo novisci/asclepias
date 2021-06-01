@@ -2,12 +2,12 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE FlexibleContexts #-}
-module Hasklepias.FunctionsSpec (spec) where
+module FeatureEventsSpec (spec) where
 
 import IntervalAlgebra
-import Hasklepias.Functions ( firstConceptOccurrence )
-import Hasklepias.Types.Event ( Event, event )
-import Hasklepias.Types.Context as HC ( context, packConcepts )
+import FeatureEvents ( firstConceptOccurrence )
+import EventData ( Event, event )
+import EventData.Context as HC ( context, packConcepts )
 import Test.Hspec ( it, shouldBe, Spec )
 
 -- | Toy events for unit tests

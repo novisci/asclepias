@@ -1,11 +1,11 @@
 {-# LANGUAGE OverloadedStrings #-}
-module Hasklepias.Types.EventSpec (spec) where
+module EventDataSpec (spec) where
 
 import IntervalAlgebra
 import IntervalAlgebra.IntervalUtilities
-import Hasklepias.Functions
-import Hasklepias.Types.Event
-import Hasklepias.Types.Context as HC
+import FeatureEvents 
+import EventData
+import EventData.Context as HC
 import Test.Hspec ( it, shouldBe, Spec )
 
 evnt1 :: Event Int

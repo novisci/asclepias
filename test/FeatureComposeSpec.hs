@@ -1,8 +1,8 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Hasklepias.Types.FeatureSpec (spec) where
+module FeatureComposeSpec (spec) where
 
-import Hasklepias.Types.Feature
+import FeatureCompose
 import Control.Applicative
 import Test.Hspec ( describe, pending, shouldBe, it, Spec )
 import Data.Foldable

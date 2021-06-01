@@ -1,5 +1,5 @@
 {-|
-Module      : Hasklepias Feature Type
+Module      : Feature Building Criteria
 Description : Defines the Feature type and its component types, constructors, 
               and class instances
 Copyright   : (c) NoviSci, Inc 2020
@@ -11,7 +11,7 @@ Maintainer  : bsaul@novisci.com
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE Safe #-}
 
-module Hasklepias.Types.Feature.Criteria(
+module FeatureCompose.Criteria(
       Criterion(..)
     , Criteria(..)
     , Status(..)
@@ -35,7 +35,7 @@ import safe Data.List                  ( all, transpose, null, elemIndex )
 import safe Data.Maybe                 ( Maybe(..), maybe )
 import safe Data.Tuple                 ( fst, snd )
 import safe Data.Text                  ( Text )
-import safe Hasklepias.Types.Feature
+import safe FeatureCompose
 
 data Criterion b =
       Inclusion (Feature b Bool)

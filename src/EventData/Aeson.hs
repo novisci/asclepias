@@ -1,5 +1,5 @@
 {-|
-Module      : Functions for Parsing Hasklepias Event data
+Module      : Functions for Parsing Event data model
 Description : Defines FromJSON instances for Events.
 Copyright   : (c) NoviSci, Inc 2020
 License     : BSD3
@@ -7,27 +7,32 @@ Maintainer  : bsaul@novisci.com
 -}
 {-# LANGUAGE FlexibleInstances, OverloadedStrings #-}
 
-module Hasklepias.Types.Event.Aeson(
+module EventData.Aeson(
       parseEventIntLines
     , parseEventDayLines
 ) where
 
-import IntervalAlgebra
-    ( beginerval, Interval, IntervalSizeable(diff) )
-import Hasklepias.Types.Context
-    ( Concepts, Concept, Context, context, packConcept, toConcepts )
-import Hasklepias.Types.Event ( Event, event )
+import IntervalAlgebra                  ( beginerval
+                                        , Interval
+                                        , IntervalSizeable(diff) )
+import EventData.Context                ( Concepts
+                                        , Concept
+                                        , Context
+                                        , context
+                                        , packConcept
+                                        , toConcepts )
+import EventData                        ( Event, event )
 import Data.Aeson
-    ( eitherDecode,
-      (.:),
-      withObject,
-      FromJSON(parseJSON),
-      Value(Array) )
-import Data.Time ( Day )
-import Data.Vector ((!))
+                                        ( eitherDecode,
+                                        (.:),
+                                        withObject,
+                                        FromJSON(parseJSON),
+                                        Value(Array) )
+import Data.Time                        ( Day )
+import Data.Vector                      ((!))
 import qualified Data.ByteString.Lazy as B
 import qualified Data.ByteString.Char8 as C
-import Data.Either (rights, fromRight)
+import Data.Either                      (rights, fromRight)
 
 instance FromJSON (Interval Int) where
     parseJSON = withObject "Time" $ \o -> do

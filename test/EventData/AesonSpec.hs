@@ -1,12 +1,12 @@
 {-# LANGUAGE OverloadedStrings #-}
-module Hasklepias.Types.Event.AesonSpec (spec) where
+module EventData.AesonSpec (spec) where
 
 import IntervalAlgebra
-import Hasklepias.Types.Event
-import Hasklepias.Types.Event.Aeson
+import EventData
+import EventData.Aeson
+import EventData.Context as HC
 import Data.Aeson
 import Data.Time as DT
-import Hasklepias.Types.Context as HC
 import Test.Hspec
 import qualified Data.ByteString.Lazy as B
 

@@ -1,5 +1,5 @@
 {-|
-Module      : Functions for encoding Hasklepias Feature data
+Module      : Functions for encoding Feature data
 Description : Defines ToJSON instances for Features.
 Copyright   : (c) NoviSci, Inc 2020
 License     : BSD3
@@ -8,11 +8,11 @@ Maintainer  : bsaul@novisci.com
 
 {-# LANGUAGE OverloadedStrings #-}
 
-module Hasklepias.Types.Feature.Aeson(
+module FeatureCompose.Aeson(
 ) where
 
 import IntervalAlgebra              ( Interval, Intervallic(end, begin) )
-import Hasklepias.Types.Feature     ( Feature(..)
+import FeatureCompose               ( Feature(..)
                                     , MissingReason
                                     , FeatureData(..) )
 import Data.Aeson                   ( object, KeyValue((.=)), ToJSON(toJSON) )

@@ -11,7 +11,7 @@ Maintainer  : bsaul@novisci.com
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE Safe #-}
 
-module Hasklepias.Types.Event(
+module EventData(
    Event
  , Events
  , ConceptEvent
@@ -32,7 +32,7 @@ import IntervalAlgebra                  ( Interval
 import IntervalAlgebra.PairedInterval   ( PairedInterval
                                         , makePairedInterval
                                         , getPairData )
-import Hasklepias.Types.Context         ( HasConcept(..)
+import EventData.Context                ( HasConcept(..)
                                         , Concepts
                                         , Concept
                                         , packConcept

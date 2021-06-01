@@ -1,5 +1,13 @@
 # Changelog for hasklepias
 
+## 0.8.0
+
+* Reorganizes modules into a more "vertical" structure that reflects the decoupling of the various components that make up hasklepias:
+  * `EventData`: types and functions related to the event data model
+  * `FeatureCompose`: types and functions for composing new features
+  * `FeatureEvents`: various utilities for composing features from events specifically
+  * `Hasklepias`: at this point, just reexporting the above modules and other Haskell functions
+
 ## 0.7.3
 
 * Refactors the `eval*` function for Features so that there is a single `eval` not two.

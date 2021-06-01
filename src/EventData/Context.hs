@@ -1,5 +1,5 @@
 {-|
-Module      : Hasklepias Contexts
+Module      : Event Data Model Contexts
 Description : Defines the Context type and its component types, constructors, 
               and class instances
 Copyright   : (c) NoviSci, Inc 2020
@@ -10,7 +10,7 @@ Maintainer  : bsaul@novisci.com
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE Safe #-}
 
-module Hasklepias.Types.Context(
+module EventData.Context(
     Context(getConcepts)
   , context
   , emptyContext

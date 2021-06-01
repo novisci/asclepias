@@ -15,8 +15,8 @@ module ExampleEvents (
 ) where
   
 import IntervalAlgebra ( beginerval, IntervalSizeable )
-import Hasklepias.Types.Event ( event, Event, Events )
-import Hasklepias.Types.Context ( context, packConcepts )
+import EventData ( event, Event, Events )
+import EventData.Context ( context, packConcepts )
 import Data.List ( sort )
 import Data.Text(Text)
 

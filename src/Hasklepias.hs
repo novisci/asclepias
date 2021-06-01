@@ -8,8 +8,13 @@ Maintainer  : bsaul@novisci.com
 -}
 
 module Hasklepias (
-      module Hasklepias.Types
-    , module Hasklepias.Functions
+      module EventData
+    , module EventData.Aeson
+    , module EventData.Context
+    , module FeatureCompose
+    , module FeatureCompose.Criteria
+    , module FeatureCompose.Aeson
+    , module FeatureEvents
     , module Hasklepias.Reexports
     , module IntervalAlgebra
     , module IntervalAlgebra.IntervalUtilities
@@ -19,6 +24,11 @@ module Hasklepias (
 import IntervalAlgebra
 import IntervalAlgebra.IntervalUtilities
 import IntervalAlgebra.PairedInterval
-import Hasklepias.Types
-import Hasklepias.Functions
+import EventData
+import EventData.Context
+import EventData.Aeson
+import FeatureCompose
+import FeatureCompose.Aeson
+import FeatureCompose.Criteria
+import FeatureEvents
 import Hasklepias.Reexports

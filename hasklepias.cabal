@@ -1,6 +1,6 @@
 cabal-version:  2.2
 name:           hasklepias
-version:        0.7.3
+version:        0.8.0
 description:    Please see the README on GitHub at <https://github.com/novisci/asclepias#readme>
 homepage:       https://github.com/novisci/asclepias/#readme
 bug-reports:    https://github.com/novisci/asclepias/issues
@@ -22,18 +22,17 @@ source-repository head
 
 library
   exposed-modules:
+      EventData
+      EventData.Aeson
+      EventData.Arbitrary
+      EventData.Context
+      EventData.Context.Arbitrary
+      FeatureCompose
+      FeatureCompose.Aeson
+      FeatureCompose.Criteria
+      FeatureEvents
       Hasklepias
-      Hasklepias.Functions
       Hasklepias.Reexports
-      Hasklepias.Types
-      Hasklepias.Types.Feature
-      Hasklepias.Types.Feature.Aeson
-      Hasklepias.Types.Feature.Criteria
-      Hasklepias.Types.Context
-      Hasklepias.Types.Context.Arbitrary
-      Hasklepias.Types.Event
-      Hasklepias.Types.Event.Aeson
-      Hasklepias.Types.Event.Arbitrary
   other-modules:
       Paths_hasklepias
   autogen-modules:
@@ -60,13 +59,13 @@ test-suite hasklepias-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
-      Hasklepias.FunctionsSpec
-      Hasklepias.Types.ContextSpec
-      Hasklepias.Types.Event.AesonSpec
-      Hasklepias.Types.EventSpec
-      Hasklepias.Types.FeatureSpec
-      Hasklepias.Types.Feature.CriteriaSpec
-      Hasklepias.Types.Feature.AesonSpec
+      EventDataSpec
+      EventData.ContextSpec
+      EventData.AesonSpec
+      FeatureComposeSpec
+      FeatureCompose.CriteriaSpec
+      FeatureCompose.AesonSpec
+      FeatureEventsSpec
       Paths_hasklepias
   autogen-modules:
       Paths_hasklepias 

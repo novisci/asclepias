@@ -1,9 +1,9 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Hasklepias.Types.Feature.CriteriaSpec (spec) where
+module FeatureCompose.CriteriaSpec (spec) where
 
-import Hasklepias.Types.Feature
-import Hasklepias.Types.Feature.Criteria
+import FeatureCompose
+import FeatureCompose.Criteria
 import Test.Hspec ( describe, pending, shouldBe, it, Spec )
 
 f1 :: Feature String Bool

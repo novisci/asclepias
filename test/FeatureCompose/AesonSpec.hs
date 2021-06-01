@@ -1,14 +1,15 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE FlexibleContexts #-}
-module Hasklepias.Types.Feature.AesonSpec (spec) where
+module FeatureCompose.AesonSpec (spec) where
 
 import IntervalAlgebra
-import Hasklepias.Types
-import Hasklepias.Functions
-import Hasklepias.Types.Feature.Aeson
+import EventData
+import EventData.Context
+import FeatureEvents
+import FeatureCompose
+import FeatureCompose.Aeson
 import Data.Aeson
 import Data.Time as DT
--- import Hasklepias.Types.Context as HC
 import Test.Hspec ( shouldBe, it, Spec )
 import qualified Data.ByteString.Lazy as B
 

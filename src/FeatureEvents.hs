@@ -1,5 +1,5 @@
 {-|
-Module      : Hasklepias Feature building functions 
+Module      : Functions for composing features from events  
 Description : Functions for composing features. 
 Copyright   : (c) NoviSci, Inc 2020
 License     : BSD3
@@ -12,7 +12,7 @@ Provides functions used in defining 'Feature's.
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE Safe #-}
 
-module Hasklepias.Functions(
+module FeatureEvents(
 
     -- * Container predicates
       isNotEmpty
@@ -40,11 +40,11 @@ import IntervalAlgebra                      ( Intervallic(..)
                                             , Interval )
 import IntervalAlgebra.PairedInterval       ( PairedInterval, getPairData )
 -- import IntervalAlgebra.IntervalUtilities    ( compareIntervals )
-import Hasklepias.Types.Event               ( Events
+import EventData                            ( Events
                                             , Event
                                             , ConceptEvent
                                             , ctxt )
-import Hasklepias.Types.Context             ( Concept
+import EventData.Context                    ( Concept
                                             , Concepts
                                             , Context
                                             , HasConcept( hasConcepts ) )

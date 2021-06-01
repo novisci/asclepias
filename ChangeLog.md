@@ -1,5 +1,9 @@
 # Changelog for hasklepias
 
+## 0.8.1
+
+* Adds an initial pass at the `Domain` type; simply including the `Demographics` type for now.
+
 ## 0.8.0
 
 * Reorganizes modules into a more "vertical" structure that reflects the decoupling of the various components that make up hasklepias:

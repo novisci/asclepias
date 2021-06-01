@@ -1,3 +1,0 @@
-# Specifications
-
-The translator between and analysis plan and code that maps a population to cohort..

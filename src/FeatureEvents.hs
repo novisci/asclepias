@@ -10,7 +10,7 @@ Provides functions used in defining 'Feature's.
 
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE Safe #-}
+-- {-# LANGUAGE Safe #-}
 
 module FeatureEvents(
 
@@ -49,12 +49,12 @@ import EventData.Context                    ( Concept
                                             , Context
                                             , HasConcept( hasConcepts ) )
 import Safe                                 ( headMay, lastMay ) 
-import safe Data.Bool                       ( Bool, (&&), not, (||) )
-import safe Data.Function                   ( (.), ($) )
-import safe Data.Int                        ( Int )
-import safe Data.List                       ( filter, length, null )
-import safe Data.Maybe                      ( Maybe(..) )
-import safe Data.Ord                        ( Ord((>=)) )
+import Data.Bool                       ( Bool, (&&), not, (||) )
+import Data.Function                   ( (.), ($) )
+import Data.Int                        ( Int )
+import Data.List                       ( filter, length, null )
+import Data.Maybe                      ( Maybe(..) )
+import Data.Ord                        ( Ord((>=)) )
 
 
 -- | Is the input list empty? 

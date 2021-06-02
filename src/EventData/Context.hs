@@ -71,8 +71,8 @@ instance HasConcept Context where
 --
 -- Creates 'Context' from a list of 'Concept's. At this time, the @facts@ and
 -- @source@ are both set to 'Nothing'.
-context :: Concepts -> Context
-context x = Context x Nothing Nothing
+context :: Maybe Domain -> Concepts -> Context
+context d x = Context x d Nothing
 
 -- | Just an empty Context
 emptyContext :: Context

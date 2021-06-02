@@ -25,7 +25,6 @@ import Prelude                                  ( Show, Eq
                                                 , pure )
 import Control.Lens                             ( makePrisms )
 import GHC.Generics                             ( Generic )
-import Data.Aeson
 import Data.Foldable
 import Data.Text                                ( Text, empty )
 import EventData.Context.Domain.Demographics
@@ -36,13 +35,3 @@ data Domain =
     deriving ( Eq, Show, Generic )
 
 makePrisms ''Domain
-
-instance FromJSON Domain where
-    parseJSON = withObject "Domain" $ \o -> do
-        domain :: Text <- o .: "domain"
-        case domain of
-            "Demographics" -> Demographics <$> o .: "facts"
-            _              -> pure (UnimplementedDomain ())
-
-
-        

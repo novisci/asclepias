@@ -1,5 +1,10 @@
 # Changelog for hasklepias
 
+## 0.8.3
+
+* Modifies `FromJSON` instance for events to use `parseEvent` as well as create a moment from the provided `begin` in the case that `end` is missing.
+* Updates `FromJSON` instance for events to parse the facts object. Currently the only implemented domain is demographics.
+
 ## 0.8.2
 
 * Adds preliminary `Subject`, `Population`, `ObsUnit`, and `Cohort` types to the `Hasklepias` module, along with the `makeObsUnitFeatures` which takes a function that maps a `Subject` into a `ObsUnit`. Currently, this function only supports 1-1 mapping between subjects and observational units. There is also the `makeCohort` function which maps a `Population` to a `Cohort`. The types get preliminary `FromJSON` (for `Subject` and `Population`) and `ToJSON` (for `ObsUnit` and `Cohort`) instances as well. Example 1 demonstrates use of these two functions.

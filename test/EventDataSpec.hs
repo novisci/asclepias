@@ -6,14 +6,15 @@ import IntervalAlgebra.IntervalUtilities
 import FeatureEvents 
 import EventData
 import EventData.Context as HC
+import Data.Maybe
 import Test.Hspec ( it, shouldBe, Spec )
 
 evnt1 :: Event Int
 evnt1 = event ( beginerval 4 (1 :: Int))
-              ( HC.context $ packConcepts ["c1", "c2"] )
+              (HC.context Nothing (packConcepts ["c1", "c2"] ))
 evnt2 :: Event Int
 evnt2 = event ( beginerval 4 (2 :: Int)  )
-              ( HC.context $ packConcepts ["c3", "c4"] )
+              (HC.context Nothing (packConcepts ["c3", "c4"] ))
 evnts :: [Event Int]
 evnts = [evnt1, evnt2]
 

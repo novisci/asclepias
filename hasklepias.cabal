@@ -23,8 +23,8 @@ source-repository head
 library
   exposed-modules:
       EventData
-      EventData.Aeson
       EventData.Arbitrary
+      EventData.Aeson
       EventData.Context
       EventData.Context.Arbitrary
       EventData.Context.Domain
@@ -34,6 +34,7 @@ library
       FeatureCompose.Criteria
       FeatureEvents
       Hasklepias
+      Hasklepias.Aeson
       Hasklepias.Reexports
       Hasklepias.Cohort
   other-modules:
@@ -72,6 +73,7 @@ test-suite hasklepias-test
       FeatureComposeSpec
       FeatureCompose.CriteriaSpec
       FeatureCompose.AesonSpec
+      Hasklepias.AesonSpec
       FeatureEventsSpec
       Paths_hasklepias
   autogen-modules:

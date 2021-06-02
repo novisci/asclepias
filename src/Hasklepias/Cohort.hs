@@ -10,6 +10,7 @@ Maintainer  : bsaul@novisci.com
 
 module Hasklepias.Cohort(
       Subject(..)
+    , ID
     , Population(..)
     , ObsUnit(..)
     , Cohort(..)

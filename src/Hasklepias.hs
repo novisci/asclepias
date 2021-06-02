@@ -21,14 +21,15 @@ module Hasklepias (
     , module IntervalAlgebra.IntervalUtilities
     , module IntervalAlgebra.PairedInterval
     , module Hasklepias.Cohort
+    , module Hasklepias.Aeson
 ) where
 
 import IntervalAlgebra
 import IntervalAlgebra.IntervalUtilities
 import IntervalAlgebra.PairedInterval
 import EventData
-import EventData.Context
 import EventData.Aeson
+import EventData.Context
 import EventData.Context.Domain
 import FeatureCompose
 import FeatureCompose.Aeson
@@ -36,3 +37,4 @@ import FeatureCompose.Criteria
 import FeatureEvents
 import Hasklepias.Reexports
 import Hasklepias.Cohort
+import Hasklepias.Aeson

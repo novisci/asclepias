@@ -17,18 +17,18 @@ module ExampleFeatures1(
 import Hasklepias
 import ExampleEvents
 import Test.Hspec
-import Data.Bifunctor
-import Control.Applicative
 import Control.Monad
 
 {-
 Index is defined as the first occurrence of an Orca bite.
 -}
-indexDef :: (Ord a) => Events a -> FeatureData (Interval a)
-indexDef events =
+indexDef :: (Ord a) => FeatureDefinition
+  (FeatureData (Events a))
+  (Interval a)
+indexDef = defineM (\events ->
   case firstConceptOccurrence ["wasBitByOrca"]  events of
         Nothing -> featureDataL (Other "No occurrence of Orca bite")
-        Just x  -> pure (getInterval x)
+        Just x  -> pure (getInterval x))
 
 -- indexSpec :: (Ord a) => FeatureSpec Text (*) (Events a) (Interval a)
 -- indexSpec = makeFeatureSpec "index" "" (define indexDef)
@@ -39,35 +39,35 @@ index. Here, baseline is defined as function that takes a filtration function
 as an argument, so that the baseline FeatureData can be used to filter events
 based on different predicate functions.
 -}
-baseline :: (IntervalSizeable a b) =>
-     FeatureData (Interval a) -- ^ pass the result of index to get a baseline filter
-  -> FeatureData (Interval a)
-baseline = fmap (enderval 60 . begin)
-
 bline :: (IntervalSizeable a b) =>
-     Events a
+     FeatureData (Events a)
   -> FeatureData (Interval a)
-bline = baseline . indexDef
+bline x = fmap (enderval 60 . begin) (eval indexDef x)
 
 flwup :: (IntervalSizeable a b) =>
-     Events a
+     FeatureData (Events a)
   -> FeatureData (Interval a)
-flwup = fmap (beginerval 30 . begin) . indexDef
+flwup x = fmap (beginerval 30 . begin) (eval indexDef x)
 
 {-
 Define enrolled as the indicator of whether all of the gaps between the union of 
 all enrollment intervals (+ allowableGap) 
 -}
-enrolledDef :: (IntervalSizeable a b) =>
+enrolled :: (IntervalSizeable a b) =>
       b
       -> Interval a -> Events a -> Bool
-enrolledDef allowableGap i events =
+enrolled allowableGap i events =
     events
       |> makeConceptsFilter ["enrollment"]
       |> combineIntervals
       |> gapsWithin i
       |> maybe False (all (< allowableGap) . durations)
 
+enrolledDef :: IntervalSizeable a b =>
+      b
+      -> FeatureDefinition
+         (FeatureData (Interval a), FeatureData (Events a)) Bool
+enrolledDef allowableGap = define2 (enrolled allowableGap)
 {-
 Define features that identify whether a subject as bit/struck by a duck and
 bit/struck by a macaw.
@@ -149,9 +149,9 @@ discontinuationDef i events =
           ["tookAntibiotics"])
     events
 
-getUnitFeatures ::
-      Events Int
-  -> ( FeatureData (Interval Int)
+
+type MyData = 
+     ( FeatureData (Interval Int)
      , FeatureData Bool
      , FeatureData (Bool, Maybe (Interval Int))
      , FeatureData (Bool, Maybe (Interval Int))
@@ -160,24 +160,23 @@ getUnitFeatures ::
      , FeatureData (Int, Maybe Int)
      , FeatureData (Maybe (Int, Int))
      )
+
+getUnitFeatures ::
+      Events Int
+  -> MyData
 getUnitFeatures x = (
-    -- indexDef x
-    evs >>= indexDef
-  , liftA2 (enrolledDef 8) (bline x) evs
-  , liftA2 duckHxDef  (bline x) evs
-  , liftA2 macawHxDef (bline x) evs
-  , liftA2 twoMinorOrOneMajorDef (bline x) evs
-  , liftA2 timeSinceLastAntibioticsDef (bline x) evs
-  , liftA2 countOfHospitalEventsDef (bline x) evs
-  , liftA2 discontinuationDef (flwup x) evs
+    eval indexDef evs
+  , eval (enrolledDef 8) (bline evs, evs)  
+  , liftA2 duckHxDef  (bline evs) evs
+  , liftA2 macawHxDef (bline evs) evs
+  , liftA2 twoMinorOrOneMajorDef (bline evs) evs
+  , liftA2 timeSinceLastAntibioticsDef (bline evs) evs
+  , liftA2 countOfHospitalEventsDef (bline evs) evs
+  , liftA2 discontinuationDef (flwup evs) evs
   ) where evs = pure x
 
-
-exampleFeatures1Spec :: Spec
-exampleFeatures1Spec = do
-
-    it "getUnitFeatures from exampleEvents1" $
-      getUnitFeatures exampleEvents1 `shouldBe`
+example1results :: MyData
+example1results =
       ( pure (beginerval 1 (60 :: Int))
       , pure True
       , pure (True, Just $ beginerval 1 (51 :: Int))
@@ -188,8 +187,8 @@ exampleFeatures1Spec = do
       , pure $ Just (78, 18)
       )
 
-    it "getUnitFeatures from exampleEvents2" $
-      getUnitFeatures exampleEvents2 `shouldBe`
+example2results :: MyData
+example2results = 
       ( featureDataL (Other "No occurrence of Orca bite")
       , featureDataL (Other "No occurrence of Orca bite")
       , featureDataL (Other "No occurrence of Orca bite")
@@ -199,3 +198,17 @@ exampleFeatures1Spec = do
       , featureDataL (Other "No occurrence of Orca bite")
       , featureDataL (Other "No occurrence of Orca bite")
       )
+
+exampleFeatures1Spec :: Spec
+exampleFeatures1Spec = do
+
+    it "getUnitFeatures from exampleEvents1" $
+      getUnitFeatures exampleEvents1 `shouldBe` example1results
+
+    it "getUnitFeatures from exampleEvents2" $
+      getUnitFeatures exampleEvents2 `shouldBe` example2results
+
+    it "mapping a population to cohort" $
+      makeCohort getUnitFeatures (MkPopulation [exampleSubject1, exampleSubject2 ]) `shouldBe`
+            MkCohort [MkObsUnit ("a", example1results), MkObsUnit ("b", example2results)]
+

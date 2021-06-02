@@ -54,6 +54,7 @@ import safe Data.List                       ( all
                                             , length
                                             , null
                                             , zipWith
+                                            , sort
                                             , (++) )
 import safe Data.Maybe                      ( Maybe(..),
                                               maybe,

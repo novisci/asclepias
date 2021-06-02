@@ -1,6 +1,6 @@
 cabal-version:  2.2
 name:           hasklepias
-version:        0.8.1
+version:        0.8.2
 description:    Please see the README on GitHub at <https://github.com/novisci/asclepias#readme>
 homepage:       https://github.com/novisci/asclepias/#readme
 bug-reports:    https://github.com/novisci/asclepias/issues
@@ -35,6 +35,7 @@ library
       FeatureEvents
       Hasklepias
       Hasklepias.Reexports
+      Hasklepias.Cohort
   other-modules:
       Paths_hasklepias
   autogen-modules:

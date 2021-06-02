@@ -4,6 +4,7 @@
 
 * Modifies `FromJSON` instance for events to use `parseEvent` as well as create a moment from the provided `begin` in the case that `end` is missing.
 * Updates `FromJSON` instance for events to parse the facts object. Currently the only implemented domain is demographics.
+* Adds `FromJSON` instances for `Population`, so now data from multiple subjects can be marshaled into Hasklepias programs.
 
 ## 0.8.2
 

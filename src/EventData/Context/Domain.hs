@@ -12,7 +12,6 @@ Maintainer  : bsaul@novisci.com
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE OverloadedStrings #-}
-
 {-# LANGUAGE ScopedTypeVariables #-}
 module EventData.Context.Domain(
     Domain(..)

@@ -9,13 +9,14 @@ import FeatureEvents
 import FeatureCompose
 import FeatureCompose.Aeson
 import Data.Aeson
+import Data.Maybe
 import Data.Time as DT
 import Test.Hspec ( shouldBe, it, Spec )
 import qualified Data.ByteString.Lazy as B
 
 
 ex1 :: Events Int
-ex1 = [event (beginerval 10 0) (context $ packConcepts ["enrollment"])]
+ex1 = [event (beginerval 10 0) (context Nothing (packConcepts ["enrollment"]))]
 
 index:: (Ord a) =>
      Events a

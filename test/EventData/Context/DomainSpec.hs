@@ -13,12 +13,6 @@ import qualified Data.ByteString.Lazy as B
 dmo :: Domain
 dmo = Demographics $ DemographicsFacts (DemographicsInfo BirthYear (Just "1987"))
 
-jsonDemoTest :: B.ByteString
-jsonDemoTest = "{\"domain\":\"Demographics\",\"facts\":{\"demo\":{\"field\":\"BirthYear\",\"info\":\"1987\"}}}"
-
-jsonOtherTest :: B.ByteString
-jsonOtherTest = "{\"domain\":\"Labs\",\"facts\":{\"code\":{\"code\":\"XYZ\"}}}"
-
 myIntMap :: Text -> Maybe Integer -- TODO: this is ridiculous
 myIntMap x =  fmap floor (either (const Nothing) (Just . fst) (Data.Text.Read.rational x))
 
@@ -32,8 +26,3 @@ spec = do
       ((^.demo.info) =<< preview _Demographics dmo)  `shouldBe` Just "1987"
     it "preview birthyear as Integer" $
       (myIntMap =<< ((^.demo.info) =<< preview _Demographics dmo))  `shouldBe` Just 1987
-    it "jsonDemoTest is parsed correctly" $
-       decode jsonDemoTest  `shouldBe` Just dmo
-
-    it "jsonOtherTest is parsed correctly" $
-       decode jsonOtherTest  `shouldBe` Just (UnimplementedDomain ())

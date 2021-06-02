@@ -16,6 +16,7 @@ import Test.QuickCheck              ( Arbitrary(arbitrary), elements, sublistOf 
 import Data.Function                ( (.) )
 import Data.Functor                 ( Functor(fmap) )
 import Data.List                    ( map )
+import Data.Maybe                   ( Maybe(Nothing) )
 import Data.Set                     ( fromList )
 import EventData.Context            ( Concept
                                     , Concepts
@@ -32,7 +33,7 @@ instance Arbitrary Concept where
     arbitrary = elements conceptChoices
 
 instance Arbitrary Context where
-    arbitrary = fmap (context . toConcepts . fromList) (sublistOf conceptChoices)
+    arbitrary = fmap (\x -> context Nothing ((toConcepts . fromList) x)) (sublistOf conceptChoices)
 
 -- instance Arbitrary Concepts where
 --     arbitrary = fmap fromList (sublistOf conceptChoices)

@@ -8,7 +8,7 @@ import EventData.Context
 import FeatureEvents
 import FeatureCompose
 import FeatureCompose.Aeson
-import Data.Aeson
+import Data.Aeson (encode)
 import Data.Maybe
 import Data.Time as DT
 import Test.Hspec ( shouldBe, it, Spec )

@@ -5,6 +5,7 @@ Copyright   : (c) NoviSci, Inc 2020
 License     : BSD3
 Maintainer  : bsaul@novisci.com
 -}
+{-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE FlexibleInstances, OverloadedStrings #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE UndecidableInstances #-}
@@ -15,31 +16,34 @@ module EventData.Aeson(
     , parseEventDayLines
 ) where
 
-import IntervalAlgebra                  ( beginerval
-                                        , parseInterval
-                                        , Interval
-                                        , IntervalSizeable(add, diff, moment) )
-import EventData.Context                ( Concepts
-                                        , Concept
-                                        , Context
-                                        , context
-                                        , packConcept
-                                        , toConcepts )
-import EventData                        ( Event, event )
+import IntervalAlgebra                      ( beginerval
+                                            , parseInterval
+                                            , Interval
+                                            , IntervalSizeable(add, diff, moment) )
+import EventData.Context                    ( Concepts
+                                            , Concept
+                                            , Context
+                                            , context
+                                            , packConcept
+                                            , toConcepts )
+import EventData                            ( Event, event )
 import EventData.Context.Domain
-import Data.Aeson
-                                        -- ( eitherDecode,
-                                        -- (.:), (.:?),
-                                        -- withObject,
-                                        -- FromJSON(parseJSON),
-                                        -- Value(Array) )
-import Data.Maybe
-import Data.Text (Text)
-import Data.Time                        ( Day )
-import Data.Vector                      ((!))
+import Prelude                              ( (<$>), (<*>), ($)
+                                            , fmap, pure, id
+                                            , Int, String, Ord, Show)
+import Data.Aeson                           ( eitherDecode
+                                            , (.:), (.:?)
+                                            , withObject
+                                            , FromJSON(parseJSON)
+                                            , Value(Array) )
+import Data.Either                          ( Either(..) )
+import Data.Maybe                           ( maybe )
+import Data.Text                            ( Text )
+import Data.Time                            ( Day )
+import Data.Vector                          ((!))
 import qualified Data.ByteString.Lazy as B
 import qualified Data.ByteString.Char8 as C
-import Data.Either                      (rights, either)
+import Data.Either                          (rights, either)
 import Control.Monad 
 
 instance (FromJSON a, Show a, IntervalSizeable a b) => FromJSON (Interval a) where
@@ -82,7 +86,7 @@ instance  (FromJSON a, Show a, IntervalSizeable a b) => FromJSON (Event a) where
 -- |  Parse @Event Int@ from json lines.
 parseEventLines :: (FromJSON a, Show a, IntervalSizeable a b) => B.ByteString -> [Event a]
 parseEventLines l =
-    rights $ map 
+    rights $ fmap 
     (\x -> eitherDecode $ B.fromStrict x :: (FromJSON a, Show a, IntervalSizeable a b) =>  Either String (Event a))
         (C.lines $ B.toStrict l)
 

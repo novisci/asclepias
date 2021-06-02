@@ -25,7 +25,10 @@ import Prelude                  ( drop, Show, Eq, Maybe )
 import Control.Lens             ( makeLenses )
 import GHC.Generics             ( Generic )
 import Data.Text                ( Text )
-import Data.Aeson               
+import Data.Aeson               ( FromJSON(..)
+                                , genericParseJSON
+                                , defaultOptions
+                                , fieldLabelModifier )  
 
 newtype DemographicsFacts = 
     DemographicsFacts { _demo :: DemographicsInfo

@@ -12,13 +12,11 @@ module ExampleEvents (
     , exampleEvents2
     , exampleEvents3
     , exampleEvents4
+    , exampleSubject1
+    , exampleSubject2
 ) where
-  
-import IntervalAlgebra ( beginerval, IntervalSizeable )
-import EventData ( event, Event, Events )
-import EventData.Context ( context, packConcepts )
-import Data.List ( sort )
-import Data.Text(Text)
+
+import Hasklepias
 
 exampleEvents1 :: Events Int
 exampleEvents1 = toEvents exampleEvents1Data
@@ -31,6 +29,12 @@ exampleEvents3 = toEvents exampleEvents3Data
 
 exampleEvents4 :: Events Int 
 exampleEvents4 = toEvents exampleEvents4Data
+
+exampleSubject1 :: Subject (Events Int)
+exampleSubject1 = MkSubject ("a", exampleEvents1)
+
+exampleSubject2 :: Subject (Events Int)
+exampleSubject2 = MkSubject ("b", exampleEvents2)
 
 type EventData a = (a, a, Text)
 

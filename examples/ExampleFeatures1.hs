@@ -149,7 +149,6 @@ discontinuationDef i events =
           ["tookAntibiotics"])
     events
 
-
 type MyData = 
      ( FeatureData (Interval Int)
      , FeatureData Bool
@@ -167,6 +166,8 @@ getUnitFeatures ::
 getUnitFeatures x = (
     eval indexDef evs
   , eval (enrolledDef 8) (bline evs, evs)  
+  -- TODO: feature functions below need to be put into a FeatureDefintion
+  --      in order to run eval
   , liftA2 duckHxDef  (bline evs) evs
   , liftA2 macawHxDef (bline evs) evs
   , liftA2 twoMinorOrOneMajorDef (bline evs) evs
@@ -174,6 +175,13 @@ getUnitFeatures x = (
   , liftA2 countOfHospitalEventsDef (bline evs) evs
   , liftA2 discontinuationDef (flwup evs) evs
   ) where evs = pure x
+
+
+includeAll :: Events Int -> Criteria ()
+includeAll x = criteria $ pure (criterion (MkFeature "includeAll" () (featureDataR Include) ))
+
+testCohortSpec :: CohortSpec () (Events Int) MyData
+testCohortSpec = specifyCohort includeAll getUnitFeatures
 
 example1results :: MyData
 example1results =
@@ -209,6 +217,7 @@ exampleFeatures1Spec = do
       getUnitFeatures exampleEvents2 `shouldBe` example2results
 
     it "mapping a population to cohort" $
-      makeCohort getUnitFeatures (MkPopulation [exampleSubject1, exampleSubject2 ]) `shouldBe`
-            MkCohort [MkObsUnit ("a", example1results), MkObsUnit ("b", example2results)]
+      evalCohort testCohortSpec (MkPopulation [exampleSubject1, exampleSubject2 ]) `shouldBe`
+            MkCohort (MkAttritionInfo [(Included, 2)],
+                      [MkObsUnit ("a", example1results), MkObsUnit ("b", example2results)])
 

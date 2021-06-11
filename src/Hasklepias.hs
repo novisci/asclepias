@@ -13,10 +13,10 @@ module Hasklepias (
     , module EventData.Context
     , module EventData.Context.Domain
     , module FeatureCompose
-    , module FeatureCompose.Criteria
     , module FeatureCompose.Aeson
     , module FeatureEvents
     , module Hasklepias.Reexports
+    , module Hasklepias.ReexportsUnsafe
     , module IntervalAlgebra
     , module IntervalAlgebra.IntervalUtilities
     , module IntervalAlgebra.PairedInterval
@@ -33,8 +33,9 @@ import EventData.Context
 import EventData.Context.Domain
 import FeatureCompose
 import FeatureCompose.Aeson
-import FeatureCompose.Criteria
 import FeatureEvents
 import Hasklepias.Reexports
+import Hasklepias.ReexportsUnsafe
 import Hasklepias.Cohort
+import Hasklepias.Cohort.Criteria
 import Hasklepias.Aeson

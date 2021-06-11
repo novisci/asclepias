@@ -30,6 +30,6 @@ index es =
 spec :: Spec
 spec = do
     it "an Int event is parsed correctly" $
-       encode (index ex1)  `shouldBe` "[{\"end\":10,\"begin\":0}]"
+       encode (index ex1)  `shouldBe` "{\"end\":10,\"begin\":0}"
 
 

@@ -1,5 +1,11 @@
 # Changelog for hasklepias
 
+## 0.9.0
+
+* Refactors cohort building types and functions. Still aways to go, but the basic ideas are there now.
+* Adds the `ExampleCohort1` module to demonstrate the updates on calendar based cohorts.
+* Adds several new functions and modules to `Reexports` including the `Test.Tasty` and `Test.Tasty.HUnit` testing modules for testing cohort building.
+
 ## 0.8.3
 
 * Modifies `FromJSON` instance for events to use `parseEvent` as well as create a moment from the provided `begin` in the case that `end` is missing.

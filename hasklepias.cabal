@@ -1,6 +1,6 @@
 cabal-version:  2.2
 name:           hasklepias
-version:        0.8.3
+version:        0.9.0
 description:    Please see the README on GitHub at <https://github.com/novisci/asclepias#readme>
 homepage:       https://github.com/novisci/asclepias/#readme
 bug-reports:    https://github.com/novisci/asclepias/issues
@@ -31,12 +31,14 @@ library
       EventData.Context.Domain.Demographics
       FeatureCompose
       FeatureCompose.Aeson
-      FeatureCompose.Criteria
       FeatureEvents
       Hasklepias
       Hasklepias.Aeson
       Hasklepias.Reexports
+      Hasklepias.ReexportsUnsafe
       Hasklepias.Cohort
+      Hasklepias.Cohort.Criteria
+      Hasklepias.Cohort.Index
   other-modules:
       Paths_hasklepias
   autogen-modules:
@@ -49,10 +51,13 @@ library
     , bytestring >=0.10
     , containers >=0.6.0
     , flow == 1.0.22
+    , ghc-prim == 0.6.1
     , interval-algebra == 0.8.2
     , lens == 5.0.1
     , lens-aeson == 1.1.1
     , safe >= 0.3
+    , tasty  == 1.4.1
+    , tasty-hunit == 0.10.0.3
     , text >=1.2.3
     , time >=1.11
     , QuickCheck
@@ -71,9 +76,10 @@ test-suite hasklepias-test
       EventData.Context.DomainSpec
       EventData.Context.Domain.DemographicsSpec
       FeatureComposeSpec
-      FeatureCompose.CriteriaSpec
       FeatureCompose.AesonSpec
       Hasklepias.AesonSpec
+      Hasklepias.CohortSpec
+      Hasklepias.Cohort.CriteriaSpec
       FeatureEventsSpec
       Paths_hasklepias
   autogen-modules:
@@ -106,6 +112,7 @@ test-suite examples
       ExampleFeatures1
       ExampleFeatures2
       ExampleFeatures3
+      ExampleCohort1
   hs-source-dirs:
       examples
   build-depends:
@@ -117,6 +124,9 @@ test-suite examples
     , text >=1.2.3
     , bytestring >=0.10
     , containers >=0.6.0
+    , tasty  == 1.4.1
+    , tasty-hunit == 0.10.0.3
+    , tasty-hspec == 1.2
     , time >=1.11
     , aeson >=1.4.0.0 && <2
     , unordered-containers >=0.2.10

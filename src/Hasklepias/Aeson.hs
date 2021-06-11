@@ -12,6 +12,7 @@ Maintainer  : bsaul@novisci.com
 module Hasklepias.Aeson(
       parsePopulationIntLines
     , parsePopulationDayLines
+    , module Data.Aeson
 ) where
 
 import IntervalAlgebra
@@ -19,6 +20,7 @@ import EventData
 import EventData.Aeson 
 import Hasklepias.Cohort
 import Data.Aeson                           ( FromJSON(..)
+                                            , ToJSON(..)
                                             , eitherDecode
                                             , Value(Array))
 import qualified Data.ByteString.Lazy as B  ( fromStrict

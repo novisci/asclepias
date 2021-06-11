@@ -29,20 +29,20 @@ spec = do
     do
 
       it "eval of d1 returns correct values for List" $
-        eval d1 (featureDataR [5, 6, 7]) `shouldBe`
-          featureDataR [6, 7, 8]
+        eval d1 (featureDataR 5) `shouldBe`
+          featureDataR 6
       it "d1 returns correct error for List" $
-        eval d1 (featureDataR [-1, 5, 6]) `shouldBe`
+        eval d1 (featureDataR (-1)) `shouldBe`
           (featureDataL (Other "at least 1 < 0") :: (FeatureData Int))
 
   describe "checking d2" $
     do
       it "eval of d2 returns correct values for List" $
-        eval d2 (featureDataR [5]) `shouldBe`
-          featureDataR [10]
+        eval d2 (featureDataR 5) `shouldBe`
+          featureDataR 10
       it "eval of d2 returns correct values for List" $
-        eval d2 (featureDataR [5, 6, 7]) `shouldBe`
-          featureDataR [10, 12, 14]
+        eval d2 (featureDataR 5) `shouldBe`
+          featureDataR 10
       it "d2 returns correct error for List" $
         eval d2 (featureDataL (Other "at least 1 < 0")) `shouldBe`
           (featureDataL (Other "at least 1 < 0") :: (FeatureData Int))
@@ -50,14 +50,14 @@ spec = do
   describe "checking d3" $
     do
       it "eval of d2 returns correct values for List" $
-        eval d3 (featureDataR [5], featureDataR [6])  `shouldBe`
-          featureDataR [11]
+        eval d3 (featureDataR 5, featureDataR 6)  `shouldBe`
+          featureDataR 11
       it "eval of d3 returns correct values for List" $
-        eval d3 (featureDataR [5, 6, 7], featureDataR [5, 6, 7]) `shouldBe`
-          featureDataR [10, 12, 14]
+        eval d3 (featureDataR 5, featureDataR 5) `shouldBe`
+          featureDataR 10
       it "d3 returns correct error for List" $
-        eval d3 (featureDataL (Other "at least 1 < 0"), featureDataR [6])  `shouldBe`
+        eval d3 (featureDataL (Other "at least 1 < 0"), featureDataR 6)  `shouldBe`
           (featureDataL (Other "at least 1 < 0") :: (FeatureData Int))
       it "d3 returns correct error for List" $
-        eval d3 (featureDataR [6], featureDataL (Other "at least 1 < 0")) `shouldBe`
+        eval d3 (featureDataR 6, featureDataL (Other "at least 1 < 0")) `shouldBe`
           (featureDataL (Other "at least 1 < 0") :: (FeatureData Int))

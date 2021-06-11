@@ -25,6 +25,7 @@ module Hasklepias.Reexports (
     , module Data.Function
     , module Data.Functor
     , module Data.List
+    , module Data.List.NonEmpty
     , module Data.Ord
     , module Data.Time.Calendar 
     , module Data.Text
@@ -54,8 +55,11 @@ import safe Data.List                       ( all
                                             , length
                                             , null
                                             , zipWith
+                                            , replicate
+                                            , transpose
                                             , sort
                                             , (++) )
+import safe Data.List.NonEmpty              ( NonEmpty(..) )
 import safe Data.Maybe                      ( Maybe(..),
                                               maybe,
                                               isJust,
@@ -69,7 +73,10 @@ import safe Data.Maybe                      ( Maybe(..),
 import safe Data.Ord                        ( Ord((>=), (<), (>), (<=))
                                             , max, min )
 import safe Data.Time.Calendar              ( Day, MonthOfYear, Year
+                                            , CalendarDiffDays(..)
+                                            , addGregorianDurationClip
                                             , fromGregorian
+                                            , gregorianMonthLength
                                             , diffDays )
 import safe Data.Text                       ( pack, Text )
 import safe Data.Tuple                      ( fst, snd, uncurry, curry )

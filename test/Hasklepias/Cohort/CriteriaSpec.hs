@@ -1,5 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
-
+{-# LANGUAGE DataKinds #-}
 module Hasklepias.Cohort.CriteriaSpec (
   spec
  ) where
@@ -8,17 +8,19 @@ import FeatureCompose
 import Hasklepias.Cohort.Criteria
 import Test.Hspec ( describe, pending, shouldBe, it, Spec )
 import Data.List.NonEmpty
+
+
 f1 :: Status -> Criterion String
-f1 s = criterion $ MkFeature "f1" "" (featureDataR s)
+f1 s = criterion (makeFeature "" (featureDataR s) :: Feature "f1" String Status)
 
 f2 :: Status -> Criterion String
-f2 s = criterion $ MkFeature "f2" "" (featureDataR s)
+f2 s = criterion (makeFeature "" (featureDataR s) :: Feature "f2" String Status)
 
 f3 :: Status -> Criterion String
-f3 s = criterion $ MkFeature "f3" "" (featureDataR s)
+f3 s = criterion (makeFeature "" (featureDataR s) :: Feature "f3" String Status)
 
 f4 :: Criterion String
-f4 = criterion $ MkFeature "f4" "" (featureDataL $ Other "something")
+f4 = criterion ( makeFeature "" (featureDataL $ Other "something") :: Feature "f4" String Status)
 
 spec :: Spec
 spec = do

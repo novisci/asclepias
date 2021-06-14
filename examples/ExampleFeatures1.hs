@@ -9,7 +9,7 @@ Maintainer  : bsaul@novisci.com
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE NoImplicitPrelude #-}
-
+{-# LANGUAGE DataKinds #-}
 module ExampleFeatures1(
     exampleFeatures1Spec
 ) where
@@ -178,7 +178,7 @@ getUnitFeatures x = (
 
 
 includeAll :: Events Int -> Criteria ()
-includeAll x = criteria $ pure (criterion (MkFeature "includeAll" () (featureDataR Include) ))
+includeAll x = criteria $ pure (criterion (makeFeature () (featureDataR Include)  :: Feature "includeAll" () Status))
 
 testCohortSpec :: CohortSpec () (Events Int) MyData
 testCohortSpec = specifyCohort includeAll getUnitFeatures

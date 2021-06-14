@@ -1,5 +1,9 @@
 # Changelog for hasklepias
 
+## 0.10.0
+
+* Refactors `FeatureSpec`s and `Feature`s to have a `Symbol` as its name, rather than `Text`.
+
 ## 0.9.0
 
 * Refactors cohort building types and functions. Still aways to go, but the basic ideas are there now.

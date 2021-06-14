@@ -13,17 +13,23 @@ Maintainer  : bsaul@novisci.com
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE FlexibleInstances #-}
-
+{-# LANGUAGE DataKinds #-} 
+{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE PolyKinds #-}
 module FeatureCompose(
     -- * Types
       FeatureSpec(..)
     , Feature(..)
+    , Feature'(..)
     , FeatureData(..)
     , MissingReason(..)
     , FeatureDefinition(..)
     , Eval(..)
     , EvalSpec(..)
+    , unmaskFeature
     , specifyFeature
+    , makeFeature
     , featureDataR
     , featureDataL
     , define
@@ -34,23 +40,24 @@ module FeatureCompose(
     , defineM3
 ) where
 
-import safe GHC.Read                   ( Read )
 import safe GHC.Show                   ( Show(show) )
 import safe GHC.Generics               ( Generic )
+import safe GHC.Read                   ( Read )
+import safe GHC.TypeLits               ( KnownSymbol, symbolVal )
 import safe Control.Applicative        ( Applicative(..), liftA3 )
 import safe Control.Monad              ( Functor(..), Monad(..)
                                        , join, liftM, liftM2)
 import safe Data.Either                ( Either(..) )
-import safe Data.Eq                    ( Eq )
+import safe Data.Eq                    ( Eq(..) )
 import safe Data.Function              ( ($), (.) )
 import safe Data.List                  ( (++), zipWith )
-import safe Data.Maybe                 ( Maybe(..), maybe )
+import safe Data.Maybe                 ( Maybe(..), maybe, isJust )
 import safe Data.Ord                   ( Ord )
+import safe Data.Proxy                 ( Proxy(..) )
 import safe Data.Traversable           ( Traversable(..) )
-import safe Data.Text                  ( Text )
+import safe Data.Text                  ( Text, pack )
 import safe Data.Tuple                 ( uncurry, curry )
-import safe Data.Functor.Identity
-
+-- import safe Data.Functor.Identity
 -- import safe Test.QuickCheck       ( Property )
 
 {- | A 'FeatureSpec' contains all the information needed to derive a 'Feature':
@@ -58,8 +65,8 @@ import safe Data.Functor.Identity
       * its attributes
       * the function needed to derive a feature (i.e. the 'FeatureDefinition')
 -}
-data (Show b) => FeatureSpec b di d0 = MkFeatureSpec {
-        getSpecName :: Text
+data (Show b, KnownSymbol n) => FeatureSpec n b di d0 = MkFeatureSpec {
+        getSpecName :: Proxy n
       , getSpecAttr :: b
       , getDefn :: FeatureDefinition di d0
       -- To add in future: an optional list of properties to check
@@ -67,31 +74,46 @@ data (Show b) => FeatureSpec b di d0 = MkFeatureSpec {
     }
 
 -- | TODO
-specifyFeature :: Show b =>
-     Text
-  -> b
+specifyFeature :: forall name b di d0 . (Show b, KnownSymbol name) =>
+  --    Proxy n
+  -- -> 
+    b
   -> FeatureDefinition di d0
-  -> FeatureSpec b di d0
-specifyFeature = MkFeatureSpec
+  -> FeatureSpec name b di d0
+specifyFeature = MkFeatureSpec (Proxy @name)
 
 {- | A 'Feature' contains the following:
       * a name
       * its attributes
       * 'FeatureData'
 -}
-data (Show b) => Feature b d = MkFeature {
-        getName :: Text
-      , getAttr :: b
+data (Show attr, KnownSymbol name) => Feature name attr d = MkFeature {
+        getName :: Proxy name
+      , getAttr :: attr 
       , getData :: FeatureData d
       } deriving (Eq)
 
-instance (Show b, Show d) => Show (Feature b d ) where
-    show x = "(" ++ show (getName x) ++ ": (" ++ show (getAttr x) ++ ") "  ++ show (getData x) ++ " )\n"
+makeFeature :: forall name b d . (Show b, KnownSymbol name) => 
+  b -> 
+  FeatureData d -> 
+  Feature name b d
+makeFeature = MkFeature (Proxy @name)
 
-instance (Show b) => Functor (Feature b) where
+instance (Show b, Show d, KnownSymbol n) => Show (Feature n b d) where
+    show x = "(" ++ symbolVal (getName x) ++ ": (" ++
+     show (getAttr x) ++ ") "  ++ show (getData x) ++ " )\n"
+
+instance (Show b, KnownSymbol n) => Functor (Feature n b) where
   fmap f (MkFeature n a d) = MkFeature n a (fmap f d)
 
+data (Show b) => Feature' b d = MkFeature' {
+        getName' :: Text
+      , getAttr' :: b
+      , getData' :: FeatureData d
+      } deriving (Eq, Show)
 
+unmaskFeature :: (Show b, KnownSymbol n) => Feature n b d -> Feature' b d
+unmaskFeature (MkFeature n a d) = MkFeature' (pack $ symbolVal n) a d
 
 {- | 'FeatureData' is @'Either' 'MissingReason' d@, where @d@ can be any type 
      of data derivable from 'Hasklepias.Event.Events'.
@@ -144,7 +166,7 @@ instance Eval (FeatureData d2, FeatureData d1) d0 where
 instance Eval (FeatureData d3, FeatureData d2, FeatureData d1) d0 where
 
 class (Eval di d0) => EvalSpec di d0 where
-  evalSpec :: Show b =>  FeatureSpec b di d0 -> di -> Feature b d0
+  evalSpec :: (KnownSymbol n, Show b) =>  FeatureSpec n b di d0 -> di -> Feature n b d0
   evalSpec (MkFeatureSpec n a def) x = MkFeature n a (eval def x)
 
 instance EvalSpec (FeatureData d1) d0 where

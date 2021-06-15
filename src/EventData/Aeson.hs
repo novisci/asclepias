@@ -36,23 +36,22 @@ import Data.Aeson                           ( eitherDecode
                                             , withObject
                                             , FromJSON(parseJSON)
                                             , Value(Array) )
-import Data.Either                          ( Either(..) )
-import Data.Maybe                           ( maybe )
+import Data.Either                          ( Either(..), partitionEithers, either )
+import Data.Maybe                           ( fromMaybe )
 import Data.Text                            ( Text )
 import Data.Time                            ( Day )
 import Data.Vector                          ((!))
 import qualified Data.ByteString.Lazy as B
 import qualified Data.ByteString.Char8 as C
-import Data.Either                          (rights, either)
-import Control.Monad 
+import Control.Monad
 
 instance (FromJSON a, Show a, IntervalSizeable a b) => FromJSON (Interval a) where
     parseJSON = withObject "Time" $ \o -> do
         t <- o .: "time"
         b <- t .: "begin"
-        e <- t .:? "end" 
+        e <- t .:? "end"
         -- In the case that the end is missing, create a moment
-        let e2 = maybe (add (moment @a) b) (id) e 
+        let e2 = fromMaybe (add (moment @a) b) e
         let ei = parseInterval b e2
         case ei of
             Left e  -> fail e
@@ -72,28 +71,28 @@ instance FromJSON Concepts where
     parseJSON c = toConcepts <$> parseJSON c
 
 instance FromJSON Context where
-    parseJSON (Array v) = context <$>
-        parseJSON (v ! 5) <*>
-        parseJSON (v ! 4)
-    -- parseJSON v = context <$> parseJSON v
+    parseJSON (Array v) =
+        context <$>
+            parseJSON (v ! 5) <*>
+            parseJSON (v ! 4)
 
 instance  (FromJSON a, Show a, IntervalSizeable a b) => FromJSON (Event a) where
-    parseJSON (Array v) = event <$> parseJSON (v ! 5) <*> parseJSON (Array v)
-    -- parseJSON (Array v) = event <$>
-    --         parseJSON (v ! 5) <*>
-    --         parseJSON (v ! 4)
+    parseJSON (Array v) =
+        event
+            <$> parseJSON (v ! 5)
+            <*> parseJSON (Array v)
 
 -- |  Parse @Event Int@ from json lines.
-parseEventLines :: (FromJSON a, Show a, IntervalSizeable a b) => B.ByteString -> [Event a]
+parseEventLines :: (FromJSON a, Show a, IntervalSizeable a b) => B.ByteString -> ([String], [Event a])
 parseEventLines l =
-    rights $ fmap 
+    partitionEithers $ fmap
     (\x -> eitherDecode $ B.fromStrict x :: (FromJSON a, Show a, IntervalSizeable a b) =>  Either String (Event a))
         (C.lines $ B.toStrict l)
 
-
-parseEventIntLines :: B.ByteString -> [Event Int]
+-- |  Parse @Event Int@ from json lines.
+parseEventIntLines :: (FromJSON a, Show a, IntervalSizeable a b) => B.ByteString -> ([String], [Event a])
 parseEventIntLines = parseEventLines
 
 -- |  Parse @Event Day@ from json lines.
-parseEventDayLines :: B.ByteString -> [Event Day]
+parseEventDayLines :: (FromJSON a, Show a, IntervalSizeable a b) =>  B.ByteString -> ([String], [Event a])
 parseEventDayLines = parseEventLines

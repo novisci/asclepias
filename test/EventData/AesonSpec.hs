@@ -18,7 +18,7 @@ testInInt = "[\"abc\", 0, 1, \"Diagnosis\",\
           \{\"domain\":\"Diagnosis\",\"time\":{\"begin\":0,\"end\":1}}]"
 
 testInputsInt :: B.ByteString
-testInputsInt = 
+testInputsInt =
       "[\"abc\", 0, 1, \"Diagnosis\",\
       \[\"someThing\"],\
       \{\"domain\":\"Diagnosis\",\"time\":{\"begin\":0,\"end\":1}}]\n\
@@ -40,7 +40,7 @@ testInDay2 = "[\"abc\", \"2020-01-01\", null, \"Diagnosis\",\
 
 
 testInputsDay :: B.ByteString
-testInputsDay = 
+testInputsDay =
       "[\"abc\", \"2020-01-01\", \"2020-01-02\", \"Diagnosis\",\
       \[\"someThing\"],\
       \{\"domain\":\"Diagnosis\",\
@@ -51,7 +51,7 @@ testInputsDay =
       \ \"time\":{\"begin\":\"2020-01-05\",\"end\":\"2020-01-06\"}}]"
 
 testInputsDay2 :: B.ByteString
-testInputsDay2 = 
+testInputsDay2 =
       "[\"abc\", \"2020-01-01\", null, \"Diagnosis\",\
       \[\"someThing\"],\
       \{\"domain\":\"Diagnosis\",\
@@ -66,7 +66,7 @@ testOutInt2 = event (beginerval 1 (5 :: Int)) (HC.context ( Just $ Unimplemented
 
 testOutDay1 = event (beginerval 1 (fromGregorian 2020 1 1))
                      (HC.context ( Just $ UnimplementedDomain () ) (packConcepts ["someThing"]))
-testOutDay2 = event (beginerval 1 (fromGregorian 2020 1 5)) 
+testOutDay2 = event (beginerval 1 (fromGregorian 2020 1 5))
                (HC.context ( Just $ UnimplementedDomain () ) (packConcepts [ "someThing"]))
 
 
@@ -79,19 +79,19 @@ jsonDemoTest = "{\"domain\":\"Demographics\",\"facts\":{\"demo\":{\"field\":\"Bi
 jsonOtherTest :: B.ByteString
 jsonOtherTest = "{\"domain\":\"Labs\",\"facts\":{\"code\":{\"code\":\"XYZ\"}}}"
 
-spec :: Spec 
-spec = do 
-    it "an Int event is parsed correctly" $ 
-       ( decode testInInt )  `shouldBe` (Just testOutInt1)
+spec :: Spec
+spec = do
+    it "an Int event is parsed correctly" $
+       decode testInInt  `shouldBe` Just testOutInt1
     it "lines of Int events are parsed correctly" $
-       (parseEventIntLines testInputsInt) `shouldBe` [testOutInt1, testOutInt2]
+       parseEventIntLines testInputsInt `shouldBe` ([], [testOutInt1, testOutInt2])
 
-    it "a Day event is parsed correctly" $ 
-       ( decode testInDay )  `shouldBe` (Just testOutDay1)
-    it "a Day event with missing end day is parsed correctly" $ 
-       ( decode testInDay2 )  `shouldBe` (Just testOutDay1)
+    it "a Day event is parsed correctly" $
+       decode testInDay  `shouldBe` Just testOutDay1
+    it "a Day event with missing end day is parsed correctly" $
+       decode testInDay2  `shouldBe` Just testOutDay1
     it "lines of Int events are parsed correctly" $
-       (parseEventDayLines testInputsDay) `shouldBe` [testOutDay1, testOutDay2]
+       parseEventDayLines testInputsDay `shouldBe` ([], [testOutDay1, testOutDay2])
     it "jsonDemoTest is parsed correctly" $
        decode jsonDemoTest  `shouldBe` Just dmo
     it "jsonOtherTest is parsed correctly" $

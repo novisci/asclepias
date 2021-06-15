@@ -3,6 +3,7 @@
 ## 0.10.0
 
 * Refactors `FeatureSpec`s and `Feature`s to have a `Symbol` as its name, rather than `Text`.
+* Updates `parseEventLines` and related functions to keep parse errors. Similarly for `parseSubjectLines` which keeps the error message as well as the line number.
 
 ## 0.9.0
 

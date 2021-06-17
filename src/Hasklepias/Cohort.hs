@@ -1,4 +1,3 @@
-{-# LANGUAGE LambdaCase #-}
 {-|
 Module      : Hasklepias Subject Type
 Description : Defines the Subject type
@@ -8,8 +7,10 @@ Maintainer  : bsaul@novisci.com
 -}
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE DeriveGeneric #-}
-
 {-# LANGUAGE TupleSections #-}
+{-# LANGUAGE LambdaCase #-}
+-- {-# LANGUAGE Safe #-}
+
 module Hasklepias.Cohort(
       Subject(..)
     , ID
@@ -25,20 +26,22 @@ module Hasklepias.Cohort(
     , module Hasklepias.Cohort.Index
 ) where
 
-import Prelude                  ( Eq, Show, Functor(..), Bool, Monoid, Semigroup )
-import GHC.Num
+import Prelude                  ( Eq, Show, Bool, init )
+import GHC.Num                  ( Num((+)), Natural )
 import Data.Aeson               ( FromJSON, ToJSON, ToJSONKey )
-import Data.Function
-import Data.Maybe
-import Data.List
-import Data.Map.Strict as Map
-import Data.Semigroup
+import Data.Foldable ( Foldable(length) )
+import Data.Function            ( ($) )
+import Data.Functor             ( Functor(fmap) )
+import Data.Maybe               ( Maybe(..), catMaybes )
+import Data.List                ( zipWith, zip, replicate )
+import qualified Data.List.NonEmpty as NE
+import Data.Map.Strict as Map   ( toList, fromListWith )
 import Data.Text                ( Text )
-import Data.Tuple
-import GHC.Generics             ( Generic)
+import GHC.Generics             ( Generic )
 import Hasklepias.Cohort.Index
 import Hasklepias.Cohort.Criteria
 import FeatureCompose
+
 
 type ID = Text
 newtype Subject d = MkSubject (ID, d)
@@ -79,18 +82,18 @@ makeObsUnitFeatures f (MkSubject (id, dat)) = MkObsUnit (id, f dat)
 -- makeCohort :: (d1 -> d0) -> Population d1 -> Cohort d0
 -- makeCohort f (MkPopulation x) = MkCohort (fmap (makeObsUnitFeatures f) x)
 
-data CohortSpec b d1 d0 = MkCohortSpec
-        { runCriteria:: d1 -> Criteria b
+data CohortSpec d1 d0 = MkCohortSpec
+        { runCriteria:: d1 -> Criteria
         -- (Feature b (Index i a))
         , runFeatures:: d1 -> d0 }
 
-specifyCohort :: (d1 -> Criteria b) -> (d1 -> d0) ->  CohortSpec b d1 d0
+specifyCohort :: (d1 -> Criteria) -> (d1 -> d0) ->  CohortSpec d1 d0
 specifyCohort = MkCohortSpec
 
-evalCriteria :: CohortSpec b d1 d0 -> Population d1 -> [Subject (Criteria b)]
+evalCriteria :: CohortSpec d1 d0 -> Population d1 -> [Subject Criteria]
 evalCriteria (MkCohortSpec runCrit _) (MkPopulation pop) = fmap (fmap runCrit) pop
 
-evalCohortStatus :: Show b => [Subject (Criteria b)] -> [Subject CohortStatus]
+evalCohortStatus :: [Subject Criteria] -> [Subject CohortStatus]
 evalCohortStatus = fmap (fmap checkCohortStatus)
 
 evalSubjectCohort :: (d1 -> d0) -> Subject CohortStatus -> Subject d1 -> Maybe (ObsUnit d0)
@@ -99,11 +102,13 @@ evalSubjectCohort f (MkSubject (id, status)) subjData =
         Included     -> Just $ makeObsUnitFeatures f subjData
         ExcludedBy _ -> Nothing
 
-
 newtype AttritionInfo = MkAttritionInfo [(CohortStatus, Natural)]
     deriving (Eq, Show, Generic)
 
--- instance ToJSONKey CohortStatus where
+initAttritionInfo :: Criteria -> AttritionInfo
+initAttritionInfo x =
+    MkAttritionInfo $ zip (initStatusInfo x) (replicate (length (getCriteria x)) 0)
+
 instance ToJSON CohortStatus where
 instance ToJSON AttritionInfo where
 
@@ -111,8 +116,7 @@ measureAttrition :: [Subject CohortStatus] -> AttritionInfo
 measureAttrition l = MkAttritionInfo $ Map.toList $
      Map.fromListWith (+) $ fmap (\x -> (getSubjectData x, 1)) l
 
-
-evalUnits :: Show b => CohortSpec b d1 d0 -> Population d1 -> (AttritionInfo, [ObsUnit d0])
+evalUnits :: CohortSpec d1 d0 -> Population d1 -> (AttritionInfo, [ObsUnit d0])
 evalUnits spec pop =
     ( measureAttrition statuses
     , catMaybes $ zipWith (evalSubjectCohort (runFeatures spec))
@@ -121,6 +125,5 @@ evalUnits spec pop =
     where crits = evalCriteria spec pop
           statuses = evalCohortStatus crits
 
-
-evalCohort :: Show b => CohortSpec b d1 d0 -> Population d1 -> Cohort d0
+evalCohort :: CohortSpec d1 d0 -> Population d1 -> Cohort d0
 evalCohort s p = MkCohort $ evalUnits s p

@@ -14,7 +14,6 @@ Maintainer  : bsaul@novisci.com
 {-# LANGUAGE LambdaCase #-}
 module ExampleCohort1(
   exampleCohort1tests
---     exampleCohort1Spec
 ) where
 
 import Hasklepias
@@ -59,22 +58,6 @@ indices =  map (\(y, m) -> makeIndex $ beginerval 0 (fromGregorian y m 1))
   Utility functions 
 -------------------------------------------------------------------------------}
 
--- | A helper function to specify a @Feature@.
-makeExampleFeatureSpec :: (KnownSymbol name) =>
-          --  Text -- ^ machine readable name of feature
-           Text -- ^ label
-        -> [Purpose] -- ^ purposes
-        -> FeatureDefinition di d
-        -> FeatureSpec name Attributes di d
-makeExampleFeatureSpec label purposes = specifyFeature (MkAttributes label purposes)
-
--- | A helper to specify a covariate Feature.
-makeCovariateSpec :: (KnownSymbol name) =>
-           Text
-        -> FeatureDefinition di d
-        -> FeatureSpec name Attributes di d
-makeCovariateSpec label = makeExampleFeatureSpec label [Covariate]
-
 -- | Creates a baseline interval from index
 baselineInterval :: Index Interval Day -> Interval Day
 baselineInterval index = lookback baselineLookback (getIndex index)
@@ -109,8 +92,8 @@ getBaselineConcur index = filterConcur (baselineInterval index)
 twoOutOneIn ::
        [Text]
     -> [Text]
-    -> FeatureDefinition (FeatureData (Index Interval Day), FeatureData (Events Day)) Bool
-twoOutOneIn cpts1 cpts2 = define2
+    -> Definition (Feature "calendarIndex" (Index Interval Day) -> Feature "allEvents" (Events Day) -> Feature name Bool)
+twoOutOneIn cpts1 cpts2 = define
     (\index events ->
         atleastNofX 1 cpts1  (getBaselineConcur index events) ||
         (anyGapsWithinAtLeastDuration 7 (baselineInterval index) . makeConceptsFilter cpts2) events
@@ -121,8 +104,8 @@ twoOutOneIn cpts1 cpts2 = define2
 --     duration >= 90 days
 --   * at least 2 events with concepts in 'cpts' have the same interval 
 medHx :: [Text]
-      -> FeatureDefinition (FeatureData (Index Interval Day), FeatureData (Events Day)) Bool
-medHx cpt = define2
+  -> Definition (Feature "calendarIndex" (Index Interval Day) -> Feature "allEvents" (Events Day) -> Feature name Bool)
+medHx cpt = define
     (\index events ->
             ( events
                 |> getBaselineConcur index
@@ -144,95 +127,68 @@ medHx cpt = define2
 -------------------------------------------------------------------------------}
 
 -- | Include the subject if female; Exclude otherwise
-critFemale :: FeatureSpec "isFemale" Attributes (FeatureData (Events Day)) Status
+critFemale :: Definition (Feature "allEvents" (Events Day) -> Feature "isFemale" Status)
+
 critFemale =
-    makeExampleFeatureSpec
-        -- "isFemale"
-        "Is this subject female?"
-        [Intermediate]
-        ( define
-          (\events ->
-               events
-            |> makeConceptsFilter ["is_female"]
-            |> headMay
-            |> \case
-                Nothing -> Exclude
-                Just _  -> Include
-          )
-        )
+    define
+      (\events ->
+            events
+        |> makeConceptsFilter ["is_female"]
+        |> headMay
+        |> \case
+            Nothing -> Exclude
+            Just _  -> Include
+      )
 
 -- | Include the subject if over 50; Exclude otherwise.
-critOver50 :: FeatureSpec "isOver50" Attributes (FeatureData Integer) Status
-critOver50 =
-    makeExampleFeatureSpec
-        -- "isOver50"
-        "Is this subject over 50 at time of index?"
-        [Intermediate]
-        ( define (includeIf . (>= 50)))
+critOver50 :: Definition
+  (   Feature "age" Integer
+   -> Feature "isOver50" Status)
+critOver50 = define (includeIf . (>= 50))
 
 -- | Include the subject if she has an enrollment interval concurring with index.
-critEnrolled ::
-    FeatureSpec
-        "isEnrolled"
-        Attributes
-        (FeatureData (Index Interval Day), FeatureData [Interval Day])
-        Status
+critEnrolled :: Definition
+  (   Feature "calendarIndex" (Index Interval Day)
+   -> Feature "enrollmentIntervals" [Interval Day]
+   -> Feature "isEnrolled" Status )
 critEnrolled =
-    makeExampleFeatureSpec
-        -- "isEnrolled"
-        "Is this subject enrolled at time of index?"
-        [Intermediate]
-        ( define2
-            (\index enrollmentIntervals ->
-              enrollmentIntervals
-              |> any (concur $ getIndex index)
-              |> includeIf
-            )
-        )
+  define
+      (\index enrollmentIntervals ->
+        enrollmentIntervals
+        |> any (concur $ getIndex index)
+        |> includeIf
+      )
 
 -- | Include the subject if both:
 --     * she is enrolled on index ('critEnrolled')
 --     * she all the gaps between the (combined) enrolled intervals within baseline 
 --       are less than 30 days
-critEnrolled455 ::
-    FeatureSpec
-        "isContinuousEnrolled"
-        Attributes
-        (FeatureData (Index Interval Day), FeatureData [Interval Day], FeatureData Status)
-        Status
+critEnrolled455 :: Definition
+  (   Feature "calendarIndex" (Index Interval Day)
+   -> Feature "enrollmentIntervals" [Interval Day]
+   -> Feature "isEnrolled" Status
+   -> Feature "isContinuousEnrolled" Status )
 critEnrolled455 =
-    makeExampleFeatureSpec
-        -- "isContinuousEnrolled"
-        "Is this subject continuously enrolled for 455 days prior to index?"
-        [Intermediate]
-        ( define3
-            (\index enrollIntrvls isEnrolled ->
-              case isEnrolled of
-                Exclude -> Exclude
-                Include -> includeIf ( allGapsWithinLessThanDuration 30 (baselineInterval index) enrollIntrvls)
-            )
-        )
+  define
+      (\index enrollIntrvls isEnrolled ->
+        case isEnrolled of
+          Exclude -> Exclude
+          Include -> includeIf ( allGapsWithinLessThanDuration 30 (baselineInterval index) enrollIntrvls)
+      )
 
 -- | Exclude if the subject is dead before the time of index.
-critDead ::
-    FeatureSpec
-        "isDead"
-        Attributes
-        (FeatureData (Index Interval Day), FeatureData (Maybe (Interval Day)))
-        Status
+critDead :: Definition
+  (  Feature "calendarIndex" (Index Interval Day)
+  -> Feature "deathDay" (Maybe (Interval Day))
+  -> Feature "isDead" Status)
 critDead =
-    makeExampleFeatureSpec
-        -- "isDead"
-        "Is this subject dead at time of index?"
-        [Intermediate]
-        ( define2
-           (\index mDeadDay ->
-               case mDeadDay of
-                 Nothing -> Include
-                 Just deadDay  -> excludeIf $ beforeIndex index deadDay
-              --  excludeIf ( maybe False (beforeIndex index) mDeadDay) -- different way to write logic
-           )
-        )
+  define
+      (\index mDeadDay ->
+          case mDeadDay of
+            Nothing -> Include
+            Just deadDay  -> excludeIf $ beforeIndex index deadDay
+        --  excludeIf ( maybe False (beforeIndex index) mDeadDay) -- different way to write logic
+      )
 
 {-------------------------------------------------------------------------------
   Features used by inclusion/exclusion (and possibly other places too)
@@ -240,118 +196,92 @@ critDead =
 
 --- | Gets all enrollment intervals and combines them any place they concur. 
 --    Returns an error if there are no enrollment intervals.
-enrollmentIntervals ::
-    FeatureSpec
-        "enrollmentIntervals"
-        Attributes (FeatureData (Events Day)) [Interval Day]
+enrollmentIntervals :: Definition
+  (  Feature "allEvents" (Events Day)
+  -> Feature "enrollmentIntervals" [Interval Day])
 enrollmentIntervals =
-    makeExampleFeatureSpec
-        -- "enrollmentIntervals"
-        "All (combined) enrollment intervals"
-        [Intermediate]
-        ( defineM
-            (\events ->
-                   events
-                |> makeConceptsFilter ["enrollment"]
-                |> combineIntervals
-                |> (\x -> if null x then featureDataL $ Other "no enrollment intervals"
-                          else pure x)
-            )
-
-        )
+  defineA
+      (\events ->
+              events
+          |> makeConceptsFilter ["enrollment"]
+          |> combineIntervals
+          |> (\x -> if null x then makeFeature $ featureDataL $ Other "no enrollment intervals"
+                    else pure x)
+      )
 
 -- | The subject's age at time of index. Returns an error if there no birth year
 --   records.
-age ::
-  FeatureSpec
-      "age"
-      Attributes
-      (FeatureData (Index Interval Day), FeatureData (Events Day))
-      Integer
+age :: Definition
+  (   Feature "calendarIndex" (Index Interval Day)
+   -> Feature "allEvents" (Events Day)
+   -> Feature "age" Integer)
 age =
-    makeExampleFeatureSpec
-        -- "age"
-        "Subject's age index"
-        [Covariate, Intermediate]
-        ( defineM2
-          (\index events ->
-            events
-            |> makeConceptsFilter ["is_birth_year"]
-            |> viewBirthYears
-            |> headMay
-            |> fmap (\y  -> fromGregorian y 1 7)  -- Use July 1 YEAR as birthdate
-            |> fmap (\bday -> computeAgeAt bday (begin $ getIndex index) )
-            |> \case
-                  Nothing -> featureDataL $ Other "No numeric birth year found"
-                  Just age -> featureDataR age
-          )
-
-        )
+  defineA
+    (\index events ->
+      events
+      |> makeConceptsFilter ["is_birth_year"]
+      |> viewBirthYears
+      |> headMay
+      |> fmap (\y  -> fromGregorian y 1 7)  -- Use July 1 YEAR as birthdate
+      |> fmap (\bday -> computeAgeAt bday (begin $ getIndex index) )
+      |> \case
+            Nothing -> makeFeature $ featureDataL $ Other "No numeric birth year found"
+            Just age -> pure age
+    )
 
 -- | Just the day of death (the first if there are multiple). Nothing if there
 --   are no death records.
-deathDay ::
-    FeatureSpec
-        "deathDay"
-        Attributes
-        (FeatureData (Events Day))
-        (Maybe (Interval Day))
+deathDay :: Definition
+  (   Feature "allEvents" (Events Day)
+   -> Feature "deathDay" (Maybe (Interval Day)))
 deathDay =
-    makeExampleFeatureSpec
-        -- "deathDay"
-        "Day of Death (Nothing if no death records)"
-        [Intermediate]
-        ( defineM
-            (\events ->
-                   events
-                |> makeConceptsFilter ["is_death"]
-                |> intervals
-                |> headMay
-                |> pure
-            )
-        )
+  define
+    (\events ->
+           events
+        |> makeConceptsFilter ["is_death"]
+        |> intervals
+        |> headMay
+    )
 
 {-------------------------------------------------------------------------------
   Covariate features
 -------------------------------------------------------------------------------}
 
-type BoolFeatSpec n =
-    FeatureSpec n
-      Attributes (FeatureData (Index Interval Day), FeatureData (Events Day))
-      Bool
+type BoolFeatDef n =
+    Definition
+    (    Feature "calendarIndex" (Index Interval Day)
+      -> Feature "allEvents" (Events Day)
+      -> Feature n Bool
+    )
 
-type BoolFeat n = Feature n Attributes Bool
+type BoolFeat n = Feature n  Bool
 
-diabetes :: BoolFeatSpec "diabetes"
-diabetes = makeCovariateSpec ""
-   (uncurry twoOutOneIn ( ["is_diabetes_outpatient"], ["is_diabetes_inpatient"] ))
+diabetes :: BoolFeatDef "diabetes"
+diabetes = twoOutOneIn ["is_diabetes_outpatient"] ["is_diabetes_inpatient"]
 
-ckd :: BoolFeatSpec "ckd"
-ckd = makeCovariateSpec ""
-  (uncurry twoOutOneIn ( ["is_ckd_outpatient"], ["is_ckd_inpatient"] ))
+ckd :: BoolFeatDef "ckd"
+ckd =  twoOutOneIn ["is_ckd_outpatient"] ["is_ckd_inpatient"]
 
-ppi :: BoolFeatSpec "ppi"
-ppi = makeCovariateSpec "" (medHx ["is_ppi"])
+ppi :: BoolFeatDef "ppi"
+ppi = medHx ["is_ppi"]
 
-glucocorticoids :: BoolFeatSpec "glucocorticoids"
-glucocorticoids = makeCovariateSpec "" (medHx ["is_glucocorticoids"])
+glucocorticoids :: BoolFeatDef "glucocorticoids"
+glucocorticoids = medHx ["is_glucocorticoids"]
 
 {-------------------------------------------------------------------------------
   Cohort Specifications and evaluation
 -------------------------------------------------------------------------------}
 
 -- | Lift a subject's events in a feature
-featureEvents :: Events Day -> Feature "allEvents" Attributes (Events Day)
-featureEvents x=  makeFeature (MkAttributes "" [Intermediate])
-                    (pure x)
+featureEvents :: Events Day -> Feature "allEvents" (Events Day)
+featureEvents = pure
 
 -- | Lift an index into a feature
-featureIndex :: Index Interval Day -> Feature "calendarIndex" Attributes (Index Interval Day)
-featureIndex x = makeFeature  (MkAttributes "" [Intermediate])
-                    (pure x)
+featureIndex :: Index Interval Day -> Feature "calendarIndex"  (Index Interval Day)
+featureIndex = pure
 
 -- | Make a function that runs the criteria for a calendar index
-makeCriteriaRunner :: Index Interval Day -> Events Day -> Criteria Attributes
+makeCriteriaRunner :: Index Interval Day -> Events Day -> Criteria
 makeCriteriaRunner index events =
   criteria $
       criterion crit1 :| -- Note use of NonEmpty constructor
@@ -359,20 +289,20 @@ makeCriteriaRunner index events =
     , criterion crit3
     , criterion crit4
     , criterion crit5 ]
-  where crit1   = evalSpec critFemale featEvs
-        crit2   = evalSpec critOver50 agefeat
-        crit3   = evalSpec critEnrolled (featInd, enrll)
-        crit4   = evalSpec critEnrolled455 (featInd, enrll, getData crit3)
-        crit5   = evalSpec critDead (featInd, dead)
-        agefeat = getData $ evalSpec age (featInd, featEvs)
-        enrll   = getData $ evalSpec enrollmentIntervals featEvs
-        dead    = getData $ evalSpec deathDay featEvs
-        featInd = getData $ featureIndex index
-        featEvs = getData $ featureEvents events
+  where crit1   = eval critFemale featEvs
+        crit2   = eval critOver50 agefeat
+        crit3   = eval critEnrolled (featInd, enrll)
+        crit4   = eval critEnrolled455 (featInd, enrll, crit3)
+        crit5   = eval critDead (featInd, dead)
+        agefeat = eval age (featInd, featEvs)
+        enrll   = eval enrollmentIntervals featEvs
+        dead    = eval deathDay featEvs
+        featInd = featureIndex index
+        featEvs = featureEvents events
 
 -- | Define the shape of features for a cohort
 type ExampleFeatures =
-    ( Feature "calendarIndex"  Attributes  (Index Interval Day)
+    ( Feature "calendarIndex"  (Index Interval Day)
     , BoolFeat "diabetes"
     , BoolFeat "ckd"
     , BoolFeat "ppi"
@@ -386,16 +316,16 @@ makeFeatureRunner ::
     -> ExampleFeatures
 makeFeatureRunner index events = (
       idx
-    , evalSpec diabetes (getData idx, getData ef)
-    , evalSpec ckd (getData idx, getData ef)
-    , evalSpec ppi (getData idx, getData ef)
-    , evalSpec glucocorticoids (getData idx, getData ef)
+    , eval diabetes (idx,  ef)
+    , eval ckd (idx,  ef)
+    , eval ppi (idx,  ef)
+    , eval glucocorticoids (idx, ef)
     )
     where idx = featureIndex index
           ef  = featureEvents events
 
 -- | Make a cohort specification for each calendar time
-cohortSpecs :: [CohortSpec Attributes (Events Day) ExampleFeatures]
+cohortSpecs :: [CohortSpec  (Events Day) ExampleFeatures]
 cohortSpecs =
   map (\x -> specifyCohort (makeCriteriaRunner x) (makeFeatureRunner x))
   indices
@@ -441,16 +371,15 @@ testSubject2 = MkSubject ("b", testData2)
 testPop :: Population (Events Day)
 testPop = MkPopulation [testSubject1, testSubject2]
 
-makeExpectedCovariate :: (KnownSymbol name) => FeatureData Bool -> Feature name Attributes Bool
-makeExpectedCovariate = makeFeature (MkAttributes "" [Covariate])
+makeExpectedCovariate :: (KnownSymbol name) => FeatureData Bool -> Feature name  Bool
+makeExpectedCovariate = makeFeature
 
 makeExpectedFeatures ::
   FeatureData (Index Interval Day)
-    -- -> (FeatureData Bool, FeatureData Bool)
   -> (FeatureData Bool, FeatureData Bool, FeatureData Bool, FeatureData Bool)
   -> ExampleFeatures
 makeExpectedFeatures i (b1, b2, b3, b4) =
-        ( makeFeature  (MkAttributes "" [Intermediate]) i :: Feature "calendarIndex" Attributes (Index Interval Day)
+        ( makeFeature  i :: Feature "calendarIndex"  (Index Interval Day)
         , makeExpectedCovariate b1
         , makeExpectedCovariate b2
         , makeExpectedCovariate b3
@@ -460,9 +389,9 @@ makeExpectedFeatures i (b1, b2, b3, b4) =
 expectedFeatures1 :: [ExampleFeatures]
 expectedFeatures1 =
   map (uncurry makeExpectedFeatures)
-    [ (pure $ makeIndex $ beginerval 1 (fromGregorian 2017 4 1),  
+    [ (pure $ makeIndex $ beginerval 1 (fromGregorian 2017 4 1),
           (pure False, pure False, pure False, pure False))
-    , (pure $ makeIndex $ beginerval 1 (fromGregorian 2017 7 1), 
+    , (pure $ makeIndex $ beginerval 1 (fromGregorian 2017 7 1),
            (pure True, pure False, pure False, pure False))
     , (pure $ makeIndex $ beginerval 1 (fromGregorian 2017 10 1),
            (pure True, pure False, pure True, pure False))

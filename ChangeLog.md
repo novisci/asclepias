@@ -1,5 +1,10 @@
 # Changelog for hasklepias
 
+## 0.11.0
+
+* Refactors the `FeatureCompose` module. `FeatureSpec` and `FeatureDefinition` types are dropped, and now there is a single `Definition` type with two related typeclasses: `Define` (with function `define`) and `DefineA` (with function `defineA`). Both of these typeclasses can lift functions to functions of either Features or FeatureData. For example `define` can take a function `c -> b -> a`, and, depending on the type annotation gives back a definition `Definition (FeatureData c -> FeatureData b -> FeatureData a)` or `Definition (Feature name2 c -> Feature name1 b -> Feature name0 a)`. The `defineA` works similarly for a function of type `c -> b -> f a`, where `f` is either `FeatureData` or `Feature`. The `eval` function takes any `Definition` and an appropriate argument to give back the desired return type. For example, to evaluate `def` of type `Definition (FeatureData c -> FeatureData b -> FeatureData a)`, you would call `eval def (x, y)`, where `(x, y) :: FeatureData c, FeatureData b)`.  At this time, one can define `Definition`s with up to 3 inputs.
+* For now, the `Attributes` component of `Feature`s is dropped. This will be rethought and added back in at later time.
+
 ## 0.10.0
 
 * Refactors `FeatureSpec`s and `Feature`s to have a `Symbol` as its name, rather than `Text`.

@@ -22,10 +22,11 @@ import Control.Monad
 {-
 Index is defined as the first occurrence of an Orca bite.
 -}
-indexDef :: (Ord a) => FeatureDefinition
-  (FeatureData (Events a))
-  (Interval a)
-indexDef = defineM (\events ->
+indexDef :: (Ord a) => Definition (FeatureData (Events a) -> FeatureData (Interval a))
+-- FeatureDefinition
+--   (FeatureData (Events a))
+--   (Interval a)
+indexDef = defineA (\events ->
   case firstConceptOccurrence ["wasBitByOrca"]  events of
         Nothing -> featureDataL (Other "No occurrence of Orca bite")
         Just x  -> pure (getInterval x))
@@ -64,10 +65,8 @@ enrolled allowableGap i events =
       |> maybe False (all (< allowableGap) . durations)
 
 enrolledDef :: IntervalSizeable a b =>
-      b
-      -> FeatureDefinition
-         (FeatureData (Interval a), FeatureData (Events a)) Bool
-enrolledDef allowableGap = define2 (enrolled allowableGap)
+      b -> Definition (FeatureData (Interval a) -> FeatureData (Events a) -> FeatureData Bool)
+enrolledDef allowableGap = define (enrolled allowableGap)
 {-
 Define features that identify whether a subject as bit/struck by a duck and
 bit/struck by a macaw.
@@ -177,10 +176,10 @@ getUnitFeatures x = (
   ) where evs = pure x
 
 
-includeAll :: Events Int -> Criteria ()
-includeAll x = criteria $ pure (criterion (makeFeature () (featureDataR Include)  :: Feature "includeAll" () Status))
+includeAll :: Events Int -> Criteria 
+includeAll x = criteria $ pure (criterion (makeFeature (featureDataR Include)  :: Feature "includeAll" Status))
 
-testCohortSpec :: CohortSpec () (Events Int) MyData
+testCohortSpec :: CohortSpec  (Events Int) MyData
 testCohortSpec = specifyCohort includeAll getUnitFeatures
 
 example1results :: MyData

@@ -10,17 +10,17 @@ import Test.Hspec ( describe, pending, shouldBe, it, Spec )
 import Data.List.NonEmpty
 
 
-f1 :: Status -> Criterion String
-f1 s = criterion (makeFeature "" (featureDataR s) :: Feature "f1" String Status)
+f1 :: Status -> Criterion 
+f1 s = criterion (makeFeature (featureDataR s) :: Feature "f1" Status)
 
-f2 :: Status -> Criterion String
-f2 s = criterion (makeFeature "" (featureDataR s) :: Feature "f2" String Status)
+f2 :: Status -> Criterion 
+f2 s = criterion (makeFeature  (featureDataR s) :: Feature "f2" Status)
 
-f3 :: Status -> Criterion String
-f3 s = criterion (makeFeature "" (featureDataR s) :: Feature "f3" String Status)
+f3 :: Status -> Criterion 
+f3 s = criterion (makeFeature (featureDataR s) :: Feature "f3" Status)
 
-f4 :: Criterion String
-f4 = criterion ( makeFeature "" (featureDataL $ Other "something") :: Feature "f4" String Status)
+f4 :: Criterion 
+f4 = criterion ( makeFeature (featureDataL $ Other "something") :: Feature "f4" Status)
 
 spec :: Spec
 spec = do

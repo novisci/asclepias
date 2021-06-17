@@ -10,132 +10,67 @@ Maintainer  : bsaul@novisci.com
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE Safe #-}
-{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE DataKinds #-} 
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE PolyKinds #-}
+{-# LANGUAGE GADTs #-}
+{-# LANGUAGE FunctionalDependencies #-}
+{-# LANGUAGE AllowAmbiguousTypes #-}
 module FeatureCompose(
-    -- * Types
-      FeatureSpec(..)
-    , Feature(..)
-    , Feature'(..)
-    , FeatureData(..)
-    , MissingReason(..)
-    , FeatureDefinition(..)
-    , Eval(..)
-    , EvalSpec(..)
-    , unmaskFeature
-    , specifyFeature
-    , makeFeature
-    , featureDataR
-    , featureDataL
-    , define
-    , defineM
-    , define2
-    , defineM2
-    , define3
-    , defineM3
+    Definition(..)
+  , FeatureData
+  , Feature
+  , Define(..)
+  , MissingReason(..)
+  , nameFeature
+  , FeatureNamed
+  -- , define
+  , defineA
+  , eval
+  , featureDataL
+  , featureDataR
+  , missingBecause
+  , makeFeature
+  , getFeatureData
+  , getData
+  , getData'
+  , getName'
 ) where
 
-import safe GHC.Show                   ( Show(show) )
 import safe GHC.Generics               ( Generic )
-import safe GHC.Read                   ( Read )
-import safe GHC.TypeLits               ( KnownSymbol, symbolVal )
-import safe Control.Applicative        ( Applicative(..), liftA3 )
+import safe GHC.Show                   ( Show(show) )
+import safe GHC.TypeLits               ( KnownSymbol, Symbol, symbolVal )
+import safe Control.Applicative        ( Applicative(..)
+                                        , liftA3, (<$>) )
 import safe Control.Monad              ( Functor(..), Monad(..)
-                                       , join, liftM, liftM2)
+                                       , (=<<), join, liftM, liftM2, liftM3)
 import safe Data.Either                ( Either(..) )
 import safe Data.Eq                    ( Eq(..) )
+import safe Data.Foldable              ( Foldable(foldr) )
 import safe Data.Function              ( ($), (.) )
-import safe Data.List                  ( (++), zipWith )
-import safe Data.Maybe                 ( Maybe(..), maybe, isJust )
-import safe Data.Ord                   ( Ord )
+import safe Data.List                  ( (++) )
 import safe Data.Proxy                 ( Proxy(..) )
-import safe Data.Traversable           ( Traversable(..) )
+import safe Data.String
 import safe Data.Text                  ( Text, pack )
-import safe Data.Tuple                 ( uncurry, curry )
--- import safe Data.Functor.Identity
--- import safe Test.QuickCheck       ( Property )
+import safe Data.Traversable           ( Traversable(..) )
 
-{- | A 'FeatureSpec' contains all the information needed to derive a 'Feature':
-      * its name
-      * its attributes
-      * the function needed to derive a feature (i.e. the 'FeatureDefinition')
+{-
+TODO: describe me
 -}
-data (Show b, KnownSymbol n) => FeatureSpec n b di d0 = MkFeatureSpec {
-        getSpecName :: Proxy n
-      , getSpecAttr :: b
-      , getDefn :: FeatureDefinition di d0
-      -- To add in future: an optional list of properties to check
-      -- , getProp :: Maybe [Feature d -> Events a -> Property] 
-    }
+data MissingReason =
+    InsufficientData
+  | Excluded
+  | Other Text
+  | Unknown
+  deriving (Eq, Show, Generic)
 
--- | TODO
-specifyFeature :: forall name b di d0 . (Show b, KnownSymbol name) =>
-  --    Proxy n
-  -- -> 
-    b
-  -> FeatureDefinition di d0
-  -> FeatureSpec name b di d0
-specifyFeature = MkFeatureSpec (Proxy @name)
-
-{- | A 'Feature' contains the following:
-      * a name
-      * its attributes
-      * 'FeatureData'
+{-
+TODO: describe me
 -}
-data (Show attr, KnownSymbol name) => Feature name attr d = MkFeature {
-        getName :: Proxy name
-      , getAttr :: attr 
-      , getData :: FeatureData d
-      } deriving (Eq)
-
-makeFeature :: forall name b d . (Show b, KnownSymbol name) => 
-  b -> 
-  FeatureData d -> 
-  Feature name b d
-makeFeature = MkFeature (Proxy @name)
-
-instance (Show b, Show d, KnownSymbol n) => Show (Feature n b d) where
-    show x = "(" ++ symbolVal (getName x) ++ ": (" ++
-     show (getAttr x) ++ ") "  ++ show (getData x) ++ " )\n"
-
-instance (Show b, KnownSymbol n) => Functor (Feature n b) where
-  fmap f (MkFeature n a d) = MkFeature n a (fmap f d)
-
-data (Show b) => Feature' b d = MkFeature' {
-        getName' :: Text
-      , getAttr' :: b
-      , getData' :: FeatureData d
-      } deriving (Eq, Show)
-
-unmaskFeature :: (Show b, KnownSymbol n) => Feature n b d -> Feature' b d
-unmaskFeature (MkFeature n a d) = MkFeature' (pack $ symbolVal n) a d
-
-{- | 'FeatureData' is @'Either' 'MissingReason' d@, where @d@ can be any type 
-     of data derivable from 'Hasklepias.Event.Events'.
--}
-newtype FeatureData d = MkFeatureData { getFeatureData :: Either MissingReason d }
-  deriving (Generic, Show, Eq)
-
-instance Functor FeatureData where
-  fmap f (MkFeatureData x) = MkFeatureData (fmap f x)
-
-instance Applicative FeatureData where
-  pure = featureDataR
-  liftA2 f (MkFeatureData x) (MkFeatureData y) =
-    MkFeatureData ( liftA2 f x y )
-
-instance Monad FeatureData where
-  (MkFeatureData x) >>= f = -- TODO: surely there's a cleaner way
-    case fmap f x of
-         Left l  -> featureDataL l
-         Right v -> case getFeatureData v of
-                      Left l  -> featureDataL l
-                      Right v -> MkFeatureData $ Right v
+newtype FeatureData a = MkFeatureData (Either MissingReason a)
+  deriving (Eq, Show, Generic)
 
 -- | Create the 'Right' side of 'FeatureData'.
 featureDataR :: d -> FeatureData d
@@ -145,55 +80,154 @@ featureDataR = MkFeatureData . Right
 featureDataL :: MissingReason -> FeatureData d
 featureDataL = MkFeatureData . Left
 
--- | 'FeatureData' may be missing for any number of reasons. 
-data MissingReason =
-    InsufficientData
-  | Excluded
-  | Other Text
-  | Unknown
-  deriving (Eq, Read, Show, Generic)
+-- | 
+missingBecause :: MissingReason -> FeatureData d
+missingBecause = featureDataL
 
--- TODO: the code below should be generalized so that there is a single define/eval
---       interface and the recursive structure is realizing and not hacked together.
-newtype FeatureDefinition di d0 = MkFeatureDefinition (di -> FeatureData d0)
+getFeatureData :: FeatureData a -> Either MissingReason a
+getFeatureData (MkFeatureData x) = x
 
-class Eval di d0 where
-  eval :: FeatureDefinition di d0 -> di -> FeatureData d0
-  eval (MkFeatureDefinition f) = f
+getData :: Feature n a -> Either MissingReason a
+getData (MkFeature x) = getFeatureData x
 
-instance Eval (FeatureData d1) d0 where
-instance Eval (FeatureData d2, FeatureData d1) d0 where
-instance Eval (FeatureData d3, FeatureData d2, FeatureData d1) d0 where
+instance Functor FeatureData where
+  fmap f (MkFeatureData x) = MkFeatureData (fmap f x)
 
-class (Eval di d0) => EvalSpec di d0 where
-  evalSpec :: (KnownSymbol n, Show b) =>  FeatureSpec n b di d0 -> di -> Feature n b d0
-  evalSpec (MkFeatureSpec n a def) x = MkFeature n a (eval def x)
+instance Applicative FeatureData where
+  pure = MkFeatureData . Right
+  liftA2 f (MkFeatureData x) (MkFeatureData y) = MkFeatureData (liftA2 f x y)
 
-instance EvalSpec (FeatureData d1) d0 where
-instance EvalSpec (FeatureData d2, FeatureData d1) d0 where
-instance EvalSpec (FeatureData d3, FeatureData d2, FeatureData d1) d0 where
+instance Monad FeatureData where
+  (MkFeatureData x) >>= f =
+      case fmap f x of
+         Left l  -> MkFeatureData $ Left l
+         Right v -> v
 
-defineM :: (d1 -> FeatureData d0) -> FeatureDefinition (FeatureData d1) d0
-defineM f = MkFeatureDefinition (>>= f)
+instance Foldable FeatureData where
+  foldr f x (MkFeatureData z) = foldr f x z
 
-defineM2 :: (d2 -> d1 -> FeatureData d0) -> FeatureDefinition (FeatureData d2, FeatureData d1) d0
-defineM2 f = MkFeatureDefinition (\ (x, y) -> join (liftA2 f x y))
+instance Traversable FeatureData where
+  traverse f (MkFeatureData z) = MkFeatureData <$> traverse f z
 
-defineM3 :: (d3 -> d2 -> d1 -> FeatureData d0) 
-  -> FeatureDefinition (FeatureData d3, FeatureData d2, FeatureData d1) d0
-defineM3 f = MkFeatureDefinition (\ (x, y, z) -> join (liftA3 f x y z))
+{-
+TODO: describe me
+-}
+newtype (KnownSymbol name) => Feature name a = MkFeature (FeatureData a)
+  deriving (Eq)
 
-define :: (d1 -> d0) -> FeatureDefinition (FeatureData d1) d0
-define f = MkFeatureDefinition (fmap f)
+makeFeature :: (KnownSymbol name) =>  FeatureData a -> Feature name a
+makeFeature = MkFeature
 
-define2 :: (d2 -> d1 -> d0) -> FeatureDefinition (FeatureData d2, FeatureData d1) d0
-define2 f = MkFeatureDefinition $ uncurry (liftA2 f)
+instance (KnownSymbol name, Show a) => Show (Feature name a) where
+  show (MkFeature x) = show (symbolVal (Proxy @name)) ++ ": " ++ show x
 
-define3 :: (d3 -> d2 -> d1 -> d0) 
-    -> FeatureDefinition (FeatureData d3, FeatureData d2, FeatureData d1) d0
-define3 f = MkFeatureDefinition $ uncurry3 $ liftA3 f
+instance Functor (Feature name) where
+  fmap f (MkFeature x) = MkFeature (fmap f x)
 
--- | Converts a curried function to a function on a triple.
-uncurry3 :: (a -> b -> c -> d) -> ((a, b, c) -> d)
-uncurry3 f (a,b,c) = f a b c
+instance Applicative (Feature name) where
+  pure x = MkFeature (pure x)
+  liftA2 f (MkFeature x) (MkFeature y) = MkFeature (liftA2 f x y)
 
+instance Foldable (Feature name) where
+  foldr f x (MkFeature t) = foldr f x t
+
+instance Traversable (Feature name) where
+  traverse f (MkFeature x) = MkFeature <$> traverse f x
+
+instance Monad (Feature name) where
+   (MkFeature x) >>= f =
+        case fmap f x of
+          MkFeatureData (Left l)  -> MkFeature $ MkFeatureData (Left l)
+          MkFeatureData (Right r) ->  r
+
+data FeatureNamed d = MkFeatureNamed {
+        getName' :: Text
+      , getData' :: FeatureData d
+      } deriving (Eq, Show)
+
+nameFeature :: forall name d . (KnownSymbol name) => Feature name d -> FeatureNamed d
+nameFeature (MkFeature d) = MkFeatureNamed (pack $ symbolVal (Proxy @name)) d
+
+{-
+TODO: describe me
+-}
+data Definition d where
+  -- D0  :: a -> Definition (f1 a)
+  D1  :: (b -> a) -> Definition (f1 b -> f0 a)
+  D1A :: (b -> f0 a) -> Definition (f1 b -> f0 a)
+  D2  :: (c -> b -> a) -> Definition (f2 c -> f1 b -> f0 a)
+  D2A :: (c -> b -> f0 a) -> Definition (f2 c -> f1 b -> f0 a)
+  D3  :: (d -> c -> b -> a) -> Definition (f3 d -> f2 c -> f1 b -> f0 a)
+  D3A :: (d -> c -> b -> f0 a) -> Definition (f3 d -> f2 c -> f1 b -> f0 a)
+
+class Define a b | b -> a where
+  define :: a -> Definition b
+
+class DefineA a b | b -> a where
+  defineA :: a -> Definition b
+
+-- instance Define a (FeatureData a) where define = D0
+instance Define (b -> a) (FeatureData b -> FeatureData a) where define = D1
+instance Define (c -> b -> a) (FeatureData c -> FeatureData b -> FeatureData a) where define = D2
+instance Define (d -> c -> b -> a) (FeatureData d -> FeatureData c -> FeatureData b -> FeatureData a) where define = D3
+
+instance DefineA (b -> FeatureData a) (FeatureData b -> FeatureData a) where defineA = D1A
+instance DefineA (c -> b -> FeatureData a) (FeatureData c -> FeatureData b -> FeatureData a) where defineA = D2A
+instance DefineA (d -> c -> b -> FeatureData a) (FeatureData d -> FeatureData c -> FeatureData b -> FeatureData a) where defineA = D3A
+
+-- instance Define a (Feature n0 a) where define = D0
+instance Define (b -> a) (Feature n1 b -> Feature n0 a) where define = D1
+instance Define (c -> b -> a) (Feature n2 c -> Feature n1 b -> Feature n0 a) where define = D2
+instance Define (d -> c -> b -> a) (Feature n3 d -> Feature n2 c -> Feature n1 b -> Feature n0 a) where define = D3
+
+instance DefineA (b -> Feature n0 a) (Feature n1 b -> Feature n0 a) where defineA = D1A
+instance DefineA (c -> b -> Feature n0 a) (Feature n2 c -> Feature n1 b -> Feature n0 a) where defineA = D2A
+instance DefineA (d -> c -> b -> Feature n0 a) (Feature n3 d -> Feature n2 c -> Feature n1 b -> Feature n0 a) where defineA = D3A
+
+{-
+TODO: describe me
+-}
+class Eval f b a | f -> a b where
+  eval :: Definition f -> b -> a
+
+instance Eval (FeatureData a -> FeatureData b) (FeatureData a) (FeatureData b) where
+  eval (D1 f)  x = fmap f x
+  eval (D1A f) x = x >>= f
+
+instance Eval (Feature n1 a -> Feature n2 b) (Feature n1 a) (Feature n2 b) where
+  eval (D1 f) (MkFeature x) = MkFeature $ fmap f x
+  eval (D1A f) (MkFeature x) = 
+       case fmap f x of
+          MkFeatureData (Left l)  -> MkFeature $ MkFeatureData (Left l)
+          MkFeatureData (Right r) -> r 
+
+
+instance Eval (FeatureData a -> FeatureData b -> FeatureData c) (FeatureData a, FeatureData b) (FeatureData c) where
+  eval (D2 f) (x, y) = liftA2 f x y
+  eval (D2A f) (x, y) = join (liftA2 f x y) 
+
+instance Eval (Feature n1 a -> Feature n2 b -> Feature n3 c) 
+    (Feature n1 a, Feature n2 b) (Feature n3 c) 
+  where
+  eval (D2 f) (MkFeature x, MkFeature y) = MkFeature $ liftA2 f x y
+  eval (D2A f) (MkFeature x, MkFeature y) = 
+      case liftA2 f x y of
+          MkFeatureData (Left l)  -> MkFeature $ MkFeatureData (Left l)
+          MkFeatureData (Right r) ->  r 
+
+instance Eval (FeatureData a -> FeatureData b -> FeatureData c -> FeatureData d) 
+     (FeatureData a, FeatureData b, FeatureData c)
+    (FeatureData d)
+  where
+  eval (D3 f) (x, y, z) = liftA3 f x y z
+  eval (D3A f) (x, y, z) = join (liftA3 f x y z) 
+
+instance Eval (Feature n1 a -> Feature n2 b -> Feature n3 c -> Feature n4 d)
+    (Feature n1 a, Feature n2 b, Feature n3 c) 
+    (Feature n4 d)
+   where
+  eval (D3 f) (MkFeature x, MkFeature y, MkFeature z) = MkFeature $ liftA3 f x y z
+  eval (D3A f) (MkFeature x, MkFeature y, MkFeature z) = 
+      case liftA3 f x y z of
+          MkFeatureData (Left l)  -> MkFeature $ MkFeatureData (Left l)
+          MkFeatureData (Right r) -> r  

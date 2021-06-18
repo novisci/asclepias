@@ -52,7 +52,7 @@ import safe Data.Foldable              ( Foldable(foldr) )
 import safe Data.Function              ( ($), (.) )
 import safe Data.List                  ( (++) )
 import safe Data.Proxy                 ( Proxy(..) )
-import safe Data.String
+-- import safe Data.String
 import safe Data.Text                  ( Text, pack )
 import safe Data.Traversable           ( Traversable(..) )
 
@@ -148,6 +148,7 @@ data FeatureNamed d = MkFeatureNamed {
 nameFeature :: forall name d . (KnownSymbol name) => Feature name d -> FeatureNamed d
 nameFeature (MkFeature d) = MkFeatureNamed (pack $ symbolVal (Proxy @name)) d
 
+
 {-
 TODO: describe me
 -}
@@ -160,11 +161,11 @@ data Definition d where
   D3  :: (d -> c -> b -> a) -> Definition (f3 d -> f2 c -> f1 b -> f0 a)
   D3A :: (d -> c -> b -> f0 a) -> Definition (f3 d -> f2 c -> f1 b -> f0 a)
 
-class Define a b | b -> a where
-  define :: a -> Definition b
+class Define inputs def | def -> inputs where
+  define :: inputs -> Definition def
 
-class DefineA a b | b -> a where
-  defineA :: a -> Definition b
+class DefineA inputs def | def -> inputs where
+  defineA :: inputs -> Definition def
 
 -- instance Define a (FeatureData a) where define = D0
 instance Define (b -> a) (FeatureData b -> FeatureData a) where define = D1
@@ -187,47 +188,48 @@ instance DefineA (d -> c -> b -> Feature n0 a) (Feature n3 d -> Feature n2 c -> 
 {-
 TODO: describe me
 -}
-class Eval f b a | f -> a b where
-  eval :: Definition f -> b -> a
+class Eval def args return | def -> args return where
+  eval :: Definition def -> args -> return
 
-instance Eval (FeatureData a -> FeatureData b) (FeatureData a) (FeatureData b) where
+instance Eval (FeatureData b -> FeatureData a) 
+              (FeatureData b)  (FeatureData a) where
   eval (D1 f)  x = fmap f x
   eval (D1A f) x = x >>= f
 
-instance Eval (Feature n1 a -> Feature n2 b) (Feature n1 a) (Feature n2 b) where
+instance Eval (Feature n1 b -> Feature n0 a)
+              (Feature n1 b)  (Feature n0 a) where
   eval (D1 f) (MkFeature x) = MkFeature $ fmap f x
-  eval (D1A f) (MkFeature x) = 
+  eval (D1A f) (MkFeature x) =
        case fmap f x of
           MkFeatureData (Left l)  -> MkFeature $ MkFeatureData (Left l)
-          MkFeatureData (Right r) -> r 
+          MkFeatureData (Right r) -> r
 
 
-instance Eval (FeatureData a -> FeatureData b -> FeatureData c) (FeatureData a, FeatureData b) (FeatureData c) where
+instance Eval (FeatureData c -> FeatureData b -> FeatureData a) 
+              (FeatureData c,   FeatureData b) (FeatureData a) where
   eval (D2 f) (x, y) = liftA2 f x y
-  eval (D2A f) (x, y) = join (liftA2 f x y) 
+  eval (D2A f) (x, y) = join (liftA2 f x y)
 
-instance Eval (Feature n1 a -> Feature n2 b -> Feature n3 c) 
-    (Feature n1 a, Feature n2 b) (Feature n3 c) 
+instance Eval (Feature n2 c -> Feature n1 b -> Feature n0 a)
+              (Feature n2 c,   Feature n1 b)  (Feature n0 a)
   where
   eval (D2 f) (MkFeature x, MkFeature y) = MkFeature $ liftA2 f x y
-  eval (D2A f) (MkFeature x, MkFeature y) = 
+  eval (D2A f) (MkFeature x, MkFeature y) =
       case liftA2 f x y of
           MkFeatureData (Left l)  -> MkFeature $ MkFeatureData (Left l)
-          MkFeatureData (Right r) ->  r 
+          MkFeatureData (Right r) ->  r
 
-instance Eval (FeatureData a -> FeatureData b -> FeatureData c -> FeatureData d) 
-     (FeatureData a, FeatureData b, FeatureData c)
-    (FeatureData d)
+instance Eval (FeatureData d -> FeatureData c -> FeatureData b -> FeatureData a)
+              (FeatureData d,   FeatureData c,   FeatureData b)  (FeatureData a)
   where
   eval (D3 f) (x, y, z) = liftA3 f x y z
-  eval (D3A f) (x, y, z) = join (liftA3 f x y z) 
+  eval (D3A f) (x, y, z) = join (liftA3 f x y z)
 
-instance Eval (Feature n1 a -> Feature n2 b -> Feature n3 c -> Feature n4 d)
-    (Feature n1 a, Feature n2 b, Feature n3 c) 
-    (Feature n4 d)
+instance Eval (Feature n3 d -> Feature n2 c -> Feature n1 b -> Feature n0 a)
+              (Feature n3 d,   Feature n2 c,   Feature n1 b)  (Feature n0 a)
    where
   eval (D3 f) (MkFeature x, MkFeature y, MkFeature z) = MkFeature $ liftA3 f x y z
-  eval (D3A f) (MkFeature x, MkFeature y, MkFeature z) = 
+  eval (D3A f) (MkFeature x, MkFeature y, MkFeature z) =
       case liftA3 f x y z of
           MkFeatureData (Left l)  -> MkFeature $ MkFeatureData (Left l)
-          MkFeatureData (Right r) -> r  
+          MkFeatureData (Right r) -> r

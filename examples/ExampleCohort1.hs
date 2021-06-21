@@ -17,25 +17,7 @@ module ExampleCohort1(
 ) where
 
 import Hasklepias
-{-------------------------------------------------------------------------------
 
-  Define the desired Feature Attributes.
-  
-  TODO: In future versions the basic attributes will be defined in hasklepias or 
-  some other library.
--------------------------------------------------------------------------------}
-data Attributes = MkAttributes { getLabel :: Text, getPurpose :: [Purpose]}
-    deriving (Eq, Show, Generic)
-
-data Purpose =
-      Outcome
-    | Covariate
-    | Intermediate
-    | Criteria
-    deriving (Eq, Show, Generic)
-
-instance ToJSON Purpose where
-instance ToJSON Attributes where
 
 {-------------------------------------------------------------------------------
   Constants
@@ -92,7 +74,10 @@ getBaselineConcur index = filterConcur (baselineInterval index)
 twoOutOneIn ::
        [Text]
     -> [Text]
-    -> Definition (Feature "calendarIndex" (Index Interval Day) -> Feature "allEvents" (Events Day) -> Feature name Bool)
+    -> Definition 
+    ( Feature "calendarIndex" (Index Interval Day) 
+    -> Feature "allEvents" (Events Day) 
+    -> Feature name Bool )
 twoOutOneIn cpts1 cpts2 = define
     (\index events ->
         atleastNofX 1 cpts1  (getBaselineConcur index events) ||
@@ -104,7 +89,10 @@ twoOutOneIn cpts1 cpts2 = define
 --     duration >= 90 days
 --   * at least 2 events with concepts in 'cpts' have the same interval 
 medHx :: [Text]
-  -> Definition (Feature "calendarIndex" (Index Interval Day) -> Feature "allEvents" (Events Day) -> Feature name Bool)
+  -> Definition 
+ ( Feature "calendarIndex" (Index Interval Day) 
+  -> Feature "allEvents" (Events Day) 
+  -> Feature name Bool )
 medHx cpt = define
     (\index events ->
             ( events
@@ -123,11 +111,74 @@ medHx cpt = define
 
 
 {-------------------------------------------------------------------------------
+  Features used by inclusion/exclusion (and possibly other places too)
+-------------------------------------------------------------------------------}
+
+-- | Lift a subject's events in a feature
+featureEvents :: Events Day -> Feature "allEvents" (Events Day)
+featureEvents = pure
+
+-- | Lift a calendar index into a feature
+featureIndex :: Index Interval Day -> Feature "calendarIndex"  (Index Interval Day)
+featureIndex = pure
+
+--- | Gets all enrollment intervals and combines them any place they concur. 
+--    Returns an error if there are no enrollment intervals.
+enrollmentIntervals :: Definition
+  (  Feature "allEvents" (Events Day)
+  -> Feature "enrollmentIntervals" [Interval Day])
+enrollmentIntervals =
+  defineA
+      (\events ->
+              events
+          |> makeConceptsFilter ["enrollment"]
+          |> combineIntervals
+          |> (\x -> if null x then makeFeature $ missingBecause $ Other "no enrollment intervals"
+                    else pure x)
+      )
+
+-- | The subject's age at time of index. Returns an error if there no birth year
+--   records.
+age :: Definition
+  (   Feature "calendarIndex" (Index Interval Day)
+   -> Feature "allEvents" (Events Day)
+   -> Feature "age" Integer)
+age =
+  defineA
+    (\index events ->
+      events
+      |> makeConceptsFilter ["is_birth_year"]
+      |> viewBirthYears
+      |> headMay
+      |> fmap (\y  -> fromGregorian y 1 7)  -- Use July 1 YEAR as birthdate
+      |> fmap (\bday -> computeAgeAt bday (begin $ getIndex index) )
+      |> \case
+            Nothing -> makeFeature $ featureDataL $ Other "No numeric birth year found"
+            Just age -> pure age
+    )
+
+-- | Just the day of death (the first if there are multiple). Nothing if there
+--   are no death records.
+deathDay :: Definition
+  (   Feature "allEvents" (Events Day)
+   -> Feature "deathDay" (Maybe (Interval Day)))
+deathDay =
+  define
+    (\events ->
+           events
+        |> makeConceptsFilter ["is_death"]
+        |> intervals
+        |> headMay
+    )
+
+{-------------------------------------------------------------------------------
   Inclusion/Exclusion features 
 -------------------------------------------------------------------------------}
 
 -- | Include the subject if female; Exclude otherwise
-critFemale :: Definition (Feature "allEvents" (Events Day) -> Feature "isFemale" Status)
+critFemale :: Definition
+ (   Feature "allEvents" (Events Day)
+  -> Feature "isFemale" Status)
 
 critFemale =
     define
@@ -190,58 +241,7 @@ critDead =
         --  excludeIf ( maybe False (beforeIndex index) mDeadDay) -- different way to write logic
       )
 
-{-------------------------------------------------------------------------------
-  Features used by inclusion/exclusion (and possibly other places too)
--------------------------------------------------------------------------------}
 
---- | Gets all enrollment intervals and combines them any place they concur. 
---    Returns an error if there are no enrollment intervals.
-enrollmentIntervals :: Definition
-  (  Feature "allEvents" (Events Day)
-  -> Feature "enrollmentIntervals" [Interval Day])
-enrollmentIntervals =
-  defineA
-      (\events ->
-              events
-          |> makeConceptsFilter ["enrollment"]
-          |> combineIntervals
-          |> (\x -> if null x then makeFeature $ featureDataL $ Other "no enrollment intervals"
-                    else pure x)
-      )
-
--- | The subject's age at time of index. Returns an error if there no birth year
---   records.
-age :: Definition
-  (   Feature "calendarIndex" (Index Interval Day)
-   -> Feature "allEvents" (Events Day)
-   -> Feature "age" Integer)
-age =
-  defineA
-    (\index events ->
-      events
-      |> makeConceptsFilter ["is_birth_year"]
-      |> viewBirthYears
-      |> headMay
-      |> fmap (\y  -> fromGregorian y 1 7)  -- Use July 1 YEAR as birthdate
-      |> fmap (\bday -> computeAgeAt bday (begin $ getIndex index) )
-      |> \case
-            Nothing -> makeFeature $ featureDataL $ Other "No numeric birth year found"
-            Just age -> pure age
-    )
-
--- | Just the day of death (the first if there are multiple). Nothing if there
---   are no death records.
-deathDay :: Definition
-  (   Feature "allEvents" (Events Day)
-   -> Feature "deathDay" (Maybe (Interval Day)))
-deathDay =
-  define
-    (\events ->
-           events
-        |> makeConceptsFilter ["is_death"]
-        |> intervals
-        |> headMay
-    )
 
 {-------------------------------------------------------------------------------
   Covariate features
@@ -272,13 +272,7 @@ glucocorticoids = medHx ["is_glucocorticoids"]
   Cohort Specifications and evaluation
 -------------------------------------------------------------------------------}
 
--- | Lift a subject's events in a feature
-featureEvents :: Events Day -> Feature "allEvents" (Events Day)
-featureEvents = pure
 
--- | Lift an index into a feature
-featureIndex :: Index Interval Day -> Feature "calendarIndex"  (Index Interval Day)
-featureIndex = pure
 
 -- | Make a function that runs the criteria for a calendar index
 makeCriteriaRunner :: Index Interval Day -> Events Day -> Criteria

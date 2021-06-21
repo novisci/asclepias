@@ -17,7 +17,6 @@ module EventData.Context(
   , facts
   , source
   , context
-  , emptyContext
 
   , Concept
   , Concepts
@@ -51,17 +50,11 @@ import EventData.Context.Domain ( Domain )
 -- later versions of hasklepias. 
 data Context = Context {
       _concepts :: Concepts
-    , _facts    :: Maybe Domain
+    , _facts    :: Domain
     , _source   :: Maybe Source
 } deriving (Eq, Show)
 
 data Source = Source deriving (Eq, Show)
-
-instance Semigroup Context where
-    x <> y = Context (_concepts x <> _concepts y) Nothing Nothing
-
-instance Monoid Context where
-    mempty = emptyContext
 
 instance HasConcept Context where
     hasConcept ctxt concept = 
@@ -71,12 +64,9 @@ instance HasConcept Context where
 --
 -- Creates 'Context' from a list of 'Concept's. At this time, the @facts@ and
 -- @source@ are both set to 'Nothing'.
-context :: Maybe Domain -> Concepts -> Context
+context :: Domain -> Concepts -> Context
 context d x = Context x d Nothing
 
--- | Just an empty Context
-emptyContext :: Context
-emptyContext = Context mempty Nothing Nothing
 
 -- | A @Concept@ is textual "tag" for a context.
 newtype Concept = Concept Text deriving (Eq, Ord)

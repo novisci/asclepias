@@ -61,13 +61,13 @@ testInputsDay2 =
       \{\"domain\":\"Diagnosis\",\
       \ \"time\":{\"begin\":\"2020-01-05\",\"end\":\"2020-01-06\"}}]"
 
-testOutInt1 = event (beginerval 1 (0 :: Int)) (HC.context ( Just $ UnimplementedDomain () ) (packConcepts ["someThing"]))
-testOutInt2 = event (beginerval 1 (5 :: Int)) (HC.context ( Just $ UnimplementedDomain () ) (packConcepts ["someThing"]))
+testOutInt1 = event (beginerval 1 (0 :: Int)) (HC.context ( UnimplementedDomain () ) (packConcepts ["someThing"]))
+testOutInt2 = event (beginerval 1 (5 :: Int)) (HC.context ( UnimplementedDomain () ) (packConcepts ["someThing"]))
 
 testOutDay1 = event (beginerval 1 (fromGregorian 2020 1 1))
-                     (HC.context ( Just $ UnimplementedDomain () ) (packConcepts ["someThing"]))
+                     (HC.context (UnimplementedDomain () ) (packConcepts ["someThing"]))
 testOutDay2 = event (beginerval 1 (fromGregorian 2020 1 5))
-               (HC.context ( Just $ UnimplementedDomain () ) (packConcepts [ "someThing"]))
+               (HC.context (  UnimplementedDomain () ) (packConcepts [ "someThing"]))
 
 
 dmo :: Domain

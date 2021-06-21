@@ -13,10 +13,11 @@ import Data.Maybe
 import Data.Time as DT
 import Test.Hspec ( shouldBe, it, Spec )
 import qualified Data.ByteString.Lazy as B
+import EventData.Context.Domain
 
 
 ex1 :: Events Int
-ex1 = [event (beginerval 10 0) (context Nothing (packConcepts ["enrollment"]))]
+ex1 = [event (beginerval 10 0) (context (UnimplementedDomain ()) (packConcepts ["enrollment"]))]
 
 index:: (Ord a) =>
      Events a

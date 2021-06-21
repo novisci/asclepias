@@ -74,14 +74,19 @@ getBaselineConcur index = filterConcur (baselineInterval index)
 twoOutOneIn ::
        [Text]
     -> [Text]
-    -> Definition 
-    ( Feature "calendarIndex" (Index Interval Day) 
-    -> Feature "allEvents" (Events Day) 
+    -> Definition
+    ( Feature "calendarIndex" (Index Interval Day)
+    -> Feature "allEvents" (Events Day)
     -> Feature name Bool )
 twoOutOneIn cpts1 cpts2 = define
     (\index events ->
-        atleastNofX 1 cpts1  (getBaselineConcur index events) ||
-        (anyGapsWithinAtLeastDuration 7 (baselineInterval index) . makeConceptsFilter cpts2) events
+        atleastNofX 1 cpts1  (getBaselineConcur index events) 
+        || ( 
+          events 
+        |> makeConceptsFilter cpts2 
+        |> map toConceptEvent
+        |> anyGapsWithinAtLeastDuration 7 (baselineInterval index)) 
+          
     )
 
 -- | Defines a feature that returns 'True' ('False' otherwise) if either:
@@ -89,9 +94,9 @@ twoOutOneIn cpts1 cpts2 = define
 --     duration >= 90 days
 --   * at least 2 events with concepts in 'cpts' have the same interval 
 medHx :: [Text]
-  -> Definition 
- ( Feature "calendarIndex" (Index Interval Day) 
-  -> Feature "allEvents" (Events Day) 
+  -> Definition
+ ( Feature "calendarIndex" (Index Interval Day)
+  -> Feature "allEvents" (Events Day)
   -> Feature name Bool )
 medHx cpt = define
     (\index events ->
@@ -106,7 +111,7 @@ medHx cpt = define
                 |> getBaselineConcur index
                 |> relations
                 |> filter (== Equals)
-                |> not . null )
+                |> not . null) 
     )
 
 
@@ -333,18 +338,18 @@ evalCohorts pop = map (`evalCohort` pop) cohortSpecs
   Testing 
   This would generally be in a separate file
 -------------------------------------------------------------------------------}
-m :: Year -> MonthOfYear -> Int -> Integer -> [Text] -> Maybe Domain -> Event Day
+m :: Year -> MonthOfYear -> Int -> Integer -> [Text] -> Domain -> Event Day
 m y m d dur c dmn = event (beginerval dur (fromGregorian y m d)) (context dmn (packConcepts c))
 
 testData1 :: Events Day
 testData1 = sort
-    [ m 2010 1 1 1   ["is_female"] (Just (Demographics (DemographicsFacts (DemographicsInfo Gender  (Just "Female")) )))
-    , m 2010 1 1 1   ["is_birth_year"] (Just (Demographics (DemographicsFacts (DemographicsInfo BirthYear (Just "1960")) )))
-    , m 2016 1 1 699 ["enrollment"] (Just (UnimplementedDomain ()))
-    , m 2018 1 1 30  ["enrollment"] (Just (UnimplementedDomain ()))
-    , m 2018 2 1 30  ["enrollment"] (Just (UnimplementedDomain ()))
-    , m 2017 6 5 1   ["is_diabetes_inpatient"] (Just (UnimplementedDomain ()))
-    , m 2017 8 1 91  ["is_ppi"] (Just (UnimplementedDomain ()))
+    [ m 2010 1 1 1   ["is_female"] (Demographics (DemographicsFacts (DemographicsInfo Gender  (Just "Female")) ))
+    , m 2010 1 1 1   ["is_birth_year"] (Demographics (DemographicsFacts (DemographicsInfo BirthYear (Just "1960")) ))
+    , m 2016 1 1 699 ["enrollment"] ( UnimplementedDomain ())
+    , m 2018 1 1 30  ["enrollment"] ( UnimplementedDomain ())
+    , m 2018 2 1 30  ["enrollment"] ( UnimplementedDomain ())
+    , m 2017 6 5 1   ["is_diabetes_inpatient"] (UnimplementedDomain ())
+    , m 2017 8 1 91  ["is_ppi"] (UnimplementedDomain ())
     ]
 
 testSubject1 :: Subject (Events Day)
@@ -352,11 +357,11 @@ testSubject1 = MkSubject ("a", testData1)
 
 testData2 :: Events Day
 testData2 = sort
-    [ m 2010 1 1 1   ["is_female"] (Just (Demographics (DemographicsFacts (DemographicsInfo Gender  (Just "Female")) )))
-    , m 2010 1 1 1   ["is_birth_year"] (Just (Demographics (DemographicsFacts (DemographicsInfo BirthYear (Just "1980")) )))
-    , m 2016 1 1 730 ["enrollment"] (Just (UnimplementedDomain ()))
-    , m 2018 1 1 30  ["enrollment"] (Just (UnimplementedDomain ()))
-    , m 2018 2 1 30  ["enrollment"] (Just (UnimplementedDomain ()))
+    [ m 2010 1 1 1   ["is_female"] (Demographics (DemographicsFacts (DemographicsInfo Gender  (Just "Female")) ))
+    , m 2010 1 1 1   ["is_birth_year"] (Demographics (DemographicsFacts (DemographicsInfo BirthYear (Just "1980")) ))
+    , m 2016 1 1 730 ["enrollment"] (UnimplementedDomain ())
+    , m 2018 1 1 30  ["enrollment"] (UnimplementedDomain ())
+    , m 2018 2 1 30  ["enrollment"] (UnimplementedDomain ())
     ]
 
 testSubject2 :: Subject (Events Day)

@@ -12,7 +12,7 @@ Maintainer  : bsaul@novisci.com
 
 module EventData.Context.Arbitrary() where
 
-import Test.QuickCheck              ( Arbitrary(arbitrary), elements, sublistOf ) 
+import Test.QuickCheck              ( Arbitrary(arbitrary), elements, sublistOf )
 import Data.Function                ( (.) )
 import Data.Functor                 ( Functor(fmap) )
 import Data.List                    ( map )
@@ -25,6 +25,7 @@ import EventData.Context            ( Concept
                                     , toConcepts
                                     , packConcepts
                                     , packConcept)
+import EventData.Context.Domain     ( Domain(UnimplementedDomain) )
 
 conceptChoices :: [Concept]
 conceptChoices = map packConcept ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"]
@@ -33,7 +34,8 @@ instance Arbitrary Concept where
     arbitrary = elements conceptChoices
 
 instance Arbitrary Context where
-    arbitrary = fmap (\x -> context Nothing ((toConcepts . fromList) x)) (sublistOf conceptChoices)
+    arbitrary = fmap (context (UnimplementedDomain ()) . (toConcepts . fromList))
+                (sublistOf conceptChoices)
 
 -- instance Arbitrary Concepts where
 --     arbitrary = fmap fromList (sublistOf conceptChoices)

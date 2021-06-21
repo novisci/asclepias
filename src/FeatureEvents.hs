@@ -223,7 +223,7 @@ previewBirthYear dmn = intMayMap =<< ((^.demo.info) =<< preview _Demographics dm
 
 -- | Returns a (possibly emtpy) list of birth years from a set of events
 viewBirthYears :: Events a -> [Year]
-viewBirthYears = mapMaybe (\e -> previewBirthYear =<<(ctxt e^.facts) )
+viewBirthYears = mapMaybe (\e -> previewBirthYear =<< Just (ctxt e^.facts ))
 
 -- | Compute the "age" in years between two calendar days. The difference between
 --   the days is rounded down.

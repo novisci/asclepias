@@ -52,9 +52,9 @@ testInput = testInputsDay1 <> "\n" <> testInputsDay2
 
 
 testOutDay1 = event (beginerval 1 (fromGregorian 2020 1 1))
-               (HC.context ( Just $ UnimplementedDomain () ) (packConcepts ["someThing"]))
+               (HC.context ( UnimplementedDomain () ) (packConcepts ["someThing"]))
 testOutDay2 = event (beginerval 1 (fromGregorian 2020 1 5))
-               (HC.context ( Just $ UnimplementedDomain () ) (packConcepts [ "someThing"]))
+               (HC.context ( UnimplementedDomain () ) (packConcepts [ "someThing"]))
 
 
 testOutPop = MkPopulation [

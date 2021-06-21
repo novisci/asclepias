@@ -5,12 +5,13 @@ import EventData.Context as HC
 import Test.Hspec ( shouldBe, it, Spec )
 import Data.Maybe (Maybe(Nothing))
 import Data.Set(fromList)
+import EventData.Context.Domain
 
 ctxt1 :: Context
-ctxt1 = HC.context Nothing (packConcepts  ["c1", "c2"])
+ctxt1 = HC.context (UnimplementedDomain ()) (packConcepts  ["c1", "c2"])
 
 ctxt2 :: Context
-ctxt2 = HC.context Nothing (packConcepts ["c2", "c3"])
+ctxt2 = HC.context (UnimplementedDomain ())  (packConcepts ["c2", "c3"])
 
 spec :: Spec
 spec = do
@@ -24,6 +25,3 @@ spec = do
       (ctxt1 `hasConcepts` ["c3", "c1"]) `shouldBe` True
     it "hasConcepts returns False when no concept is in context" $
       (ctxt1 `hasConcepts` ["c3", "c4"]) `shouldBe` False
-
-    it "<> combines contexts" $
-      (ctxt1 <> ctxt2) `shouldBe` HC.context Nothing (packConcepts ["c1", "c2", "c3"])

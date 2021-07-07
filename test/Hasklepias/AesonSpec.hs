@@ -69,4 +69,5 @@ spec = do
 
     it "a population is parsed" $
        parsePopulationDayLines (testInput <> "\n" <> testInputsDayBad)`shouldBe`
-        ([(5, "Error in $: key \"domain\" not found"), (6, "Error in $: 2020-01-04<2020-01-05")], testOutPop)
+        ([MkParseError  (5, "Error in $: key \"domain\" not found")
+        , MkParseError (6, "Error in $: 2020-01-04<2020-01-05")], testOutPop)

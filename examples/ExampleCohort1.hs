@@ -15,10 +15,7 @@ Maintainer  : bsaul@novisci.com
 module ExampleCohort1(
   exampleCohort1tests
 ) where
-
 import Hasklepias
-
-
 {-------------------------------------------------------------------------------
   Constants
 -------------------------------------------------------------------------------}
@@ -324,7 +321,7 @@ makeFeatureRunner index events = (
           ef  = featureEvents events
 
 -- | Make a cohort specification for each calendar time
-cohortSpecs :: [CohortSpec  (Events Day) ExampleFeatures]
+cohortSpecs :: [CohortSpec (Events Day) ExampleFeatures]
 cohortSpecs =
   map (\x -> specifyCohort (makeCriteriaRunner x) (makeFeatureRunner x))
   indices
@@ -332,7 +329,6 @@ cohortSpecs =
 -- | A function that evaluates all the calendar cohorts for a population
 evalCohorts :: Population (Events Day) -> [Cohort ExampleFeatures]
 evalCohorts pop = map (`evalCohort` pop) cohortSpecs
-
 
 {-------------------------------------------------------------------------------
   Testing 

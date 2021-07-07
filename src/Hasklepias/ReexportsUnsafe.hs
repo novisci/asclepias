@@ -11,10 +11,12 @@ Maintainer  : bsaul@novisci.com
 module Hasklepias.ReexportsUnsafe (
 
     -- * Re-exports
---       module GHC.Types
-      module Test.Tasty
+      module GHC.IO
+    , module Test.Tasty
     , module Test.Tasty.HUnit
 ) where
+
+import GHC.IO            ( IO(..) )
 
 -- import GHC.Types                       ( Any )
 import Test.Tasty hiding (after)

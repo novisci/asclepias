@@ -6,21 +6,17 @@ License     : BSD3
 Maintainer  : bsaul@novisci.com
 -}
 {-# LANGUAGE NoImplicitPrelude #-}
-{-# LANGUAGE FlexibleInstances, OverloadedStrings #-}
 {-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE TupleSections #-}
 
-{-# LANGUAGE TupleSections #-}
-{-# LANGUAGE TupleSections #-}
 module Hasklepias.Aeson(
-      parsePopulationIntLines
+      parsePopulationLines
+    , parsePopulationIntLines
     , parsePopulationDayLines
-    , module Data.Aeson
+    , ParseError(..)
 ) where
 
-import IntervalAlgebra
-import EventData
-import EventData.Aeson
-import Hasklepias.Cohort
+import Control.Applicative                  ( Applicative((<*>)), (<$>) )
 import Data.Aeson                           ( FromJSON(..)
                                             , ToJSON(..)
                                             , eitherDecode
@@ -29,15 +25,30 @@ import qualified Data.ByteString.Lazy as B  ( fromStrict
                                             , toStrict
                                             , ByteString)
 import qualified Data.ByteString.Char8 as C ( lines )
-import Prelude                              ( (<$>), (<*>), ($), fmap, id
-                                            , Int, String, Ord, Show)
-import Data.Bifunctor ( Bifunctor(first) )
-import Data.Either                          ( Either(..), either, rights, partitionEithers )
+import Prelude                              (
+                                             String)
+import Data.Bifunctor                       ( Bifunctor(first) )
+import Data.Either                          ( Either(..)
+                                            , partitionEithers )
+import Data.Eq                              ( Eq )
+import Data.Function                        ( ($), id )                                        
+import Data.Functor                         ( Functor(fmap) )
 import Data.List                            ( sort, (++), zipWith )
 import qualified Data.Map.Strict as M       ( toList, fromListWith)
-import Data.Vector                          ( (!) )
+import Data.Ord                             ( Ord )
+import Data.Text                            (Text, pack)
 import Data.Time.Calendar                   ( Day )
+import Data.Vector                          ( (!) )
+import EventData                            ( Events, event, Event )
+import EventData.Aeson                      ()
+import Hasklepias.Cohort                    ( Population(..)
+                                            , ID
+                                            , Subject(MkSubject) )
+import GHC.Int                              ( Int )
 import GHC.Num                              ( Natural )
+import GHC.Show                             ( Show )
+import IntervalAlgebra                      ( IntervalSizeable )
+
 
 newtype SubjectEvent a = MkSubjectEvent (ID, Event a)
 
@@ -50,28 +61,37 @@ instance (FromJSON a, Show a, IntervalSizeable a b) => FromJSON (SubjectEvent a)
 
 mapIntoPop :: (Ord a) => [SubjectEvent a] -> Population (Events a)
 mapIntoPop l = MkPopulation $
-    fmap (\(id, es) -> MkSubject (id, sort es)) -- TODO: is there a way to avoid the sort
-        (M.toList $ M.fromListWith (++) (fmap (\(MkSubjectEvent (id, e)) -> (id, [e])) l ))
+    fmap (\(id, es) -> MkSubject (id, sort es)) -- TODO: is there a way to avoid the sort?
+        (M.toList $ M.fromListWith (++) 
+        (fmap (\(MkSubjectEvent (id, e)) -> (id, [e])) l ))
+
+decodeIntoSubj :: (FromJSON a, Show a, IntervalSizeable a b) => 
+        B.ByteString  -> Either Text (SubjectEvent a)
+decodeIntoSubj x = first pack $ eitherDecode x 
+-- :: (FromJSON a, Show a, IntervalSizeable a b) => Either Text (SubjectEvent a)
+
+newtype ParseError = MkParseError (Natural, Text) deriving (Eq, Show)
+
 
 -- |  Parse @Event Int@ from json lines.
 parseSubjectLines ::
     (FromJSON a, Show a, IntervalSizeable a b) =>
-        B.ByteString -> ([(Natural, String)], [SubjectEvent a] )
+        B.ByteString -> ( [ParseError], [SubjectEvent a] )
 parseSubjectLines l =
-    -- partitionEithers $ fmap 
-    -- (\x -> eitherDecode $ B.fromStrict x :: (FromJSON a, Show a, IntervalSizeable a b) => Either String (SubjectEvent a))
-    --     (C.lines $ B.toStrict l)
     partitionEithers $ zipWith
-    (\x i ->
-        first (i,) (eitherDecode $ B.fromStrict x :: (FromJSON a, Show a, IntervalSizeable a b) => Either String (SubjectEvent a))
-    )
-    (C.lines $ B.toStrict l)
-    [1..]
+      (\x i -> first (\t -> MkParseError (i,t)) (decodeIntoSubj $ B.fromStrict x) )
+      (C.lines $ B.toStrict l)
+      [1..]
 
 -- |  Parse @Event Int@ from json lines.
-parsePopulationIntLines :: B.ByteString -> ([(Natural, String)], Population (Events Int))
+parsePopulationLines :: (FromJSON a, Show a, IntervalSizeable a b) => 
+    B.ByteString -> ([ParseError], Population (Events a))
+parsePopulationLines x = fmap mapIntoPop (parseSubjectLines x)
+
+-- |  Parse @Event Int@ from json lines.
+parsePopulationIntLines :: B.ByteString -> ([ParseError], Population (Events Int))
 parsePopulationIntLines x = fmap mapIntoPop (parseSubjectLines x)
 
 -- |  Parse @Event Day@ from json lines.
-parsePopulationDayLines :: B.ByteString -> ([(Natural, String)], Population (Events Day))
+parsePopulationDayLines :: B.ByteString -> ([ParseError], Population (Events Day))
 parsePopulationDayLines x = fmap mapIntoPop (parseSubjectLines x)

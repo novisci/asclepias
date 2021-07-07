@@ -20,8 +20,9 @@ module Hasklepias (
     , module IntervalAlgebra
     , module IntervalAlgebra.IntervalUtilities
     , module IntervalAlgebra.PairedInterval
-    , module Hasklepias.Cohort
     , module Hasklepias.Aeson
+    , module Hasklepias.Cohort
+    , module Hasklepias.MakeApp
 ) where
 
 import IntervalAlgebra
@@ -39,3 +40,4 @@ import Hasklepias.ReexportsUnsafe
 import Hasklepias.Cohort
 import Hasklepias.Cohort.Criteria
 import Hasklepias.Aeson
+import Hasklepias.MakeApp

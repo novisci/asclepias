@@ -1,36 +1,28 @@
 module Main(
-    module Hasklepias
-  , module ExampleEvents
-  , module ExampleFeatures1
+    module ExampleFeatures1
   , main
 ) where
 
-import Hasklepias
-import ExampleEvents
-import ExampleFeatures1
-import ExampleFeatures2
-import ExampleFeatures3
-import ExampleCohort1
+import ExampleFeatures1 ( exampleFeatures1Spec )
+import ExampleFeatures2 ( exampleFeatures2Spec ) 
+import ExampleFeatures3 ( exampleFeatures3Spec ) 
+import ExampleCohort1   ( exampleCohort1tests )
 import Test.Tasty
-import Test.Tasty.Hspec
-import Test.Hspec ( hspec )
+import Test.Tasty.Hspec ( testSpec )
+import Test.Hspec       ( hspec )
 
--- main = defaultMain tests
-
-tests :: TestTree
-tests = testGroup "Tests" [exampleCohort1tests]
-
+-- NOTE: testSpec is used because the project orginally used the Hspec testing 
+-- framework. We have since moved to Tasty. The tests in exampleFeatures(1-3)Spec
+-- should be updated to Tasty at some point. 
+main :: IO ()
 main = do
-  spec <- testSpec "spec" exampleFeatures1Spec
+  spec1 <- testSpec "spec1" exampleFeatures1Spec
+  spec2 <- testSpec "spec2" exampleFeatures2Spec
+  spec3 <- testSpec "spec3" exampleFeatures3Spec 
   defaultMain
     (testGroup "tests"
-      [ spec
-      , tests
+      [ spec1
+      , spec2
+      , spec3 
+      , testGroup "Tests" [exampleCohort1tests]
       ])
-
-
--- main :: IO ()
--- main = hspec $ do exampleFeatures1Spec
---                   exampleFeatures2Spec
---                   exampleFeatures3Spec
---                   exampleCohort1tests 

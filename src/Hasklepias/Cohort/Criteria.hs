@@ -86,8 +86,8 @@ criteria l = MkCriteria $ NE.zip (NE.fromList [1..]) l
 
 getStatus :: Criterion -> (Text, Status)
 getStatus (MkCriterion x) =
-  either (const (nm, Exclude)) (nm,) ((getFeatureData . getData') x)
-    where nm = getName' x
+  either (const (nm, Exclude)) (nm,) ((getFeatureData . getDataN) x)
+    where nm = getNameN x
 
 getStatuses ::
   Criteria -> NE.NonEmpty (Natural, Text, Status)
@@ -104,7 +104,7 @@ checkCohortStatus x =
     maybe Included (\(i, n, _) -> ExcludedBy (i, n)) (findExclude x)
 
 getCriterionName :: Criterion -> Text
-getCriterionName (MkCriterion x) = getName' x
+getCriterionName (MkCriterion x) = getNameN x
 
 initStatusInfo :: Criteria -> [CohortStatus]
 initStatusInfo (MkCriteria z) = 

@@ -16,29 +16,37 @@ module EventData.Context.Domain.Demographics(
       DemographicsFacts(..)
     , DemographicsInfo(..)
     , DemographicsField(..)
-    , demo
+    , demo 
     , field 
     , info
 ) where
 
-import Prelude                  ( drop, Show, Eq, Maybe )
 import Control.Lens             ( makeLenses )
-import GHC.Generics             ( Generic )
-import Data.Text                ( Text )
+
 import Data.Aeson               ( FromJSON(..)
                                 , genericParseJSON
                                 , defaultOptions
-                                , fieldLabelModifier )  
+                                , fieldLabelModifier )
+import Data.List                ( drop )
+import Data.Eq                  ( Eq )
+import Data.Maybe               ( Maybe )
+import Data.Text                ( Text )
+import GHC.Generics             ( Generic )
+import GHC.Show                 ( Show )
 
+
+-- | a demographic fact
 newtype DemographicsFacts = 
     DemographicsFacts { _demo :: DemographicsInfo
                       } deriving( Eq, Show, Generic )
 
+-- | information of a demographic fact
 data DemographicsInfo = 
     DemographicsInfo { _field :: DemographicsField
                      , _info :: Maybe Text
                      } deriving ( Eq, Show, Generic )
 
+-- | fields available in a demographic fact
 data DemographicsField =
       BirthYear
     | BirthDate

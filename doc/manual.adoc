@@ -1,0 +1,144 @@
+:doctype: book
+:toc: left
+:source-highlighter: highlightjs
+
+:ghcVersion: 8.10.4
+:hlsVersion: 1.2.0
+:cabalVersion: 3.4.0.0
+
+= The Book of Asclepias
+
+== Getting Started with `Hasklepias`
+
+`Hasklepias` is an embedded domain specific language (eDSL) written in https://www.haskell.org/[Haskell] library. To get started, then, you'll need to install the Haskell toolchain, especially the https://www.haskell.org/ghc/[Glasgow Haskell Compiler] (GHC) and the building and packaging system https://www.haskell.org/cabal[cabal], for which you can use the https://www.haskell.org/ghcup[`ghcup` utility].
+
+You can use any development environment you choose, but for maximum coding pleasure, you should install the https://github.com/haskell/haskell-language-server[Haskell language server] (`hsl`). This can be installed using `ghcup` or some integrated development environments, such as https://code.visualstudio.com/[Visual Studio Code], have https://marketplace.visualstudio.com/items?itemName=haskell.haskell[excellent `hsl` integration].
+
+In summary,
+
+. Install https://www.haskell.org/ghcup[`ghcup`].
++
+----
+curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | sh
+----
+. Inspect your toolchain installation using `ghcup list`. You will need `ghc` ({ghcVersion}) , `hls` ({hlsVersion}), and `cabal` ({cabalVersion}) installed.
+. Upgrade toolchain components as necesarry. For example:
++
+----
+ghcup install ghc {ghcVersion}
+ghcup set ghc {ghcVersion}
+ghcup install cabal {cabalVersion}
+ghcup set cabal {cabalVersion} 
+----
+. Setup your IDE. (e.g. in Visual Studio, you'll want to install the https://marketplace.visualstudio.com/items?itemName=haskell.haskell[Haskell] extension.
+
+== A Brief Lesson in Haskell
+
+Since `Hasklepias` is written in https://www.haskell.org/[Haskell], you'll need to understand the syntax of Haskell function and a few concepts. The Haskell language is over 30 years old and has many, many features. In this section, we introduce the ideas and syntax necessary to be productive when using `Hasklepias`.
+
+=== Purely Functional and Statically Typed
+
+Haskell is a purely functional programming language. All functions are https://en.wikipedia.org/wiki/Function_(mathematics)[functions in a mathematical sense]; they relate a set of inputs to a set of outputs. As many languages today include many ideas of functional programming, you may be familiar with programming in a functional style. You may not be familiar with a language where writing and composing functions is the *only* thing you can do. Moreover, Haskell is statically typed, meaning that all expressions have a type that can be determined when a program is compiled. To understand functions and types, let's look at example syntax:
+
+[source,haskell]
+----
+add :: Integer -> Integer -> Integer <1>
+add x y = x + y <2>
+----
+
+<1> This is the type signature. The `add` function's type signature tells us `add` takes two `Integer` as inputs and returns an `Integer`. The last element in the chain of arrows is the return type. The type signature is not strictly necessary in order to compile a program, as GHC will try to infer the types; however, the type signature is *invaluable* in understanding the types that a function can act on and what it returns.
+<2> This is the definition of the `add`: take the value of `x` (an `Integer`) and add it to the value of `y` (also an `Integer`).
+
+If you coming from a dynamically typed language, static types may feel limiting at first: shouldn't you just be able to write a function and run your program? In R, for example, you might write the `add` function simply as: 
+
+[source,R]
+----
+addR <- function(x, y){ x + y }
+----
+
+When you run `addR("1", 1)`, you get a *run-time* error: `Error in x + y : non-numeric argument to binary operator`. In Haskell, however, running `add "1" 1` *isn't even possible*. The compiler will tell you:
+
+----
+Couldn't match expected type ‘Integer’ with actual type ‘[GHC.Types.Char]’
+----
+
+As programs grow in size, the type checker is like having a astute programming buddy helping you avoid writing bad programs.  
+
+
+=== A few basic functions worth knowing
+
+.Function Application (`$`)
+
+The `$` can be useful for omitting parentheses. For example,
+[source,haskell]
+----
+f $ g $ h x  =  f (g (h x))
+----
+
+.`curry`/`uncurry`
+
+Every function in Haskell is https://wiki.haskell.org/Currying[*curried*]. In other words, continuing our `add` example, applying `add` to a single argument returns another unnamed function of a single argument: 
+
+[source,haskell]
+----
+add 1 = \y -> y + 1
+----
+
+Sometimes you want a function that takes a single pair as input rather than two inputs. This is done by `uncurry`: 
+
+[source,haskell]
+----
+uncurry :: (a -> b -> c) -> ((a, b) -> c)
+uncurry f p = f (fst p) (snd p)
+----
+
+For example: 
+[source,haskell]
+----
+add' :: (Integer, Integer) -> Integer
+add' = uncurry add 
+
+myVal = add' (1, 2)
+----
+
+The `curry` function is the inverse of `uncurry`, taking a function that takes a single pair into a function of two arguments.
+
+.Pipe operator
+
+The pipe operator (`|>`) is not really idiomatic Haskell. It comes from the https://hackage.haskell.org/package/flow:[`flow`] library. But since most Hasklepias users will come from a data science background and may have seen a lot of R code that uses pipes (either `%>%` or `|>` (after R 4.0.1)), the `|>` is provided in Hasklepias and is used often in the examples. The `|>` can simply be read as "and then", as in `x |> g |> f` reads "take x and then do g and then do f."
+
+== Setting up a Hasklepias Project
+
+=== Initialize a new Haskell project
+
+```shell
+PROJID=myProj
+cabal init --libandexe --application-dir=apps --source-dir=plans --package-name=$PROJID -m -u https://gitlab.novisci.com/nsResearch/$PROJID -d hasklepias 
+cabal update
+```
+
+. Rename `MyLib.hs` to `Cohorts.hs`. Add header.
+. Add submodules for each group cohorts.
+. Update `myProj.cabal`
+.. expose all modules
+.. set `hasklepias` to a particular version
+.. set library `default-extensions`: `NoImplicitPrelude`,  `OverloadedStrings`.
+. Start coding.
+
+=== Establish a build framework
+
+== Working with a Hasklepias Project
+
+=== Interval Algebra and Events
+
+=== Defining Features
+
+=== Testing Features
+
+=== Defining Cohort(s)
+
+=== Testing Cohort(s)
+
+=== Building the Application
+
+=== Running the Application

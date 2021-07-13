@@ -49,9 +49,9 @@ library
   build-depends:
       aeson >=1.4.0.0 && <2
     , base >=4.14 && <4.15
-    , bytestring >=0.10
+    , bytestring == 0.10.12.0
     , cmdargs == 0.10.21
-    , containers >=0.6.0
+    , containers == 0.6.5.1
     , co-log == 0.4.0.1
     , flow == 1.0.22
     , ghc-prim == 0.6.1
@@ -59,15 +59,16 @@ library
     , lens == 5.0.1
     , lens-aeson == 1.1.1
     , mtl == 2.2.2
+    , process == 1.6.12.0
     , safe >= 0.3
     , tasty  == 1.4.1
     , tasty-hunit == 0.10.0.3
-    , text >=1.2.3
-    , time >=1.11
+    , text == 1.2.4.1
+    , time == 1.11.1.2
     , QuickCheck
-    , unordered-containers >=0.2.10
-    , vector >=0.12
-    , witherable >= 0.4
+    , unordered-containers == 0.2.14.0
+    , vector == 0.12.2.0
+    , witherable == 0.4.1
   default-language: Haskell2010
 
 test-suite hasklepias-test
@@ -130,7 +131,7 @@ test-suite examples
 
 
 executable exampleApp
-  type: exitcode-stdio-1.0
+  -- type: exitcode-stdio-1.0
   main-is: Main.hs
   hs-source-dirs:
       exampleApp

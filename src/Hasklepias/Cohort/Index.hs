@@ -20,15 +20,16 @@ import safe Data.Eq                     ( Eq )
 import safe IntervalAlgebra             ( Intervallic )
 
 {-|
-TODO: describe me.
+An @Index@ is a wrapper for an @Intervallic@ used to indicate that a particular
+interval is considered an index interval to which other intervals will be compared.
 -}
 
-newtype (Intervallic i a) => Index i a = MkIndex (i a)
-  deriving (Eq, Show)
+newtype (Intervallic i a) => Index i a = MkIndex { 
+    getIndex :: i a -- ^ Unwrap an @Index@
+  } deriving (Eq, Show)
 
+-- | Creates a new @'Index'@.
 makeIndex :: Intervallic i a => i a -> Index i a
 makeIndex = MkIndex
 
-getIndex :: Intervallic i a => Index i a  -> i a 
-getIndex (MkIndex x) = x
 

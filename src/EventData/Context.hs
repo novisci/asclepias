@@ -21,7 +21,7 @@ module EventData.Context(
   , Concept
   , Concepts
   , toConcepts
-  , fromConcepts
+  , getConcepts
   , packConcept
   , unpackConcept
   , packConcepts
@@ -58,7 +58,7 @@ data Source = Source deriving (Eq, Show)
 
 instance HasConcept Context where
     hasConcept ctxt concept = 
-        member (packConcept concept) (fromConcepts $ _concepts ctxt)
+        member (packConcept concept) (getConcepts $ _concepts ctxt)
 
 -- | Smart contructor for Context type
 --
@@ -66,7 +66,6 @@ instance HasConcept Context where
 -- @source@ are both set to 'Nothing'.
 context :: Domain -> Concepts -> Context
 context d x = Context x d Nothing
-
 
 -- | A @Concept@ is textual "tag" for a context.
 newtype Concept = Concept Text deriving (Eq, Ord)
@@ -82,8 +81,8 @@ packConcept = Concept
 unpackConcept :: Concept -> Text 
 unpackConcept (Concept x) =  x
 
--- | @Concepts@ is a 'Set' of 'Concepts's.
-newtype Concepts = Concepts ( Set Concept )
+-- | @Concepts@ is a 'Set' of 'Concept's.
+newtype Concepts = Concepts { getConcepts :: Set Concept }
     deriving (Eq, Show)
 
 instance Semigroup Concepts where
@@ -95,9 +94,6 @@ instance Monoid Concepts where
 -- | Constructor for 'Concepts'.
 toConcepts :: Set Concept -> Concepts
 toConcepts = Concepts
-
-fromConcepts :: Concepts -> Set Concept
-fromConcepts (Concepts x) = x
 
 -- | Put a list of text into a set concepts.
 packConcepts :: [Text] -> Concepts

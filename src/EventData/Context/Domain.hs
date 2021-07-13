@@ -19,15 +19,15 @@ module EventData.Context.Domain(
     , module EventData.Context.Domain.Demographics
 ) where
 
-import Prelude                                  ( Show, Eq
-                                                , ($), (<$>), (<*>), fail, drop
-                                                , pure )
 import Control.Lens                             ( makePrisms )
-import GHC.Generics                             ( Generic )
-import Data.Foldable
+import Data.Eq                                  ( Eq )
 import Data.Text                                ( Text, empty )
+import GHC.Generics                             ( Generic )
+import GHC.Show                                 ( Show )
+
 import EventData.Context.Domain.Demographics
 
+-- | Defines the available domains.
 data Domain =
       Demographics DemographicsFacts
     | UnimplementedDomain ()

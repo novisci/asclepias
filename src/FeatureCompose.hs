@@ -5,6 +5,7 @@ Description : Defines the Feature type and its component types, constructors,
 Copyright   : (c) NoviSci, Inc 2020
 License     : BSD3
 Maintainer  : bsaul@novisci.com
+
 -}
 
 {-# LANGUAGE NoImplicitPrelude #-}
@@ -18,30 +19,32 @@ Maintainer  : bsaul@novisci.com
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE AllowAmbiguousTypes #-}
+{-# LANGUAGE OverloadedStrings #-}
+
 module FeatureCompose(
-    Definition(..)
-  , FeatureData
-  , Feature
-  , Define(..)
+  -- * Features and FeatureData
+    FeatureData
   , MissingReason(..)
-  , nameFeature
+  , Feature
   , FeatureNamed
-  -- , define
-  , defineA
-  , eval
   , featureDataL
   , featureDataR
   , missingBecause
   , makeFeature
   , getFeatureData
   , getData
-  , getData'
-  , getName'
+  , getDataN
+  , getNameN
+  , nameFeature
+
+  -- * Defining and evaluating Features
+  , Definition(..)
+  , Define(..)
+  , DefineA(..)
+  , eval
+
 ) where
 
-import safe GHC.Generics               ( Generic )
-import safe GHC.Show                   ( Show(show) )
-import safe GHC.TypeLits               ( KnownSymbol, Symbol, symbolVal )
 import safe Control.Applicative        ( Applicative(..)
                                         , liftA3, (<$>) )
 import safe Control.Monad              ( Functor(..), Monad(..)
@@ -52,49 +55,92 @@ import safe Data.Foldable              ( Foldable(foldr) )
 import safe Data.Function              ( ($), (.) )
 import safe Data.List                  ( (++) )
 import safe Data.Proxy                 ( Proxy(..) )
--- import safe Data.String
 import safe Data.Text                  ( Text, pack )
 import safe Data.Traversable           ( Traversable(..) )
+import safe GHC.Generics               ( Generic )
+import safe GHC.Show                   ( Show(show) )
+import safe GHC.TypeLits               ( KnownSymbol, Symbol, symbolVal )
 
-{-
-TODO: describe me
+{- | 
+Defines the reasons that a @'FeatureData'@ value may be missing. Can be used to
+indicate the reason that a @'Feature'@'s data was unable to be derived or does
+not need to be derived. 
 -}
 data MissingReason =
-    InsufficientData
-  | Excluded
-  | Other Text
-  | Unknown
+    InsufficientData -- ^ Insufficient information available to derive data.
+  | Other Text -- ^ User provided reason for missingness
   deriving (Eq, Show, Generic)
 
-{-
-TODO: describe me
+{- | 
+The @FeatureData@ type is a container for an (almost) arbitrary type @d@ that can
+have a "failed" or "missing" state. The failure is represented by the @'Left'@ of 
+an @'Either'@, while the data @d@ is contained in the @'Either'@'s @'Right'@.
+
+To construct a successful value, use @'featureDataR'@. A missing value can be 
+constructed with @'featureDataL'@ or its synonym @'missingBecause'@.
+
 -}
-newtype FeatureData a = MkFeatureData (Either MissingReason a)
+newtype FeatureData d = MkFeatureData { 
+    getFeatureData :: Either MissingReason d  -- ^ Unwrap FeatureData.
+  }
   deriving (Eq, Show, Generic)
 
--- | Create the 'Right' side of 'FeatureData'.
+-- | Creates a non-missing 'FeatureData'. Since @'FeatureData'@ is an instance of
+-- @'Applicative'@, @'pure'@ is also a synonym of for @'featureDataR'@.
+-- 
+-- >>> featureDataR "aString"
+-- MkFeatureData (Right "aString")
+-- >>> featureDataR (1 :: P.Int)
+-- MkFeatureData (Right 1)
+-- 
+-- >>> featureDataR ("aString", (1 :: P.Int))
+-- MkFeatureData (Right ("aString",1))
+--
 featureDataR :: d -> FeatureData d
 featureDataR = MkFeatureData . Right
 
--- | Create the 'Left' side of 'FeatureData'.
+-- | Creates a missing 'FeatureData'.
+-- 
+-- >>> featureDataL (Other "no good reason") :: FeatureData P.Int
+-- MkFeatureData (Left (Other "no good reason"))
+--
+-- >>> featureDataL (Other "no good reason") :: FeatureData Text
+-- MkFeatureData (Left (Other "no good reason"))
+--
 featureDataL :: MissingReason -> FeatureData d
 featureDataL = MkFeatureData . Left
 
--- | 
+-- | A synonym for 'featureDataL'.
 missingBecause :: MissingReason -> FeatureData d
 missingBecause = featureDataL
 
-getFeatureData :: FeatureData a -> Either MissingReason a
-getFeatureData (MkFeatureData x) = x
+{- FeatureData instances -}
 
-getData :: Feature n a -> Either MissingReason a
-getData (MkFeature x) = getFeatureData x
-
+-- | Transform ('fmap') @'FeatureData'@ of one type to another.
+--
+-- >>> x = featureDataR (1 :: P.Int)
+-- >>> :type x
+-- >>> :type ( fmap show x )
+-- x :: FeatureData Int
+-- ( fmap show x ) :: FeatureData String
+-- 
+-- Note that 'Left' values are carried along while the type changes:
+--
+-- >>> x = ( featureDataL InsufficientData ) :: FeatureData P.Int
+-- >>> :type x
+-- >>> x
+-- >>> :type ( fmap show x )
+-- >>> fmap show x 
+-- x :: FeatureData Int
+-- MkFeatureData {getFeatureData = Left InsufficientData}
+-- ( fmap show x ) :: FeatureData String
+-- MkFeatureData {getFeatureData = Left InsufficientData}
+--
 instance Functor FeatureData where
   fmap f (MkFeatureData x) = MkFeatureData (fmap f x)
 
 instance Applicative FeatureData where
-  pure = MkFeatureData . Right
+  pure = featureDataR
   liftA2 f (MkFeatureData x) (MkFeatureData y) = MkFeatureData (liftA2 f x y)
 
 instance Monad FeatureData where
@@ -109,15 +155,33 @@ instance Foldable FeatureData where
 instance Traversable FeatureData where
   traverse f (MkFeatureData z) = MkFeatureData <$> traverse f z
 
-{-
-TODO: describe me
+{- | 
+The @'Feature'@ is an abstraction for @name@d @d@ata, where the @name@ is a
+*type*. Essentially, it is a container for @'FeatureData'@ that assigns a @name@
+to the data.
+
+Except when using @'pure'@ to lift data into a @Feature@, @Feature@s can only be
+derived from other @Feature@ via a @'Definition'@.
 -}
-newtype (KnownSymbol name) => Feature name a = MkFeature (FeatureData a)
+newtype (KnownSymbol name) => Feature name d =
+  MkFeature { getFData :: FeatureData d }
   deriving (Eq)
 
-makeFeature :: (KnownSymbol name) =>  FeatureData a -> Feature name a
+-- | A utility for constructing a @'Feature'@ from @'FeatureData'@.
+-- Since @'name'@ is a type, you may need to annotate the type when using this
+-- function.
+--
+-- >>> makeFeature (pure "test") :: Feature "dummy" Text
+-- "dummy": MkFeatureData {getFeatureData = Right "test"}
+--
+makeFeature :: (KnownSymbol name) => FeatureData d -> Feature name d
 makeFeature = MkFeature
 
+-- | A utility for getting the (inner) @'FeatureData'@ content of a @'Feature'@.
+getData :: Feature n d -> Either MissingReason d
+getData (MkFeature x) = getFeatureData x
+
+{- Feature instances -}
 instance (KnownSymbol name, Show a) => Show (Feature name a) where
   show (MkFeature x) = show (symbolVal (Proxy @name)) ++ ": " ++ show x
 
@@ -140,20 +204,41 @@ instance Monad (Feature name) where
           MkFeatureData (Left l)  -> MkFeature $ MkFeatureData (Left l)
           MkFeatureData (Right r) ->  r
 
+{- |
+The @'FeatureNamed'@ type is similar to @'Feature'@ where the @name@ is included
+as a @Text@ field. This type is mainly for internal purposes in order to collect
+@Feature@s of the same type @d@ into a homogeneous container like a @'List'@.
+-}
 data FeatureNamed d = MkFeatureNamed {
-        getName' :: Text
-      , getData' :: FeatureData d
+        getNameN :: Text  -- ^ Get the name of a @FeatureNamed@.
+      , getDataN :: FeatureData d -- ^ Get the data of a @FeatureNamed@
       } deriving (Eq, Show)
 
+-- | A utility for converting a @'Feature'@ to @'FeatureNamed'@.
 nameFeature :: forall name d . (KnownSymbol name) => Feature name d -> FeatureNamed d
 nameFeature (MkFeature d) = MkFeatureNamed (pack $ symbolVal (Proxy @name)) d
 
+{- | A @Definition@ can be thought of as a lifted function. Specifically, the
+@'define'@ function takes an arbitrary function (currently up to three arguments)
+and returns a @Defintion@ where the arguments have been lifted to a new domain.
 
-{-
-TODO: describe me
+For example, here we take @f@ and lift to to a function of @Feature@s.
+
+@
+f :: Int -> String -> Bool
+f i s 
+  | 1 "yes" = True
+  | otherwise = FALSE
+
+myFeature :: Definition (Feature "A" Int -> Feature "B" String -> Feature "C" Bool )
+myFeature = define f
+@
+
+See @'eval'@ for evaluating @Defintions@. 
+
 -}
+
 data Definition d where
-  -- D0  :: a -> Definition (f1 a)
   D1  :: (b -> a) -> Definition (f1 b -> f0 a)
   D1A :: (b -> f0 a) -> Definition (f1 b -> f0 a)
   D2  :: (c -> b -> a) -> Definition (f2 c -> f1 b -> f0 a)
@@ -167,7 +252,6 @@ class Define inputs def | def -> inputs where
 class DefineA inputs def | def -> inputs where
   defineA :: inputs -> Definition def
 
--- instance Define a (FeatureData a) where define = D0
 instance Define (b -> a) (FeatureData b -> FeatureData a) where define = D1
 instance Define (c -> b -> a) (FeatureData c -> FeatureData b -> FeatureData a) where define = D2
 instance Define (d -> c -> b -> a) (FeatureData d -> FeatureData c -> FeatureData b -> FeatureData a) where define = D3
@@ -176,7 +260,6 @@ instance DefineA (b -> FeatureData a) (FeatureData b -> FeatureData a) where def
 instance DefineA (c -> b -> FeatureData a) (FeatureData c -> FeatureData b -> FeatureData a) where defineA = D2A
 instance DefineA (d -> c -> b -> FeatureData a) (FeatureData d -> FeatureData c -> FeatureData b -> FeatureData a) where defineA = D3A
 
--- instance Define a (Feature n0 a) where define = D0
 instance Define (b -> a) (Feature n1 b -> Feature n0 a) where define = D1
 instance Define (c -> b -> a) (Feature n2 c -> Feature n1 b -> Feature n0 a) where define = D2
 instance Define (d -> c -> b -> a) (Feature n3 d -> Feature n2 c -> Feature n1 b -> Feature n0 a) where define = D3
@@ -185,11 +268,32 @@ instance DefineA (b -> Feature n0 a) (Feature n1 b -> Feature n0 a) where define
 instance DefineA (c -> b -> Feature n0 a) (Feature n2 c -> Feature n1 b -> Feature n0 a) where defineA = D2A
 instance DefineA (d -> c -> b -> Feature n0 a) (Feature n3 d -> Feature n2 c -> Feature n1 b -> Feature n0 a) where defineA = D3A
 
-{-
-TODO: describe me
+{- | Evaluate a @Definition@. Note that (currently), the second argument of 'eval'
+is a *tuple* of inputs. For example,
+
+@
+f :: Int -> String -> Bool
+f i s 
+  | 1 "yes" = True
+  | otherwise = FALSE
+
+myFeature :: Definition (Feature "A" Int -> Feature "B" String -> Feature "C" Bool )
+myFeature = define f
+
+a :: Feature "A" Int
+a = pure 1
+
+b :: Feature "B" String
+b = pure "yes"
+
+c = eval myFeature (a, b)
+@
+
 -}
 class Eval def args return | def -> args return where
-  eval :: Definition def -> args -> return
+  eval :: Definition def -- ^ a @'Definition'@
+                     -> args -- ^ a tuple of arguments to the @'Definition'@
+                     -> return
 
 instance Eval (FeatureData b -> FeatureData a) 
               (FeatureData b)  (FeatureData a) where

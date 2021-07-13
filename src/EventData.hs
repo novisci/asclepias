@@ -38,7 +38,7 @@ import EventData.Context                ( HasConcept(..)
                                         , Concept
                                         , packConcept
                                         , Context(..)
-                                        , fromConcepts
+                                        , getConcepts
                                         , toConcepts )
 
 
@@ -66,7 +66,7 @@ type ConceptEvent a = PairedInterval Concepts a
 --   show x = "{" ++ show (getInterval x) ++ ", " ++ show (getPairData x) ++ "}"
 
 instance HasConcept (ConceptEvent a) where
-    hasConcept e concept = member (packConcept concept) (fromConcepts $ getPairData e)
+    hasConcept e concept = member (packConcept concept) (getConcepts $ getPairData e)
 
 -- | Drops an @Event@ to a @ConceptEvent@ by moving the concepts in the data
 --   position in the paired interval and throwing out the facts and source.
@@ -76,7 +76,7 @@ toConceptEvent e = makePairedInterval (_concepts $ ctxt e) (getInterval e)
 toConceptEventOf :: (Show a, Ord a) => [Concept] -> Event a -> ConceptEvent a
 toConceptEventOf cpts e =
     makePairedInterval
-        (toConcepts $ intersection (fromList cpts) (fromConcepts $ _concepts $ ctxt e))
+        (toConcepts $ intersection (fromList cpts) (getConcepts $ _concepts $ ctxt e))
         (getInterval e)
 
 -- |

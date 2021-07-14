@@ -5,6 +5,7 @@ Copyright   : (c) NoviSci, Inc 2020
 License     : BSD3
 Maintainer  : bsaul@novisci.com
 -}
+{-# OPTIONS_HADDOCK hide #-}
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE FlexibleInstances, OverloadedStrings #-}
 {-# LANGUAGE TypeApplications #-}
@@ -83,16 +84,19 @@ instance  (FromJSON a, Show a, IntervalSizeable a b) => FromJSON (Event a) where
             <*> parseJSON (Array v)
 
 -- |  Parse @Event Int@ from json lines.
-parseEventLines :: (FromJSON a, Show a, IntervalSizeable a b) => B.ByteString -> ([String], [Event a])
+parseEventLines :: (FromJSON a, Show a, IntervalSizeable a b) =>
+    B.ByteString -> ([String], [Event a])
 parseEventLines l =
     partitionEithers $ fmap
     (\x -> eitherDecode $ B.fromStrict x :: (FromJSON a, Show a, IntervalSizeable a b) =>  Either String (Event a))
         (C.lines $ B.toStrict l)
 
 -- |  Parse @Event Int@ from json lines.
-parseEventIntLines :: (FromJSON a, Show a, IntervalSizeable a b) => B.ByteString -> ([String], [Event a])
+parseEventIntLines :: (FromJSON a, Show a, IntervalSizeable a b) =>
+    B.ByteString -> ([String], [Event a])
 parseEventIntLines = parseEventLines
 
 -- |  Parse @Event Day@ from json lines.
-parseEventDayLines :: (FromJSON a, Show a, IntervalSizeable a b) =>  B.ByteString -> ([String], [Event a])
+parseEventDayLines :: (FromJSON a, Show a, IntervalSizeable a b) =>
+    B.ByteString -> ([String], [Event a])
 parseEventDayLines = parseEventLines

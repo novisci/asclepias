@@ -396,21 +396,21 @@ expectedObsUnita :: [ObsUnit ExampleFeatures]
 expectedObsUnita = zipWith (curry MkObsUnit) (replicate 5 "a") expectedFeatures1
 
 makeExpectedCohort :: AttritionInfo -> [ObsUnit ExampleFeatures] -> Cohort ExampleFeatures
-makeExpectedCohort a x = MkCohort (a, x)
+makeExpectedCohort a x = MkCohort (Just a, x)
 
 expectedCohorts :: [Cohort ExampleFeatures]
 expectedCohorts =
   zipWith
   (curry MkCohort)
   [
-    MkAttritionInfo [(ExcludedBy (2, "isOver50"), 1), (ExcludedBy (4, "isContinuousEnrolled"), 1)]
-  , MkAttritionInfo [(ExcludedBy (2, "isOver50"), 1), (Included, 1)]
-  , MkAttritionInfo [(ExcludedBy (2, "isOver50"), 1), (Included, 1)]
-  , MkAttritionInfo [(ExcludedBy (2, "isOver50"), 1), (Included, 1)]
-  , MkAttritionInfo [(ExcludedBy (2, "isOver50"), 1), (ExcludedBy (4, "isContinuousEnrolled"), 1)]
-  , MkAttritionInfo [(ExcludedBy (2, "isOver50"), 1), (ExcludedBy (3, "isEnrolled"), 1)]
-  , MkAttritionInfo [(ExcludedBy (2, "isOver50"), 1), (ExcludedBy (3, "isEnrolled"), 1)]
-  , MkAttritionInfo [(ExcludedBy (2, "isOver50"), 1), (ExcludedBy (3, "isEnrolled"), 1)]
+    Just $ MkAttritionInfo $ (ExcludedBy (2, "isOver50"), 1) :| [(ExcludedBy (4, "isContinuousEnrolled"), 1)]
+  , Just $ MkAttritionInfo $ (ExcludedBy (2, "isOver50"), 1) :| [(Included, 1)]
+  , Just $ MkAttritionInfo $ (ExcludedBy (2, "isOver50"), 1) :| [(Included, 1)]
+  , Just $ MkAttritionInfo $ (ExcludedBy (2, "isOver50"), 1) :| [(Included, 1)]
+  , Just $ MkAttritionInfo $ (ExcludedBy (2, "isOver50"), 1) :| [(ExcludedBy (4, "isContinuousEnrolled"), 1)]
+  , Just $ MkAttritionInfo $ (ExcludedBy (2, "isOver50"), 1) :| [(ExcludedBy (3, "isEnrolled"), 1)]
+  , Just $ MkAttritionInfo $ (ExcludedBy (2, "isOver50"), 1) :| [(ExcludedBy (3, "isEnrolled"), 1)]
+  , Just $ MkAttritionInfo $ (ExcludedBy (2, "isOver50"), 1) :| [(ExcludedBy (3, "isEnrolled"), 1)]
   ]
   ([[]] ++ transpose [expectedObsUnita] ++ [[], [], [], []])
 

@@ -31,6 +31,11 @@ module Hasklepias.Reexports (
     , module Data.Time.Calendar 
     , module Data.Text
     , module Data.Tuple
+
+    , module IntervalAlgebra
+    , module IntervalAlgebra.IntervalUtilities
+    , module IntervalAlgebra.PairedInterval
+
     , module Safe
     , module Flow
     , module Witherable
@@ -82,6 +87,11 @@ import safe Data.Time.Calendar              ( Day, MonthOfYear, Year
                                             , diffDays )
 import safe Data.Text                       ( pack, Text )
 import safe Data.Tuple                      ( fst, snd, uncurry, curry )
+
+import safe IntervalAlgebra
+import safe IntervalAlgebra.IntervalUtilities
+import safe IntervalAlgebra.PairedInterval
+
 import safe Witherable                      ( Filterable(filter) )
 import safe Flow                            ( (!>), (.>), (<!), (<.), (<|), (|>) )
 import Safe                                 ( headMay, lastMay )

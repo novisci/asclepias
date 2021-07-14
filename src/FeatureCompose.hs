@@ -7,6 +7,7 @@ License     : BSD3
 Maintainer  : bsaul@novisci.com
 
 -}
+{-# OPTIONS_HADDOCK hide #-}
 
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE DeriveGeneric #-}
@@ -26,7 +27,7 @@ module FeatureCompose(
     FeatureData
   , MissingReason(..)
   , Feature
-  , FeatureNamed
+  , FeatureN
   , featureDataL
   , featureDataR
   , missingBecause
@@ -41,6 +42,7 @@ module FeatureCompose(
   , Definition(..)
   , Define(..)
   , DefineA(..)
+  , Eval
   , eval
 
 ) where
@@ -168,7 +170,7 @@ newtype (KnownSymbol name) => Feature name d =
   deriving (Eq)
 
 -- | A utility for constructing a @'Feature'@ from @'FeatureData'@.
--- Since @'name'@ is a type, you may need to annotate the type when using this
+-- Since @name@ is a type, you may need to annotate the type when using this
 -- function.
 --
 -- >>> makeFeature (pure "test") :: Feature "dummy" Text
@@ -205,18 +207,18 @@ instance Monad (Feature name) where
           MkFeatureData (Right r) ->  r
 
 {- |
-The @'FeatureNamed'@ type is similar to @'Feature'@ where the @name@ is included
+The @'FeatureN'@ type is similar to @'Feature'@ where the @name@ is included
 as a @Text@ field. This type is mainly for internal purposes in order to collect
-@Feature@s of the same type @d@ into a homogeneous container like a @'List'@.
+@Feature@s of the same type @d@ into a homogeneous container like a @'Data.List'@.
 -}
-data FeatureNamed d = MkFeatureNamed {
-        getNameN :: Text  -- ^ Get the name of a @FeatureNamed@.
-      , getDataN :: FeatureData d -- ^ Get the data of a @FeatureNamed@
+data FeatureN d = MkFeatureN {
+        getNameN :: Text  -- ^ Get the name of a @FeatureN@.
+      , getDataN :: FeatureData d -- ^ Get the data of a @FeatureN@
       } deriving (Eq, Show)
 
--- | A utility for converting a @'Feature'@ to @'FeatureNamed'@.
-nameFeature :: forall name d . (KnownSymbol name) => Feature name d -> FeatureNamed d
-nameFeature (MkFeature d) = MkFeatureNamed (pack $ symbolVal (Proxy @name)) d
+-- | A utility for converting a @'Feature'@ to @'FeatureN'@.
+nameFeature :: forall name d . (KnownSymbol name) => Feature name d -> FeatureN d
+nameFeature (MkFeature d) = MkFeatureN (pack $ symbolVal (Proxy @name)) d
 
 {- | A @Definition@ can be thought of as a lifted function. Specifically, the
 @'define'@ function takes an arbitrary function (currently up to three arguments)
@@ -246,9 +248,40 @@ data Definition d where
   D3  :: (d -> c -> b -> a) -> Definition (f3 d -> f2 c -> f1 b -> f0 a)
   D3A :: (d -> c -> b -> f0 a) -> Definition (f3 d -> f2 c -> f1 b -> f0 a)
 
+{- | Define (and @'DefineA@) provide a means to create new @'Definition'@s via 
+@'define'@ (@'defineA'@). The @'define'@ function takes a single function input 
+and returns a lifted function. For example,
+
+@
+f :: Int -> String -> Bool
+f i s 
+  | 1 "yes" = True
+  | otherwise = FALSE
+
+myFeature :: Definition (Feature "A" Int -> Feature "B" String -> Feature "C" Bool )
+myFeature = define f
+@
+
+The @'defineA'@ function is similar, except that the return type of the input
+function is already lifted. In the example below, an input of @Nothing@ is 
+considered a missing state: 
+
+@
+f :: Int -> Maybe String -> Feature "C" Bool
+f i s 
+  | 1 (Just "yes")   = pure True
+  | _ (Just _ )      = pure False -- False for any Int and any (Just String)
+  | otherwise        = pure $ missingBecause InsufficientData -- missing if no string
+
+myFeature :: Definition (Feature "A" Int -> Feature "B" String -> Feature "C" Bool )
+myFeature = defineA f
+@
+
+-}
 class Define inputs def | def -> inputs where
   define :: inputs -> Definition def
 
+-- | See @'Define'@.
 class DefineA inputs def | def -> inputs where
   defineA :: inputs -> Definition def
 

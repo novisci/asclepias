@@ -6,12 +6,15 @@ Copyright   : (c) NoviSci, Inc 2020
 License     : BSD3
 Maintainer  : bsaul@novisci.com
 -}
+{-# OPTIONS_HADDOCK hide #-}
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE FlexibleInstances #-}
 -- {-# LANGUAGE Safe #-}
 
 module EventData(
+
+ -- * Events
    Event
  , Events
  , ConceptEvent
@@ -20,7 +23,6 @@ module EventData(
  , toConceptEvent
  , toConceptEventOf
  , mkConceptEvent
- , module EventData.Context
 ) where
 
 import GHC.Show                         ( Show(show) )
@@ -45,9 +47,6 @@ import EventData.Context                ( HasConcept(..)
 -- | An Event @a@ is simply a pair @(Interval a, Context)@.
 type Event a = PairedInterval Context a
 
--- instance (Ord a, Show a) => Show (Event a) where
---   show x = "{" ++ show (getInterval x) ++ ", " ++ show (ctxt x) ++ "}"
-
 instance HasConcept (Event a) where
     hasConcept x y = ctxt x `hasConcept` y
 
@@ -55,15 +54,12 @@ instance HasConcept (Event a) where
 event :: Interval a -> Context -> Event a
 event i c = makePairedInterval c i
 
--- | Access the 'Context' of an 'Event a'.
+-- | Get the 'Context' of an 'Event a'.
 ctxt :: Event a -> Context
 ctxt = getPairData
 
 -- | An event containing only concepts and an interval
 type ConceptEvent a = PairedInterval Concepts a
-
--- instance (Ord a, Show a) => Show (ConceptEvent a) where
---   show x = "{" ++ show (getInterval x) ++ ", " ++ show (getPairData x) ++ "}"
 
 instance HasConcept (ConceptEvent a) where
     hasConcept e concept = member (packConcept concept) (getConcepts $ getPairData e)
@@ -73,24 +69,18 @@ instance HasConcept (ConceptEvent a) where
 toConceptEvent :: (Show a, Ord a) => Event a -> ConceptEvent a
 toConceptEvent e = makePairedInterval (_concepts $ ctxt e) (getInterval e)
 
+-- | Creates a new @'ConceptEvent'@ from an @'Event'@ by taking the intersection
+-- of the list of Concepts in the first argument and any Concepts in the @'Event'@.
+-- This is a way to keep only the concepts you want in an event.
 toConceptEventOf :: (Show a, Ord a) => [Concept] -> Event a -> ConceptEvent a
 toConceptEventOf cpts e =
     makePairedInterval
         (toConcepts $ intersection (fromList cpts) (getConcepts $ _concepts $ ctxt e))
         (getInterval e)
 
--- |
+-- | Create a new @'ConceptEvent'@.
 mkConceptEvent :: (Show a, Ord a) => Interval a -> Concepts -> ConceptEvent a
 mkConceptEvent i c = makePairedInterval c i
 
 -- | A @List@ of @Event a@
--- 
--- NOTE (20190911): I (B. Saul) am starting out the Events type as a 
--- list of the Event type. This may be not be the optimal approach,
--- especially with regards to lookup/filtering the list. Ideally,
--- we could do one pass through the ordered container (whatever it is)
--- to identify events by concept; rather than repeated evaluations of
--- the lookup predicates. This could be handled by, for example, 
--- representing Events has a Map with a list of concept indices. 
--- But this gets us off the ground.
 type Events a = [Event a]

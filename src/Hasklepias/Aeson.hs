@@ -5,6 +5,7 @@ Copyright   : (c) NoviSci, Inc 2020
 License     : BSD3
 Maintainer  : bsaul@novisci.com
 -}
+{-# OPTIONS_HADDOCK hide #-}
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE TupleSections #-}
@@ -68,10 +69,9 @@ mapIntoPop l = MkPopulation $
 decodeIntoSubj :: (FromJSON a, Show a, IntervalSizeable a b) => 
         B.ByteString  -> Either Text (SubjectEvent a)
 decodeIntoSubj x = first pack $ eitherDecode x 
--- :: (FromJSON a, Show a, IntervalSizeable a b) => Either Text (SubjectEvent a)
 
+-- | Contains the line number and error message.
 newtype ParseError = MkParseError (Natural, Text) deriving (Eq, Show)
-
 
 -- |  Parse @Event Int@ from json lines.
 parseSubjectLines ::

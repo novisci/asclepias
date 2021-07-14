@@ -92,6 +92,11 @@ macawHxDef :: (Ord a) =>
       -> (Bool, Maybe (Interval a))
 macawHxDef = makeHxDef ["wasBitByMacaw", "wasStruckByMacaw"]
 
+-- | a helper function for 'twoMinorOrOneMajorDef' 
+twoXOrOneY :: [Text] -> [Text] -> Events a -> Bool
+twoXOrOneY x y es = atleastNofX 2 x es ||
+                    atleastNofX 1 y es
+
 -- | Define an event that identifies whether the subject has two minor or one major
 --   surgery.
 twoMinorOrOneMajorDef :: (Ord a) =>
@@ -217,6 +222,6 @@ exampleFeatures1Spec = do
 
     it "mapping a population to cohort" $
       evalCohort testCohortSpec (MkPopulation [exampleSubject1, exampleSubject2 ]) `shouldBe`
-            MkCohort (MkAttritionInfo [(Included, 2)],
+            MkCohort (Just $ MkAttritionInfo $ pure (Included, 2),
                       [MkObsUnit ("a", example1results), MkObsUnit ("b", example2results)])
 

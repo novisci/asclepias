@@ -64,6 +64,39 @@ Couldn't match expected type ‘Integer’ with actual type ‘[GHC.Types.Char]�
 
 As programs grow in size, the type checker is like having a astute programming buddy helping you avoid writing bad programs.  
 
+=== Interactive environment (GHCi)
+
+To run the examples interactively, open a `ghci` session with:
+
+[source,shell]
+----
+cabal repl hasklepias:examples --repl-options -itest
+----
+
+The option flag `--repl-options -itest` allows to make changes to the files in the `examples` folder and reload with `:reload` (or `:r`) without exiting the `ghci` session. Developers working on `src` files can add the `--repl-options -isrc` option flag to make changes to `src` files too.
+
+In `ghci` you have access to all exposed functions in `hasklepias`, `interval-algebra`, and those in the `examples` folders. For example, `exampleEvents1` is a list of events used to check some of the example features, which you can interact with:
+
+[source,shell]
+----
+*Main> headMay exampleEvents1
+Just {(1, 10), Context {getConcepts = ["enrollment"], getFacts = Nothing, getSource = Nothing}}
+*Main> length exampleEvents1
+24
+*Main> combineIntervals $ intervals exampleEvents1
+[(1, 10),(11, 20),(21, 30),(31, 40),(45, 100)]
+*Main> mapM_ print exampleEvents1
+{(1, 10), Context {getConcepts = fromList ["enrollment"], getFacts = Nothing, getSource = Nothing}}
+{(2, 3), Context {getConcepts = fromList ["wasScratchedByCat"], getFacts = Nothing, getSource = Nothing}}
+{(5, 6), Context {getConcepts = fromList ["hadMinorSurgery"], getFacts = Nothing, getSource = Nothing}}
+{(5, 10), Context {getConcepts = fromList ["tookAntibiotics"], getFacts = Nothing, getSource = Nothing}}
+{(11, 20), Context {getConcepts = fromList ["enrollment"], getFacts = Nothing, getSource = Nothing}}
+{(21, 30), Context {getConcepts = fromList ["enrollment"], getFacts = Nothing, getSource = Nothing}}
+{(31, 40), Context {getConcepts = fromList ["enrollment"], getFacts = Nothing, getSource = Nothing}}
+{(45, 46), Context {getConcepts = fromList ["wasStruckByDuck"], getFacts = Nothing, getSource = Nothing}}
+<<<result truncated>>>
+----
+
 
 === A few basic functions worth knowing
 

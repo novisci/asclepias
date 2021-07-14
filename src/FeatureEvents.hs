@@ -5,42 +5,40 @@ Copyright   : (c) NoviSci, Inc 2020
 License     : BSD3
 Maintainer  : bsaul@novisci.com
 
-Provides functions used in defining 'Feature's.
+Provides functions used in defining @'FeatureCompose.Feature'@ from 
+@'EventData.Event'@s.
 -}
-
+{-# OPTIONS_HADDOCK hide #-}
 {-# LANGUAGE NoImplicitPrelude #-}
--- {-# LANGUAGE Safe #-}
 
 module FeatureEvents(
-
-    -- * Container predicates
+    -- ** Container predicates
       isNotEmpty
     , atleastNofX
-    , twoXOrOneY
     , anyGapsWithinAtLeastDuration
     , allGapsWithinLessThanDuration
 
-    -- * Finding occurrences of concepts
+    -- **  Finding occurrences of concepts
     , nthConceptOccurrence
     , firstConceptOccurrence
 
-    -- * Reshaping containers
+    -- ** Reshaping containers
     , allPairs
     , splitByConcepts
 
-    -- * Create filters
+    -- ** Create filters
     , makeConceptsFilter
     , makePairedFilter
 
-    -- * Functions for working with Event Domains
+    -- ** Functions for working with Event Domains
     , viewBirthYears
     , previewBirthYear
 
-    -- * Function for manipulating intervals
+    -- ** Function for manipulating intervals
     , lookback
     , lookahead
 
-    -- * Misc
+    -- ** Misc functions
     , computeAgeAt
 ) where
 
@@ -133,11 +131,6 @@ atleastNofX ::
    -> [Text] -- ^ x
    -> Events a -> Bool
 atleastNofX n x es = length (makeConceptsFilter x es) >= n
-
--- | TODO
-twoXOrOneY :: [Text] -> [Text] -> Events a -> Bool
-twoXOrOneY x y es = atleastNofX 2 x es ||
-                    atleastNofX 1 y es
 
 -- | Takes a predicate of intervals and a predicate on the data part of a 
 --   paired interval to create a single predicate such that both input

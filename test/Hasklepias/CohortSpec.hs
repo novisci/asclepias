@@ -7,6 +7,7 @@ module Hasklepias.CohortSpec (
 
 import FeatureCompose
 import Hasklepias.Cohort
+import Data.List.NonEmpty
 import Test.Hspec ( describe, pending, shouldBe, it, Spec )
 
 -- data Feat1
@@ -54,7 +55,7 @@ testCohort = specifyCohort buildCriteria buildFeatures
 
 testOut :: Cohort Features
 testOut = MkCohort
-  ( MkAttritionInfo [ (ExcludedBy (1, "feat2"), 1), (Included, 1)]
+  ( Just $ MkAttritionInfo $ (ExcludedBy (1, "feat2"), 1) :| [ (Included, 1) ]
   , [MkObsUnit ("2", ( makeFeature (featureDataR False)
                      , makeFeature (featureDataR 56))) ])
 

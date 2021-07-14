@@ -1,6 +1,6 @@
 {-|
 Module      : Example Hasklepias Events
-Description : TODO
+Description : example events with which to toy with hasklepias
 Copyright   : (c) NoviSci, Inc 2020
 License     : BSD3
 Maintainer  : bsaul@novisci.com

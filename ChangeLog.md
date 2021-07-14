@@ -2,6 +2,7 @@
 
 ## 0.12.0
 
+* Converts `AttritionStatus` from a List to a NonEmpty container.
 * Adds the `MakeApp` module with a single function `makeCohortApp` which takes a list of cohort specifications and returns an application (an `IO ()` function). Currently, the application is bare bones, printing the resulting cohorts (one per specification) to `stdout` and any parsing errors to `stderr`. For example usage, see the code in `exampleApp`.
 
 ## 0.11.1

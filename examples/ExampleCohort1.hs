@@ -8,7 +8,6 @@ Maintainer  : bsaul@novisci.com
 
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE NoImplicitPrelude #-}
-{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE LambdaCase #-}
@@ -65,17 +64,18 @@ getBaselineConcur index = filterConcur (baselineInterval index)
 -------------------------------------------------------------------------------}
 
 -- | Defines a feature that returns 'True' ('False' otherwise) if either:
---   * at least 1 event during the baseline interval has any of the 'c1' concepts
---   * there are at least 2 event that have 'c2' concepts which have at least
+--   * at least 1 event during the baseline interval has any of the 'cpts1' concepts
+--   * there are at least 2 event that have 'cpts2' concepts which have at least
 --     7 days between them during the baseline interval
 twoOutOneIn ::
-       [Text]
-    -> [Text]
+       [Text] -- ^ cpts1
+    -> [Text] -- ^ cpts2
     -> Definition
     ( Feature "calendarIndex" (Index Interval Day)
     -> Feature "allEvents" (Events Day)
     -> Feature name Bool )
-twoOutOneIn cpts1 cpts2 = define
+twoOutOneIn cpts1 cpts2 = 
+  define
     (\index events ->
         atleastNofX 1 cpts1  (getBaselineConcur index events) 
         || ( 
@@ -181,7 +181,6 @@ deathDay =
 critFemale :: Definition
  (   Feature "allEvents" (Events Day)
   -> Feature "isFemale" Status)
-
 critFemale =
     define
       (\events ->
@@ -242,8 +241,6 @@ critDead =
             Just deadDay  -> excludeIf $ beforeIndex index deadDay
         --  excludeIf ( maybe False (beforeIndex index) mDeadDay) -- different way to write logic
       )
-
-
 
 {-------------------------------------------------------------------------------
   Covariate features

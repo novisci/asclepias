@@ -1,5 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE DataKinds #-}
 module FeatureCompose.AesonSpec (spec) where
 
 import IntervalAlgebra
@@ -27,10 +28,15 @@ index es =
         Nothing -> featureDataL (Other "No Enrollment")
         Just x  -> pure (getInterval x)
 
+dummy :: Feature "dummy" Bool
+dummy = pure True
 
 spec :: Spec
 spec = do
     it "an Int event is parsed correctly" $
        encode (index ex1)  `shouldBe` "{\"end\":10,\"begin\":0}"
+
+    it "dummy encodes correctly" $
+        encode dummy `shouldBe` "{\"data\":{\"Right\":true},\"name\":\"\\\"dummy\\\"\",\"attrs\":{\"getDerivation\":\"\",\"getLongLabel\":\"\",\"getShortLabel\":\"\"}}"
 
 

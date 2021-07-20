@@ -1,6 +1,6 @@
 cabal-version:  2.2
 name:           hasklepias
-version:        0.12.0
+version:        0.12.1
 description:    Please see the README on GitHub at <https://github.com/novisci/asclepias#readme>
 homepage:       https://github.com/novisci/asclepias/#readme
 bug-reports:    https://github.com/novisci/asclepias/issues
@@ -31,6 +31,7 @@ library
       EventData.Context.Domain.Demographics
       FeatureCompose
       FeatureCompose.Aeson
+      FeatureCompose.Attributes
       FeatureEvents
       Hasklepias
       Hasklepias.Aeson

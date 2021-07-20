@@ -10,3 +10,4 @@
 dist-newstyle*
 *code-workspace
 cabal.project.local
+doc/manual.html

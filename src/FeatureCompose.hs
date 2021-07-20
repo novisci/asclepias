@@ -68,9 +68,11 @@ Defines the reasons that a @'FeatureData'@ value may be missing. Can be used to
 indicate the reason that a @'Feature'@'s data was unable to be derived or does
 not need to be derived. 
 -}
+{- tag::missingReason[] -}
 data MissingReason =
     InsufficientData -- ^ Insufficient information available to derive data.
   | Other Text -- ^ User provided reason for missingness
+{- end::missingReason[] -}
   deriving (Eq, Show, Generic)
 
 {- | 
@@ -82,9 +84,11 @@ To construct a successful value, use @'featureDataR'@. A missing value can be
 constructed with @'featureDataL'@ or its synonym @'missingBecause'@.
 
 -}
+{- tag::featureData[] -}
 newtype FeatureData d = MkFeatureData { 
     getFeatureData :: Either MissingReason d  -- ^ Unwrap FeatureData.
   }
+{- end::featureData[] -}
   deriving (Eq, Show, Generic)
 
 -- | Creates a non-missing 'FeatureData'. Since @'FeatureData'@ is an instance of
@@ -165,8 +169,10 @@ to the data.
 Except when using @'pure'@ to lift data into a @Feature@, @Feature@s can only be
 derived from other @Feature@ via a @'Definition'@.
 -}
+{- tag::feature[] -}
 newtype (KnownSymbol name) => Feature name d =
   MkFeature { getFData :: FeatureData d }
+{- end::feature[] -}
   deriving (Eq)
 
 -- | A utility for constructing a @'Feature'@ from @'FeatureData'@.

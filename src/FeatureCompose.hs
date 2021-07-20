@@ -62,7 +62,7 @@ import safe Data.Traversable           ( Traversable(..) )
 import safe GHC.Generics               ( Generic )
 import safe GHC.Show                   ( Show(show) )
 import safe GHC.TypeLits               ( KnownSymbol, Symbol, symbolVal )
-
+import safe FeatureCompose.Attributes
 {- | 
 Defines the reasons that a @'FeatureData'@ value may be missing. Can be used to
 indicate the reason that a @'Feature'@'s data was unable to be derived or does
@@ -376,3 +376,7 @@ instance Eval (Feature n3 d -> Feature n2 c -> Feature n1 b -> Feature n0 a)
       case liftA3 f x y z of
           MkFeatureData (Left l)  -> MkFeature $ MkFeatureData (Left l)
           MkFeatureData (Right r) -> r
+
+{- | Initializes @Feature@ @Attributes@ to empty strings -}
+instance HasAttributes (Feature name d) where
+  getAttributes x = MkAttributes "" "" ""

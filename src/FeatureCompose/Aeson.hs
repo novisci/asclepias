@@ -9,6 +9,7 @@ Maintainer  : bsaul@novisci.com
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE FlexibleContexts #-}
 
 module FeatureCompose.Aeson(
 ) where
@@ -20,6 +21,7 @@ import FeatureCompose               ( Feature
                                     , FeatureData
                                     , getFeatureData
                                     , getData )
+import FeatureCompose.Attributes
 import Data.Aeson                   ( object, KeyValue((.=)), ToJSON(toJSON) )
 import Data.Proxy                   ( Proxy(Proxy) )
 
@@ -28,13 +30,15 @@ instance (ToJSON a, Ord a, Show a)=> ToJSON (Interval a) where
 
 instance ToJSON MissingReason
 
-instance (ToJSON d)=> ToJSON (FeatureData d) where
+instance (ToJSON d) => ToJSON (FeatureData d) where
     toJSON  x = case getFeatureData x of
       (Left l)  -> toJSON l
       (Right r) -> toJSON r
 
+instance ToJSON Attributes where
+
 instance (KnownSymbol n, ToJSON d) => ToJSON (Feature n d) where
     toJSON x = object [ --"name"   .= getName x
                          "name"  .= show (symbolVal (Proxy @n))
-                      --  , "attrs" .= toJSON (getAttr x)
+                       , "attrs" .= toJSON (getAttributes x)
                        , "data"  .= toJSON (getData x) ]

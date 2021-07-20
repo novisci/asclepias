@@ -1,5 +1,9 @@
 # Changelog for hasklepias
 
+## 0.12.1
+
+* Adds a rudimentary `Attributes` type and `HasAttributes` typeclass for adding attributes to `Feature`s. This interfaces will likely change in the future, but for now users have the ability to add information like labels to a `Feature`.
+
 ## 0.12.0
 
 * Converts `AttritionStatus` from a List to a NonEmpty container.

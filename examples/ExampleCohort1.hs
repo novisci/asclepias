@@ -11,6 +11,7 @@ Maintainer  : bsaul@novisci.com
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE FlexibleInstances #-}
 module ExampleCohort1(
   exampleCohort1tests
 ) where
@@ -257,6 +258,14 @@ type BoolFeat n = Feature n  Bool
 
 diabetes :: BoolFeatDef "diabetes"
 diabetes = twoOutOneIn ["is_diabetes_outpatient"] ["is_diabetes_inpatient"]
+
+instance HasAttributes (Feature "diabetes" Bool) where
+  getAttributes _ = MkAttributes 
+    "Has Diabetes"
+    "Has Diabetes within baseline"
+    "Has at least 1 event during the baseline interval has any of the 'cpts1' concepts \
+    \ OR there are at least 2 event that have 'cpts2' concepts which have at least 7 days \
+    \ between them during the baseline interval"
 
 ckd :: BoolFeatDef "ckd"
 ckd =  twoOutOneIn ["is_ckd_outpatient"] ["is_ckd_inpatient"]

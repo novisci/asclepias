@@ -21,6 +21,8 @@ module Hasklepias (
     , module EventData.Arbitrary
     
     , module FeatureCompose
+    -- ** Adding Attributes to Features
+    , module FeatureCompose.Attributes
     -- ** Writing Features to JSON
     , module FeatureCompose.Aeson
 
@@ -58,6 +60,7 @@ import IntervalAlgebra.PairedInterval
 
 import FeatureCompose
 import FeatureCompose.Aeson
+import FeatureCompose.Attributes
 import FeatureEvents
 import Hasklepias.Reexports
 import Hasklepias.ReexportsUnsafe

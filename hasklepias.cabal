@@ -1,6 +1,6 @@
 cabal-version:  2.2
 name:           hasklepias
-version:        0.12.1
+version:        0.13.0
 description:    Please see the README on GitHub at <https://github.com/novisci/asclepias#readme>
 homepage:       https://github.com/novisci/asclepias/#readme
 bug-reports:    https://github.com/novisci/asclepias/issues
@@ -41,6 +41,13 @@ library
       Hasklepias.Cohort
       Hasklepias.Cohort.Criteria
       Hasklepias.Cohort.Index
+      Stype
+      Stype.Numeric
+      Stype.Numeric.Count
+      Stype.Numeric.Continuous
+      Stype.Numeric.Censored
+      Stype.Categorical
+      Stype.Categorical.Nominal
   other-modules:
       Paths_hasklepias
   autogen-modules:
@@ -60,8 +67,10 @@ library
     , lens == 5.0.1
     , lens-aeson == 1.1.1
     , mtl == 2.2.2
+    , nonempty-containers == 0.3.4.1
     , process == 1.6.12.0
     , safe >= 0.3
+    , semiring-simple == 1.0.0.1
     , tasty  == 1.4.1
     , tasty-hunit == 0.10.0.3
     , text == 1.2.4.1

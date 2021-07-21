@@ -12,6 +12,7 @@ Maintainer  : bsaul@novisci.com
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 module ExampleCohort1(
   exampleCohort1tests
 ) where
@@ -259,7 +260,7 @@ type BoolFeat n = Feature n  Bool
 diabetes :: BoolFeatDef "diabetes"
 diabetes = twoOutOneIn ["is_diabetes_outpatient"] ["is_diabetes_inpatient"]
 
-instance HasAttributes (Feature "diabetes" Bool) where
+instance HasAttributes  "diabetes" Bool where
   getAttributes _ = MkAttributes 
     "Has Diabetes"
     "Has Diabetes within baseline"

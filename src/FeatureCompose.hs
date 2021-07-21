@@ -33,6 +33,7 @@ module FeatureCompose(
   , missingBecause
   , makeFeature
   , getFeatureData
+  , getFData
   , getData
   , getDataN
   , getNameN
@@ -45,6 +46,7 @@ module FeatureCompose(
   , Eval
   , eval
 
+  , HasAttributes(..)
 ) where
 
 import safe Control.Applicative        ( Applicative(..)
@@ -378,5 +380,9 @@ instance Eval (Feature n3 d -> Feature n2 c -> Feature n1 b -> Feature n0 a)
           MkFeatureData (Right r) -> r
 
 {- | Initializes @Feature@ @Attributes@ to empty strings -}
-instance HasAttributes (Feature name d) where
-  getAttributes x = MkAttributes "" "" ""
+
+class HasAttributes n a where
+  getAttributes :: Feature n a -> Attributes
+
+-- instance HasAttributes name d where
+--   getAttributes x = MkAttributes "" "" ""

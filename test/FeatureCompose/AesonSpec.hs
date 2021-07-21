@@ -1,6 +1,8 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 module FeatureCompose.AesonSpec (spec) where
 
 import IntervalAlgebra
@@ -9,6 +11,7 @@ import EventData.Context
 import FeatureEvents
 import FeatureCompose
 import FeatureCompose.Aeson
+import FeatureCompose.Attributes
 import Data.Aeson (encode)
 import Data.Maybe
 import Data.Time as DT
@@ -28,8 +31,12 @@ index es =
         Nothing -> featureDataL (Other "No Enrollment")
         Just x  -> pure (getInterval x)
 
-dummy :: Feature "dummy" Bool
+dummy ::  Feature "dummy" Bool
 dummy = pure True
+
+instance HasAttributes "dummy" Bool where
+    getAttributes x = MkAttributes "some Label" "longer label..." "a description"
+
 
 spec :: Spec
 spec = do
@@ -37,6 +44,10 @@ spec = do
        encode (index ex1)  `shouldBe` "{\"end\":10,\"begin\":0}"
 
     it "dummy encodes correctly" $
-        encode dummy `shouldBe` "{\"data\":{\"Right\":true},\"name\":\"\\\"dummy\\\"\",\"attrs\":{\"getDerivation\":\"\",\"getLongLabel\":\"\",\"getShortLabel\":\"\"}}"
+        encode dummy `shouldBe` 
+        "{\"data\":true,\"name\":\"\\\"dummy\\\"\",\
+        \\"attrs\":{\"getDerivation\":\"a description\",\
+        \\"getLongLabel\":\"longer label...\",\
+        \\"getShortLabel\":\"some Label\"}}"
 
 

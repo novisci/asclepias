@@ -15,7 +15,7 @@ Maintainer  : bsaul@novisci.com
 
 module FeatureCompose.Attributes(
     Attributes(..)
-  , HasAttributes(..)
+  -- , HasAttributes(..)
 ) where
 
 import safe Data.Eq         ( Eq )
@@ -33,7 +33,7 @@ data Attributes = MkAttributes {
   , getDerivation :: Text
   } deriving (Eq, Show, Generic)
 
-class HasAttributes a where
-  getAttributes :: a -> Attributes
+-- class HasAttributes a where
+--   getAttributes :: a -> Attributes
 
 

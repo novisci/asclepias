@@ -43,6 +43,9 @@ module Hasklepias (
     -- ** Creating an executable cohort application
     , module Hasklepias.MakeApp
 
+    -- * Statistical Types
+    , module Stype
+
     -- * Rexported Functions and modules
     , module Hasklepias.Reexports
     , module Hasklepias.ReexportsUnsafe
@@ -68,3 +71,5 @@ import Hasklepias.Cohort
 import Hasklepias.Cohort.Criteria
 import Hasklepias.Aeson
 import Hasklepias.MakeApp
+
+import Stype

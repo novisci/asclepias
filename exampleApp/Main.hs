@@ -12,6 +12,7 @@ Maintainer  : bsaul@novisci.com
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 module Main(
   main
 ) where
@@ -36,6 +37,9 @@ critTrue :: Definition
    ( Feature "allEvents" (Events Day)
    -> Feature "dummy" Status)
 critTrue = define $ pure Include 
+
+instance HasAttributes "dummy" Bool where
+  getAttributes _ = MkAttributes "Text" "Text" "Text"
 
 {-------------------------------------------------------------------------------
   Cohort Specifications and evaluation

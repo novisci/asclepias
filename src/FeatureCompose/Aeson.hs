@@ -20,7 +20,8 @@ import FeatureCompose               ( Feature
                                     , MissingReason
                                     , FeatureData
                                     , getFeatureData
-                                    , getData )
+                                    , getFData
+                                    , HasAttributes(..) )
 import FeatureCompose.Attributes
 import Data.Aeson                   ( object, KeyValue((.=)), ToJSON(toJSON) )
 import Data.Proxy                   ( Proxy(Proxy) )
@@ -37,8 +38,12 @@ instance (ToJSON d) => ToJSON (FeatureData d) where
 
 instance ToJSON Attributes where
 
-instance (KnownSymbol n, ToJSON d) => ToJSON (Feature n d) where
-    toJSON x = object [ --"name"   .= getName x
-                         "name"  .= show (symbolVal (Proxy @n))
+-- instance (KnownSymbol n, ToJSON d) => ToJSON (Feature n d) where
+--     toJSON x = object [  "name"  .= show (symbolVal (Proxy @n))
+--                       --  , "attrs" .= toJSON (getAttributes x)
+--                        , "data"  .= toJSON (getFData x) ]
+
+instance (KnownSymbol n, ToJSON d, HasAttributes n d) => ToJSON (Feature n d) where
+    toJSON x = object [  "name"  .= show (symbolVal (Proxy @n))
                        , "attrs" .= toJSON (getAttributes x)
-                       , "data"  .= toJSON (getData x) ]
+                       , "data"  .= toJSON (getFData x) ]

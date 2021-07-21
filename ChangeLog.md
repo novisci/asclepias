@@ -1,8 +1,9 @@
 # Changelog for hasklepias
 
-## 0.12.1
+## 0.13.0
 
-* Adds a rudimentary `Attributes` type and `HasAttributes` typeclass for adding attributes to `Feature`s. This interfaces will likely change in the future, but for now users have the ability to add information like labels to a `Feature`.
+* Adds a rudimentary `Attributes` type and `HasAttributes` typeclass for adding attributes to `Feature`s. This interfaces will likely change in the future, but for now users have the ability to add information like labels to a `Feature`. In fact, `Feature`s which are encoded to JSON are *required* to have attributes.
+* Adds rudimentary `Stype` module in order to (ultimately) interface with the [R `stype` package](https://docs.novisci.com/stype/). For now, this module simply creates a few of the types, some of which are *not* an appropriate implementation. For example, the `Nominal` type is simply `newtype Nominal a = Nominal a`. Essentially, it's just a way to label something as nominal at this point.
 
 ## 0.12.0
 

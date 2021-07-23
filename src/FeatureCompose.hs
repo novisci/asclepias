@@ -384,7 +384,11 @@ instance Eval (Feature n3 d -> Feature n2 c -> Feature n1 b -> Feature n0 a)
 
 {- | Initializes @Feature@ @Attributes@ to empty strings -}
 
-class HasAttributes n a where
-  getAttributes :: Feature n a -> Attributes
-  getAttributes _ = MkAttributes "" "" ""
+-- class HasAttributes n a where
+--   getAttributes :: Feature n a -> Attributes
+--   getAttributes _ = MkAttributes "" "" ""
+
+-- instance (KnownSymbol n) => HasAttributes n a where
+  -- getAttributes :: Feature n a -> Attributes
+  -- getAttributes _ = MkAttributes "" "" ""
 

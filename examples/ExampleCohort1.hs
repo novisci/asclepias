@@ -261,45 +261,42 @@ diabetes :: BoolFeatDef "diabetes"
 diabetes = twoOutOneIn ["is_diabetes_outpatient"] ["is_diabetes_inpatient"]
 
 instance HasAttributes  "diabetes" Bool where
-  getAttributes _ = MkAttributes 
+  getAttributes _ = basicAttributes 
     "Has Diabetes"
     "Has Diabetes within baseline"
-    "Has at least 1 event during the baseline interval has any of the 'cpts1' concepts \
-    \ OR there are at least 2 event that have 'cpts2' concepts which have at least 7 days \
-    \ between them during the baseline interval"
+    [Covariate]
+    ["baseline"]
+
 
 ckd :: BoolFeatDef "ckd"
 ckd =  twoOutOneIn ["is_ckd_outpatient"] ["is_ckd_inpatient"]
 
 instance HasAttributes  "ckd" Bool where
-  getAttributes _ = MkAttributes 
+  getAttributes _ = basicAttributes
     "Has ckd"
     "Has CKD within baseline"
-    "Has at least 1 event during the baseline interval has any of the 'cpts1' concepts \
-    \ OR there are at least 2 event that have 'cpts2' concepts which have at least 7 days \
-    \ between them during the baseline interval"
+    [Covariate]
+    ["baseline"]
 
 ppi :: BoolFeatDef "ppi"
 ppi = medHx ["is_ppi"]
 
 instance HasAttributes  "ppi" Bool where
-  getAttributes _ = MkAttributes 
+  getAttributes _ = basicAttributes 
     "Has ppi"
     "Has PPI within baseline"
-    "Has at least 1 event during the baseline interval has any of the 'cpts1' concepts \
-    \ OR there are at least 2 event that have 'cpts2' concepts which have at least 7 days \
-    \ between them during the baseline interval"
+    [Covariate]
+    ["baseline"]
 
 glucocorticoids :: BoolFeatDef "glucocorticoids"
 glucocorticoids = medHx ["is_glucocorticoids"]
 
 instance HasAttributes  "glucocorticoids" Bool where
-  getAttributes _ = MkAttributes 
+  getAttributes _ = basicAttributes 
     "Has glucocorticoids"
     "Has glucocorticoids within baseline"
-    "Has at least 1 event during the baseline interval has any of the 'cpts1' concepts \
-    \ OR there are at least 2 event that have 'cpts2' concepts which have at least 7 days \
-    \ between them during the baseline interval"
+    [Covariate]
+    ["baseline"]
 
 -- instance HasAttributes "" (*)
 

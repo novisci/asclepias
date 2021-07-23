@@ -2,7 +2,9 @@
 
 ## 0.13.1
 
-* Adds the `Featureable` type, which allows users to put features into a heterogenous list. A drawback of `Featureable` is that two `Featurable` values cannot be tested for equality, so testing will need to occur before a `Feature n d` is packed into a `Featureable` (by the `packFeature` function) or after the `Featureable` is encoded to JSON.
+* Adds the `Featureable` type, which allows users to put features into a heterogenous list. A drawback of `Featureable` is that two `Featurable` values cannot be tested for equality, so testing will need to occur before a `Feature n d` is packed into a `Featureable` (by the `packFeature` function) or after the `Featureable` is encoded to JSON. See `examples/ExampleCohort1.hs` for example usage.
+* Adds a `"type"` field to JSON output `Feature`s, which is a string representing the type `d` in a `Feature n d`. E.g., for a `Feature "x" Bool`, the result would be : `{..., "type": "Bool", ...}`.
+* Adds the `Role` and `Purpose` types, which now are included as part of the `Attributes` type. The `Role`s mostly align with `stype`'s `valid_roles`, with the exception that `"identifier"`, `"index"` and `"censoring"` are not included and `"other"` corresponds to `Unspecified`.
 
 ## 0.13.0
 

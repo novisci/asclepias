@@ -8,7 +8,8 @@ Maintainer  : bsaul@novisci.com
 
 {-# OPTIONS_HADDOCK hide #-}
 {-# LANGUAGE NoImplicitPrelude #-}
-{-# LANGUAGE Safe #-}
+{-# LANGUAGE DeriveGeneric #-}
+-- {-# LANGUAGE Safe #-}
 
 module Hasklepias.Cohort.Index(
     Index
@@ -16,21 +17,23 @@ module Hasklepias.Cohort.Index(
   , getIndex
 ) where
 
-import safe GHC.Show                    ( Show )
-import safe Data.Eq                     ( Eq )
-import safe IntervalAlgebra             ( Intervallic )
+import  GHC.Show                    ( Show )
+import GHC.Generics
+import  Data.Eq                     ( Eq )
+import  IntervalAlgebra             ( Intervallic )
+import Data.Aeson
 
 {-|
 An @Index@ is a wrapper for an @Intervallic@ used to indicate that a particular
 interval is considered an index interval to which other intervals will be compared.
 -}
 
-newtype (Intervallic i a) => Index i a = MkIndex { 
+newtype Index i a = MkIndex { 
     getIndex :: i a -- ^ Unwrap an @Index@
-  } deriving (Eq, Show)
+  } deriving (Eq, Show, Generic)
 
 -- | Creates a new @'Index'@.
 makeIndex :: Intervallic i a => i a -> Index i a
 makeIndex = MkIndex
 
-
+instance (Intervallic i a, ToJSON (i a)) => ToJSON (Index i a) 

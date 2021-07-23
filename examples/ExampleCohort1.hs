@@ -271,11 +271,37 @@ instance HasAttributes  "diabetes" Bool where
 ckd :: BoolFeatDef "ckd"
 ckd =  twoOutOneIn ["is_ckd_outpatient"] ["is_ckd_inpatient"]
 
+instance HasAttributes  "ckd" Bool where
+  getAttributes _ = MkAttributes 
+    "Has ckd"
+    "Has CKD within baseline"
+    "Has at least 1 event during the baseline interval has any of the 'cpts1' concepts \
+    \ OR there are at least 2 event that have 'cpts2' concepts which have at least 7 days \
+    \ between them during the baseline interval"
+
 ppi :: BoolFeatDef "ppi"
 ppi = medHx ["is_ppi"]
 
+instance HasAttributes  "ppi" Bool where
+  getAttributes _ = MkAttributes 
+    "Has ppi"
+    "Has PPI within baseline"
+    "Has at least 1 event during the baseline interval has any of the 'cpts1' concepts \
+    \ OR there are at least 2 event that have 'cpts2' concepts which have at least 7 days \
+    \ between them during the baseline interval"
+
 glucocorticoids :: BoolFeatDef "glucocorticoids"
 glucocorticoids = medHx ["is_glucocorticoids"]
+
+instance HasAttributes  "glucocorticoids" Bool where
+  getAttributes _ = MkAttributes 
+    "Has glucocorticoids"
+    "Has glucocorticoids within baseline"
+    "Has at least 1 event during the baseline interval has any of the 'cpts1' concepts \
+    \ OR there are at least 2 event that have 'cpts2' concepts which have at least 7 days \
+    \ between them during the baseline interval"
+
+-- instance HasAttributes "" (*)
 
 {-------------------------------------------------------------------------------
   Cohort Specifications and evaluation
@@ -303,38 +329,29 @@ makeCriteriaRunner index events =
         featInd = featureIndex index
         featEvs = featureEvents events
 
--- | Define the shape of features for a cohort
-type ExampleFeatures =
-    ( Feature "calendarIndex"  (Index Interval Day)
-    , BoolFeat "diabetes"
-    , BoolFeat "ckd"
-    , BoolFeat "ppi"
-    , BoolFeat "glucocorticoids"
-    )
-
 -- | Make a function that runs the features for a calendar index
 makeFeatureRunner ::
        Index Interval Day
     -> Events Day
-    -> ExampleFeatures
-makeFeatureRunner index events = (
-      idx
-    , eval diabetes (idx,  ef)
-    , eval ckd (idx,  ef)
-    , eval ppi (idx,  ef)
-    , eval glucocorticoids (idx, ef)
-    )
+    -> [Featureable] 
+makeFeatureRunner index events = [
+      packFeature idx
+    , packFeature $ eval diabetes (idx,  ef)
+    , packFeature $ eval ckd (idx,  ef)
+    , packFeature $ eval ppi (idx,  ef)
+    , packFeature $ eval glucocorticoids (idx, ef)
+    ] 
     where idx = featureIndex index
           ef  = featureEvents events
 
 -- | Make a cohort specification for each calendar time
-cohortSpecs :: [CohortSpec (Events Day) ExampleFeatures]
+cohortSpecs :: [CohortSpec (Events Day) [Featureable]]
 cohortSpecs =
   map (\x -> specifyCohort (makeCriteriaRunner x) (makeFeatureRunner x))
   indices
 
 -- | A function that evaluates all the calendar cohorts for a population
-evalCohorts :: Population (Events Day) -> [Cohort ExampleFeatures]
+evalCohorts :: Population (Events Day) -> [Cohort [Featureable]]
 evalCohorts pop = map (`evalCohort` pop) cohortSpecs
 
 {-------------------------------------------------------------------------------
@@ -376,19 +393,21 @@ testPop = MkPopulation [testSubject1, testSubject2]
 makeExpectedCovariate :: (KnownSymbol name) => FeatureData Bool -> Feature name  Bool
 makeExpectedCovariate = makeFeature
 
+instance HasAttributes "calendarIndex" (Index Interval Day) where
+
 makeExpectedFeatures ::
   FeatureData (Index Interval Day)
   -> (FeatureData Bool, FeatureData Bool, FeatureData Bool, FeatureData Bool)
-  -> ExampleFeatures
+  -> [Featureable]
 makeExpectedFeatures i (b1, b2, b3, b4) =
-        ( makeFeature  i :: Feature "calendarIndex"  (Index Interval Day)
-        , makeExpectedCovariate b1
-        , makeExpectedCovariate b2
-        , makeExpectedCovariate b3
-        , makeExpectedCovariate b4
-        )
+        [ packFeature (makeFeature  i :: Feature "calendarIndex"  (Index Interval Day))
+        , packFeature ( makeExpectedCovariate b1 :: Feature "diabetes"  Bool )
+        , packFeature ( makeExpectedCovariate b2 :: Feature "ckd"  Bool )
+        , packFeature ( makeExpectedCovariate b3 :: Feature "ppi"  Bool )
+        , packFeature ( makeExpectedCovariate b4 :: Feature "glucocorticoids"  Bool )
+        ]
 
-expectedFeatures1 :: [ExampleFeatures]
+expectedFeatures1 :: [[Featureable ]]
 expectedFeatures1 =
   map (uncurry makeExpectedFeatures)
     [ (pure $ makeIndex $ beginerval 1 (fromGregorian 2017 4 1),
@@ -399,13 +418,13 @@ expectedFeatures1 =
            (pure True, pure False, pure True, pure False))
     ]
 
-expectedObsUnita :: [ObsUnit ExampleFeatures]
+expectedObsUnita :: [ObsUnit [Featureable]]
 expectedObsUnita = zipWith (curry MkObsUnit) (replicate 5 "a") expectedFeatures1
 
-makeExpectedCohort :: AttritionInfo -> [ObsUnit ExampleFeatures] -> Cohort ExampleFeatures
+makeExpectedCohort :: AttritionInfo -> [ObsUnit [Featureable]] -> Cohort [Featureable]
 makeExpectedCohort a x = MkCohort (Just a, x)
 
-expectedCohorts :: [Cohort ExampleFeatures]
+expectedCohorts :: [Cohort [Featureable]]
 expectedCohorts =
   zipWith
   (curry MkCohort)
@@ -424,5 +443,7 @@ expectedCohorts =
 exampleCohort1tests :: TestTree
 exampleCohort1tests = testGroup "Unit tests for calendar cohorts"
   [ testCase "expected Features for testData1" $
-       evalCohorts testPop @?= expectedCohorts
+      -- Featureable cannot be tested for equality directly, hence encoding to 
+      -- JSON bytestring and testing that for equality
+       encode (evalCohorts testPop) @?= encode expectedCohorts
   ]

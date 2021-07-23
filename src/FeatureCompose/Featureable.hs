@@ -18,13 +18,14 @@ import FeatureCompose.Aeson           ()
 import FeatureCompose.Attributes      ()
 import GHC.TypeLits                   ( KnownSymbol )
 import Data.Aeson                     ( ToJSON(toJSON) )
+import Data.Typeable                  ( Typeable )
 
 {- | Existential type to hold features -}
 data Featureable = forall d . (Show d, ToJSON d) => MkFeatureable d
 
 {- | Pack a feature into a Featurable -}
 packFeature ::
-  (KnownSymbol n, Show d, ToJSON d, HasAttributes n d) =>
+  (KnownSymbol n, Show d, ToJSON d, Typeable d, HasAttributes n d) =>
   Feature n d -> Featureable
 packFeature = MkFeatureable
 

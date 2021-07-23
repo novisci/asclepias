@@ -39,7 +39,7 @@ critTrue :: Definition
 critTrue = define $ pure Include 
 
 instance HasAttributes "dummy" Bool where
-  getAttributes _ = MkAttributes "Text" "Text" "Text"
+  getAttributes _ = emptyAttributes  
 
 {-------------------------------------------------------------------------------
   Cohort Specifications and evaluation

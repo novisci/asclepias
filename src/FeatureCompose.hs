@@ -9,9 +9,9 @@ Maintainer  : bsaul@novisci.com
 -}
 {-# OPTIONS_HADDOCK hide #-}
 
+{-# LANGUAGE Safe #-}
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE Safe #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE DataKinds #-}
@@ -21,6 +21,9 @@ Maintainer  : bsaul@novisci.com
 {-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE ExistentialQuantification #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE InstanceSigs #-}
 
 module FeatureCompose(
   -- * Features and FeatureData
@@ -55,9 +58,9 @@ import safe Control.Monad              ( Functor(..), Monad(..)
                                        , (=<<), join, liftM, liftM2, liftM3)
 import safe Data.Either                ( Either(..) )
 import safe Data.Eq                    ( Eq(..) )
-import safe Data.Foldable              ( Foldable(foldr) )
-import safe Data.Function              ( ($), (.) )
-import safe Data.List                  ( (++) )
+import safe Data.Foldable              ( Foldable(foldr), fold )
+import safe Data.Function              ( ($), (.), id )
+import safe Data.List                  ( (++), transpose, concat )
 import safe Data.Proxy                 ( Proxy(..) )
 import safe Data.Text                  ( Text, pack )
 import safe Data.Traversable           ( Traversable(..) )
@@ -87,7 +90,7 @@ constructed with @'featureDataL'@ or its synonym @'missingBecause'@.
 
 -}
 {- tag::featureData[] -}
-newtype FeatureData d = MkFeatureData { 
+newtype FeatureData d = MkFeatureData {
     getFeatureData :: Either MissingReason d  -- ^ Unwrap FeatureData.
   }
 {- end::featureData[] -}
@@ -336,7 +339,7 @@ class Eval def args return | def -> args return where
                      -> args -- ^ a tuple of arguments to the @'Definition'@
                      -> return
 
-instance Eval (FeatureData b -> FeatureData a) 
+instance Eval (FeatureData b -> FeatureData a)
               (FeatureData b)  (FeatureData a) where
   eval (D1 f)  x = fmap f x
   eval (D1A f) x = x >>= f
@@ -350,7 +353,7 @@ instance Eval (Feature n1 b -> Feature n0 a)
           MkFeatureData (Right r) -> r
 
 
-instance Eval (FeatureData c -> FeatureData b -> FeatureData a) 
+instance Eval (FeatureData c -> FeatureData b -> FeatureData a)
               (FeatureData c,   FeatureData b) (FeatureData a) where
   eval (D2 f) (x, y) = liftA2 f x y
   eval (D2A f) (x, y) = join (liftA2 f x y)
@@ -383,6 +386,5 @@ instance Eval (Feature n3 d -> Feature n2 c -> Feature n1 b -> Feature n0 a)
 
 class HasAttributes n a where
   getAttributes :: Feature n a -> Attributes
+  getAttributes _ = MkAttributes "" "" ""
 
--- instance HasAttributes name d where
---   getAttributes x = MkAttributes "" "" ""

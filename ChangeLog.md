@@ -1,5 +1,9 @@
 # Changelog for hasklepias
 
+## 0.13.1
+
+* Adds the `Featureable` type, which allows users to put features into a heterogenous list. A drawback of `Featureable` is that two `Featurable` values cannot be tested for equality, so testing will need to occur before a `Feature n d` is packed into a `Featureable` (by the `packFeature` function) or after the `Featureable` is encoded to JSON.
+
 ## 0.13.0
 
 * Adds a rudimentary `Attributes` type and `HasAttributes` typeclass for adding attributes to `Feature`s. This interfaces will likely change in the future, but for now users have the ability to add information like labels to a `Feature`. In fact, `Feature`s which are encoded to JSON are *required* to have attributes.

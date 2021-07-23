@@ -11,11 +11,13 @@ Maintainer  : bsaul@novisci.com
 module Hasklepias.ReexportsUnsafe (
 
     -- * Re-exports
-      module GHC.IO
+      module Data.Aeson
+    , module GHC.IO
     , module Test.Tasty
     , module Test.Tasty.HUnit
 ) where
 
+import Data.Aeson        (encode)
 import GHC.IO            ( IO(..) )
 
 -- import GHC.Types                       ( Any )

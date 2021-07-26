@@ -55,20 +55,15 @@ makeCriteriaRunner events =
   where crit1   = eval critTrue featEvs
         featEvs = featureEvents events
 
--- | Define the shape of features for a cohort
-type CohortFeatures = [Featureable]
-  -- (Feature "dummy"  Bool )
-
-
 -- | Make a function that runs the features for a calendar index
 makeFeatureRunner ::
        Events Day
-    -> CohortFeatures
-makeFeatureRunner events = [packFeature ( eval featureDummy ef )]
+    -> Featureset 
+makeFeatureRunner events = featureset [packFeature ( eval featureDummy ef )]
     where ef  = featureEvents events
 
 -- | Make a cohort specification for each calendar time
-cohortSpecs :: [CohortSpec (Events Day) CohortFeatures]
+cohortSpecs :: [CohortSpec (Events Day) Featureset]
 cohortSpecs = [specifyCohort makeCriteriaRunner makeFeatureRunner]
 
 main :: IO ()

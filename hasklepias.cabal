@@ -33,6 +33,7 @@ library
       FeatureCompose.Aeson
       FeatureCompose.Attributes
       FeatureCompose.Featureable
+      FeatureCompose.Featureset
       FeatureEvents
       Hasklepias
       Hasklepias.Aeson
@@ -94,6 +95,7 @@ test-suite hasklepias-test
       EventData.Context.Domain.DemographicsSpec
       FeatureComposeSpec
       FeatureCompose.AesonSpec
+      FeatureCompose.FeaturesetSpec
       Hasklepias.AesonSpec
       Hasklepias.CohortSpec
       Hasklepias.Cohort.CriteriaSpec

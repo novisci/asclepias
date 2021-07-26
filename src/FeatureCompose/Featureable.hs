@@ -1,6 +1,6 @@
 {-|
-Module      : Functions for defining attributes Feature data
-Description : Defines attributes instances for Features.
+Module      : Featureable
+Description : Defines an existential type to with which to collect Features.
 Copyright   : (c) NoviSci, Inc 2020
 License     : BSD3
 Maintainer  : bsaul@novisci.com
@@ -9,41 +9,39 @@ Maintainer  : bsaul@novisci.com
 {-# LANGUAGE ExistentialQuantification #-}
 {-# LANGUAGE FlexibleContexts #-}
 
-
-
-{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE UndecidableInstances #-}
-
 module FeatureCompose.Featureable (
     Featureable(..)
   , packFeature
+  , getFeatureableAttrs
 ) where
 
-import FeatureCompose                 ( Feature, FeatureN, makeFeature, nameFeature
-                                      , FeatureData )
+import FeatureCompose                 ( Feature
+                                      , makeFeature
+                                      )
 import FeatureCompose.Aeson           ()
-import FeatureCompose.Attributes      (HasAttributes(..), emptyAttributes)
+import FeatureCompose.Attributes      ( HasAttributes(..), Attributes )
 import GHC.TypeLits                   ( KnownSymbol )
 import Data.Aeson                     ( ToJSON(toJSON) )
 import Data.Typeable                  ( Typeable )
 
+{- | Existential type to hold features, which allows for Features to be put
+into a heterogeneous list.
+-}
+data Featureable = forall d e. (Show d, ToJSON d) => MkFeatureable d  Attributes 
 
-import Data.List
-import Data.Proxy
-{- | Existential type to hold features -}
-data Featureable = forall d . (Show d, ToJSON d) => MkFeatureable d
-
-{- | Pack a feature into a Featurable -}
+{- | Pack a feature into a @Featurable@. -}
 packFeature ::
-  (KnownSymbol n, Show d, ToJSON d, Typeable d, HasAttributes n d) =>
+  ( KnownSymbol n, Show d, ToJSON d, Typeable d, HasAttributes n d  ) =>
   Feature n d -> Featureable
-packFeature = MkFeatureable
+packFeature x = MkFeatureable x (getAttributes x)
 
 instance Show Featureable where
-  show (MkFeatureable x) = show x
+  show (MkFeatureable x _ ) = show x
 
 instance ToJSON Featureable where
-  toJSON (MkFeatureable x) = toJSON x
+  toJSON (MkFeatureable x _ ) = toJSON x
+
+-- | Get the @Attributes@ from a @Featureable@.
+getFeatureableAttrs :: Featureable -> Attributes 
+getFeatureableAttrs (MkFeatureable _ a) = a
 

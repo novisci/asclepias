@@ -330,8 +330,8 @@ makeCriteriaRunner index events =
 makeFeatureRunner ::
        Index Interval Day
     -> Events Day
-    -> [Featureable] 
-makeFeatureRunner index events = [
+    -> Featureset
+makeFeatureRunner index events = featureset [
       packFeature idx
     , packFeature $ eval diabetes (idx,  ef)
     , packFeature $ eval ckd (idx,  ef)
@@ -342,13 +342,13 @@ makeFeatureRunner index events = [
           ef  = featureEvents events
 
 -- | Make a cohort specification for each calendar time
-cohortSpecs :: [CohortSpec (Events Day) [Featureable]]
+cohortSpecs :: [CohortSpec (Events Day) Featureset]
 cohortSpecs =
   map (\x -> specifyCohort (makeCriteriaRunner x) (makeFeatureRunner x))
   indices
 
 -- | A function that evaluates all the calendar cohorts for a population
-evalCohorts :: Population (Events Day) -> [Cohort [Featureable]]
+evalCohorts :: Population (Events Day) -> [Cohort Featureset]
 evalCohorts pop = map (`evalCohort` pop) cohortSpecs
 
 {-------------------------------------------------------------------------------
@@ -395,8 +395,9 @@ instance HasAttributes "calendarIndex" (Index Interval Day) where
 makeExpectedFeatures ::
   FeatureData (Index Interval Day)
   -> (FeatureData Bool, FeatureData Bool, FeatureData Bool, FeatureData Bool)
-  -> [Featureable]
+  -> Featureset
 makeExpectedFeatures i (b1, b2, b3, b4) =
+        featureset
         [ packFeature (makeFeature  i :: Feature "calendarIndex"  (Index Interval Day))
         , packFeature ( makeExpectedCovariate b1 :: Feature "diabetes"  Bool )
         , packFeature ( makeExpectedCovariate b2 :: Feature "ckd"  Bool )
@@ -404,7 +405,7 @@ makeExpectedFeatures i (b1, b2, b3, b4) =
         , packFeature ( makeExpectedCovariate b4 :: Feature "glucocorticoids"  Bool )
         ]
 
-expectedFeatures1 :: [[Featureable ]]
+expectedFeatures1 :: [Featureset]
 expectedFeatures1 =
   map (uncurry makeExpectedFeatures)
     [ (pure $ makeIndex $ beginerval 1 (fromGregorian 2017 4 1),
@@ -415,13 +416,13 @@ expectedFeatures1 =
            (pure True, pure False, pure True, pure False))
     ]
 
-expectedObsUnita :: [ObsUnit [Featureable]]
+expectedObsUnita :: [ObsUnit Featureset]
 expectedObsUnita = zipWith (curry MkObsUnit) (replicate 5 "a") expectedFeatures1
 
-makeExpectedCohort :: AttritionInfo -> [ObsUnit [Featureable]] -> Cohort [Featureable]
+makeExpectedCohort :: AttritionInfo -> [ObsUnit Featureset] -> Cohort Featureset
 makeExpectedCohort a x = MkCohort (Just a, x)
 
-expectedCohorts :: [Cohort [Featureable]]
+expectedCohorts :: [Cohort Featureset]
 expectedCohorts =
   zipWith
   (curry MkCohort)

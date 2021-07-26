@@ -32,7 +32,7 @@ import safe GHC.Show        ( Show )
 import safe GHC.Generics    ( Generic )
 import safe GHC.TypeLits    ( KnownSymbol )
 
-{- | A type to identify a feature's role -}
+-- | A type to identify a feature's role in a research study.
 data Role =
     Outcome
   | Covariate
@@ -43,7 +43,7 @@ data Role =
   | Unspecified
   deriving (Eq, Ord, Show, Generic)
 
-{- | A type to identify a feature's purpose -}
+-- | A type to identify a feature's purpose
 data Purpose = MkPurpose {
       getRole :: Set Role 
     , getTags :: Set Text
@@ -60,15 +60,15 @@ data Attributes = MkAttributes {
   , getPurpose :: Purpose
   } deriving (Eq, Show, Generic)
 
-{- | Just empty purpose -}
+-- | An empty purpose value. 
 emptyPurpose :: Purpose
 emptyPurpose = MkPurpose empty empty
 
-{- | Just empty attributes -}
+-- | An empty attributes value.
 emptyAttributes :: Attributes
 emptyAttributes = MkAttributes "" "" "" emptyPurpose
 
-{- | Create attributes with just short label, long label, roles, and tags. -}
+-- | Create attributes with just short label, long label, roles, and tags.
 basicAttributes :: 
      Text -- ^ short label
   -> Text -- ^ long label
@@ -79,7 +79,8 @@ basicAttributes sl ll rls tgs =
   MkAttributes sl ll "" 
   (MkPurpose (fromList rls) (fromList tgs))
 
-
-class (KnownSymbol n) => HasAttributes n a where
-  getAttributes :: f n a -> Attributes
+{-| A typeclass providing a single method for defining @Attributes@ for a
+@Feature@. -}
+class (KnownSymbol name) => HasAttributes name d where
+  getAttributes :: f name d -> Attributes
   getAttributes _ = emptyAttributes

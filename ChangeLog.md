@@ -1,5 +1,9 @@
 # Changelog for hasklepias
 
+## 0.13.2
+
+* Adds `Featureset` module and type, which is simply a list of `Featureable`s. This is just a step towards being able to define the shape of JSON output.
+
 ## 0.13.1
 
 * Adds the `Featureable` type, which allows users to put features into a heterogenous list. A drawback of `Featureable` is that two `Featurable` values cannot be tested for equality, so testing will need to occur before a `Feature n d` is packed into a `Featureable` (by the `packFeature` function) or after the `Featureable` is encoded to JSON. See `examples/ExampleCohort1.hs` for example usage.

@@ -41,7 +41,8 @@ instance ToJSON Role where
 instance ToJSON Purpose where
 instance ToJSON Attributes where
 
-instance (Typeable d, KnownSymbol n, ToJSON d, HasAttributes n d) => ToJSON (Feature n d) where
+instance (Typeable d, KnownSymbol n, ToJSON d, HasAttributes n d) =>
+  ToJSON (Feature n d) where
     toJSON x = object [  "name"  .= symbolVal (Proxy @n)
                        , "attrs" .= toJSON (getAttributes x)
                        , "type"  .= toJSON (show $ typeRep (Proxy @d))

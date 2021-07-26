@@ -27,6 +27,7 @@ module Hasklepias (
     , module FeatureCompose.Aeson
     -- ** Exporting Features
     , module FeatureCompose.Featureable
+    , module FeatureCompose.Featureset
 
     -- * Utilities for defining Features from Events
     {- |
@@ -67,6 +68,8 @@ import FeatureCompose
 import FeatureCompose.Aeson
 import FeatureCompose.Attributes
 import FeatureCompose.Featureable
+import FeatureCompose.Featureset
+
 import FeatureEvents
 import Hasklepias.Reexports
 import Hasklepias.ReexportsUnsafe

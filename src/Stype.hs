@@ -13,7 +13,9 @@ Maintainer  : bsaul@novisci.com
 module Stype (
     module Stype.Numeric
   , module Stype.Categorical
+  , module Stype.Aeson
 ) where 
 
 import Stype.Numeric
 import Stype.Categorical
+import Stype.Aeson

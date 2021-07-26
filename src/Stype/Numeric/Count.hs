@@ -8,16 +8,18 @@ Maintainer  : bsaul@novisci.com
 -}
 
 {-# LANGUAGE Safe #-}
+{-# LANGUAGE DeriveGeneric #-}
 
 module Stype.Numeric.Count (
   Count(..)
 ) where
 
+import safe GHC.Generics                 ( Generic )
 import safe GHC.Num                      ( Natural )
 import safe Data.Semiring                ( Semiring(..) )
 
 newtype Count = Count Natural
-  deriving (Eq, Show, Ord)
+  deriving (Eq, Show, Ord, Generic)
 
 instance Num Count where
   (+) (Count x) (Count y) = Count (x + y)

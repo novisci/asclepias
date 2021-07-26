@@ -1,6 +1,6 @@
 cabal-version:  2.2
 name:           hasklepias
-version:        0.13.1
+version:        0.13.2
 description:    Please see the README on GitHub at <https://github.com/novisci/asclepias#readme>
 homepage:       https://github.com/novisci/asclepias/#readme
 bug-reports:    https://github.com/novisci/asclepias/issues
@@ -43,6 +43,7 @@ library
       Hasklepias.Cohort.Criteria
       Hasklepias.Cohort.Index
       Stype
+      Stype.Aeson
       Stype.Numeric
       Stype.Numeric.Count
       Stype.Numeric.Continuous

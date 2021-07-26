@@ -4,6 +4,9 @@ Description : Demostrates how to define a cohort using Hasklepias
 Copyright   : (c) NoviSci, Inc 2020
 License     : BSD3
 Maintainer  : bsaul@novisci.com
+
+To run as an example: 
+cat exampleApp/exampleData.jsonl| cabal exec exampleApp
 -}
 
 {-# LANGUAGE OverloadedStrings #-}
@@ -29,8 +32,8 @@ featureEvents = pure
 -- | Lift a subject's events in a feature
 featureDummy :: Definition
    ( Feature "allEvents" (Events Day)
-   -> Feature "dummy" Bool)
-featureDummy = define $ pure True
+   -> Feature "dummy" Count)
+featureDummy = define $ pure 5
 
 -- | Include the subject if she has an enrollment interval concurring with index.
 critTrue :: Definition
@@ -38,7 +41,7 @@ critTrue :: Definition
    -> Feature "dummy" Status)
 critTrue = define $ pure Include 
 
-instance HasAttributes "dummy" Bool where
+instance HasAttributes "dummy" Count where
   getAttributes _ = emptyAttributes  
 
 {-------------------------------------------------------------------------------

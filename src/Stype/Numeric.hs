@@ -7,9 +7,6 @@ Maintainer  : bsaul@novisci.com
 
 -}
 
-{-# LANGUAGE GADTs #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE Safe #-}
 
 module Stype.Numeric (
@@ -23,4 +20,4 @@ import safe Stype.Numeric.Continuous
 import safe Stype.Numeric.Censored
 
 instance Censorable Double where
-instance (Ord a) => Censorable (EventTime a) where
+instance (Ord a, Show a) => Censorable (EventTime a) where

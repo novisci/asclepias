@@ -50,6 +50,7 @@ library
       Stype.Numeric.Continuous
       Stype.Numeric.Censored
       Stype.Categorical
+      Stype.Categorical.Binary
       Stype.Categorical.Nominal
   other-modules:
       Paths_hasklepias
@@ -100,6 +101,8 @@ test-suite hasklepias-test
       Hasklepias.CohortSpec
       Hasklepias.Cohort.CriteriaSpec
       FeatureEventsSpec
+      Stype.AesonSpec
+      Stype.Numeric.CensoredSpec
       Paths_hasklepias
   autogen-modules:
       Paths_hasklepias 

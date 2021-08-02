@@ -10,31 +10,40 @@ Maintainer  : bsaul@novisci.com
 {-# LANGUAGE Safe #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE DeriveGeneric #-}
 
 module Stype.Numeric.Censored (
     Censorable(..)
   , MaybeCensored(..)
+  , ParseIntervalError(..)
 ) where
 
-import safe Data.Text                    (Text)
+import safe Data.Text                  
+  -- ( Text, pack, unpack )
+import safe GHC.Generics                 ( Generic )
 
+-- | Data for censored data
 data MaybeCensored a where
   IntervalCensored :: a -> a -> MaybeCensored a
   RightCensored :: a -> MaybeCensored a
   LeftCensored :: a -> MaybeCensored a
   Uncensored :: a -> MaybeCensored a
-  deriving( Eq, Show, Ord )
+  deriving( Eq, Show, Ord, Generic )
 
-class (Ord a) => Censorable a where
+newtype ParseIntervalError = ParseIntervalError Text
+  deriving ( Eq, Show)
 
-  parseIntervalCensor :: a -> a -> Either Text (MaybeCensored a)
-  parseIntervalCensor x y 
+-- | A class to censor data
+class (Ord a, Show a) => Censorable a where
+
+  parseIntervalCensor :: a -> a -> Either ParseIntervalError (MaybeCensored a)
+  parseIntervalCensor x y
     | x < y = Right $ IntervalCensored x y
-    | otherwise = Left "y >= x"
+    | otherwise = Left $ ParseIntervalError ( pack (show y ++ " < " ++ show x) )
 
   rightCensor ::  a -> a -> MaybeCensored a
   rightCensor c t
-    | c < t     = RightCensored c 
+    | c < t     = RightCensored c
     | otherwise = Uncensored t
 
   leftCensor ::  a -> a -> MaybeCensored a

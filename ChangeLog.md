@@ -2,6 +2,8 @@
 
 ## 0.13.2
 
+* Adds `Binary` Stype data type.
+* Adds `ToJSON` instance for most Stype types.
 * Adds `Featureset` module and type, which is simply a list of `Featureable`s. This is just a step towards being able to define the shape of JSON output.
 
 ## 0.13.1

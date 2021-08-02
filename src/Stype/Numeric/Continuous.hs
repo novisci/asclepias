@@ -8,6 +8,8 @@ Maintainer  : bsaul@novisci.com
 -}
 
 {-# LANGUAGE Safe #-}
+{-# LANGUAGE DeriveGeneric #-}
+
 module Stype.Numeric.Continuous (
     Continuous(..)
   , NonnegContinuous(..)
@@ -16,10 +18,11 @@ module Stype.Numeric.Continuous (
 ) where
 
 import safe Control.Applicative           ( Applicative(liftA2) )
+import safe GHC.Generics                  ( Generic )
 
-
+-- | Data type for continuous numbers.
 data Continuous a = NegContInf | Cont a | ContInf
-  deriving (Eq, Show, Ord)
+  deriving (Eq, Show, Ord, Generic)
 
 instance Functor Continuous where
   fmap f (Cont x) = Cont (f x)
@@ -42,12 +45,23 @@ instance Num a => Num (Continuous a) where
   signum = fmap signum
   negate = fmap negate
 
-data NonnegContinuous a = NonNeg a | NonNegInf
-  deriving (Eq, Show, Ord)
+-- | Data type for nonnegative continuous numbers.
+data NonnegContinuous a = NonNegCont a | NonNegContInf
+  deriving (Eq, Show, Ord, Generic)
 
+data ParseErrorNegative = ParseErrorNegative deriving (Eq, Show)
+
+-- | Parse a number into a Nonnegative continuous number.
+parseNonnegCont :: (Num a, Ord a) => a -> Either ParseErrorNegative (NonnegContinuous a)
+parseNonnegCont x 
+  | x < 0 = Left ParseErrorNegative
+  | otherwise = Right (NonNegCont x)
+
+-- | Data type for event times.
 newtype EventTime a = EventTime { getEventTime :: NonnegContinuous a }
-  deriving (Eq, Show, Ord)
+  deriving (Eq, Show, Ord, Generic)
 
+-- | Create an event time from a @Maybe@.
 mkEventTime :: Maybe a -> EventTime a
-mkEventTime (Just x) = EventTime $ NonNeg x
-mkEventTime Nothing  = EventTime NonNegInf
+mkEventTime (Just x) = EventTime $ NonNegCont x
+mkEventTime Nothing  = EventTime NonNegContInf

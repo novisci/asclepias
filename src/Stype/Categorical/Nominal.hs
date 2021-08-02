@@ -6,12 +6,15 @@ License     : BSD3
 Maintainer  : bsaul@novisci.com
 
 -}
--- {-# LANGUAGE Safe #-}
+
+{-# LANGUAGE Safe #-}
+{-# LANGUAGE DeriveGeneric #-}
+
 module Stype.Categorical.Nominal (
-  Nomimal(..)
+  Nominal(..)
 ) where
 
--- import qualified Data.Set.NonEmpty as NES
+import GHC.Generics             ( Generic )
 
 {- | a placeholder for a future nominal type -}
-newtype Nomimal a = Nomimal a deriving ( Eq, Show, Ord )
+newtype Nominal a = Nominal a deriving ( Eq, Show, Ord, Generic )

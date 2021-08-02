@@ -6,9 +6,13 @@ License     : BSD3
 Maintainer  : bsaul@novisci.com
 
 -}
--- {-# LANGUAGE Safe #-}
+
+{-# LANGUAGE Safe #-}
+
 module Stype.Categorical (
-  module Stype.Categorical.Nominal 
+    module Stype.Categorical.Nominal 
+  , module Stype.Categorical.Binary
 ) where
 
-import Stype.Categorical.Nominal
+import safe Stype.Categorical.Nominal
+import safe Stype.Categorical.Binary

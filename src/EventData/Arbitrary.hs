@@ -33,8 +33,7 @@ import Data.Ord ( Ord )
 import Data.List(length)
 import IntervalAlgebra ( Interval )
 import IntervalAlgebra.Arbitrary ()
-import EventData
-    ( event, Event, ConceptEvent, toConceptEvent )
+import EventData.Core ( event, Event, ConceptEvent, toConceptEvent )
 import EventData.Context.Arbitrary ()
 
 instance (Arbitrary (Interval a)) => Arbitrary (Event a) where

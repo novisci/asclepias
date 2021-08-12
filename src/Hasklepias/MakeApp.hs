@@ -27,6 +27,7 @@ import qualified Data.ByteString.Lazy as B
 import Data.ByteString.Lazy.Char8 as C      ( putStrLn )
 import Data.Function                        ( ($), (.) )
 import Data.List                            ( (++) )
+import Data.Maybe                           ( Maybe )
 import Data.Monoid                          ( Monoid(mconcat) )
 import Data.String                          ( String )
 import Data.Text                            ( pack, Text )
@@ -35,8 +36,7 @@ import GHC.Show                             ( Show(show) )
 import GHC.IO                               ( IO )
 
 import EventData                            ( Events )
-import Hasklepias.Aeson                     ( parsePopulationLines, ParseError )
-import Hasklepias.Cohort                    ( evalCohort, Cohort, CohortSpec )
+import Hasklepias.Cohort
 import IntervalAlgebra                      ( IntervalSizeable )
 
 import Control.Monad.IO.Class               (MonadIO, liftIO)
@@ -53,7 +53,7 @@ import Colog                                ( Message
                                             , logText
                                             , withLog
                                             , logPrint
-                                            , logPrintStderr 
+                                            , logPrintStderr
                                             , (<&)
                                             , (>$)
                                             , log )
@@ -73,11 +73,22 @@ makeAppArgs name version = MakeCohort
     } &= help "Pass event data via stdin."
       &= summary (name ++ " " ++ version)
 
-makeCohortBuilder :: (FromJSON a, Show a, IntervalSizeable a b, ToJSON d0, Monad m) =>
+makeCohortBuilder :: (FromJSON a, Show a, IntervalSizeable a b, ToJSON d0, ShapeCohort d0, Monad m) =>
      [CohortSpec (Events a) d0]
   -> m (B.ByteString -> m ([ParseError], [Cohort d0]))
 makeCohortBuilder specs =
   return (return . second (\pop -> fmap (`evalCohort` pop) specs) . parsePopulationLines)
+
+reshapeWith :: (Cohort d -> CohortShape shape) 
+        -> Cohort d 
+        -> (Maybe AttritionInfo, CohortShape shape)
+reshapeWith s x = (getAttritionInfo x, s x)
+
+shapeOutput ::  (Monad m, ShapeCohort d0) => (Cohort d0 -> CohortShape shape) 
+      -> m ([ParseError], [Cohort d0]) 
+      -> m ([ParseError], [(Maybe AttritionInfo, CohortShape shape)]) 
+shapeOutput shape = fmap (fmap (fmap (reshapeWith shape)))
+  -- fmap (fmap (fmap shape))
 
 -- logging based on example here:
 -- https://github.com/kowainik/co-log/blob/main/co-log/tutorials/Main.hs
@@ -88,12 +99,15 @@ logParseErrors :: [ParseError] -> IO ()
 logParseErrors x = mconcat $ fmap (parseErrorL <&) x
 
 -- | Make a command line cohort building application.
-makeCohortApp :: (FromJSON a, Show a, IntervalSizeable a b, ToJSON d0) =>
+makeCohortApp :: (FromJSON a, Show a, IntervalSizeable a b
+                  , ToJSON d0,
+                   ShapeCohort d0) =>
        String  -- ^ cohort name
     -> String  -- ^ app version
+    -> (Cohort d0 -> CohortShape shape) -- ^ a function which specifies the output shape
     -> [CohortSpec (Events a) d0]  -- ^ a list of cohort specifications
     -> IO ()
-makeCohortApp name version spec =
+makeCohortApp name version shape spec =
     do
       args <- cmdArgs ( makeAppArgs name version )
       let logger = logStringStdout
@@ -102,15 +116,16 @@ makeCohortApp name version spec =
       app <- makeCohortBuilder spec
 
       logger <& "Reading data from stdin..."
+      -- TODO: give error if no contents within some amount of time
       dat  <- B.getContents
 
       logger <& "Bulding cohort..."
-      res <- app dat
+      res <- shapeOutput shape (app dat)
 
       logParseErrors (fst res)
 
       logger <& "Encoding cohort(s) output and writing to stdout..."
-      C.putStrLn (encode ( toJSON (snd res) ))
+      C.putStrLn (encode (fmap (second toJSONCohortShape) (snd res) ))
 
       logger <& "Cohort build complete!"
 

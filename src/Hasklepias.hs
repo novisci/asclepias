@@ -11,23 +11,9 @@ See the examples folder and manual for further documentation.
 
 module Hasklepias (
       module EventData
-    -- ** Event Contexts
-    , module EventData.Context
-    -- ** Event Domains
-    , module EventData.Context.Domain
-    -- ** Parsing Events
-    , module EventData.Aeson
-    -- ** Generating arbitrary events
-    , module EventData.Arbitrary
     
-    , module FeatureCompose
-    -- ** Adding Attributes to Features
-    , module FeatureCompose.Attributes
-    -- ** Writing Features to JSON
-    , module FeatureCompose.Aeson
-    -- ** Exporting Features
-    , module FeatureCompose.Featureable
-    , module FeatureCompose.Featureset
+    -- * Working with Features
+    , module Features
 
     -- * Utilities for defining Features from Events
     {- |
@@ -41,8 +27,7 @@ module Hasklepias (
     
     -- * Specifying and building cohorts
     , module Hasklepias.Cohort
-    -- ** Writing Cohorts to JSON
-    , module Hasklepias.Aeson
+
     -- ** Creating an executable cohort application
     , module Hasklepias.MakeApp
 
@@ -55,27 +40,17 @@ module Hasklepias (
 ) where
 
 import EventData
-import EventData.Aeson
-import EventData.Arbitrary
-import EventData.Context
-import EventData.Context.Domain
 
 import IntervalAlgebra
 import IntervalAlgebra.IntervalUtilities
 import IntervalAlgebra.PairedInterval
 
-import FeatureCompose
-import FeatureCompose.Aeson
-import FeatureCompose.Attributes
-import FeatureCompose.Featureable
-import FeatureCompose.Featureset
+import Features
 
 import FeatureEvents
 import Hasklepias.Reexports
 import Hasklepias.ReexportsUnsafe
 import Hasklepias.Cohort
-import Hasklepias.Cohort.Criteria
-import Hasklepias.Aeson
 import Hasklepias.MakeApp
 
 import Stype

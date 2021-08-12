@@ -1,11 +1,11 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE DataKinds #-}
 
-module Hasklepias.CohortSpec (
+module Hasklepias.Cohort.CoreSpec (
   spec
  ) where
 
-import FeatureCompose
+import Features
 import Hasklepias.Cohort
 import Data.List.NonEmpty
 import Test.Hspec ( describe, pending, shouldBe, it, Spec )
@@ -56,8 +56,9 @@ testCohort = specifyCohort buildCriteria buildFeatures
 testOut :: Cohort Features
 testOut = MkCohort
   ( Just $ MkAttritionInfo $ (ExcludedBy (1, "feat2"), 1) :| [ (Included, 1) ]
-  , [MkObsUnit ("2", ( makeFeature (featureDataR False)
-                     , makeFeature (featureDataR 56))) ])
+  , MkCohortData [MkObsUnit "2" 
+                  ( makeFeature (featureDataR False)
+                  , makeFeature (featureDataR 56)) ])
 
 -- evalCohort testCohort testPopulation
 spec :: Spec

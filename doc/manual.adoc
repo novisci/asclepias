@@ -193,7 +193,7 @@ The `Feature` type, and its corresponding `Definition` type, are the basic build
 
 [source,haskell]
 ----
-include::{sourcedir}/FeatureCompose.hs[tag=feature]
+include::{sourcedir}/Features/Compose.hs[tag=feature]
 ----
 
 A `Feature` is a type parametrized by two types: `name` and `d`. The type `d` here stands for "data", which then parametrizes the `FeatureData` type which is the singular value which a `Feature` contains. The `d` here can be almost anything and need not be a scalar, for example,  `Int`, `Text`, `(Int, Maybe Text)` and `[Double]` are all valid types for `d`. The `name` type a bit special: it does not appear on the right-hand side of the `=`. In Haskell parlance, `name` is a https://wiki.haskell.org/Phantom_type[phantom type]. We'll see in a bit how this can be useful. For now, think of the `name` as the name of a variable as you would in most programming languages. To summarize, a `Feature` 's type constructor takes two arguments (`name` and `d`), but its *value* constructor (`MkFeature`) takes a single value of type `FeatureData d`.
@@ -202,14 +202,14 @@ Values of the `FeatureData` type contain the data we're ultimately interested in
 
 [source,haskell]
 ----
-include::{sourcedir}/FeatureCompose.hs[tag=featureData]
+include::{sourcedir}/Features/Compose.hs[tag=featureData]
 ----
 
 A value of a `FeatureData`, then, is either a `Left MissingReason` or `Right d` where `MissingReason` can be one of:
 
 [source,haskell]
 ----
-include::{sourcedir}/FeatureCompose.hs[tag=missingReason]
+include::{sourcedir}/Features/Compose.hs[tag=missingReason]
 ----
 
 The use of `Either` has important implications when defining Features, as we will see. Now that we know the internals of a `Feature`, how do we create `Feature` s? There are two ways to create features: (1) `pure` ly lifting data into a `Feature` or (2) writing a function that `define` s a `Feature` based on other `Feature` s. 

@@ -43,7 +43,7 @@ import safe Data.Ord                    ( Ord(..), Ordering(..) )
 import safe Data.Semigroup              ( Semigroup((<>)) )
 import safe Data.Tuple                  ( fst, snd )
 import safe Data.Text                   ( Text, pack )
-import safe FeatureCompose              ( getFeatureData
+import safe Features.Compose            ( getFeatureData
                                         , Feature
                                         , nameFeature
                                         , FeatureN(..) )

@@ -223,5 +223,5 @@ exampleFeatures1Spec = do
     it "mapping a population to cohort" $
       evalCohort testCohortSpec (MkPopulation [exampleSubject1, exampleSubject2 ]) `shouldBe`
             MkCohort (Just $ MkAttritionInfo $ pure (Included, 2),
-                      [MkObsUnit ("a", example1results), MkObsUnit ("b", example2results)])
+                      MkCohortData [MkObsUnit "a" example1results, MkObsUnit "b" example2results])
 

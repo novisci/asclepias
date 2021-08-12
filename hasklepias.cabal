@@ -1,6 +1,6 @@
 cabal-version:  2.2
 name:           hasklepias
-version:        0.13.2
+version:        0.14.0
 description:    Please see the README on GitHub at <https://github.com/novisci/asclepias#readme>
 homepage:       https://github.com/novisci/asclepias/#readme
 bug-reports:    https://github.com/novisci/asclepias/issues
@@ -23,24 +23,28 @@ source-repository head
 library
   exposed-modules:
       EventData
+      EventData.Core
       EventData.Arbitrary
       EventData.Aeson
       EventData.Context
       EventData.Context.Arbitrary
       EventData.Context.Domain
       EventData.Context.Domain.Demographics
-      FeatureCompose
-      FeatureCompose.Aeson
-      FeatureCompose.Attributes
-      FeatureCompose.Featureable
-      FeatureCompose.Featureset
+      Features
+      Features.Attributes
+      Features.Compose
+      Features.Featureable
+      Features.Output
+      Features.Featureset
       FeatureEvents
       Hasklepias
-      Hasklepias.Aeson
       Hasklepias.MakeApp
       Hasklepias.Reexports
       Hasklepias.ReexportsUnsafe
       Hasklepias.Cohort
+      Hasklepias.Cohort.Core
+      Hasklepias.Cohort.Input
+      Hasklepias.Cohort.Output
       Hasklepias.Cohort.Criteria
       Hasklepias.Cohort.Index
       Stype
@@ -67,7 +71,7 @@ library
     , co-log == 0.4.0.1
     , flow == 1.0.22
     , ghc-prim == 0.6.1
-    , interval-algebra == 0.8.2
+    , interval-algebra == 0.9.0
     , lens == 5.0.1
     , lens-aeson == 1.1.1
     , mtl == 2.2.2
@@ -94,11 +98,11 @@ test-suite hasklepias-test
       EventData.ContextSpec
       EventData.Context.DomainSpec
       EventData.Context.Domain.DemographicsSpec
-      FeatureComposeSpec
-      FeatureCompose.AesonSpec
-      FeatureCompose.FeaturesetSpec
-      Hasklepias.AesonSpec
-      Hasklepias.CohortSpec
+      FeaturesSpec
+      Features.OutputSpec
+      Features.FeaturesetSpec
+      Hasklepias.Cohort.InputSpec
+      Hasklepias.Cohort.CoreSpec
       Hasklepias.Cohort.CriteriaSpec
       FeatureEventsSpec
       Stype.AesonSpec
@@ -117,7 +121,7 @@ test-suite hasklepias-test
     , flow == 1.0.22
     , hasklepias
     , hspec
-    , interval-algebra == 0.8.2
+    , interval-algebra == 0.9.0
     , lens == 5.0.1
     , text >=1.2.3
     , time >=1.11
@@ -145,7 +149,6 @@ test-suite examples
     , tasty-hunit == 0.10.0.3
     , tasty-hspec == 1.2
   default-language: Haskell2010
-
 
 executable exampleApp
   -- type: exitcode-stdio-1.0

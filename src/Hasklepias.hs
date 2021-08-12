@@ -24,7 +24,7 @@ module Hasklepias (
     -- ** Adding Attributes to Features
     , module FeatureCompose.Attributes
     -- ** Writing Features to JSON
-    , module FeatureCompose.Aeson
+    , module FeatureCompose.FeatureOutput
     -- ** Exporting Features
     , module FeatureCompose.Featureable
     , module FeatureCompose.Featureset
@@ -41,8 +41,7 @@ module Hasklepias (
     
     -- * Specifying and building cohorts
     , module Hasklepias.Cohort
-    -- ** Writing Cohorts to JSON
-    , module Hasklepias.Aeson
+
     -- ** Creating an executable cohort application
     , module Hasklepias.MakeApp
 
@@ -65,7 +64,7 @@ import IntervalAlgebra.IntervalUtilities
 import IntervalAlgebra.PairedInterval
 
 import FeatureCompose
-import FeatureCompose.Aeson
+import FeatureCompose.FeatureOutput
 import FeatureCompose.Attributes
 import FeatureCompose.Featureable
 import FeatureCompose.Featureset
@@ -74,8 +73,6 @@ import FeatureEvents
 import Hasklepias.Reexports
 import Hasklepias.ReexportsUnsafe
 import Hasklepias.Cohort
-import Hasklepias.Cohort.Criteria
-import Hasklepias.Aeson
 import Hasklepias.MakeApp
 
 import Stype

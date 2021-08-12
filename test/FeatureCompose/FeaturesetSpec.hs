@@ -6,12 +6,13 @@
 module FeatureCompose.FeaturesetSpec (spec) where
 
 import FeatureCompose
-import FeatureCompose.Aeson
+import FeatureCompose.FeatureOutput
 import FeatureCompose.Attributes
 import FeatureCompose.Featureable
 import FeatureCompose.Featureset
 import Data.Aeson (encode)
 import Data.List
+import Data.List.NonEmpty as NE
 -- import Data.Maybe
 -- import Data.Time as DT
 import Data.Text ( Text )
@@ -38,24 +39,24 @@ instance HasAttributes "b" (Maybe Text) where
     getAttributes x = emptyAttributes
 
 s1 :: Featureset 
-s1 = featureset [packFeature s1f1, packFeature s1f2]
+s1 = featureset ((packFeature s1f1) :| [packFeature s1f2])
 
 s2 :: Featureset 
-s2 = featureset [packFeature s2f1, packFeature s2f2]
+s2 = featureset ((packFeature s2f1) :| [packFeature s2f2])
 
-dt :: [Featureset]
-dt = [s1, s2]
+dt :: FeaturesetList
+dt = MkFeaturesetList (s1 :| [s2])
 
-tdt :: [[Featureable]]
-tdt = transpose (fmap getFeatureset dt)
+-- tdt :: DataFrameShape
+-- tdt = makeDataFrameReady dt
+
 
 spec :: Spec
 spec = do 
 
-    it "tdt encodes correctly" $  pending
-        -- encode tdt `shouldBe` 
-        -- "{\"data\":true,\"name\":\"dummy\",\"type\":\"Bool\",\
-        -- \\"attrs\":{\"getPurpose\":{\"getTags\":[],\"getRole\":[]},\
-        -- \\"getDerivation\":\"a description\",\
-        -- \\"getLongLabel\":\"longer label...\",\
-        -- \\"getShortLabel\":\"some Label\"}}"
+    it "tdt encodes correctly" $ pending 
+        -- encode tdt `shouldBe`
+        --     "{\"data\":[[true,false],[null,\"bye\"]],\
+        --     \\"attributes\":[{\"name\":\"a\",\
+        --     \\"type\":\"Bool\",\"attrs\":{\"getPurpose\":{\"getTags\":[],\"getRole\":[]},\"getDerivation\":\"a description\",\"getLongLabel\":\"longer label...\",\"getShortLabel\":\"some Label\"}},\
+        --     \{\"name\":\"b\",\"type\":\"Maybe Text\",\"attrs\":{\"getPurpose\":{\"getTags\":[],\"getRole\":[]},\"getDerivation\":\"\",\"getLongLabel\":\"\",\"getShortLabel\":\"\"}}]}"

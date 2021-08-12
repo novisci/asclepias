@@ -1,6 +1,6 @@
 cabal-version:  2.2
 name:           hasklepias
-version:        0.13.2
+version:        0.14.0
 description:    Please see the README on GitHub at <https://github.com/novisci/asclepias#readme>
 homepage:       https://github.com/novisci/asclepias/#readme
 bug-reports:    https://github.com/novisci/asclepias/issues
@@ -30,17 +30,19 @@ library
       EventData.Context.Domain
       EventData.Context.Domain.Demographics
       FeatureCompose
-      FeatureCompose.Aeson
       FeatureCompose.Attributes
       FeatureCompose.Featureable
+      FeatureCompose.FeatureOutput
       FeatureCompose.Featureset
       FeatureEvents
       Hasklepias
-      Hasklepias.Aeson
       Hasklepias.MakeApp
       Hasklepias.Reexports
       Hasklepias.ReexportsUnsafe
       Hasklepias.Cohort
+      Hasklepias.Cohort.Core
+      Hasklepias.Cohort.Input
+      Hasklepias.Cohort.Output
       Hasklepias.Cohort.Criteria
       Hasklepias.Cohort.Index
       Stype
@@ -95,10 +97,10 @@ test-suite hasklepias-test
       EventData.Context.DomainSpec
       EventData.Context.Domain.DemographicsSpec
       FeatureComposeSpec
-      FeatureCompose.AesonSpec
+      FeatureCompose.FeatureOutputSpec
       FeatureCompose.FeaturesetSpec
-      Hasklepias.AesonSpec
-      Hasklepias.CohortSpec
+      Hasklepias.Cohort.InputSpec
+      Hasklepias.Cohort.CoreSpec
       Hasklepias.Cohort.CriteriaSpec
       FeatureEventsSpec
       Stype.AesonSpec

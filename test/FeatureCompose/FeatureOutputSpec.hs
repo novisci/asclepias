@@ -3,14 +3,14 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
-module FeatureCompose.AesonSpec (spec) where
+module FeatureCompose.FeatureOutputSpec (spec) where
 
 import IntervalAlgebra
 import EventData
 import EventData.Context
 import FeatureEvents
 import FeatureCompose
-import FeatureCompose.Aeson
+import FeatureCompose.FeatureOutput
 import FeatureCompose.Attributes
 import Data.Aeson (encode)
 import Data.Maybe

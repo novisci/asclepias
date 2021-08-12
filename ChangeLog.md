@@ -1,5 +1,9 @@
 # Changelog for hasklepias
 
+## 0.14.0
+
+* Adds the ability to modify the output shape of cohorts. The `makeCohortApp` now takes a "`shape`" function as an argument of type `Cohort d -> CohortShape shape`. Currently, two functions of this type are provided: `rowWise` and `colWise`. The `rowWise` functions presents the output feature data in a row-wise format where each subject's data is its own array; whereas `colWise` presents the feature data where all the data of a given feature are in a single array.
+
 ## 0.13.2
 
 * Adds `Binary` Stype data type.

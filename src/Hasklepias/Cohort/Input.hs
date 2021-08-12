@@ -10,7 +10,7 @@ Maintainer  : bsaul@novisci.com
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE TupleSections #-}
 
-module Hasklepias.Aeson(
+module Hasklepias.Cohort.Input(
       parsePopulationLines
     , parsePopulationIntLines
     , parsePopulationDayLines
@@ -42,7 +42,7 @@ import Data.Time.Calendar                   ( Day )
 import Data.Vector                          ( (!) )
 import EventData                            ( Events, event, Event )
 import EventData.Aeson                      ()
-import Hasklepias.Cohort                    ( Population(..)
+import Hasklepias.Cohort.Core               ( Population(..)
                                             , ID
                                             , Subject(MkSubject) )
 import GHC.Int                              ( Int )

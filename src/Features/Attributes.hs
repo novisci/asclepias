@@ -14,7 +14,7 @@ Maintainer  : bsaul@novisci.com
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 
-module FeatureCompose.Attributes(
+module Features.Attributes(
       Attributes(..)
     , Role(..)
     , Purpose(..)

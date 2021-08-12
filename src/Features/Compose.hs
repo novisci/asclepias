@@ -25,7 +25,7 @@ Maintainer  : bsaul@novisci.com
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE InstanceSigs #-}
 
-module FeatureCompose(
+module Features.Compose(
   -- * Features and FeatureData
     FeatureData
   , MissingReason(..)
@@ -49,7 +49,7 @@ module FeatureCompose(
   , Eval
   , eval
 
-  , HasAttributes(..)
+  -- , HasAttributes(..)
 ) where
 
 import safe Control.Applicative        ( Applicative(..)
@@ -67,7 +67,7 @@ import safe Data.Traversable           ( Traversable(..) )
 import safe GHC.Generics               ( Generic )
 import safe GHC.Show                   ( Show(show) )
 import safe GHC.TypeLits               ( KnownSymbol, Symbol, symbolVal )
-import safe FeatureCompose.Attributes
+
 {- | 
 Defines the reasons that a @'FeatureData'@ value may be missing. Can be used to
 indicate the reason that a @'Feature'@'s data was unable to be derived or does

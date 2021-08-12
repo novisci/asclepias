@@ -4,7 +4,7 @@ module Hasklepias.Cohort.CriteriaSpec (
   spec
  ) where
 
-import FeatureCompose
+import Features
 import Hasklepias.Cohort.Criteria
 import Test.Hspec ( describe, pending, shouldBe, it, Spec )
 import Data.List.NonEmpty

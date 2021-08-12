@@ -1,10 +1,10 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE DataKinds #-}
-module FeatureComposeSpec (
+module FeaturesSpec (
  spec
 ) where
 
-import FeatureCompose
+import Features
 import Test.Hspec ( describe, pending, shouldBe, it, Spec )
 
 

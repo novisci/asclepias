@@ -23,6 +23,7 @@ module Hasklepias.Reexports (
     , module Data.Eq
     , module Data.Int
     , module Data.Maybe
+    , module Data.Monoid
     , module Data.Function
     , module Data.Functor
     , module Data.List
@@ -77,6 +78,7 @@ import safe Data.Maybe                      ( Maybe(..),
                                               listToMaybe,
                                               mapMaybe,
                                               maybeToList )
+import safe Data.Monoid                     ( Monoid(..), (<>) )
 import safe Data.Ord                        ( Ord((>=), (<), (>), (<=))
                                             , max, min )
 import safe Data.Time.Calendar              ( Day, MonthOfYear, Year

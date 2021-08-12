@@ -27,7 +27,7 @@ import EventData.Context                    ( Concepts
                                             , context
                                             , packConcept
                                             , toConcepts )
-import EventData                            ( Event, event )
+import EventData.Core                       ( Event, event )
 import EventData.Context.Domain
 import Prelude                              ( (<$>), (<*>), ($)
                                             , fmap, pure, id

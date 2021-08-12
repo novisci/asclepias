@@ -76,16 +76,16 @@ twoOutOneIn ::
     ( Feature "calendarIndex" (Index Interval Day)
     -> Feature "allEvents" (Events Day)
     -> Feature name Bool )
-twoOutOneIn cpts1 cpts2 = 
+twoOutOneIn cpts1 cpts2 =
   define
     (\index events ->
-        atleastNofX 1 cpts1  (getBaselineConcur index events) 
-        || ( 
-          events 
-        |> makeConceptsFilter cpts2 
+        atleastNofX 1 cpts1  (getBaselineConcur index events)
+        || (
+          events
+        |> makeConceptsFilter cpts2
         |> map toConceptEvent
-        |> anyGapsWithinAtLeastDuration 7 (baselineInterval index)) 
-          
+        |> anyGapsWithinAtLeastDuration 7 (baselineInterval index))
+
     )
 
 -- | Defines a feature that returns 'True' ('False' otherwise) if either:
@@ -108,9 +108,9 @@ medHx cpt = define
             ||
             ( events
                 |> getBaselineConcur index
-                |> relations
+                |> relationsL
                 |> filter (== Equals)
-                |> not . null) 
+                |> not . null)
     )
 
 
@@ -261,7 +261,7 @@ diabetes :: BoolFeatDef "diabetes"
 diabetes = twoOutOneIn ["is_diabetes_outpatient"] ["is_diabetes_inpatient"]
 
 instance HasAttributes  "diabetes" Bool where
-  getAttributes _ = basicAttributes 
+  getAttributes _ = basicAttributes
     "Has Diabetes"
     "Has Diabetes within baseline"
     [Covariate]
@@ -282,7 +282,7 @@ ppi :: BoolFeatDef "ppi"
 ppi = medHx ["is_ppi"]
 
 instance HasAttributes  "ppi" Bool where
-  getAttributes _ = basicAttributes 
+  getAttributes _ = basicAttributes
     "Has ppi"
     "Has PPI within baseline"
     [Covariate]
@@ -292,7 +292,7 @@ glucocorticoids :: BoolFeatDef "glucocorticoids"
 glucocorticoids = medHx ["is_glucocorticoids"]
 
 instance HasAttributes  "glucocorticoids" Bool where
-  getAttributes _ = basicAttributes 
+  getAttributes _ = basicAttributes
     "Has glucocorticoids"
     "Has glucocorticoids within baseline"
     [Covariate]
@@ -303,8 +303,6 @@ instance HasAttributes  "glucocorticoids" Bool where
 {-------------------------------------------------------------------------------
   Cohort Specifications and evaluation
 -------------------------------------------------------------------------------}
-
-
 
 -- | Make a function that runs the criteria for a calendar index
 makeCriteriaRunner :: Index Interval Day -> Events Day -> Criteria
@@ -331,13 +329,13 @@ makeFeatureRunner ::
        Index Interval Day
     -> Events Day
     -> Featureset
-makeFeatureRunner index events = featureset [
-      packFeature idx
-    , packFeature $ eval diabetes (idx,  ef)
+makeFeatureRunner index events = featureset
+    (packFeature idx :|
+    [ packFeature $ eval diabetes (idx,  ef)
     , packFeature $ eval ckd (idx,  ef)
     , packFeature $ eval ppi (idx,  ef)
     , packFeature $ eval glucocorticoids (idx, ef)
-    ] 
+    ])
     where idx = featureIndex index
           ef  = featureEvents events
 
@@ -398,12 +396,12 @@ makeExpectedFeatures ::
   -> Featureset
 makeExpectedFeatures i (b1, b2, b3, b4) =
         featureset
-        [ packFeature (makeFeature  i :: Feature "calendarIndex"  (Index Interval Day))
-        , packFeature ( makeExpectedCovariate b1 :: Feature "diabetes"  Bool )
+        ( packFeature (makeFeature  i :: Feature "calendarIndex"  (Index Interval Day)) :|
+        [ packFeature ( makeExpectedCovariate b1 :: Feature "diabetes"  Bool )
         , packFeature ( makeExpectedCovariate b2 :: Feature "ckd"  Bool )
         , packFeature ( makeExpectedCovariate b3 :: Feature "ppi"  Bool )
         , packFeature ( makeExpectedCovariate b4 :: Feature "glucocorticoids"  Bool )
-        ]
+        ])
 
 expectedFeatures1 :: [Featureset]
 expectedFeatures1 =
@@ -417,10 +415,10 @@ expectedFeatures1 =
     ]
 
 expectedObsUnita :: [ObsUnit Featureset]
-expectedObsUnita = zipWith (curry MkObsUnit) (replicate 5 "a") expectedFeatures1
+expectedObsUnita = zipWith MkObsUnit (replicate 5 "a") expectedFeatures1
 
 makeExpectedCohort :: AttritionInfo -> [ObsUnit Featureset] -> Cohort Featureset
-makeExpectedCohort a x = MkCohort (Just a, x)
+makeExpectedCohort a x = MkCohort (Just a, MkCohortData x)
 
 expectedCohorts :: [Cohort Featureset]
 expectedCohorts =
@@ -436,7 +434,10 @@ expectedCohorts =
   , Just $ MkAttritionInfo $ (ExcludedBy (2, "isOver50"), 1) :| [(ExcludedBy (3, "isEnrolled"), 1)]
   , Just $ MkAttritionInfo $ (ExcludedBy (2, "isOver50"), 1) :| [(ExcludedBy (3, "isEnrolled"), 1)]
   ]
-  ([[]] ++ transpose [expectedObsUnita] ++ [[], [], [], []])
+  (  fmap MkCohortData (
+        [[]] 
+    ++ transpose [expectedObsUnita]
+    ++ [[], [],  [], []] ))
 
 exampleCohort1tests :: TestTree
 exampleCohort1tests = testGroup "Unit tests for calendar cohorts"

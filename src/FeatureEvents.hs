@@ -5,7 +5,7 @@ Copyright   : (c) NoviSci, Inc 2020
 License     : BSD3
 Maintainer  : bsaul@novisci.com
 
-Provides functions used in defining @'FeatureCompose.Feature'@ from 
+Provides functions used in defining @'Features.Feature'@ from 
 @'EventData.Event'@s.
 -}
 {-# OPTIONS_HADDOCK hide #-}
@@ -43,16 +43,18 @@ module FeatureEvents(
 ) where
 
 
-import IntervalAlgebra                      ( Intervallic(..)
+import IntervalAlgebra                      ( Intervallic
                                             , IntervalSizeable(..)
                                             , ComparativePredicateOf1
                                             , ComparativePredicateOf2
                                             , Interval
                                             , IntervalCombinable
+                                            , begin
+                                            , end
                                             , beginerval
                                             , enderval )
 import IntervalAlgebra.PairedInterval       ( PairedInterval, getPairData )
-import IntervalAlgebra.IntervalUtilities    ( durations, gapsWithin, gaps' )
+import IntervalAlgebra.IntervalUtilities    ( durations, gapsWithin )
 import EventData                            ( Events
                                             , Event
                                             , ConceptEvent
@@ -84,7 +86,7 @@ import Data.Time.Calendar                   ( Day, Year, diffDays )
 import Data.Text                            ( Text )
 import Data.Text.Read                       ( rational )
 import Data.Tuple                           ( fst )
-import Witherable                           ( filter, Filterable )
+import Witherable                           ( filter, Filterable, Witherable )
 import GHC.Num                              ( Integer, fromInteger )
 import GHC.Real                             ( RealFrac(floor), (/) )
 
@@ -170,10 +172,10 @@ splitByConcepts c1 c2 es = ( filter (`hasConcepts` c1) es
 --   interval, are there (e.g. any, all) gaps of (e.g. <, <=, >=, >) a specified
 --   duration among  the input intervals?
 makeGapsWithinPredicate ::
-       ( Foldable t
-       , Monoid (t (Interval a))
+       ( Monoid (t (Interval a))
+       , Monoid (t (Maybe (Interval a)))
        , Applicative t
-       , Filterable t
+       , Witherable t
        , IntervalSizeable a b
        , IntervalCombinable i0 a
        , IntervalCombinable i1 a) =>

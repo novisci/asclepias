@@ -8,7 +8,7 @@ module Features.OutputSpec (spec) where
 import IntervalAlgebra
 import EventData
 import EventData.Context
-import FeatureEvents
+import Hasklepias.FeatureEvents
 import Features
 import Data.Aeson (encode)
 import Data.Maybe

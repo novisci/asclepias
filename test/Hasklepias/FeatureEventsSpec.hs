@@ -2,10 +2,10 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE FlexibleContexts #-}
-module FeatureEventsSpec (spec) where
+module Hasklepias.FeatureEventsSpec (spec) where
 
 import IntervalAlgebra
-import FeatureEvents ( firstConceptOccurrence )
+import Hasklepias.FeatureEvents ( firstConceptOccurrence )
 import EventData ( Event, event )
 import EventData.Context as HC ( context, packConcepts )
 import EventData.Context.Domain

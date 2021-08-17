@@ -1,11 +1,11 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE DataKinds #-}
-module Hasklepias.Cohort.CriteriaSpec (
+module Cohort.CriteriaSpec (
   spec
  ) where
 
 import Features
-import Hasklepias.Cohort.Criteria
+import Cohort.Criteria
 import Test.Hspec ( describe, pending, shouldBe, it, Spec )
 import Data.List.NonEmpty
 

@@ -8,28 +8,28 @@ Maintainer  : bsaul@novisci.com
 {-# OPTIONS_HADDOCK hide #-}
 {-# LANGUAGE NoImplicitPrelude #-}
 
-module Hasklepias.Cohort(
+module Cohort(
 
    -- * Defining Cohorts
-      module Hasklepias.Cohort.Core
+      module Cohort.Core
 
     -- ** Criteria
-    , module Hasklepias.Cohort.Criteria
+    , module Cohort.Criteria
     -- ** Index
-    , module Hasklepias.Cohort.Index
+    , module Cohort.Index
 
     -- * Cohort I/O
     -- ** Input
-    , module Hasklepias.Cohort.Input   
+    , module Cohort.Input   
     -- ** Output
-    , module Hasklepias.Cohort.Output
+    , module Cohort.Output
 
 
 ) where
 
 
-import Hasklepias.Cohort.Core
-import Hasklepias.Cohort.Index
-import Hasklepias.Cohort.Criteria
-import Hasklepias.Cohort.Input
-import Hasklepias.Cohort.Output
+import Cohort.Core
+import Cohort.Index
+import Cohort.Criteria
+import Cohort.Input
+import Cohort.Output

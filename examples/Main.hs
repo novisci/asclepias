@@ -6,6 +6,7 @@ module Main(
 import ExampleFeatures1 ( exampleFeatures1Spec )
 import ExampleFeatures2 ( exampleFeatures2Spec ) 
 import ExampleFeatures3 ( exampleFeatures3Spec ) 
+import ExampleFeatures4 ( exampleFeatures4Spec ) 
 import ExampleCohort1   ( exampleCohort1tests )
 import Test.Tasty
 import Test.Tasty.Hspec ( testSpec )
@@ -18,11 +19,13 @@ main :: IO ()
 main = do
   spec1 <- testSpec "spec1" exampleFeatures1Spec
   spec2 <- testSpec "spec2" exampleFeatures2Spec
-  spec3 <- testSpec "spec3" exampleFeatures3Spec 
+  spec3 <- testSpec "spec3" exampleFeatures3Spec
+  spec4 <- testSpec "spec4" exampleFeatures4Spec 
   defaultMain
     (testGroup "tests"
       [ spec1
       , spec2
-      , spec3 
+      , spec3
+      , spec4
       , testGroup "Tests" [exampleCohort1tests]
       ])

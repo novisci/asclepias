@@ -11,7 +11,7 @@ Maintainer  : bsaul@novisci.com
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE TupleSections #-}
 
-module Hasklepias.Cohort.Criteria(
+module Cohort.Criteria(
       Criterion
     , Criteria(..)
     , Status(..)

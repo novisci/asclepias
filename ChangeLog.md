@@ -1,5 +1,14 @@
 # Changelog for hasklepias
 
+## 0.15.0
+
+* Adds `Occurrence` type which is a simply a pair a reason and an `EventTime`. That is, an `Occurrence` captures what and when something occurred. Adds the `CensoredOccurrence` type which is similar to an `Occurrence`, except that the reason is of type `CensoringReason cr or`, where `data CensoringReason cr or = AdminCensor | C cr | O or`. The time of a `CensoredOccurrence` is a `MaybeCensored (EventTime a)` (not simply can `EventTime`). See the examples in `examples/ExampleFeatures4` for usage.
+* A number of the utility functions in the `Hasklepias.FeatureEvents` module are generalized to operate on data structures other than lists of `Event`s.
+* Exports type synonyms `F n a` and `Def d` for `Feature n a` and `Definiton d` to save a bit of typing.
+* Adds `Hasklepias.Misc` module as a location to collect miscellaneous types and functions for the time-being, until better locations are found or created.
+* Adds `examples/ExampleFeatures4.hs` which is an extensive example of assessing exposure protocols and censored outcomes.
+* Moves the `Cohort` module to the top-level. Moves the `FeatureEvents` module within the `Hasklepias` module.
+
 ## 0.14.0
 
 * Adds the ability to modify the output shape of cohorts. The `makeCohortApp` now takes a "`shape`" function as an argument of type `Cohort d -> CohortShape shape`. Currently, two functions of this type are provided: `rowWise` and `colWise`. The `rowWise` functions presents the output feature data in a row-wise format where each subject's data is its own array; whereas `colWise` presents the feature data where all the data of a given feature are in a single array.

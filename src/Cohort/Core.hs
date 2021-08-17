@@ -12,7 +12,7 @@ Maintainer  : bsaul@novisci.com
 {-# LANGUAGE LambdaCase #-}
 -- {-# LANGUAGE Safe #-}
 
-module Hasklepias.Cohort.Core(
+module Cohort.Core(
       Subject(..)
     , ID
     , Population(..)
@@ -43,8 +43,8 @@ import Data.Map.Strict as Map               ( toList, fromListWith )
 import Data.Text                            ( Text )
 import GHC.Generics                         ( Generic )
 import GHC.Show                             ( Show(..) )
-import Hasklepias.Cohort.Index              ( makeIndex, Index(..) )
-import Hasklepias.Cohort.Criteria
+import Cohort.Index                         ( makeIndex, Index(..) )
+import Cohort.Criteria
 
 -- | A subject identifier. Currently, simply @Text@.
 type ID = Text

@@ -11,7 +11,7 @@ Provides functions used in defining @'Features.Feature'@ from
 {-# OPTIONS_HADDOCK hide #-}
 {-# LANGUAGE NoImplicitPrelude #-}
 
-module FeatureEvents(
+module Hasklepias.FeatureEvents(
     -- ** Container predicates
       isNotEmpty
     , atleastNofX
@@ -75,7 +75,10 @@ import Control.Lens                         ( preview, (^.) )
 import Data.Bool                            ( Bool(..), (&&), not, (||) )
 import Data.Either                          ( either )
 import Data.Eq                              ( Eq )
-import Data.Foldable                        ( Foldable(length, null), all, any )
+import Data.Foldable                        ( Foldable(length, null)
+                                            , all
+                                            , any
+                                            , toList )
 import Data.Function                        ( (.), ($), const )
 import Data.Functor                         ( Functor(fmap) )
 import Data.Int                             ( Int )
@@ -96,36 +99,40 @@ isNotEmpty = not.null
 
 -- | Filter 'Events' to those that have any of the provided concepts.
 makeConceptsFilter ::
+    ( Filterable f ) => 
        [Text]    -- ^ the list of concepts by which to filter 
-    -> Events a
-    -> Events a
+    -> f (Event a)
+    -> f (Event a)
 makeConceptsFilter cpts = filter (`hasConcepts` cpts)
 
 -- | Filter 'Events' to a single @'Maybe' 'Event'@, based on a provided function,
 --   with the provided concepts. For example, see 'firstConceptOccurrence' and
 --  'lastConceptOccurrence'.
 nthConceptOccurrence ::
-       (Events a -> Maybe (Event a)) -- ^ function used to select a single event
+    ( Filterable f ) => 
+       (f (Event a) -> Maybe (Event a)) -- ^ function used to select a single event
     -> [Text]
-    -> Events a
+    -> f (Event a)
     -> Maybe (Event a)
 nthConceptOccurrence f c = f.makeConceptsFilter c
 
 -- | Finds the *first* occurrence of an 'Event' with at least one of the concepts.
 --   Assumes the input 'Events' list is appropriately sorted.
 firstConceptOccurrence ::
+    ( Witherable f ) => 
       [Text]
-    -> Events a
+    -> f (Event a)
     -> Maybe (Event a)
-firstConceptOccurrence = nthConceptOccurrence headMay
+firstConceptOccurrence = nthConceptOccurrence (headMay . toList)
 
 -- | Finds the *last* occurrence of an 'Event' with at least one of the concepts.
 --   Assumes the input 'Events' list is appropriately sorted.
 lastConceptOccurrence ::
+    ( Witherable f ) =>
       [Text]
-    -> Events a
+    -> f (Event a)
     -> Maybe (Event a)
-lastConceptOccurrence = nthConceptOccurrence lastMay
+lastConceptOccurrence = nthConceptOccurrence (lastMay . toList)
 
 -- | Does 'Events' have at least @n@ events with any of the Concept in @x@.
 atleastNofX ::
@@ -160,13 +167,14 @@ allPairs = liftA2 (,)
 -- | Split an @Events a@ into a pair of @Events a@. The first element contains
 --   events have any of the concepts in the first argument, similarly for the
 --   second element.
-splitByConcepts :: [Text]
-        -> [Text]
-        -> Events a
-        -> (Events a, Events a)
+splitByConcepts :: 
+    ( Filterable f ) =>
+       [Text]
+    -> [Text]
+    -> f (Event a)
+    -> (f (Event a), f (Event a))
 splitByConcepts c1 c2 es = ( filter (`hasConcepts` c1) es
                            , filter (`hasConcepts` c2) es)
-
 
 -- | Create a predicate function that checks whether within a provided spanning
 --   interval, are there (e.g. any, all) gaps of (e.g. <, <=, >=, >) a specified
@@ -188,10 +196,16 @@ makeGapsWithinPredicate f op gapDuration interval l =
 -- | Within a provided spanning interval, are there any gaps of at least the
 --   specified duration among the input intervals?
 anyGapsWithinAtLeastDuration ::
-      (IntervalSizeable a b, IntervalCombinable i0 a, IntervalCombinable i1 a) =>
+      ( IntervalSizeable a b
+      , IntervalCombinable i0 a
+      , IntervalCombinable i1 a
+      , Monoid (t (Interval a))
+      , Monoid (t (Maybe (Interval a)))
+      , Applicative t
+      , Witherable t) =>
         b       -- ^ duration of gap
         -> i0 a  -- ^ within this interval
-        -> [i1 a]
+        -> t (i1 a)
         -> Bool
 anyGapsWithinAtLeastDuration = makeGapsWithinPredicate any (>=)
 
@@ -201,10 +215,16 @@ anyGapsWithinAtLeastDuration = makeGapsWithinPredicate any (>=)
 -- >>> allGapsWithinLessThanDuration 30 (beginerval 100 (0::Int)) [beginerval 5 (-1), beginerval 99 10]
 -- True
 allGapsWithinLessThanDuration ::
-      (IntervalSizeable a b, IntervalCombinable i0 a, IntervalCombinable i1 a) =>
+      ( IntervalSizeable a b
+      , IntervalCombinable i0 a
+      , IntervalCombinable i1 a
+      , Monoid (t (Interval a))
+      , Monoid (t (Maybe (Interval a)))
+      , Applicative t
+      , Witherable t) =>
         b       -- ^ duration of gap
         -> i0 a  -- ^ within this interval
-        -> [i1 a]
+        -> t (i1 a)
         -> Bool
 allGapsWithinLessThanDuration = makeGapsWithinPredicate all (<)
 

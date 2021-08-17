@@ -3,7 +3,7 @@ module EventDataSpec (spec) where
 
 import IntervalAlgebra
 import IntervalAlgebra.IntervalUtilities
-import FeatureEvents 
+import Hasklepias.FeatureEvents 
 import EventData
 import EventData.Context as HC
 import EventData.Context.Domain ( Domain(UnimplementedDomain) )

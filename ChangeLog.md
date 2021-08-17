@@ -1,5 +1,9 @@
 # Changelog for hasklepias
 
+## 0.15.1
+
+* Tinkers with package version dependencies in `.cabal` file.
+
 ## 0.15.0
 
 * Adds `Occurrence` type which is a simply a pair a reason and an `EventTime`. That is, an `Occurrence` captures what and when something occurred. Adds the `CensoredOccurrence` type which is similar to an `Occurrence`, except that the reason is of type `CensoringReason cr or`, where `data CensoringReason cr or = AdminCensor | C cr | O or`. The time of a `CensoredOccurrence` is a `MaybeCensored (EventTime a)` (not simply can `EventTime`). See the examples in `examples/ExampleFeatures4` for usage.

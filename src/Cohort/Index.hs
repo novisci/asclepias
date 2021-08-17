@@ -11,16 +11,16 @@ Maintainer  : bsaul@novisci.com
 {-# LANGUAGE DeriveGeneric #-}
 -- {-# LANGUAGE Safe #-}
 
-module Hasklepias.Cohort.Index(
+module Cohort.Index(
     Index
   , makeIndex
   , getIndex
 ) where
 
-import  GHC.Show                    ( Show )
+import GHC.Show                    ( Show )
 import GHC.Generics
-import  Data.Eq                     ( Eq )
-import  IntervalAlgebra             ( Intervallic )
+import Data.Eq                     ( Eq )
+import IntervalAlgebra             ( Intervallic )
 import Data.Aeson
 
 {-|

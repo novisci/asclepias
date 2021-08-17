@@ -55,7 +55,7 @@ module Features.Compose(
 import safe Control.Applicative        ( Applicative(..)
                                         , liftA3, (<$>) )
 import safe Control.Monad              ( Functor(..), Monad(..)
-                                       , (=<<), join, liftM, liftM2, liftM3)
+                                       , (=<<), join, liftM, liftM2, liftM3, liftM4)
 import safe Data.Either                ( Either(..) )
 import safe Data.Eq                    ( Eq(..) )
 import safe Data.Foldable              ( Foldable(foldr), fold )
@@ -258,6 +258,8 @@ data Definition d where
   D2A :: (c -> b -> f0 a) -> Definition (f2 c -> f1 b -> f0 a)
   D3  :: (d -> c -> b -> a) -> Definition (f3 d -> f2 c -> f1 b -> f0 a)
   D3A :: (d -> c -> b -> f0 a) -> Definition (f3 d -> f2 c -> f1 b -> f0 a)
+  D4  :: (e -> d -> c -> b -> a) -> Definition (f4 e -> f3 d -> f2 c -> f1 b -> f0 a) 
+  D4A :: (e -> d -> c -> b -> f0 a) -> Definition (f4 e -> f3 d -> f2 c -> f1 b -> f0 a) 
 
 {- | Define (and @'DefineA@) provide a means to create new @'Definition'@s via 
 @'define'@ (@'defineA'@). The @'define'@ function takes a single function input 
@@ -299,18 +301,23 @@ class DefineA inputs def | def -> inputs where
 instance Define (b -> a) (FeatureData b -> FeatureData a) where define = D1
 instance Define (c -> b -> a) (FeatureData c -> FeatureData b -> FeatureData a) where define = D2
 instance Define (d -> c -> b -> a) (FeatureData d -> FeatureData c -> FeatureData b -> FeatureData a) where define = D3
+instance Define (e -> d -> c -> b -> a) (FeatureData e -> FeatureData d -> FeatureData c -> FeatureData b -> FeatureData a) where define = D4
 
 instance DefineA (b -> FeatureData a) (FeatureData b -> FeatureData a) where defineA = D1A
 instance DefineA (c -> b -> FeatureData a) (FeatureData c -> FeatureData b -> FeatureData a) where defineA = D2A
 instance DefineA (d -> c -> b -> FeatureData a) (FeatureData d -> FeatureData c -> FeatureData b -> FeatureData a) where defineA = D3A
+instance DefineA (e -> d -> c -> b -> FeatureData a) (FeatureData e -> FeatureData d -> FeatureData c -> FeatureData b -> FeatureData a) where defineA = D4A
 
 instance Define (b -> a) (Feature n1 b -> Feature n0 a) where define = D1
 instance Define (c -> b -> a) (Feature n2 c -> Feature n1 b -> Feature n0 a) where define = D2
 instance Define (d -> c -> b -> a) (Feature n3 d -> Feature n2 c -> Feature n1 b -> Feature n0 a) where define = D3
+instance Define (e -> d -> c -> b -> a) (Feature n4 e -> Feature n3 d -> Feature n2 c -> Feature n1 b -> Feature n0 a) where define = D4
 
 instance DefineA (b -> Feature n0 a) (Feature n1 b -> Feature n0 a) where defineA = D1A
 instance DefineA (c -> b -> Feature n0 a) (Feature n2 c -> Feature n1 b -> Feature n0 a) where defineA = D2A
 instance DefineA (d -> c -> b -> Feature n0 a) (Feature n3 d -> Feature n2 c -> Feature n1 b -> Feature n0 a) where defineA = D3A
+instance DefineA (e -> d -> c -> b -> Feature n0 a) (Feature n4 e -> Feature n3 d -> Feature n2 c -> Feature n1 b -> Feature n0 a) where defineA = D4A
+
 
 {- | Evaluate a @Definition@. Note that (currently), the second argument of 'eval'
 is a *tuple* of inputs. For example,
@@ -379,6 +386,15 @@ instance Eval (Feature n3 d -> Feature n2 c -> Feature n1 b -> Feature n0 a)
   eval (D3 f) (MkFeature x, MkFeature y, MkFeature z) = MkFeature $ liftA3 f x y z
   eval (D3A f) (MkFeature x, MkFeature y, MkFeature z) =
       case liftA3 f x y z of
+          MkFeatureData (Left l)  -> MkFeature $ MkFeatureData (Left l)
+          MkFeatureData (Right r) -> r
+
+instance Eval (Feature n4 e -> Feature n3 d -> Feature n2 c -> Feature n1 b -> Feature n0 a)
+              (Feature n4 e,   Feature n3 d,   Feature n2 c,   Feature n1 b)  (Feature n0 a)
+   where
+  eval (D4 f)  (MkFeature v, MkFeature x, MkFeature y, MkFeature z) = MkFeature $ liftM4 f v x y z
+  eval (D4A f) (MkFeature v, MkFeature x, MkFeature y, MkFeature z) =
+      case liftM4 f v x y z of
           MkFeatureData (Left l)  -> MkFeature $ MkFeatureData (Left l)
           MkFeatureData (Right r) -> r
 

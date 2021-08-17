@@ -14,7 +14,7 @@ Maintainer  : bsaul@novisci.com
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE DeriveAnyClass #-}
 
-module Hasklepias.Cohort.Output(
+module Cohort.Output(
     CohortShape
   , ShapeCohort(..)
   , toJSONCohortShape
@@ -34,14 +34,14 @@ import Data.Tuple                           ( uncurry )
 import GHC.Generics                         ( Generic )
 import GHC.Types                            ( Type )
 import GHC.Show                             ( Show )
-import Hasklepias.Cohort.Core               ( AttritionInfo,
+import Cohort.Core                          ( AttritionInfo,
                                               Cohort,
                                               ObsUnit,
                                               ID,
                                               CohortData,
                                               getCohortData,
                                               getCohortIDs )
-import Hasklepias.Cohort.Criteria           ( CohortStatus )
+import Cohort.Criteria                      ( CohortStatus )
 import Features.Featureset                  ( FeaturesetList(MkFeaturesetList)
                                             , Featureset
                                             , getFeatureset

@@ -23,10 +23,11 @@ module Hasklepias (
     can be found on [hackage](https://hackage.haskell.org/package/interval-algebra).
 
     -}
-    , module FeatureEvents
+    , module Hasklepias.FeatureEvents
+    , module Hasklepias.Misc
     
     -- * Specifying and building cohorts
-    , module Hasklepias.Cohort
+    , module Cohort
 
     -- ** Creating an executable cohort application
     , module Hasklepias.MakeApp
@@ -47,10 +48,12 @@ import IntervalAlgebra.PairedInterval
 
 import Features
 
-import FeatureEvents
+import Cohort
+
+import Hasklepias.FeatureEvents
+import Hasklepias.Misc
 import Hasklepias.Reexports
 import Hasklepias.ReexportsUnsafe
-import Hasklepias.Cohort
 import Hasklepias.MakeApp
 
 import Stype

@@ -1,10 +1,9 @@
 {-# LANGUAGE OverloadedStrings #-}
-module Hasklepias.Cohort.InputSpec (spec) where
+module Cohort.InputSpec (spec) where
 
 import IntervalAlgebra
 import EventData
--- import Hasklepias.Cohort.Aeson
-import Hasklepias.Cohort
+import Cohort
 import EventData.Context as HC
 import EventData.Context.Domain
 import Data.Aeson

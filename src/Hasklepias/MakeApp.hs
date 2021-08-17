@@ -36,7 +36,7 @@ import GHC.Show                             ( Show(show) )
 import GHC.IO                               ( IO )
 
 import EventData                            ( Events )
-import Hasklepias.Cohort
+import Cohort
 import IntervalAlgebra                      ( IntervalSizeable )
 
 import Control.Monad.IO.Class               (MonadIO, liftIO)

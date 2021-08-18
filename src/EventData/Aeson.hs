@@ -63,6 +63,7 @@ instance FromJSON Domain where
         domain :: Text <- o .: "domain"
         case domain of
             "Demographics" -> Demographics <$> o .: "facts"
+            "Enrollment"   -> pure $ Enrollment (EnrollmentFacts () )  
             _              -> pure (UnimplementedDomain ())
 
 instance FromJSON Concept where

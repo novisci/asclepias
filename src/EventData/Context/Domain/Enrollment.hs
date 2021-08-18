@@ -26,10 +26,11 @@ import Data.Eq                  ( Eq )
 import GHC.Generics             ( Generic )
 import GHC.Show                 ( Show )
 
+-- data Plan = Plan 
 
 -- | An enrollment fact
-data EnrollmentFacts = EnrollmentFacts { 
-  -- TODO add plan fact
+newtype EnrollmentFacts = EnrollmentFacts {
+     _plan :: () -- TODO add plan fact
   } 
   deriving( Eq, Show, Generic )
 

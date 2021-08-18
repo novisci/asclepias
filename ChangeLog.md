@@ -1,5 +1,9 @@
 # Changelog for hasklepias
 
+## 0.16.1
+
+* Updates `FromJSON` instance for `Domain`, so that a JSON event with `"domain" = "Enrollment"` is deserialized into `Event` whose `Domain` is `Enrollment`.
+
 ## 0.16.0
 
 * Adds a basic framework for `Feature` definition templates. Initially, this includes two templates for enrollment related features:

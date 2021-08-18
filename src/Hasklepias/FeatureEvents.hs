@@ -32,9 +32,21 @@ module Hasklepias.FeatureEvents(
 
     -- ** Functions for working with Event Domains
     , viewBirthYears
+    , viewGenders
+    , viewStates
+    , previewDemoInfo
     , previewBirthYear
+    , isBirthYear
+    , isGenderFact
+    , isStateFact
+    , filterByDomain
 
-    -- ** Function for manipulating intervals
+    -- ** Manipulating Dates
+    , yearFromDay
+    , monthFromDay
+    , dayOfMonthFromDay
+
+    -- ** Functions for manipulating intervals
     , lookback
     , lookahead
 
@@ -58,13 +70,17 @@ import IntervalAlgebra.IntervalUtilities    ( durations, gapsWithin )
 import EventData                            ( Events
                                             , Event
                                             , ConceptEvent
-                                            , ctxt )
+                                            , ctxt, context, Domain (Demographics) )
 import EventData.Context                    ( Concept
                                             , Concepts
                                             , Context
                                             , HasConcept( hasConcepts )
-                                            , facts )
-import EventData.Context.Domain             ( Domain
+                                            , facts
+                                            , _facts )
+import EventData.Context.Domain             ( Domain(..)
+                                            , DemographicsFacts(..)
+                                            , DemographicsInfo(..)
+                                            , DemographicsField(..)
                                             , demo
                                             , info
                                             , _Demographics )
@@ -85,7 +101,12 @@ import Data.Int                             ( Int )
 import Data.Maybe                           ( Maybe(..), maybe, mapMaybe )
 import Data.Monoid                          ( Monoid )
 import Data.Ord                             ( Ord(..) )
-import Data.Time.Calendar                   ( Day, Year, diffDays )
+import Data.Time.Calendar                   ( Day
+                                            , Year
+                                            , MonthOfYear
+                                            , DayOfMonth
+                                            , diffDays
+                                            , toGregorian )
 import Data.Text                            ( Text )
 import Data.Text.Read                       ( rational )
 import Data.Tuple                           ( fst )
@@ -228,22 +249,71 @@ allGapsWithinLessThanDuration ::
         -> Bool
 allGapsWithinLessThanDuration = makeGapsWithinPredicate all (<)
 
+-- | Preview demographics information from a domain
+previewDemoInfo :: Domain -> Maybe Text
+previewDemoInfo dmn = (^.demo.info) =<< preview _Demographics dmn
+
 -- | Utility for reading text into a maybe integer
 intMayMap :: Text -> Maybe Integer -- TODO: this is ridiculous
 intMayMap x = fmap floor (either (const Nothing) (Just . fst) (Data.Text.Read.rational x))
 
 -- | Preview birth year from a domain
 previewBirthYear :: Domain -> Maybe Year
-previewBirthYear dmn = intMayMap =<< ((^.demo.info) =<< preview _Demographics dmn)
+previewBirthYear dmn = intMayMap =<< previewDemoInfo dmn
 
--- | Returns a (possibly emtpy) list of birth years from a set of events
-viewBirthYears :: Events a -> [Year]
-viewBirthYears = mapMaybe (\e -> previewBirthYear =<< Just (ctxt e^.facts ))
+-- | Predicate for Birth Year facts
+isBirthYear :: Domain -> Bool 
+isBirthYear (Demographics (DemographicsFacts (DemographicsInfo BirthYear  _))) = True
+isBirthYear _ = False
+
+-- | Predicate for Gender facts
+isGenderFact :: Domain -> Bool 
+isGenderFact (Demographics (DemographicsFacts (DemographicsInfo Gender _))) = True
+isGenderFact _ = False
+
+-- | Predicate for State facts
+isStateFact :: Domain -> Bool 
+isStateFact (Demographics (DemographicsFacts (DemographicsInfo State _))) = True
+isStateFact _ = False
+
+-- | Filters a container of 'Event's by the 'Domain'.
+filterByDomain :: (Witherable f) => (Domain -> Bool) -> f (Event a) -> f (Event a)
+filterByDomain f = filter (f . _facts . ctxt) 
+
+-- | Returns a (possibly empty) list of birth years from a set of events
+viewBirthYears :: (Witherable f) => f (Event a) -> [Year]
+viewBirthYears x = 
+  mapMaybe (\e -> previewBirthYear =<< Just (ctxt e^.facts )) 
+           (toList $ filterByDomain isBirthYear x)
+
+-- | Returns a (possibly empty) list of Gender values from a set of events
+viewGenders :: (Witherable f) => f (Event a) -> [Text]
+viewGenders x = 
+  mapMaybe (\e -> previewDemoInfo =<< Just (ctxt e^.facts )) 
+           (toList $ filterByDomain isGenderFact x)
+
+-- | Returns a (possibly empty) list of Gender values from a set of events
+viewStates :: (Witherable f) => f (Event a) -> [Text]
+viewStates x = 
+  mapMaybe (\e -> previewDemoInfo =<< Just (ctxt e^.facts )) 
+          (toList $ filterByDomain isStateFact x)
 
 -- | Compute the "age" in years between two calendar days. The difference between
 --   the days is rounded down.
 computeAgeAt :: Day -> Day -> Integer
 computeAgeAt bd at = floor (fromInteger (diffDays at bd) / 365.25)
+
+-- | Gets the 'Year' from a 'Data.Time.Calendar.Day'.
+yearFromDay :: Day -> Year
+yearFromDay = (\(y, m, d) -> y) . toGregorian
+
+-- | Gets the 'Data.Time.Calendar.MonthOfDay' from a 'Data.Time.Calendar.Day'.
+monthFromDay :: Day -> MonthOfYear
+monthFromDay = (\(y, m, d) -> m) . toGregorian
+
+-- | Gets the 'Data.Time.Calendar.DayOfMonth' from a 'Data.Time.Calendar.Day'.
+dayOfMonthFromDay :: Day -> DayOfMonth
+dayOfMonthFromDay = (\(y, m, d) -> d) . toGregorian
 
 -- | Creates a new @Interval@ of a provided lookback duration ending at the 
 --   'begin' of the input interval.

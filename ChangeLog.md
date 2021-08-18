@@ -1,5 +1,15 @@
 # Changelog for hasklepias
 
+## 0.15.2
+
+* Updates `viewBirthYears` utility to filter a list of events to those with `BirthYear` demographic facts. In this way, one doesn't need to prefilter the input list by, e.g., a concept.
+* Adds `viewStates` and `viewGenders` utilities for extracting a list of Demographic `State`s and `Gender` (resp.) values from a collection of events. Note that these functions (like `viewBirthYears`) return a *List*, as the source data may contain be 0 or more values for a given subject. You probably only want one value for a given demographic, so you may need a function like `headMay` if you want the first element of the list (if it exists). Note too that the API of these accessor functions for `facts` in a `Context` need a careful design review and may be changed in the future.
+* Adds `yearFromDay`, `monthFromDay`, and `dayOfMonthFromDay` utilities to get the year, month, and day of month, respectively from a `Day`.
+
+## 0.15.1
+
+* Tinkers with package version dependencies in `.cabal` file.
+
 ## 0.15.0
 
 * Adds `Occurrence` type which is a simply a pair a reason and an `EventTime`. That is, an `Occurrence` captures what and when something occurred. Adds the `CensoredOccurrence` type which is similar to an `Occurrence`, except that the reason is of type `CensoringReason cr or`, where `data CensoringReason cr or = AdminCensor | C cr | O or`. The time of a `CensoredOccurrence` is a `MaybeCensored (EventTime a)` (not simply can `EventTime`). See the examples in `examples/ExampleFeatures4` for usage.

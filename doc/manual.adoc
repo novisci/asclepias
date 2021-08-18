@@ -3,7 +3,7 @@
 :source-highlighter: highlightjs
 :sourcedir: ../src
 
-:ghcVersion: 8.10.4
+:ghcVersion: 8.10.6
 :hlsVersion: 1.2.0
 :cabalVersion: 3.4.0.0
 

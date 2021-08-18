@@ -77,13 +77,12 @@ library
     , lens-aeson == 1.1.1
     , mtl == 2.2.2
     , nonempty-containers == 0.3.4.1
-    , process == 1.6.12.0
     , safe >= 0.3
     , semiring-simple == 1.0.0.1
     , tasty  == 1.4.1
     , tasty-hunit == 0.10.0.3
     , text == 1.2.4.1
-    , time == 1.11.1.2
+    , time >= 1.11
     , QuickCheck
     , unordered-containers == 0.2.14.0
     , vector == 0.12.2.0

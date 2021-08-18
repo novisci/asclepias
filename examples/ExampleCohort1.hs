@@ -40,22 +40,22 @@ indices =  map (\(y, m) -> makeIndex $ beginerval 0 (fromGregorian y m 1))
 
 -- | Creates a baseline interval from index
 baselineInterval :: Index Interval Day -> Interval Day
-baselineInterval index = lookback baselineLookback (getIndex index)
+baselineInterval = lookback baselineLookback
 
 -- | Shifts an interval by a calendar amount
-shiftIntervalDay :: CalendarDiffDays -> Interval Day -> Interval Day
+shiftIntervalDay :: (Intervallic i Day) => CalendarDiffDays -> i Day -> Interval Day
 shiftIntervalDay cd i = beginerval (duration i) (addGregorianDurationClip cd (begin i))
 
 -- | Creates an interval *beginning the same day as the index* and 
 --   ending 'followupDuration' days later.
 followupInterval :: Index Interval Day -> Interval Day
-followupInterval index = beginerval (diff bi (end $ shiftIntervalDay followupDuration i)) bi
-    where i = getIndex index
-          bi = begin i
+followupInterval index = 
+    beginerval (diff (begin index) (end $ shiftIntervalDay followupDuration index)) (begin index)
+
 
 -- | A predicate function that determines if some interval is before index
 beforeIndex :: Intervallic i Day => Index Interval Day -> i Day -> Bool
-beforeIndex index = before (getIndex index)
+beforeIndex = before
 
 -- | Creates a filter for events to those that 'concur' with the baseline interval.
 getBaselineConcur ::  Index Interval Day -> Events Day -> [Event Day]
@@ -126,21 +126,6 @@ featureEvents = pure
 featureIndex :: Index Interval Day -> Feature "calendarIndex"  (Index Interval Day)
 featureIndex = pure
 
---- | Gets all enrollment intervals and combines them any place they concur. 
---    Returns an error if there are no enrollment intervals.
-enrollmentIntervals :: Definition
-  (  Feature "allEvents" (Events Day)
-  -> Feature "enrollmentIntervals" [Interval Day])
-enrollmentIntervals =
-  defineA
-      (\events ->
-              events
-          |> makeConceptsFilter ["enrollment"]
-          |> combineIntervals
-          |> (\x -> if null x then makeFeature $ missingBecause $ Other "no enrollment intervals"
-                    else pure x)
-      )
-
 -- | The subject's age at time of index. Returns an error if there no birth year
 --   records.
 age :: Definition
@@ -155,7 +140,7 @@ age =
       |> viewBirthYears
       |> headMay
       |> fmap (\y  -> fromGregorian y 1 7)  -- Use July 1 YEAR as birthdate
-      |> fmap (\bday -> computeAgeAt bday (begin $ getIndex index) )
+      |> fmap (\bday -> computeAgeAt bday (begin index) )
       |> \case
             Nothing -> makeFeature $ featureDataL $ Other "No numeric birth year found"
             Just age -> pure age
@@ -203,15 +188,9 @@ critOver50 = define (includeIf . (>= 50))
 -- | Include the subject if she has an enrollment interval concurring with index.
 critEnrolled :: Definition
   (   Feature "calendarIndex" (Index Interval Day)
-   -> Feature "enrollmentIntervals" [Interval Day]
+   -> Feature "allEvents" [Event Day]
    -> Feature "isEnrolled" Status )
-critEnrolled =
-  define
-      (\index enrollmentIntervals ->
-        enrollmentIntervals
-        |> any (concur $ getIndex index)
-        |> includeIf
-      )
+critEnrolled = defIsEnrolled
 
 -- | Include the subject if both:
 --     * she is enrolled on index ('critEnrolled')
@@ -219,16 +198,10 @@ critEnrolled =
 --       are less than 30 days
 critEnrolled455 :: Definition
   (   Feature "calendarIndex" (Index Interval Day)
-   -> Feature "enrollmentIntervals" [Interval Day]
+   -> Feature "allEvents" [Event Day]
    -> Feature "isEnrolled" Status
    -> Feature "isContinuousEnrolled" Status )
-critEnrolled455 =
-  define
-      (\index enrollIntrvls isEnrolled ->
-        case isEnrolled of
-          Exclude -> Exclude
-          Include -> includeIf ( allGapsWithinLessThanDuration 30 (baselineInterval index) enrollIntrvls)
-      )
+critEnrolled455 = defContinuousEnrollment baselineInterval 30
 
 -- | Exclude if the subject is dead before the time of index.
 critDead :: Definition
@@ -298,8 +271,6 @@ instance HasAttributes  "glucocorticoids" Bool where
     [Covariate]
     ["baseline"]
 
--- instance HasAttributes "" (*)
-
 {-------------------------------------------------------------------------------
   Cohort Specifications and evaluation
 -------------------------------------------------------------------------------}
@@ -315,11 +286,10 @@ makeCriteriaRunner index events =
     , criterion crit5 ]
   where crit1   = eval critFemale featEvs
         crit2   = eval critOver50 agefeat
-        crit3   = eval critEnrolled (featInd, enrll)
-        crit4   = eval critEnrolled455 (featInd, enrll, crit3)
+        crit3   = eval critEnrolled (featInd, featEvs)
+        crit4   = eval critEnrolled455 (featInd, featEvs, crit3)
         crit5   = eval critDead (featInd, dead)
         agefeat = eval age (featInd, featEvs)
-        enrll   = eval enrollmentIntervals featEvs
         dead    = eval deathDay featEvs
         featInd = featureIndex index
         featEvs = featureEvents events
@@ -360,9 +330,9 @@ testData1 :: Events Day
 testData1 = sort
     [ m 2010 1 1 1   ["is_female"] (Demographics (DemographicsFacts (DemographicsInfo Gender  (Just "Female")) ))
     , m 2010 1 1 1   ["is_birth_year"] (Demographics (DemographicsFacts (DemographicsInfo BirthYear (Just "1960")) ))
-    , m 2016 1 1 699 ["enrollment"] ( UnimplementedDomain ())
-    , m 2018 1 1 30  ["enrollment"] ( UnimplementedDomain ())
-    , m 2018 2 1 30  ["enrollment"] ( UnimplementedDomain ())
+    , m 2016 1 1 699 ["enrollment"] (Enrollment EnrollmentFacts)
+    , m 2018 1 1 30  ["enrollment"] (Enrollment EnrollmentFacts)
+    , m 2018 2 1 30  ["enrollment"] (Enrollment EnrollmentFacts)
     , m 2017 6 5 1   ["is_diabetes_inpatient"] (UnimplementedDomain ())
     , m 2017 8 1 91  ["is_ppi"] (UnimplementedDomain ())
     ]
@@ -374,9 +344,9 @@ testData2 :: Events Day
 testData2 = sort
     [ m 2010 1 1 1   ["is_female"] (Demographics (DemographicsFacts (DemographicsInfo Gender  (Just "Female")) ))
     , m 2010 1 1 1   ["is_birth_year"] (Demographics (DemographicsFacts (DemographicsInfo BirthYear (Just "1980")) ))
-    , m 2016 1 1 730 ["enrollment"] (UnimplementedDomain ())
-    , m 2018 1 1 30  ["enrollment"] (UnimplementedDomain ())
-    , m 2018 2 1 30  ["enrollment"] (UnimplementedDomain ())
+    , m 2016 1 1 730 ["enrollment"] (Enrollment EnrollmentFacts)
+    , m 2018 1 1 30  ["enrollment"] (Enrollment EnrollmentFacts)
+    , m 2018 2 1 30  ["enrollment"] (Enrollment EnrollmentFacts)
     ]
 
 testSubject2 :: Subject (Events Day)

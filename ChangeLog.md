@@ -1,5 +1,16 @@
 # Changelog for hasklepias
 
+## 0.16.0
+
+* Adds a basic framework for `Feature` definition templates. Initially, this includes two templates for enrollment related features:
+  * `defIsEnrolled` is a definition that maps an `Index` and a container of `Event`s to a `Status` (i.e. `Include` or `Exclude`). This template takes no arguments.
+  * `defContinuousEnrollment` is a definition that maps an `Index`, a container of `Event`s, and a `Status` to a `Status`. This template takes two arguments: a function that creates the interval from the index during which enrollment is assessed and an allowable gap between any enrollment intervals. The input `Status` is used so that continuous enrollment may depend on other statuses. For example, you may want to have continuous enrollment depend on being enrolled.
+* Adds a framework for testing the templates. E.g. templates can be tested using `cabal test templates`.
+* Updates the `ExampleCohort1` to use the `defIsEnrolled` and `defContinuousEnrollment` templates.
+* Makes the `Index i a` type an instance of `Intervallic`, so you can use methods like `begin`, `end`, and interval algebra functions directly on an `Index` without having to unpack the interval first.
+* Adds stripped down `Enrollment` Domain. This does type is not faithful to the EDM, as it does not include the event data model's plan fact.
+* Adds the `isEnrollment` predicate function for identifying `Domain`s that are Enrollment. This can be used with `filterByDomain` to filter a container of `Event`s to those that are enrollment events.
+
 ## 0.15.2
 
 * Updates `viewBirthYears` utility to filter a list of events to those with `BirthYear` demographic facts. In this way, one doesn't need to prefilter the input list by, e.g., a concept.

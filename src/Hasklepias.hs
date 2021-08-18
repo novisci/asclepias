@@ -26,6 +26,9 @@ module Hasklepias (
     , module Hasklepias.FeatureEvents
     , module Hasklepias.Misc
     
+    -- ** Feature definition templates
+    , module Hasklepias.Templates
+    
     -- * Specifying and building cohorts
     , module Cohort
 
@@ -55,5 +58,6 @@ import Hasklepias.Misc
 import Hasklepias.Reexports
 import Hasklepias.ReexportsUnsafe
 import Hasklepias.MakeApp
+import Hasklepias.Templates
 
 import Stype

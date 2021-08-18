@@ -168,7 +168,7 @@ makeFollowupInterval :: ( Integral b
                         , IntervalSizeable a b) => 
     b -> Index i a -> Interval a
 makeFollowupInterval dur index =  
-  beginerval dur (add washoutDuration (begin $ getIndex index))
+  beginerval dur (add washoutDuration (begin index))
 
 -- | Creates an interval *starting 7 days after the index* and 
 --   ending 'followupDuration' days later.

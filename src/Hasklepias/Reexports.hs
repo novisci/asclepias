@@ -99,12 +99,20 @@ import safe Data.Ord                        ( Ord(..)
                                             , max, min )
 import safe Data.Proxy                      ( Proxy(..) )
 import safe Data.Set as Set                 ( Set(..), fromList, member)
-import safe Data.Time.Calendar              ( Day, MonthOfYear, Year
+import safe Data.Time.Calendar              ( Day
+                                            , DayOfWeek
+                                            , DayOfMonth
+                                            , MonthOfYear
+                                            , Year
                                             , CalendarDiffDays(..)
                                             , addGregorianDurationClip
                                             , fromGregorian
+                                            , toGregorian
                                             , gregorianMonthLength
                                             , diffDays )
+import safe Data.Time.Calendar.Quarter      ( QuarterOfYear 
+                                            , Quarter
+                                            , dayQuarter )
 import safe Data.Text                       ( pack, Text )
 import safe Data.Tuple                      ( fst, snd, uncurry, curry )
 

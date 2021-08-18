@@ -39,6 +39,7 @@ module Hasklepias.FeatureEvents(
     , isBirthYear
     , isGenderFact
     , isStateFact
+    , isEnrollment
     , filterByDomain
 
     -- ** Manipulating Dates
@@ -275,6 +276,11 @@ isGenderFact _ = False
 isStateFact :: Domain -> Bool 
 isStateFact (Demographics (DemographicsFacts (DemographicsInfo State _))) = True
 isStateFact _ = False
+
+-- | Predicate for State facts
+isEnrollment :: Domain -> Bool 
+isEnrollment (Enrollment _) = True
+isEnrollment _ = False
 
 -- | Filters a container of 'Event's by the 'Domain'.
 filterByDomain :: (Witherable f) => (Domain -> Bool) -> f (Event a) -> f (Event a)

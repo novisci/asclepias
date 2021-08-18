@@ -30,6 +30,7 @@ library
       EventData.Context.Arbitrary
       EventData.Context.Domain
       EventData.Context.Domain.Demographics
+      EventData.Context.Domain.Enrollment
       Features
       Features.Attributes
       Features.Compose
@@ -48,6 +49,11 @@ library
       Hasklepias.Misc
       Hasklepias.Reexports
       Hasklepias.ReexportsUnsafe
+      Hasklepias.Templates
+      Hasklepias.Templates.Features
+      Hasklepias.Templates.Tests
+      Hasklepias.Templates.TestUtilities
+      Hasklepias.Templates.Features.Enrollment
       Stype
       Stype.Aeson
       Stype.Numeric
@@ -128,6 +134,19 @@ test-suite hasklepias-test
     , unordered-containers >=0.2.10
     , vector >=0.12
     , QuickCheck
+  default-language: Haskell2010
+
+test-suite templates
+  type: exitcode-stdio-1.0
+  main-is: Main.hs
+  hs-source-dirs:
+      template-test
+  build-depends:
+      hasklepias
+    , base >=4.14 && <4.15
+    , tasty  == 1.4.1
+    , tasty-hunit == 0.10.0.3
+    , tasty-hspec == 1.2
   default-language: Haskell2010
 
 test-suite examples

@@ -17,6 +17,8 @@ module EventData.Context.Domain(
     Domain(..)
     , _Demographics
     , module EventData.Context.Domain.Demographics
+    , _Enrollment
+    , module EventData.Context.Domain.Enrollment
 ) where
 
 import Control.Lens                             ( makePrisms )
@@ -26,10 +28,12 @@ import GHC.Generics                             ( Generic )
 import GHC.Show                                 ( Show )
 
 import EventData.Context.Domain.Demographics
+import EventData.Context.Domain.Enrollment
 
 -- | Defines the available domains.
 data Domain =
       Demographics DemographicsFacts
+    | Enrollment EnrollmentFacts
     | UnimplementedDomain ()
     deriving ( Eq, Show, Generic )
 

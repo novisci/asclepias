@@ -73,8 +73,15 @@ testOutDay2 = event (beginerval 1 (fromGregorian 2020 1 5))
 dmo :: Domain
 dmo = Demographics $ DemographicsFacts (DemographicsInfo BirthYear (Just "1987"))
 
+enl :: Domain 
+enl = Enrollment (EnrollmentFacts ())
+
 jsonDemoTest :: B.ByteString
 jsonDemoTest = "{\"domain\":\"Demographics\",\"facts\":{\"demo\":{\"field\":\"BirthYear\",\"info\":\"1987\"}}}"
+
+jsonEnrollTest :: B.ByteString
+jsonEnrollTest = "{\"domain\":\"Enrollment\",\"facts\":{\"plan\":{\"exchange\":\"Medicare\"}}}"
+
 
 jsonOtherTest :: B.ByteString
 jsonOtherTest = "{\"domain\":\"Labs\",\"facts\":{\"code\":{\"code\":\"XYZ\"}}}"
@@ -94,5 +101,7 @@ spec = do
        parseEventDayLines testInputsDay `shouldBe` ([], [testOutDay1, testOutDay2])
     it "jsonDemoTest is parsed correctly" $
        decode jsonDemoTest  `shouldBe` Just dmo
+    it "jsonEnrollTest is parsed correctly" $
+       decode jsonEnrollTest  `shouldBe` Just enl
     it "jsonOtherTest is parsed correctly" $
        decode jsonOtherTest  `shouldBe` Just (UnimplementedDomain ())

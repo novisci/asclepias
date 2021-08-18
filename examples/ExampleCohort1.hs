@@ -330,9 +330,9 @@ testData1 :: Events Day
 testData1 = sort
     [ m 2010 1 1 1   ["is_female"] (Demographics (DemographicsFacts (DemographicsInfo Gender  (Just "Female")) ))
     , m 2010 1 1 1   ["is_birth_year"] (Demographics (DemographicsFacts (DemographicsInfo BirthYear (Just "1960")) ))
-    , m 2016 1 1 699 ["enrollment"] (Enrollment EnrollmentFacts)
-    , m 2018 1 1 30  ["enrollment"] (Enrollment EnrollmentFacts)
-    , m 2018 2 1 30  ["enrollment"] (Enrollment EnrollmentFacts)
+    , m 2016 1 1 699 ["enrollment"] (Enrollment (EnrollmentFacts ()))
+    , m 2018 1 1 30  ["enrollment"] (Enrollment (EnrollmentFacts ()))
+    , m 2018 2 1 30  ["enrollment"] (Enrollment (EnrollmentFacts ()))
     , m 2017 6 5 1   ["is_diabetes_inpatient"] (UnimplementedDomain ())
     , m 2017 8 1 91  ["is_ppi"] (UnimplementedDomain ())
     ]
@@ -344,9 +344,9 @@ testData2 :: Events Day
 testData2 = sort
     [ m 2010 1 1 1   ["is_female"] (Demographics (DemographicsFacts (DemographicsInfo Gender  (Just "Female")) ))
     , m 2010 1 1 1   ["is_birth_year"] (Demographics (DemographicsFacts (DemographicsInfo BirthYear (Just "1980")) ))
-    , m 2016 1 1 730 ["enrollment"] (Enrollment EnrollmentFacts)
-    , m 2018 1 1 30  ["enrollment"] (Enrollment EnrollmentFacts)
-    , m 2018 2 1 30  ["enrollment"] (Enrollment EnrollmentFacts)
+    , m 2016 1 1 730 ["enrollment"] (Enrollment (EnrollmentFacts ()))
+    , m 2018 1 1 30  ["enrollment"] (Enrollment (EnrollmentFacts ()))
+    , m 2018 2 1 30  ["enrollment"] (Enrollment (EnrollmentFacts ()))
     ]
 
 testSubject2 :: Subject (Events Day)

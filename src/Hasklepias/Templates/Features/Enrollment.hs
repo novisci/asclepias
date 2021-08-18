@@ -96,7 +96,7 @@ makeIsEnrolledTestInputs name dur bgn e s =
 
 makeEnrollmentEvent :: (IntervalSizeable a b) => b -> a -> Event a
 makeEnrollmentEvent dur bgn = 
-  event (beginerval dur bgn) (context ( Enrollment EnrollmentFacts) mempty)
+  event (beginerval dur bgn) (context ( Enrollment (EnrollmentFacts ())) mempty)
 
 defIsEnrolledTestCases :: [TemplateTestCase
    (F "index" (Index Interval Int), F "events" [Event Int]) Status]

@@ -177,6 +177,8 @@ cabal update
    LambdaCase
    DataKinds
    FlexibleContexts
+   FlexibleInstances
+   DeriveGeneric
    MultiParamTypeClasses
 ----
 . Start coding.

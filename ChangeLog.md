@@ -1,5 +1,9 @@
 # Changelog for hasklepias
 
+## 0.16.2
+
+* reexports `ToJSON` typeclass so users can export data as needed.
+
 ## 0.16.1
 
 * Updates `FromJSON` instance for `Domain`, so that a JSON event with `"domain" = "Enrollment"` is deserialized into `Event` whose `Domain` is `Enrollment`.

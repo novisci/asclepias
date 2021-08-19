@@ -17,7 +17,7 @@ module Hasklepias.ReexportsUnsafe (
     , module Test.Tasty.HUnit
 ) where
 
-import Data.Aeson        (encode)
+import Data.Aeson        ( encode, ToJSON(..))
 import GHC.IO            ( IO(..) )
 
 -- import GHC.Types                       ( Any )

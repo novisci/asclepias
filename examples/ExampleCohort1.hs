@@ -22,8 +22,8 @@ import Hasklepias
 -------------------------------------------------------------------------------}
 
 -- | Lookback duration for baseline
-baselineLookback :: Integer
-baselineLookback = 455
+lookback455 :: Integer
+lookback455 = 455
 
 -- | Duration of follow up in months
 followupDuration :: CalendarDiffDays
@@ -39,8 +39,8 @@ indices =  map (\(y, m) -> makeIndex $ beginerval 0 (fromGregorian y m 1))
 -------------------------------------------------------------------------------}
 
 -- | Creates a baseline interval from index
-baselineInterval :: Index Interval Day -> Interval Day
-baselineInterval = lookback baselineLookback
+baselineInterval :: Index Interval Day -> AssessmentInterval Day
+baselineInterval = makeBaselineFromIndex lookback455 
 
 -- | Shifts an interval by a calendar amount
 shiftIntervalDay :: (Intervallic i Day) => CalendarDiffDays -> i Day -> Interval Day

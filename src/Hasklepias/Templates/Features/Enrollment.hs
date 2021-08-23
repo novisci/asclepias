@@ -57,7 +57,11 @@ import Hasklepias.Templates.TestUtilities
                                         ( makeAssertion
                                         , TemplateTestCase(..) )
 import Hasklepias.Misc                  ( F )
-import Cohort.Index                     ( Index(..) )
+import Cohort.Index                     ( Index, makeIndex )
+
+import Cohort.AssessmentIntervals       ( makeBaselineFromIndex 
+                                        , AssessmentInterval
+                                        )
 import Cohort.Criteria                  ( Status(..), includeIf )
 
 
@@ -92,7 +96,7 @@ makeIsEnrolledTestInputs :: (IntervalSizeable a b) =>
   -> Status
   -> TemplateTestCase (F "index" (Index Interval a), F "events" [Event a]) Status
 makeIsEnrolledTestInputs name dur bgn e s = 
-  MkTemplateTestCase name (pure (MkIndex $ beginerval dur bgn), pure e) (pure s)
+  MkTemplateTestCase name (pure (makeIndex $ beginerval dur bgn), pure e) (pure s)
 
 makeEnrollmentEvent :: (IntervalSizeable a b) => b -> a -> Event a
 makeEnrollmentEvent dur bgn = 
@@ -123,16 +127,15 @@ defContinuousEnrollment ::
   , Monoid (container (Maybe (Interval a)))
   , Applicative container
   , Witherable container
-  , IntervalCombinable i1 a
   , IntervalSizeable a b) =>
-    (Index i0 a -> i1 a) -- ^ function which maps index interval to interval in which to assess enrollment
-  -> b                   -- ^ duration of allowable gap between enrollment intervals
+    (Index i0 a -> AssessmentInterval a) -- ^ function which maps index interval to interval in which to assess enrollment
+  -> b  -- ^ duration of allowable gap between enrollment intervals
   -> Definition
   (   Feature indexName  (Index i0 a)
    -> Feature eventsName (container (Event a))
    -> Feature prevName    Status
    -> Feature varName     Status )
-defContinuousEnrollment formInterval allowableGap =
+defContinuousEnrollment makeAssessmentInterval allowableGap =
   define
     (\index events prevStatus ->
       case prevStatus of
@@ -140,7 +143,7 @@ defContinuousEnrollment formInterval allowableGap =
         Include -> includeIf
           ( allGapsWithinLessThanDuration
                 allowableGap
-                (formInterval index)
+                (makeAssessmentInterval index)
                 (combineIntervals $ filterByDomain isEnrollment events))
     )
 
@@ -153,7 +156,7 @@ makeContinuousEnrollmentTestInputs :: (IntervalSizeable a b) =>
   -> Status
   -> TemplateTestCase (F "index" (Index Interval a), F "events" [Event a], F "prev" Status) Status
 makeContinuousEnrollmentTestInputs name dur bgn e prev s = 
-  MkTemplateTestCase name (pure (MkIndex $ beginerval dur bgn), pure e, pure prev) (pure s)
+  MkTemplateTestCase name (pure (makeIndex $ beginerval dur bgn), pure e, pure prev) (pure s)
 
 defContinuousEnrollmentTestCases :: [TemplateTestCase
    (F "index" (Index Interval Int), F "events" [Event Int], F "prev" Status) Status]
@@ -209,7 +212,7 @@ defContinuousEnrollmentTestCases = [
 defContinuousEnrollmentTests :: TestTree
 defContinuousEnrollmentTests = testGroup "Tests of continuous enrollment template"
      ( fmap (\x -> testCase (getTestName x) 
-          (makeAssertion x (defContinuousEnrollment (lookback 10) 3)) )
+          (makeAssertion x (defContinuousEnrollment (makeBaselineFromIndex 10) 3)) )
            defContinuousEnrollmentTestCases )
 
 defEnrollmentTests :: TestTree

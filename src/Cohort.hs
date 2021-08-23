@@ -10,26 +10,26 @@ Maintainer  : bsaul@novisci.com
 
 module Cohort(
 
-   -- * Defining Cohorts
+   -- ** Defining Cohorts
       module Cohort.Core
 
-    -- ** Criteria
-    , module Cohort.Criteria
-    -- ** Index
-    , module Cohort.Index
+   -- ** Index
+   , module Cohort.Index
+   -- ** Assessment Intervals
+   , module Cohort.AssessmentIntervals
+   -- ** Criteria
+   , module Cohort.Criteria
 
-    -- * Cohort I/O
-    -- ** Input
-    , module Cohort.Input   
-    -- ** Output
-    , module Cohort.Output
-
-
+   -- ** Cohort I/O
+   -- *** Input
+   , module Cohort.Input   
+   -- *** Output
+   , module Cohort.Output
 ) where
-
 
 import Cohort.Core
 import Cohort.Index
+import Cohort.AssessmentIntervals
 import Cohort.Criteria
 import Cohort.Input
 import Cohort.Output

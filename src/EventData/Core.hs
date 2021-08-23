@@ -14,7 +14,6 @@ Maintainer  : bsaul@novisci.com
 
 module EventData.Core(
 
- -- * Events
    Event
  , Events
  , ConceptEvent

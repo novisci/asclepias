@@ -207,7 +207,7 @@ makeGapsWithinPredicate ::
        , Applicative t
        , Witherable t
        , IntervalSizeable a b
-       , IntervalCombinable i0 a
+       , Intervallic i0 a
        , IntervalCombinable i1 a) =>
           ((b -> Bool) ->  t b -> Bool)
         -> (b -> b -> Bool)
@@ -219,7 +219,7 @@ makeGapsWithinPredicate f op gapDuration interval l =
 --   specified duration among the input intervals?
 anyGapsWithinAtLeastDuration ::
       ( IntervalSizeable a b
-      , IntervalCombinable i0 a
+      , Intervallic i0 a
       , IntervalCombinable i1 a
       , Monoid (t (Interval a))
       , Monoid (t (Maybe (Interval a)))
@@ -238,7 +238,7 @@ anyGapsWithinAtLeastDuration = makeGapsWithinPredicate any (>=)
 -- True
 allGapsWithinLessThanDuration ::
       ( IntervalSizeable a b
-      , IntervalCombinable i0 a
+      , Intervallic i0 a
       , IntervalCombinable i1 a
       , Monoid (t (Interval a))
       , Monoid (t (Maybe (Interval a)))

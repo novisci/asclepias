@@ -1,6 +1,6 @@
 cabal-version:  2.2
 name:           hasklepias
-version:        0.16.2
+version:        0.17.0
 description:    Please see the README on GitHub at <https://github.com/novisci/asclepias#readme>
 homepage:       https://github.com/novisci/asclepias/#readme
 bug-reports:    https://github.com/novisci/asclepias/issues
@@ -38,6 +38,7 @@ library
       Features.Output
       Features.Featureset
       Cohort
+      Cohort.AssessmentIntervals
       Cohort.Core
       Cohort.Input
       Cohort.Output
@@ -78,7 +79,7 @@ library
     , co-log == 0.4.0.1
     , flow == 1.0.22
     , ghc-prim == 0.6.1
-    , interval-algebra == 0.10.0
+    , interval-algebra == 0.10.1
     , lens == 5.0.1
     , lens-aeson == 1.1.1
     , mtl == 2.2.2
@@ -109,6 +110,7 @@ test-suite hasklepias-test
       Features.FeaturesetSpec
       Cohort.InputSpec
       Cohort.CoreSpec
+      Cohort.AssessmentIntervalsSpec
       Cohort.CriteriaSpec
       Hasklepias.FeatureEventsSpec
       Stype.AesonSpec
@@ -127,7 +129,7 @@ test-suite hasklepias-test
     , flow == 1.0.22
     , hasklepias
     , hspec
-    , interval-algebra == 0.10.0
+    , interval-algebra == 0.10.1
     , lens == 5.0.1
     , text >=1.2.3
     , time >=1.11

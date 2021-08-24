@@ -9,11 +9,11 @@ Maintainer  : bsaul@novisci.com
 See the examples folder and manual for further documentation.
 -}
 
-module Hasklepias (
-      module EventData
-    
+module Hasklepias
+  ( module EventData
+
     -- * Working with Features
-    , module Features
+  , module Features
 
     -- * Utilities for defining Features from Events
     {- |
@@ -23,41 +23,41 @@ module Hasklepias (
     can be found on [hackage](https://hackage.haskell.org/package/interval-algebra).
 
     -}
-    , module Hasklepias.FeatureEvents
-    , module Hasklepias.Misc
-    
+  , module Hasklepias.FeatureEvents
+  , module Hasklepias.Misc
+
     -- ** Feature definition templates
-    , module Hasklepias.Templates
-    
+  , module Hasklepias.Templates
+
     -- * Specifying and building cohorts
-    , module Cohort
+  , module Cohort
 
     -- ** Creating an executable cohort application
-    , module Hasklepias.MakeApp
+  , module Hasklepias.MakeApp
 
     -- * Statistical Types
-    , module Stype
+  , module Stype
 
     -- * Rexported Functions and modules
-    , module Hasklepias.Reexports
-    , module Hasklepias.ReexportsUnsafe
-) where
+  , module Hasklepias.Reexports
+  , module Hasklepias.ReexportsUnsafe
+  ) where
 
-import EventData
+import           EventData
 
-import IntervalAlgebra
-import IntervalAlgebra.IntervalUtilities
-import IntervalAlgebra.PairedInterval
+import           IntervalAlgebra
+import           IntervalAlgebra.IntervalUtilities
+import           IntervalAlgebra.PairedInterval
 
-import Features
+import           Features
 
-import Cohort
+import           Cohort
 
-import Hasklepias.FeatureEvents
-import Hasklepias.Misc
-import Hasklepias.Reexports
-import Hasklepias.ReexportsUnsafe
-import Hasklepias.MakeApp
-import Hasklepias.Templates
+import           Hasklepias.FeatureEvents
+import           Hasklepias.MakeApp
+import           Hasklepias.Misc
+import           Hasklepias.Reexports
+import           Hasklepias.ReexportsUnsafe
+import           Hasklepias.Templates
 
-import Stype
+import           Stype

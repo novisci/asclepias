@@ -1,16 +1,16 @@
-module Main(
-    module ExampleFeatures1
+module Main
+  ( module ExampleFeatures1
   , main
-) where
+  ) where
 
-import ExampleFeatures1 ( exampleFeatures1Spec )
-import ExampleFeatures2 ( exampleFeatures2Spec ) 
-import ExampleFeatures3 ( exampleFeatures3Spec ) 
-import ExampleFeatures4 ( exampleFeatures4Spec ) 
-import ExampleCohort1   ( exampleCohort1tests )
-import Test.Tasty
-import Test.Tasty.Hspec ( testSpec )
-import Test.Hspec       ( hspec )
+import           ExampleCohort1                 ( exampleCohort1tests )
+import           ExampleFeatures1               ( exampleFeatures1Spec )
+import           ExampleFeatures2               ( exampleFeatures2Spec )
+import           ExampleFeatures3               ( exampleFeatures3Spec )
+import           ExampleFeatures4               ( exampleFeatures4Spec )
+import           Test.Hspec                     ( hspec )
+import           Test.Tasty
+import           Test.Tasty.Hspec               ( testSpec )
 
 -- NOTE: testSpec is used because the project orginally used the Hspec testing 
 -- framework. We have since moved to Tasty. The tests in exampleFeatures(1-3)Spec
@@ -20,12 +20,9 @@ main = do
   spec1 <- testSpec "spec1" exampleFeatures1Spec
   spec2 <- testSpec "spec2" exampleFeatures2Spec
   spec3 <- testSpec "spec3" exampleFeatures3Spec
-  spec4 <- testSpec "spec4" exampleFeatures4Spec 
+  spec4 <- testSpec "spec4" exampleFeatures4Spec
   defaultMain
-    (testGroup "tests"
-      [ spec1
-      , spec2
-      , spec3
-      , spec4
-      , testGroup "Tests" [exampleCohort1tests]
-      ])
+    (testGroup
+      "tests"
+      [spec1, spec2, spec3, spec4, testGroup "Tests" [exampleCohort1tests]]
+    )

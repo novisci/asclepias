@@ -31,6 +31,7 @@ library
       EventData.Context.Domain
       EventData.Context.Domain.Demographics
       EventData.Context.Domain.Enrollment
+      EventData.Predicate
       Features
       Features.Attributes
       Features.Compose
@@ -76,6 +77,7 @@ library
     , bytestring == 0.10.12.0
     , cmdargs == 0.10.21
     , containers == 0.6.5.1
+    , contravariant >= 1.4
     , co-log == 0.4.0.1
     , flow == 1.0.22
     , ghc-prim == 0.6.1

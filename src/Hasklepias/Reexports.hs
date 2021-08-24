@@ -26,6 +26,7 @@ module Hasklepias.Reexports (
     , module Data.Int
     , module Data.Maybe
     , module Data.Monoid
+    , module Data.Functor.Contravariant
     , module Data.Foldable
     , module Data.Function
     , module Data.List
@@ -70,6 +71,8 @@ import safe Data.Eq                         ( Eq, (==))
 import safe Data.Foldable                   ( Foldable(..)
                                             , minimum
                                             , maximum )
+import safe Data.Functor.Contravariant      ( Contravariant(contramap)
+                                            , Predicate(..) )
 import safe Data.Function                   ( (.), ($), const, id, flip )
 import safe Data.Int                        ( Int(..) )
 import safe Data.List                       ( all
@@ -120,6 +123,6 @@ import safe IntervalAlgebra
 import safe IntervalAlgebra.IntervalUtilities
 import safe IntervalAlgebra.PairedInterval
 
-import safe Witherable                      ( Filterable(filter), Witherable )
+import safe Witherable                      ( Filterable(filter), Witherable(..) )
 import safe Flow                            ( (!>), (.>), (<!), (<.), (<|), (|>) )
 import Safe                                 ( headMay, lastMay )

@@ -190,7 +190,7 @@ critEnrolled :: Definition
   (   Feature "calendarIndex" (Index Interval Day)
    -> Feature "allEvents" [Event Day]
    -> Feature "isEnrolled" Status )
-critEnrolled = defIsEnrolled
+critEnrolled = defIsEnrolled isEnrollmentEvent 
 
 -- | Include the subject if both:
 --     * she is enrolled on index ('critEnrolled')
@@ -201,7 +201,7 @@ critEnrolled455 :: Definition
    -> Feature "allEvents" [Event Day]
    -> Feature "isEnrolled" Status
    -> Feature "isContinuousEnrolled" Status )
-critEnrolled455 = defContinuousEnrollment baselineInterval 30
+critEnrolled455 = defContinuousEnrollment baselineInterval isEnrollmentEvent 30
 
 -- | Exclude if the subject is dead before the time of index.
 critDead :: Definition

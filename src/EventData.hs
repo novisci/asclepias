@@ -17,17 +17,19 @@ module EventData(
     , module EventData.Context
     -- ** Event Domains
     , module EventData.Context.Domain
+    -- ** Predicates
+    , module EventData.Predicate
     -- ** Parsing Events
     , module EventData.Aeson
     -- ** Generating arbitrary events
     , module EventData.Arbitrary
-
 
 ) where
 
 import EventData.Core
 import EventData.Context
 import EventData.Context.Domain
+import EventData.Predicate
 import EventData.Arbitrary
 import EventData.Aeson
 

@@ -36,11 +36,6 @@ module Hasklepias.FeatureEvents(
     , viewStates
     , previewDemoInfo
     , previewBirthYear
-    , isBirthYear
-    , isGenderFact
-    , isStateFact
-    , isEnrollment
-    , filterByDomain
 
     -- ** Manipulating Dates
     , yearFromDay
@@ -71,7 +66,10 @@ import IntervalAlgebra.IntervalUtilities    ( durations, gapsWithin )
 import EventData                            ( Events
                                             , Event
                                             , ConceptEvent
-                                            , ctxt, context, Domain (Demographics) )
+                                            , ctxt
+                                            , context
+                                            , Domain (Demographics) )
+import EventData.Predicate                  
 import EventData.Context                    ( Concept
                                             , Concepts
                                             , Context
@@ -92,6 +90,7 @@ import Control.Lens                         ( preview, (^.) )
 import Data.Bool                            ( Bool(..), (&&), not, (||) )
 import Data.Either                          ( either )
 import Data.Eq                              ( Eq )
+import Data.Functor.Contravariant           ( Predicate(..) )
 import Data.Foldable                        ( Foldable(length, null)
                                             , all
                                             , any
@@ -262,47 +261,23 @@ intMayMap x = fmap floor (either (const Nothing) (Just . fst) (Data.Text.Read.ra
 previewBirthYear :: Domain -> Maybe Year
 previewBirthYear dmn = intMayMap =<< previewDemoInfo dmn
 
--- | Predicate for Birth Year facts
-isBirthYear :: Domain -> Bool 
-isBirthYear (Demographics (DemographicsFacts (DemographicsInfo BirthYear  _))) = True
-isBirthYear _ = False
-
--- | Predicate for Gender facts
-isGenderFact :: Domain -> Bool 
-isGenderFact (Demographics (DemographicsFacts (DemographicsInfo Gender _))) = True
-isGenderFact _ = False
-
--- | Predicate for State facts
-isStateFact :: Domain -> Bool 
-isStateFact (Demographics (DemographicsFacts (DemographicsInfo State _))) = True
-isStateFact _ = False
-
--- | Predicate for State facts
-isEnrollment :: Domain -> Bool 
-isEnrollment (Enrollment _) = True
-isEnrollment _ = False
-
--- | Filters a container of 'Event's by the 'Domain'.
-filterByDomain :: (Witherable f) => (Domain -> Bool) -> f (Event a) -> f (Event a)
-filterByDomain f = filter (f . _facts . ctxt) 
-
 -- | Returns a (possibly empty) list of birth years from a set of events
 viewBirthYears :: (Witherable f) => f (Event a) -> [Year]
 viewBirthYears x = 
   mapMaybe (\e -> previewBirthYear =<< Just (ctxt e^.facts )) 
-           (toList $ filterByDomain isBirthYear x)
+           (toList $ filter (getPredicate isBirthYearEvent) x)
 
 -- | Returns a (possibly empty) list of Gender values from a set of events
 viewGenders :: (Witherable f) => f (Event a) -> [Text]
 viewGenders x = 
   mapMaybe (\e -> previewDemoInfo =<< Just (ctxt e^.facts )) 
-           (toList $ filterByDomain isGenderFact x)
+           (toList $ filter (getPredicate isGenderFactEvent) x)
 
 -- | Returns a (possibly empty) list of Gender values from a set of events
 viewStates :: (Witherable f) => f (Event a) -> [Text]
 viewStates x = 
   mapMaybe (\e -> previewDemoInfo =<< Just (ctxt e^.facts )) 
-          (toList $ filterByDomain isStateFact x)
+          (toList $ filter (getPredicate isStateFactEvent) x)
 
 -- | Compute the "age" in years between two calendar days. The difference between
 --   the days is rounded down.

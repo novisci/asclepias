@@ -24,17 +24,11 @@ Index is defined as the first occurrence of an Orca bite.
 -}
 indexDef
   :: (Ord a) => Definition (FeatureData (Events a) -> FeatureData (Interval a))
--- FeatureDefinition
---   (FeatureData (Events a))
---   (Interval a)
 indexDef = defineA
   (\events -> case firstConceptOccurrence ["wasBitByOrca"] events of
     Nothing -> featureDataL (Other "No occurrence of Orca bite")
     Just x  -> pure (getInterval x)
   )
-
--- indexSpec :: (Ord a) => FeatureSpec Text (*) (Events a) (Interval a)
--- indexSpec = makeFeatureSpec "index" "" (define indexDef)
 
 {-  
 The baseline interval is the interval (b - 60, b), where b is the begin of 

@@ -8,28 +8,29 @@ Maintainer  : bsaul@novisci.com
 {-# OPTIONS_HADDOCK hide #-}
 {-# LANGUAGE NoImplicitPrelude #-}
 
-module Cohort(
+module Cohort
+  (
 
    -- ** Defining Cohorts
-      module Cohort.Core
+    module Cohort.Core
 
    -- ** Index
-   , module Cohort.Index
+  , module Cohort.Index
    -- ** Assessment Intervals
-   , module Cohort.AssessmentIntervals
+  , module Cohort.AssessmentIntervals
    -- ** Criteria
-   , module Cohort.Criteria
+  , module Cohort.Criteria
 
    -- ** Cohort I/O
    -- *** Input
-   , module Cohort.Input   
+  , module Cohort.Input
    -- *** Output
-   , module Cohort.Output
-) where
+  , module Cohort.Output
+  ) where
 
-import Cohort.Core
-import Cohort.Index
-import Cohort.AssessmentIntervals
-import Cohort.Criteria
-import Cohort.Input
-import Cohort.Output
+import           Cohort.AssessmentIntervals
+import           Cohort.Core
+import           Cohort.Criteria
+import           Cohort.Index
+import           Cohort.Input
+import           Cohort.Output

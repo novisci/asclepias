@@ -9,27 +9,25 @@ Maintainer  : bsaul@novisci.com
 {-# OPTIONS_HADDOCK hide #-}
 {-# LANGUAGE NoImplicitPrelude #-}
 
-module EventData(
-
-    -- * Events
-        module EventData.Core
+module EventData
+  ( -- * Events
+    module EventData.Core
     -- ** Event Contexts
-    , module EventData.Context
+  , module EventData.Context
     -- ** Event Domains
-    , module EventData.Context.Domain
+  , module EventData.Context.Domain
     -- ** Predicates
-    , module EventData.Predicate
+  , module EventData.Predicate
     -- ** Parsing Events
-    , module EventData.Aeson
+  , module EventData.Aeson
     -- ** Generating arbitrary events
-    , module EventData.Arbitrary
+  , module EventData.Arbitrary
+  ) where
 
-) where
-
-import EventData.Core
-import EventData.Context
-import EventData.Context.Domain
-import EventData.Predicate
-import EventData.Arbitrary
-import EventData.Aeson
+import           EventData.Aeson
+import           EventData.Arbitrary
+import           EventData.Context
+import           EventData.Context.Domain
+import           EventData.Core
+import           EventData.Predicate
 

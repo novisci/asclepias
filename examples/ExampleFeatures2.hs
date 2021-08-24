@@ -17,8 +17,8 @@ import           ExampleEvents
 import           Hasklepias
 import           Test.Hspec
 
-durationOfHospitalizedAntibiotics
-  :: (Show a, IntervalSizeable a b) => Events a -> FeatureData [b]
+durationOfHospitalizedAntibiotics ::
+  (Show a, IntervalSizeable a b) => Events a -> FeatureData [b]
 durationOfHospitalizedAntibiotics es | null y = featureDataL $ Other "no cases"
                                      | otherwise = pure $ durations y
  where

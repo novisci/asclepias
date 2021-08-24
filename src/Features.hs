@@ -9,7 +9,8 @@ Maintainer  : bsaul@novisci.com
 -}
 {-# OPTIONS_HADDOCK hide #-}
 
-module Features(
+module Features
+  (
 
   -- ** Defining and evaluating Features
     module Features.Compose
@@ -21,10 +22,10 @@ module Features(
   , module Features.Featureable
   , module Features.Featureset
   , module Features.Output
-) where
+  ) where
 
-import Features.Compose
-import Features.Attributes
-import Features.Featureable
-import Features.Featureset
-import Features.Output
+import           Features.Attributes
+import           Features.Compose
+import           Features.Featureable
+import           Features.Featureset
+import           Features.Output

@@ -10,12 +10,12 @@ Maintainer  : bsaul@novisci.com
 {-# OPTIONS_HADDOCK hide #-}
 -- {-# LANGUAGE Safe #-}
 
-module Stype (
-    module Stype.Numeric
+module Stype
+  ( module Stype.Numeric
   , module Stype.Categorical
   , module Stype.Aeson
-) where 
+  ) where
 
-import Stype.Numeric
-import Stype.Categorical
-import Stype.Aeson
+import           Stype.Aeson
+import           Stype.Categorical
+import           Stype.Numeric

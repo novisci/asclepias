@@ -26,8 +26,9 @@ import Flow                             ( (|>), (.>) )
 import IntervalAlgebra
 import IntervalAlgebra.IntervalUtilities ( combineIntervals )
 import IntervalAlgebra.PairedInterval   ( intervals )
-import Witherable                       ( Witherable )
+import Witherable                       ( Witherable, filter )
 import Data.Eq                          ( Eq )
+import Data.Functor.Contravariant       ( Predicate(..) )
 import Data.Foldable                    (Foldable(..), any)
 import Data.Function                    ( ($), (.) )
 import Data.Functor                     ( Functor(.. ) )
@@ -43,6 +44,7 @@ import EventData                        ( Event
                                         , EnrollmentFacts(..)
                                         , event
                                         , context
+                                        , isEnrollmentEvent
                                         )
 import Features.Compose                 ( Feature
                                         , Definition(..)
@@ -50,9 +52,7 @@ import Features.Compose                 ( Feature
                                         , Eval(..)
                                         , makeFeature )
 import Hasklepias.FeatureEvents         ( allGapsWithinLessThanDuration
-                                        , makeConceptsFilter
-                                        , filterByDomain
-                                        , isEnrollment, lookback )
+                                        )
 import Hasklepias.Templates.TestUtilities
                                         ( makeAssertion
                                         , TemplateTestCase(..) )
@@ -75,14 +75,15 @@ defIsEnrolled ::
   , Monoid (container (Interval a))
   , Applicative container
   , Witherable container) =>
-  Definition
+  Predicate (Event a) -- ^ The predicate to filter to Enrollment events (e.g. 'FeatureEvents.isEnrollment')
+  -> Definition
   (   Feature indexName  (Index i0 a)
    -> Feature eventsName (container (Event a))
    -> Feature varName     Status )
-defIsEnrolled =
+defIsEnrolled predicate =
   define
       (\index ->
-           filterByDomain isEnrollment
+           filter (getPredicate predicate)
         .> combineIntervals
         .> any (concur index)
         .> includeIf
@@ -114,7 +115,7 @@ defIsEnrolledTestCases = [
 
 defIsEnrolledTests :: TestTree
 defIsEnrolledTests = testGroup "Tests of isEnrolled template"
-     ( fmap (\x -> testCase (getTestName x) (makeAssertion x defIsEnrolled) )
+     ( fmap (\x -> testCase (getTestName x) (makeAssertion x (defIsEnrolled isEnrollmentEvent)) )
        defIsEnrolledTestCases )
 
 
@@ -129,13 +130,14 @@ defContinuousEnrollment ::
   , Witherable container
   , IntervalSizeable a b) =>
     (Index i0 a -> AssessmentInterval a) -- ^ function which maps index interval to interval in which to assess enrollment
+  -> Predicate (Event a)  -- ^ The predicate to filter to Enrollment events (e.g. 'FeatureEvents.isEnrollment')
   -> b  -- ^ duration of allowable gap between enrollment intervals
   -> Definition
   (   Feature indexName  (Index i0 a)
    -> Feature eventsName (container (Event a))
    -> Feature prevName    Status
    -> Feature varName     Status )
-defContinuousEnrollment makeAssessmentInterval allowableGap =
+defContinuousEnrollment makeAssessmentInterval predicate allowableGap =
   define
     (\index events prevStatus ->
       case prevStatus of
@@ -144,7 +146,7 @@ defContinuousEnrollment makeAssessmentInterval allowableGap =
           ( allGapsWithinLessThanDuration
                 allowableGap
                 (makeAssessmentInterval index)
-                (combineIntervals $ filterByDomain isEnrollment events))
+                (combineIntervals $ filter (getPredicate predicate) events))
     )
 
 makeContinuousEnrollmentTestInputs :: (IntervalSizeable a b) =>
@@ -212,7 +214,7 @@ defContinuousEnrollmentTestCases = [
 defContinuousEnrollmentTests :: TestTree
 defContinuousEnrollmentTests = testGroup "Tests of continuous enrollment template"
      ( fmap (\x -> testCase (getTestName x) 
-          (makeAssertion x (defContinuousEnrollment (makeBaselineFromIndex 10) 3)) )
+          (makeAssertion x (defContinuousEnrollment (makeBaselineFromIndex 10) isEnrollmentEvent 3)) )
            defContinuousEnrollmentTestCases )
 
 defEnrollmentTests :: TestTree

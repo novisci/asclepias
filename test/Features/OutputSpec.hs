@@ -46,18 +46,22 @@ spec = do
     it "an Int event is parsed correctly" $
        encode (index ex1)  `shouldBe` "{\"end\":10,\"begin\":0}"
 
+    -- TODO: these are failing in CI because the `type' field is sorting to after
+    --       
     it "dummy encodes correctly" $
         encode dummy `shouldBe` 
-        "{\"data\":true,\"name\":\"dummy\",\"type\":\"Bool\",\
+        "{\"data\":true,\"name\":\"dummy\",\
         \\"attrs\":{\"getPurpose\":{\"getTags\":[],\"getRole\":[]},\
         \\"getDerivation\":\"a description\",\
         \\"getLongLabel\":\"longer label...\",\
-        \\"getShortLabel\":\"some Label\"}}"
+        \\"getShortLabel\":\"some Label\"},\
+        \\"type\":\"Bool\"}"
 
     it "dummy2 encodes correctly" $
         encode dummy2 `shouldBe` 
-        "{\"data\":true,\"name\":\"dummy2\",\"type\":\"Bool\",\
+        "{\"data\":true,\"name\":\"dummy2\",\
         \\"attrs\":{\"getPurpose\":{\"getTags\":[],\"getRole\":[]},\
         \\"getDerivation\":\"\",\
         \\"getLongLabel\":\"\",\
-        \\"getShortLabel\":\"\"}}"
+        \\"getShortLabel\":\"\"},\
+        \\"type\":\"Bool\"}"

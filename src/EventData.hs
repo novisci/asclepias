@@ -17,7 +17,9 @@ module EventData
     -- ** Event Domains
   , module EventData.Context.Domain
     -- ** Predicates
-  , module EventData.Predicate
+  , module EventData.Predicates
+    -- ** Accessing data in Events
+  , module EventData.Accessors
     -- ** Parsing Events
   , module EventData.Aeson
     -- ** Generating arbitrary events
@@ -29,5 +31,6 @@ import           EventData.Arbitrary
 import           EventData.Context
 import           EventData.Context.Domain
 import           EventData.Core
-import           EventData.Predicate
+import           EventData.Predicates
+import           EventData.Accessors
 

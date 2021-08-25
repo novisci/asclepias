@@ -31,7 +31,8 @@ library
       EventData.Context.Domain
       EventData.Context.Domain.Demographics
       EventData.Context.Domain.Enrollment
-      EventData.Predicate
+      EventData.Accessors
+      EventData.Predicates
       Features
       Features.Attributes
       Features.Compose
@@ -104,6 +105,7 @@ test-suite hasklepias-test
   other-modules:
       EventDataSpec
       EventData.AesonSpec
+      EventData.AccessorsSpec
       EventData.ContextSpec
       EventData.Context.DomainSpec
       EventData.Context.Domain.DemographicsSpec

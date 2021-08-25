@@ -23,11 +23,6 @@ evnt2 = event ( beginerval (4 :: Int) (2 :: Int) )
 evnts :: [Event Int]
 evnts = [evnt1, evnt2]
 
-evntGender :: Event Int
-evntGender = event ( beginerval (4 :: Int) (2 :: Int) )
-         ( HC.context (Demographics ( DemographicsFacts (DemographicsInfo Gender (Just "F"))))
-           (packConcepts [] ))
-
 spec :: Spec
 spec = do
     it "find first occurrence of c1" $
@@ -44,9 +39,3 @@ spec = do
     it "dayOfMonthFromDay" $
       dayOfMonthFromDay (fromGregorian 2021 8 18) `shouldBe` 18
 
-    it "viewGenders on empty list" $
-      viewGenders [] `shouldBe` []
-    it "viewGenders with no demographic events" $
-      viewGenders evnts `shouldBe` []
-    it "viewGenders with a demographic event" $
-      viewGenders [evntGender] `shouldBe` ["F"]

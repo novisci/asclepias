@@ -30,13 +30,6 @@ module Hasklepias.FeatureEvents(
     , makeConceptsFilter
     , makePairedFilter
 
-    -- ** Functions for working with Event Domains
-    , viewBirthYears
-    , viewGenders
-    , viewStates
-    , previewDemoInfo
-    , previewBirthYear
-
     -- ** Manipulating Dates
     , yearFromDay
     , monthFromDay
@@ -69,7 +62,6 @@ import EventData                            ( Events
                                             , ctxt
                                             , context
                                             , Domain (Demographics) )
-import EventData.Predicate                  
 import EventData.Context                    ( Concept
                                             , Concepts
                                             , Context
@@ -86,11 +78,9 @@ import EventData.Context.Domain             ( Domain(..)
 import Safe                                 ( headMay, lastMay )
 import Control.Applicative                  ( Applicative(liftA2) )
 import Control.Monad                        ( Functor(fmap), (=<<) )
-import Control.Lens                         ( preview, (^.) )
 import Data.Bool                            ( Bool(..), (&&), not, (||) )
 import Data.Either                          ( either )
 import Data.Eq                              ( Eq )
-import Data.Functor.Contravariant           ( Predicate(..) )
 import Data.Foldable                        ( Foldable(length, null)
                                             , all
                                             , any
@@ -108,11 +98,10 @@ import Data.Time.Calendar                   ( Day
                                             , diffDays
                                             , toGregorian )
 import Data.Text                            ( Text )
-import Data.Text.Read                       ( rational )
 import Data.Tuple                           ( fst )
 import Witherable                           ( filter, Filterable, Witherable )
-import GHC.Num                              ( Integer, fromInteger )
-import GHC.Real                             ( RealFrac(floor), (/) )
+import           GHC.Num                        ( Integer, fromInteger )
+import           GHC.Real                       ( RealFrac(floor), (/) )
 
 -- | Is the input list empty? 
 isNotEmpty :: [a] -> Bool
@@ -248,36 +237,6 @@ allGapsWithinLessThanDuration ::
         -> t (i1 a)
         -> Bool
 allGapsWithinLessThanDuration = makeGapsWithinPredicate all (<)
-
--- | Preview demographics information from a domain
-previewDemoInfo :: Domain -> Maybe Text
-previewDemoInfo dmn = (^.demo.info) =<< preview _Demographics dmn
-
--- | Utility for reading text into a maybe integer
-intMayMap :: Text -> Maybe Integer -- TODO: this is ridiculous
-intMayMap x = fmap floor (either (const Nothing) (Just . fst) (Data.Text.Read.rational x))
-
--- | Preview birth year from a domain
-previewBirthYear :: Domain -> Maybe Year
-previewBirthYear dmn = intMayMap =<< previewDemoInfo dmn
-
--- | Returns a (possibly empty) list of birth years from a set of events
-viewBirthYears :: (Witherable f) => f (Event a) -> [Year]
-viewBirthYears x = 
-  mapMaybe (\e -> previewBirthYear =<< Just (ctxt e^.facts )) 
-           (toList $ filter (getPredicate isBirthYearEvent) x)
-
--- | Returns a (possibly empty) list of Gender values from a set of events
-viewGenders :: (Witherable f) => f (Event a) -> [Text]
-viewGenders x = 
-  mapMaybe (\e -> previewDemoInfo =<< Just (ctxt e^.facts )) 
-           (toList $ filter (getPredicate isGenderFactEvent) x)
-
--- | Returns a (possibly empty) list of Gender values from a set of events
-viewStates :: (Witherable f) => f (Event a) -> [Text]
-viewStates x = 
-  mapMaybe (\e -> previewDemoInfo =<< Just (ctxt e^.facts )) 
-          (toList $ filter (getPredicate isStateFactEvent) x)
 
 -- | Compute the "age" in years between two calendar days. The difference between
 --   the days is rounded down.

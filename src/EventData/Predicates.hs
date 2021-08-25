@@ -12,11 +12,12 @@ Maintainer  : bsaul@novisci.com
 {-# LANGUAGE MultiParamTypeClasses #-}
 -- {-# LANGUAGE Safe #-}
 
-module EventData.Predicate
+module EventData.Predicates
   ( isEnrollmentEvent
   , isStateFactEvent
   , isGenderFactEvent
   , isBirthYearEvent
+  , containsConcepts
   , (|||)
   , (&&&)
   ) where
@@ -31,9 +32,11 @@ import           Data.Functor.Contravariant     ( Contravariant(contramap)
                                                 )
 import           Data.Maybe                     ( Maybe )
 import           Data.Ord                       ( Ord )
+import           Data.Text                      ( Text )
 import           EventData.Context              ( Concepts
                                                 , Context(..)
                                                 , Source
+                                                , hasConcepts
                                                 )
 import           EventData.Context.Domain       ( Domain(..) )
 import           EventData.Context.Domain.Demographics
@@ -122,3 +125,7 @@ isStateFact _ = False
 -- | Predicate for events containing  State facts
 isStateFactEvent :: Predicate (Event a)
 isStateFactEvent = liftToEventPredicate (Predicate isStateFact)
+
+-- | Creates a predicate to check that an 'Event' contains a set of 'Concept's. 
+containsConcepts :: [Text] -> Predicate (Event a)
+containsConcepts cpt = Predicate (`hasConcepts` cpt)

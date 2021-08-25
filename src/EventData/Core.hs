@@ -12,42 +12,46 @@ Maintainer  : bsaul@novisci.com
 {-# LANGUAGE FlexibleInstances #-}
 -- {-# LANGUAGE Safe #-}
 
-module EventData.Core(
+module EventData.Core
+  ( Event
+  , Events
+  , ConceptEvent
+  , event
+  , ctxt
+  , toConceptEvent
+  , toConceptEventOf
+  , mkConceptEvent
+  ) where
 
-   Event
- , Events
- , ConceptEvent
- , event
- , ctxt
- , toConceptEvent
- , toConceptEventOf
- , mkConceptEvent
-) where
-
-import GHC.Show                         ( Show(show) )
-import Data.Function                    ( ($) )
-import Data.Set                         ( member, fromList, intersection )
-import Data.Ord                         ( Ord )
-import IntervalAlgebra                  ( Interval
-                                        , Intervallic
-                                        , Intervallic (getInterval) )
-import IntervalAlgebra.PairedInterval   ( PairedInterval
-                                        , makePairedInterval
-                                        , getPairData )
-import EventData.Context                ( HasConcept(..)
-                                        , Concepts
-                                        , Concept
-                                        , packConcept
-                                        , Context(..)
-                                        , getConcepts
-                                        , toConcepts )
+import           Data.Function                  ( ($) )
+import           Data.Ord                       ( Ord )
+import           Data.Set                       ( fromList
+                                                , intersection
+                                                , member
+                                                )
+import           EventData.Context              ( Concept
+                                                , Concepts
+                                                , Context(..)
+                                                , HasConcept(..)
+                                                , getConcepts
+                                                , packConcept
+                                                , toConcepts
+                                                )
+import           GHC.Show                       ( Show(show) )
+import           IntervalAlgebra                ( Interval
+                                                , Intervallic(getInterval)
+                                                )
+import           IntervalAlgebra.PairedInterval ( PairedInterval
+                                                , getPairData
+                                                , makePairedInterval
+                                                )
 
 
 -- | An Event @a@ is simply a pair @(Interval a, Context)@.
 type Event a = PairedInterval Context a
 
 instance HasConcept (Event a) where
-    hasConcept x y = ctxt x `hasConcept` y
+  hasConcept x y = ctxt x `hasConcept` y
 
 -- | A smart constructor for 'Event a's.
 event :: Interval a -> Context -> Event a
@@ -61,7 +65,8 @@ ctxt = getPairData
 type ConceptEvent a = PairedInterval Concepts a
 
 instance HasConcept (ConceptEvent a) where
-    hasConcept e concept = member (packConcept concept) (getConcepts $ getPairData e)
+  hasConcept e concept =
+    member (packConcept concept) (getConcepts $ getPairData e)
 
 -- | Drops an @Event@ to a @ConceptEvent@ by moving the concepts in the data
 --   position in the paired interval and throwing out the facts and source.
@@ -72,10 +77,9 @@ toConceptEvent e = makePairedInterval (_concepts $ ctxt e) (getInterval e)
 -- of the list of Concepts in the first argument and any Concepts in the @'Event'@.
 -- This is a way to keep only the concepts you want in an event.
 toConceptEventOf :: (Show a, Ord a) => [Concept] -> Event a -> ConceptEvent a
-toConceptEventOf cpts e =
-    makePairedInterval
-        (toConcepts $ intersection (fromList cpts) (getConcepts $ _concepts $ ctxt e))
-        (getInterval e)
+toConceptEventOf cpts e = makePairedInterval
+  (toConcepts $ intersection (fromList cpts) (getConcepts $ _concepts $ ctxt e))
+  (getInterval e)
 
 -- | Create a new @'ConceptEvent'@.
 mkConceptEvent :: (Show a, Ord a) => Interval a -> Concepts -> ConceptEvent a

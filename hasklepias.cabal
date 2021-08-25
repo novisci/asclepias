@@ -57,6 +57,7 @@ library
       Hasklepias.Templates.Tests
       Hasklepias.Templates.TestUtilities
       Hasklepias.Templates.Features.Enrollment
+      Hasklepias.Templates.Features.NsatisfyP
       Stype
       Stype.Aeson
       Stype.Numeric

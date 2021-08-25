@@ -19,6 +19,9 @@ module Hasklepias.Templates.Tests (
 
 import Test.Tasty                               ( testGroup, TestTree )                       
 import Hasklepias.Templates.Features.Enrollment ( defEnrollmentTests )
+import Hasklepias.Templates.Features.NsatisfyP  ( defNsatisfyPTests )
 
 templateTests :: TestTree
-templateTests = testGroup "tests of feature templates" [defEnrollmentTests]
+templateTests = testGroup "tests of feature templates" 
+   [ defEnrollmentTests
+   , defNsatisfyPTests ]

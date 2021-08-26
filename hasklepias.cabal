@@ -94,6 +94,7 @@ library
     , tasty-hunit == 0.10.0.3
     , text == 1.2.4.1
     , time >= 1.11
+    , tuple == 0.3.0.2
     , QuickCheck
     , unordered-containers == 0.2.14.0
     , vector == 0.12.2.0

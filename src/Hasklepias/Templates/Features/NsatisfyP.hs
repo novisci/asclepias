@@ -9,96 +9,24 @@ Maintainer  : bsaul@novisci.com
 {-# OPTIONS_HADDOCK hide #-}
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DataKinds #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE TypeApplications #-}
 
 module Hasklepias.Templates.Features.NsatisfyP
   ( buildNofX
   , buildNsatisfyPTests
   ) where
 
-import           Control.Applicative            ( Applicative(..) )
-import           GHC.Int                        ( Int )
-import           GHC.Natural                    ( Natural
-                                                , naturalToInt
-                                                )
-
-import           Data.Bool                      ( Bool(..) )
-import           Data.Eq                        ( Eq )
-import           Data.Foldable                  ( Foldable(..)
-                                                , any
-                                                , length
-                                                )
-import           Data.Function                  ( ($)
-                                                , (.)
-                                                , id
-                                                )
-import           Data.Functor                   ( Functor(..) )
-import           Data.Functor.Contravariant     ( Predicate(..) )
-import           Data.Maybe                     ( Maybe
-                                                , fromMaybe
-                                                , maybe
-                                                )
-import           Data.Monoid                    ( Monoid(..) )
-import           Data.Ord                       ( Ord(..) )
-import           Data.Text                      ( Text )
-import           Data.Traversable               ( Traversable )
-import           Data.Tuple                     ( uncurry )
-import           Flow                           ( (.>)
-                                                , (|>)
-                                                )
-import           GHC.Show                       ( Show )
-import           GHC.TypeLits                   ( KnownSymbol )
-import           IntervalAlgebra
-import           IntervalAlgebra.IntervalUtilities
-                                                -- ( combineIntervals )
-import           IntervalAlgebra.PairedInterval ( intervals )
-import           Test.Tasty                     ( TestName
-                                                , TestTree
-                                                , testGroup
-                                                )
-import           Test.Tasty.HUnit               ( testCase )
-import           Witherable                     ( Witherable
-                                                , filter
-                                                )
-
-import           Cohort.Index                   ( Index
-                                                , makeIndex
-                                                )
-import           EventData                      ( Domain(..)
-                                                , EnrollmentFacts(..)
-                                                , Event
-                                                , context
-                                                , event
-                                                , isEnrollmentEvent
-                                                , packConcepts
-                                                )
-import           EventData.Predicates
-import           Features.Compose               ( Define(..)
-                                                , Definition(..)
-                                                , Eval(..)
-                                                , Feature
-                                                , makeFeature
-                                                )
-import           Hasklepias.FeatureEvents       ( allGapsWithinLessThanDuration
-                                                )
+import           Cohort
+import           EventData                  
+import           Features
 import           Hasklepias.Misc                ( F )
+import           Hasklepias.FeatureEvents
 import           Hasklepias.Templates.TestUtilities
-                                                ( TemplateTestCase(..)
-                                                , makeAssertion
-                                                )
+import           Hasklepias.Reexports
+import           Hasklepias.ReexportsUnsafe
 
-import           Cohort.AssessmentIntervals     ( AssessmentInterval
-                                                , Baseline
-                                                , makeBaselineFromIndex
-                                                )
-import           Cohort.Criteria                ( Status(..)
-                                                , includeIf
-                                                )
-import           IntervalAlgebra.IntervalUtilities
-                                                ( gaps )
+{-|
+-}
 
 buildNofXBase
   :: (Intervallic i0 a, Intervallic i1 a, Witherable container)
@@ -112,13 +40,12 @@ buildNofXBase
        -> Feature eventsName (container (Event a))
        -> Feature varName outputType
        )
-buildNofXBase post process makeAssessmentInterval relation predicate = 
-  define
-    (\index ->
-      filter (relation (makeAssessmentInterval index) &&& getPredicate predicate)
-        .> process
-        .> post
-    )
+buildNofXBase post process makeAssessmentInterval relation predicate = define
+  (\index ->
+    filter (relation (makeAssessmentInterval index) &&& getPredicate predicate)
+      .> process
+      .> post
+  )
 
 {-| Do N events relating to the 'AssessmentInterval' in some way the satisfy 
     the given predicate? 
@@ -136,6 +63,95 @@ buildNofX
        )
 buildNofX n = buildNofXBase (\x -> length x >= naturalToInt n) id
 
+type NofXArgs
+  = ( Natural
+    , Index Interval Int -> AssessmentInterval Int
+    , ComparativePredicateOf2 (AssessmentInterval Int) (Event Int)
+    , Predicate (Event Int)
+    )
+
+makeTestInputs
+  :: (Integral b, IntervalSizeable a b)
+  => TestName
+  -> bargs 
+  -> (a, a)
+  -> [Event a]
+  -> Bool
+  -> TestCase
+       (F "index" (Index Interval a), F "events" [Event a])
+       Bool
+       bargs
+makeTestInputs name buildArgs intrvl e b = MkTestCase
+  buildArgs
+  name
+  (pure (makeIndex (readIntervalSafe intrvl)), pure e)
+  (pure b)
+
+type NofXTestCase
+  = TestCase
+      (F "index" (Index Interval Int), F "events" [Event Int])
+      Bool
+      NofXArgs
+
+buildNofXTestCases :: [NofXTestCase]
+buildNofXTestCases =
+  [ f "False if no events"
+      (1, makeBaselineFromIndex 10, concur, isEnrollmentEvent)
+      (0, 1)
+      []
+      False
+  , f
+    "False if 1 event after index but looking for single event concurring with baseline"
+    (1, makeBaselineFromIndex 10, concur, isEnrollmentEvent)
+    (0, 1)
+    [g (2, 7)]
+    False
+  , f
+    "True if 1 event before index and looking for single event concurring with baseline"
+    (1, makeBaselineFromIndex 10, concur, containsConcepts ["A"])
+    (0, 1)
+    [h ["A", "B"] (-5, -4)]
+    True
+  , f
+    "True if 2 events before index and looking for at least 2 events concurring with baseline"
+    (2, makeBaselineFromIndex 10, concur, containsConcepts ["A"])
+    (0, 1)
+    [h ["A", "B"] (-5, -4), h ["A", "C"] (-3, -2)]
+    True
+  , f
+    "True if 3 events before index and looking for at least 2 events concurring with baseline"
+    (2, makeBaselineFromIndex 10, concur, containsConcepts ["A"])
+    (0, 1)
+    [h ["A", "B"] (-7, -6), h ["A", "B"] (-5, -4), h ["A", "C"] (-3, -2)]
+    True
+  , f
+    "True if 2 events of same interval before index and looking for at least 2 events concurring with baseline"
+    (2, makeBaselineFromIndex 10, concur, containsConcepts ["A"])
+    (0, 1)
+    [h ["A"] (-5, -4), h ["A", "B"] (-5, -4)]
+    True
+  , f
+    "False if 1 event before index and looking for at least 2 events concurring with baseline"
+    (2, makeBaselineFromIndex 10, concur, containsConcepts ["A"])
+    (0, 1)
+    [h ["A", "C"] (-3, -2)]
+    False
+  ] where
+  f = makeTestInputs
+  g = makeEnrollmentEvent
+  h = makeEventWithConcepts
+
+buildNofXTests :: TestTree
+buildNofXTests = testGroup
+  "Tests of NofX template"
+  (fmap
+    (\x -> testCase (getTestName x)
+                    (makeAssertion x (uncurryN buildNofX (getBuilderArgs x)))
+    )
+    buildNofXTestCases
+  )
+
+
 getIntervalGaps
   :: ( Ord a
      , Applicative container
@@ -147,16 +163,19 @@ getIntervalGaps
   -> container (Interval a)
 getIntervalGaps es = fromMaybe mempty (gaps (fmap getInterval es))
 
+
+
 {-| Do N events relating to the 'AssessmentInterval' in some way with at least
     a given gap between them the satisfy the given predicate? 
 -}
 buildNofXWithGap
   :: ( Intervallic i0 a
      , IntervalSizeable a b
+     , IntervalCombinable i0 a
      , Witherable t
      , Applicative t
-     , Monoid (t (Maybe (Interval a)))
-     , Monoid (t (Interval a))
+    --  , Monoid (t (Maybe (Interval a)))
+    --  , Monoid (t (Interval a))
      )
   => Natural
   -> b
@@ -169,8 +188,128 @@ buildNofXWithGap
        -> Feature varName Bool
        )
 buildNofXWithGap n allowableGap = buildNofXBase
-  (\x -> length x >= naturalToInt n)
-  (filter (\i -> duration i > allowableGap) . getIntervalGaps)
+  (   toList
+   .> fmap getInterval
+   .> pairGaps
+   .> catMaybes
+   .> filter (\d -> d > allowableGap) 
+   .> \x -> length x >= naturalToInt n)
+  (id)
+
+type NofXWithGapArgs
+  = ( Natural
+    , Int
+    , Index Interval Int -> AssessmentInterval Int
+    , ComparativePredicateOf2 (AssessmentInterval Int) (Event Int)
+    , Predicate (Event Int)
+    )
+
+type NofXWithGapTestCase
+  = TestCase
+      (F "index" (Index Interval Int), F "events" [Event Int])
+      Bool
+      NofXWithGapArgs
+
+buildNofXWithGapTestCases :: [NofXWithGapTestCase]
+buildNofXWithGapTestCases =
+  [ f "True if looking for no events and there are no events"
+      (0, 3, makeBaselineFromIndex 10, concur, isEnrollmentEvent)
+      (10, 11)
+      []
+      True
+      {-
+                   -          <- Index
+         ----------           <- Baseline
+                              <- Enrollment
+        |--------------|
+      -}
+    , f "False if looking for no events and there are events satisfying gap condition"
+      (0, 3, makeBaselineFromIndex 10, concur, isEnrollmentEvent)
+      (10, 11)
+      [g (1, 2), g (8, 9)]
+      False
+      {-
+                   -          <- Index
+         ----------           <- Baseline
+         -       -            <- Enrollment
+        |--------------|
+      -}
+   , f "False if no events and looking for 1"
+      (1, 3, makeBaselineFromIndex 10, concur, isEnrollmentEvent)
+      (10, 11)
+      []
+      False
+      {-
+                   -          <- Index
+         ----------           <- Baseline
+                              <- Enrollment
+        |--------------|
+      -}
+   , f "False if a single event and looking for gap"
+      (1, 3, makeBaselineFromIndex 10, concur, isEnrollmentEvent)
+      (10, 11)
+      [g (8, 9)]
+      False
+      {-
+                   -          <- Index
+         ----------           <- Baseline
+                 -            <- Enrollment
+        |--------------|
+      -}
+  , f
+    "False if 2 events but not satisfying gap condition"
+    (1, 3, makeBaselineFromIndex 10, concur, isEnrollmentEvent)
+    (10, 11)
+    [g (6, 7), g (8, 9)]
+    False
+      {-
+                   -          <- Index
+         ----------           <- Baseline
+               - -            <- Enrollment
+        |--------------|
+      -}
+  , f
+    "True if 2 events satisfy gap condition"
+    (1, 3, makeBaselineFromIndex 10, concur, containsConcepts ["A"])
+    (10, 11)
+    [h ["C", "A"] (2, 3), h ["A", "B"] (8, 9)]
+    True
+      {-
+                   -          <- Index
+         ----------           <- Baseline
+          -                   <- ["C", "A"]
+                 -            <- ["A", "B"] 
+        |--------------|
+      -}
+  , f
+    "True if 2 events satisfy gap condition "
+    (1, 3, makeBaselineFromIndex 10, concur, containsConcepts ["A"])
+    (10, 11)
+    [h ["C", "A"] (2, 3), h ["D", "E"] (5, 6), h ["A", "B"] (8, 9)]
+    True
+      {-
+                   -          <- Index
+         ----------           <- Baseline
+          -                   <- ["C", "A"]
+              -               <- ["D", "E"]
+                 -            <- ["A", "B"] 
+        |--------------|
+      -}
+  ] where
+  f = makeTestInputs
+  g = makeEnrollmentEvent
+  h = makeEventWithConcepts
+
+buildNofXWithGapTests :: TestTree
+buildNofXWithGapTests = testGroup
+  "Tests of NofXWithGap template"
+  (fmap
+    (\x -> testCase (getTestName x)
+                    (makeAssertion x (uncurryN buildNofXWithGap (getBuilderArgs x)))
+    )
+    buildNofXWithGapTestCases
+  )
+
 
 {-| Do N events concurring with baseline of a given duration satisfy the given
     predicate? 
@@ -204,80 +343,9 @@ buildNofConceptsConcurBaseline
 buildNofConceptsConcurBaseline n baselineDur cpts =
   buildNofX n (makeBaselineFromIndex baselineDur) concur (containsConcepts cpts)
 
-makeNofXTestInputs
-  :: (IntervalSizeable a b)
-  => TestName
-  -> b
-  -> a
-  -> [Event a]
-  -> Bool
-  -> TemplateTestCase
-       (F "index" (Index Interval a), F "events" [Event a])
-       Bool
-makeNofXTestInputs name dur bgn e b = MkTemplateTestCase
-  name
-  (pure (makeIndex $ beginerval dur bgn), pure e)
-  (pure b)
-
-makeDummyEvent :: (IntervalSizeable a b) => b -> a -> Event a
-makeDummyEvent dur bgn =
-  event (beginerval dur bgn) (context (Enrollment (EnrollmentFacts ())) mempty)
-
-makeEventWithConcepts :: (IntervalSizeable a b) => [Text] -> b -> a -> Event a
-makeEventWithConcepts cpts dur bgn = event
-  (beginerval dur bgn)
-  (context (Enrollment (EnrollmentFacts ())) (packConcepts cpts))
-
-type NofXArgs
-  = ( Natural
-    , Index Interval Int -> AssessmentInterval Int
-    , ComparativePredicateOf2 (AssessmentInterval Int) (Event Int)
-    , Predicate (Event Int)
-    )
-type NofXTestCase
-  = TemplateTestCase
-      (F "index" (Index Interval Int), F "events" [Event Int])
-      Bool
-
-buildNofXTestCases :: [(NofXTestCase, NofXArgs)]
-buildNofXTestCases =
-  [ ( f "False if no events" 1 (0 :: Int) [] False
-    , (1, makeBaselineFromIndex 10, concur, isEnrollmentEvent)
-    )
-  , ( f
-      "False if 1 event after index but looking for single event concurring with baseline"
-      1
-      (0 :: Int)
-      [g 5 2]
-      False
-    , (1, makeBaselineFromIndex 10, concur, isEnrollmentEvent)
-    )
-  , ( f
-      "True if 1 event before index and looking for single event concurring with baseline"
-      1
-      (0 :: Int)
-      [h ["A", "B"] 1 (-5)]
-      True
-    , (1, makeBaselineFromIndex 10, concur, containsConcepts ["A"])
-    )
-    -- , f "1 event after index, 1 before index" 1 (0::Int) [g 1 (-2), g 5 2]
-    -- , f "1 event after index, 2 before index but equal" 1 (0::Int) [g 2 (-1), g 2 (-1), g 5 1]
-    -- , f "1 event after index, 2 before index" 1 (0::Int) [g 2 (-5), g 2 (-1), g 5 1]
-  ] where
-  f = makeNofXTestInputs
-  g = makeDummyEvent
-  h = makeEventWithConcepts
-
-buildNofXTests :: TestTree
-buildNofXTests = testGroup
-  "Tests of NofX template"
-  (fmap
-    (\(x, (a, b, c, d)) ->
-      testCase (getTestName x) (makeAssertion x (buildNofX a b c d))
-    )
-    buildNofXTestCases
-  )
-
 buildNsatisfyPTests :: TestTree
-buildNsatisfyPTests = testGroup "NsatisfyP" 
-  [buildNofXTests]
+buildNsatisfyPTests = 
+  testGroup 
+    "NsatisfyP" 
+    [ buildNofXTests
+    , buildNofXWithGapTests ]

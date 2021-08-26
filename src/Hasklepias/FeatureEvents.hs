@@ -10,6 +10,7 @@ Provides functions used in defining @'Features.Feature'@ from
 -}
 {-# OPTIONS_HADDOCK hide #-}
 {-# LANGUAGE NoImplicitPrelude #-}
+{-# LANGUAGE TupleSections #-}
 
 module Hasklepias.FeatureEvents(
     -- ** Container predicates
@@ -41,6 +42,7 @@ module Hasklepias.FeatureEvents(
 
     -- ** Misc functions
     , computeAgeAt
+    , pairGaps
 ) where
 
 
@@ -49,7 +51,7 @@ import IntervalAlgebra                      ( Intervallic
                                             , ComparativePredicateOf1
                                             , ComparativePredicateOf2
                                             , Interval
-                                            , IntervalCombinable
+                                            , IntervalCombinable(..)
                                             , begin
                                             , end
                                             , beginerval
@@ -89,7 +91,7 @@ import Data.Function                        ( (.), ($), const )
 import Data.Functor                         ( Functor(fmap) )
 import Data.Int                             ( Int )
 import Data.Maybe                           ( Maybe(..), maybe, mapMaybe )
-import Data.Monoid                          ( Monoid )
+import Data.Monoid                          ( Monoid(..), (<>) )
 import Data.Ord                             ( Ord(..) )
 import Data.Time.Calendar                   ( Day
                                             , Year
@@ -98,7 +100,7 @@ import Data.Time.Calendar                   ( Day
                                             , diffDays
                                             , toGregorian )
 import Data.Text                            ( Text )
-import Data.Tuple                           ( fst )
+import Data.Tuple                           ( fst, uncurry )
 import Witherable                           ( filter, Filterable, Witherable )
 import           GHC.Num                        ( Integer, fromInteger )
 import           GHC.Real                       ( RealFrac(floor), (/) )
@@ -171,8 +173,15 @@ makePairedFilter :: Ord a =>
 makePairedFilter fi i fc = filter (makePairPredicate fi i fc)
 
 -- | Generate all pair-wise combinations from two lists.
-allPairs :: [a] -> [b] -> [(a, b)]
+allPairs :: Applicative f => f a  -> f b -> f (a, b) 
 allPairs = liftA2 (,)
+
+-- | Generate all pair-wise combinations from a single lists
+pairs :: [a]  -> [(a,a)] 
+pairs = go
+  where
+    go []     = []
+    go (x:xs) = fmap (x,) xs <> go xs
 
 -- | Split an @Events a@ into a pair of @Events a@. The first element contains
 --   events have any of the concepts in the first argument, similarly for the
@@ -185,6 +194,10 @@ splitByConcepts ::
     -> (f (Event a), f (Event a))
 splitByConcepts c1 c2 es = ( filter (`hasConcepts` c1) es
                            , filter (`hasConcepts` c2) es)
+
+-- | 
+pairGaps :: (Intervallic i a, IntervalSizeable a b, IntervalCombinable i a) =>  [(i a)] -> [(Maybe b)]
+pairGaps es = fmap ((fmap duration) . uncurry (><)) (pairs es) 
 
 -- | Create a predicate function that checks whether within a provided spanning
 --   interval, are there (e.g. any, all) gaps of (e.g. <, <=, >=, >) a specified

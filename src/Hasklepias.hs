@@ -26,7 +26,7 @@ module Hasklepias
   , module Hasklepias.FeatureEvents
   , module Hasklepias.Misc
 
-    -- ** Feature definition templates
+    -- ** Feature definition builders 
   , module Hasklepias.Templates
 
     -- * Specifying and building cohorts

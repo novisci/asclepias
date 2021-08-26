@@ -9,19 +9,18 @@ These functions may be moved to more appropriate modules in future versions.
 -}
 {-# OPTIONS_HADDOCK hide #-}
 {-# LANGUAGE NoImplicitPrelude #-}
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE FlexibleContexts #-}
 
 module Hasklepias.Templates.Tests (
    templateTests
 ) where
 
 import Test.Tasty                               ( testGroup, TestTree )                       
-import Hasklepias.Templates.Features.Enrollment ( defEnrollmentTests )
+import Hasklepias.Templates.Features.Enrollment ( buildEnrollmentTests )
 import Hasklepias.Templates.Features.NsatisfyP  ( buildNsatisfyPTests )
 
 templateTests :: TestTree
-templateTests = testGroup "tests of feature templates" 
-   [ defEnrollmentTests
-   , buildNsatisfyPTests ]
+templateTests = 
+   testGroup 
+      "tests of feature templates" 
+      [ buildEnrollmentTests
+      , buildNsatisfyPTests ]

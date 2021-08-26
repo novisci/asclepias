@@ -9,8 +9,12 @@ Maintainer  : bsaul@novisci.com
 {-# LANGUAGE NoImplicitPrelude #-}
 
 module Hasklepias.Templates.Features (
-   module Hasklepias.Templates.Features.Enrollment
-
+     module Hasklepias.Templates.Features.Enrollment
+   , module Hasklepias.Templates.Features.NsatisfyP
 ) where
 
-import Hasklepias.Templates.Features.Enrollment (defIsEnrolled, defContinuousEnrollment)
+import Hasklepias.Templates.Features.Enrollment
+    ( buildIsEnrolled,
+      buildContinuousEnrollment,
+    )
+import Hasklepias.Templates.Features.NsatisfyP (buildNofX)

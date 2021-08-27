@@ -30,12 +30,13 @@ data MaybeCensored a where
   Uncensored :: a -> MaybeCensored a
   deriving( Eq, Show, Ord, Generic )
 
+-- | A type to hold a reason that interval fails to parse.
 newtype ParseIntervalError = ParseIntervalError Text
   deriving ( Eq, Show)
 
 -- | A class to censor data
 class (Ord a, Show a) => Censorable a where
-
+ 
   parseIntervalCensor :: a -> a -> Either ParseIntervalError (MaybeCensored a)
   parseIntervalCensor x y
     | x < y = Right $ IntervalCensored x y

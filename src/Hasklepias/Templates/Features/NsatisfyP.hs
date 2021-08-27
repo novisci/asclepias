@@ -10,17 +10,19 @@ Maintainer  : bsaul@novisci.com
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE TupleSections #-}
 
 module Hasklepias.Templates.Features.NsatisfyP
-  ( buildNofX
+  ( buildNsatisfyPTests
+  , buildNofX
   , buildNofXBool
   , buildNofXBinary
   , buildNofXBinaryConcurBaseline
   , buildNofConceptsBinaryConcurBaseline
-  , buildNsatisfyPTests
   , buildNofXWithGap
   , buildNofXWithGapBool
   , buildNofXWithGapBinary
+  , buildNofUniqueBegins
   ) where
 
 import           Cohort
@@ -37,7 +39,7 @@ import           Stype
 -- | All the buildNSatisfyP tests.
 buildNsatisfyPTests :: TestTree
 buildNsatisfyPTests =
-  testGroup "NsatisfyP" [buildNofXTests, buildNofXWithGapTests]
+  testGroup "NsatisfyP" [buildNofXTests, buildNofXWithGapTests, buildNofUniqueBeginsTests]
 
 {-|
 -}
@@ -49,7 +51,7 @@ buildNofXBase
      )
   => (container0 (Event a) -> container1 (i1 a)) -- ^ function mapping a container of events to a container of intervallic intervals (which could be events!)
   -> (container1 (i1 a) -> t) -- ^ function mapping the processed events to an intermediate type
-  -> (t -> outputType) -- ^ function casting intermediate type to output type
+  -> (AssessmentInterval a -> t -> outputType) -- ^ function casting intermediate type to output type with the option to use the assessment interval
   -> (Index i0 a -> AssessmentInterval a) -- ^ function which maps index interval to interval in which to assess the feature
   -> ComparativePredicateOf2 (AssessmentInterval a) (Event a) -- ^ the interval relation of the input events to the assessment interval
   -> Predicate (Event a) -- ^ The predicate to filter to Enrollment events (e.g. 'FeatureEvents.isEnrollment')
@@ -71,7 +73,7 @@ buildNofXBase runProcess runPostProcess runCast makeAssessmentInterval relation 
       -- run the post processing function
         .> runPostProcess
       -- run the casting function
-        .> runCast
+        .> runCast (makeAssessmentInterval index)
     )
 
 {-| Do N events relating to the 'AssessmentInterval' in some way the satisfy 
@@ -89,7 +91,7 @@ buildNofX
        -> Feature eventsName (container (Event a))
        -> Feature varName outputType
        )
-buildNofX f n = buildNofXBase id (\x -> length x >= naturalToInt n) f
+buildNofX f n = buildNofXBase id (\x -> length x >= naturalToInt n) (const f)
 
 -- | 'buildNofX' specialized to return 'Bool'.
 buildNofXBool
@@ -175,10 +177,10 @@ makeTestInputs
   -> bargs
   -> (a, a)
   -> [Event a]
-  -> Bool
+  -> returnType 
   -> TestCase
        (F "index" (Index Interval a), F "events" [Event a])
-       Bool
+       returnType
        bargs
 makeTestInputs name buildArgs intrvl e b = MkTestCase
   buildArgs
@@ -274,11 +276,11 @@ buildNofXWithGap
        )
 buildNofXWithGap cast nGaps allowableGap = buildNofXBase
   (-- just need the intervals  
-   fmap getInterval
+     fmap getInterval
    -- pairGaps needs List input as the container type
-                    .> toList)
+    .> toList)
   (-- get (Maybe) durations of interval gaps between all pairs
-     pairGaps
+    pairGaps
    -- throw away any non-gaps
   .> catMaybes
    -- keep only those gap durations at least the allowableGap
@@ -286,7 +288,7 @@ buildNofXWithGap cast nGaps allowableGap = buildNofXBase
    -- are there at least as many events as desired?
   .> \x -> length x >= naturalToInt nGaps
   )
-  cast
+  (const cast)
 
 -- | 'buildNofXWithGap' specialized to return 'Bool'. 
 buildNofXWithGapBool
@@ -473,4 +475,111 @@ buildNofXWithGapTests = testGroup
       (makeAssertion x (uncurryN buildNofXWithGapBool (getBuilderArgs x)))
     )
     buildNofXWithGapTestCases
+  )
+
+
+{-
+-}
+
+{-| Do N events relating to the 'AssessmentInterval' in some way the satisfy 
+    the given predicate? 
+-}
+buildNofUniqueBegins
+  :: (Intervallic i a, IntervalSizeable a b, Witherable container)
+  => (Index i a -> AssessmentInterval a) -- ^ function to transform a 'Cohort.Index' to an 'Cohort.AssessmentInterval'
+  -> ComparativePredicateOf2 (AssessmentInterval a) (Event a) -- ^ interval predicate
+  -> Predicate (Event a) -- ^ a predicate on events
+  -> Definition
+       (  Feature indexName (Index i a)
+       -> Feature eventsName (container (Event a))
+       -> Feature varName [(EventTime b, Count)]
+       )
+buildNofUniqueBegins = buildNofXBase 
+  ( fmap (momentize . getInterval) )
+  (  fmap (, 1 :: Natural)
+  .> toList
+  .> mapFromList
+  .> mapToList
+  .> \x -> uncurry zip (fmap (scanl1 (+)) (unzip x)) 
+  ) 
+  (\window ->
+    fmap (\i -> (mkEventTime $ Just (diff (begin (fst i)) (begin window)), Count (snd i)))  
+  )
+
+type NofUniqueBeginsArgs
+  = ( Index Interval Int -> AssessmentInterval Int
+    , ComparativePredicateOf2 (AssessmentInterval Int) (Event Int)
+    , Predicate (Event Int)
+    )
+
+type NofUniqueBeginsTestCase
+  = TestCase
+      (F "index" (Index Interval Int), F "events" [Event Int])
+      [(EventTime Int, Count)]
+      NofUniqueBeginsArgs
+
+buildNofUniqueBeginsTestCases :: [NofUniqueBeginsTestCase]
+buildNofUniqueBeginsTestCases =
+  [ f "empty input"
+      (makeFollowupFromIndex 10, concur, isEnrollmentEvent)
+      (0, 1)
+      []
+      [] 
+      {-
+         -                    <- Index
+         ----------           <- Baseline
+
+        |--------------|
+      -}
+  , f "2 results if 2 different begins"
+      (makeFollowupFromIndex 10, concur, containsConcepts ["A"])
+      (0, 1)
+      [h ["A"] (2, 5), h ["A"] (4, 5)]
+      [(mkEventTime (Just 2), 1), (mkEventTime (Just 4), 2)] 
+      {-
+         -                    <- Index
+         ----------           <- Followup
+           ---                <- "A"
+             _                <- "A"
+        |--------------|
+      -}
+  , f "2 results when multiple begins at same time"
+      (makeFollowupFromIndex 10, concur, containsConcepts ["A"])
+      (0, 1)
+      [h ["A"] (2, 3),h ["A"] (2, 5), h ["A"] (4, 5)]
+      [(mkEventTime (Just 2), 1), (mkEventTime (Just 4), 2)] 
+      {-
+         -                    <- Index
+         ----------           <- Followup 
+           -                  <- "A"
+           ---                <- "A"
+             -                <- "A"
+        |--------------|
+      -}
+  , f "1 result based on predicate filter"
+      (makeFollowupFromIndex 10, concur, containsConcepts ["A"])
+      (0, 1)
+      [h ["B"] (2, 3),h ["B"] (2, 5), h ["A"] (4, 5)]
+      [(mkEventTime (Just 4), 1)] 
+      {-
+         -                    <- Index
+         ----------           <- Followup 
+           -                  <- "B"
+           ---                <- "B"
+             -                <- "A"
+        |--------------|
+      -}
+  ] where
+  f = makeTestInputs
+  h = makeEventWithConcepts
+
+buildNofUniqueBeginsTests :: TestTree
+buildNofUniqueBeginsTests = testGroup
+  "Tests ofNofUniqueBegins template"
+  (fmap
+    (\x -> testCase
+      (getTestName x)
+      (makeAssertion x (uncurryN buildNofUniqueBegins (getBuilderArgs x)))
+    )
+    buildNofUniqueBeginsTestCases
   )

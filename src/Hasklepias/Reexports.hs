@@ -31,11 +31,13 @@ module Hasklepias.Reexports (
     , module Data.Function
     , module Data.List
     , module Data.List.NonEmpty
+    , module M
     , module Data.Ord
     , module Data.Proxy
     , module Set
     , module Data.Time.Calendar 
     , module Data.Text
+    , module Data.Traversable 
     , module Data.Tuple
     , module Data.Tuple.Curry
 
@@ -46,6 +48,9 @@ module Hasklepias.Reexports (
     , module Safe
     , module Flow
     , module Witherable
+    , setFromList 
+    , mapFromList
+    , mapToList
 ) where
 
 import safe GHC.Num                         ( Integer(..)
@@ -73,7 +78,8 @@ import safe Data.Either                     ( Either(..))
 import safe Data.Eq                         ( Eq, (==))
 import safe Data.Foldable                   ( Foldable(..)
                                             , minimum
-                                            , maximum )
+                                            , maximum
+                                             )
 import safe Data.Functor.Contravariant      ( Contravariant(contramap)
                                             , Predicate(..) )
 import safe Data.Function                   ( (.), ($), const, id, flip )
@@ -83,12 +89,20 @@ import safe Data.List                       ( all
                                             , map
                                             , length
                                             , null
+                                            , zip
                                             , zipWith
+                                            , unzip
                                             , replicate
                                             , transpose
                                             , sort
-                                            , (++) )
+                                            , (++)
+                                            , scanl1
+                                            , scanl' )
 import safe Data.List.NonEmpty              ( NonEmpty(..) )
+import safe qualified Data.Map.Strict as M  ( Map(..)
+                                            , toList
+                                            , fromList
+                                            , fromListWith )
 import safe Data.Maybe                      ( Maybe(..),
                                               maybe,
                                               isJust,
@@ -104,7 +118,8 @@ import safe Data.Ord                        ( Ord(..)
                                             , Ordering(..)
                                             , max, min )
 import safe Data.Proxy                      ( Proxy(..) )
-import safe Data.Set as Set                 ( Set(..), fromList, member)
+import safe qualified Data.Set as Set       ( Set(..), member, fromList )
+import safe Data.Traversable                ( Traversable(..) )
 import safe Data.Time.Calendar              ( Day
                                             , DayOfWeek
                                             , DayOfMonth
@@ -129,3 +144,15 @@ import safe IntervalAlgebra.PairedInterval
 import safe Witherable                      ( Filterable(filter), Witherable(..) )
 import safe Flow                            ( (!>), (.>), (<!), (<.), (<|), (|>) )
 import Safe                                 ( headMay, lastMay )
+-- import Data.Vector.Fusion.Bundle (scanl1)
+-- import Data.Map (fromList)
+-- import qualified Data.Map as Set
+
+setFromList :: (Ord a) =>  [a] -> Set.Set a
+setFromList = Set.fromList
+
+mapFromList :: (Ord k) => [(k, a)] -> M.Map k a
+mapFromList = M.fromList
+
+mapToList :: (Ord k) =>  M.Map k a -> [(k, a)] 
+mapToList = M.toList

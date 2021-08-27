@@ -9,9 +9,16 @@
   * `makeFollowupMetByIndex`: `followupMetBy`
   * `makeFollowupAfterIndex`: `followupAfter`
 * Modifies the continuous enrollment template to take a function `Index i a -> AssessmentInterval a` as an argument to enforce that functions that create valid assessment interval are used. Updates `ExampleCohort1` accordingly.
-* Updates `interval-algebra` dependency to 0.10.1, and updates functions as needed.
+* Updates `interval-algebra` dependency to 0.10.2, and updates functions as needed.
 * Adds the `EventData.Predicate` module which exposes `Predicate`s on `Event`s. For example, `isEnrollmentEvent` has the type `Predicate (Event a)` (so `getPredicate isEnrollmentEvent :: (Event a -> Bool)`). This module also includes two utilities for composing `Predicate`s: `(&&&)` and `(|||)` for conjunction and disjunction respectively. For example, running `isEnrollmentEvent ||| isBirthYearEvent` would return `True` if an event either has the Enrollment domain or has the Demographic domain with BirthYear as its field. You can also form Predicates on the interval part of an Event. Something like `Predicate (\x -> before index x) &&& isBirthYearEvent` is a predicate that returns `True` when an event is before `index` and the event contains a `BirthYear` fact
 * Adds the `EventData.Accessors` module and moves functions such as `viewBirthYears` from `Hasklepias.FeatureEvents` to this new module.
+* Adds an initial framework for feature definition builders (i.e templates for functions that define features). These are found in the `Hasklepias.Templates.Features` module. Adds a basic set of builders including:
+  * `buildIsEnrolled`: identifies whether there is an event concurring with index
+  * `buildContinuousEnrollment`: identifies whether a set of events meets continuous enrollment criteria given an allowable gap between enrollment intervals
+  * `buildNofX`: a template that finds whether there are N events of some predicate X
+  * `buildNofXBool`: `buildNofX` specialized to return `Bool`
+  * `buildNofXBinary`: `buildNofX` specialized to return `Binary`
+  * and several more
 
 ## 0.16.2
 

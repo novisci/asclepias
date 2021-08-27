@@ -25,4 +25,5 @@ import Hasklepias.Templates.Features.NsatisfyP
     , buildNofConceptsBinaryConcurBaseline
     , buildNofXWithGap
     , buildNofXWithGapBool
-    , buildNofXWithGapBinary)
+    , buildNofXWithGapBinary
+    , buildNofUniqueBegins)

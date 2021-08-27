@@ -1,5 +1,9 @@
 # Changelog for hasklepias
 
+## 0.17.1
+
+* Fixes silly mistake with git.
+
 ## 0.17.0
 
 * Adds the `Cohort.AssessmentIntervals` modules, which provides types and safe constructors for intervals during which features can be evaluated. The module currently provides the `BaselineInterval` type, with constructors `baseline` and `baselineBefore`. These two constructors guarantee that the resulting `BaselineInterval` will `meet` or `precede` (respectively) the provided `Index`. Use `baseline` if you want a `BaselineInterval` that ends at the beginning of the `Index`; use `baselineBefore` if you need space between the end of the baseline interval and `Index`. Similarly, there is a `FollowupInterval` type, with constructors `followup`, `followupMetBy`, and `followupAfter`. Note that the `followup` function always returns a `FollowupInterval` such that `end index < end (followup duration index)` for any provided `duration`. The `baseline` and `followup` functions were not named with their associated relation to `Index` (meets and startedBy, resp.), since they are most likely the most common use case. The `AssessmentInterval` type is a sum type with (currently) two variants: one containing a `BaselineInterval` and the other a `FollowupInterval`. The following functions create `AssesmentmentIntervals` using the corresponding function:

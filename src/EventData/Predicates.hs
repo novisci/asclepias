@@ -18,8 +18,7 @@ module EventData.Predicates
   , isGenderFactEvent
   , isBirthYearEvent
   , containsConcepts
-  , (|||)
-  , (&&&)
+  , Predicatable(..)
   ) where
 
 import           Data.Bool                      ( (&&)
@@ -126,6 +125,6 @@ isStateFact _ = False
 isStateFactEvent :: Predicate (Event a)
 isStateFactEvent = liftToEventPredicate (Predicate isStateFact)
 
--- | Creates a predicate to check that an 'Event' contains a set of 'Concept's. 
+-- | Creates a predicate to check that an 'Event' contains a set of 'EventData.Context.Concept's. 
 containsConcepts :: [Text] -> Predicate (Event a)
 containsConcepts cpt = Predicate (`hasConcepts` cpt)

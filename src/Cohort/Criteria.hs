@@ -106,8 +106,8 @@ criteria l = MkCriteria $ NE.zip (NE.fromList [1..]) l
 
 -- | Unpacks a @'Criterion'@ into a (Text, Status) pair where the text is the
 -- name of the criterion and its @Status@ is the value of the status in the 
--- @'Criterion'@. In the case, that the value of the @'FeatureData'@ within the 
--- @'Criterion'@ is @Left@, the status is set to @'Exclude'@. 
+-- @'Criterion'@. In the case, that the value of the @'Features.Compose.FeatureData'@ 
+-- within the @'Criterion'@ is @Left@, the status is set to @'Exclude'@. 
 getStatus :: Criterion -> (Text, Status)
 getStatus (MkCriterion x) =
   either (const (nm, Exclude)) (nm,) ((getFeatureData . getDataN) x)

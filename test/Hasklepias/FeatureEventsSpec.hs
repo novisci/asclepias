@@ -39,3 +39,13 @@ spec = do
     it "dayOfMonthFromDay" $
       dayOfMonthFromDay (fromGregorian 2021 8 18) `shouldBe` 18
 
+    it "pairGaps" $
+      pairGaps ([] :: [Interval Int]) `shouldBe` []
+    it "pairGaps" $
+      pairGaps [beginerval 5 (0::Int), beginerval 5 (0::Int)] `shouldBe` [Nothing]
+    it "pairGaps" $
+      pairGaps [beginerval 5 (0::Int), beginerval 5 (0::Int), beginerval 1 (10::Int)] 
+        `shouldBe` [Nothing, Just 5, Just 5]
+    it "pairGaps" $
+      pairGaps [beginerval 5 (0::Int), beginerval 1 (6::Int), beginerval 1 (10::Int)] 
+        `shouldBe` [Just 1, Just 5, Just 3]

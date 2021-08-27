@@ -26,7 +26,7 @@ import Data.Aeson                     ( ToJSON(toJSON) )
 import Data.Typeable                  ( Typeable )
 
 {- | Existential type to hold features, which allows for Features to be put
-into a heterogeneous list.
+into a homogeneous list.
 -}
 data Featureable = forall d . (Show d, ToJSON d, ShapeOutput d) => MkFeatureable d  Attributes 
 

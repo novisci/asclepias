@@ -69,6 +69,7 @@ toJSONCohortShape :: CohortShape shape -> Value
 toJSONCohortShape (ColumnWise x) = toJSON x
 toJSONCohortShape (RowWise x)    = toJSON x
 
+-- | Provides methods for reshaping a 'Cohort.Cohort' to a 'CohortShape'.
 class ShapeCohort d where
   colWise :: Cohort d -> CohortShape ColumnWise
   rowWise :: Cohort d -> CohortShape RowWise

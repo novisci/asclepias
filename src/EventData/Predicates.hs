@@ -125,10 +125,6 @@ isStateFact _ = False
 isStateFactEvent :: Predicate (Event a)
 isStateFactEvent = liftToEventPredicate (Predicate isStateFact)
 
-<<<<<<< HEAD:src/EventData/Predicates.hs
 -- | Creates a predicate to check that an 'Event' contains a set of 'EventData.Context.Concept's. 
-=======
--- | Creates a predicate to check that an 'Event' contains a set of 'Concept's. 
->>>>>>> master:src/EventData/Predicate.hs
 containsConcepts :: [Text] -> Predicate (Event a)
 containsConcepts cpt = Predicate (`hasConcepts` cpt)

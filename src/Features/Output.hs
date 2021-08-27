@@ -64,6 +64,7 @@ data OutputShape d where
   NameData :: (ToJSON a, Show a) => a -> OutputShape b
   NameAttr :: (ToJSON a, Show a) => a -> OutputShape b 
 
+-- | A class that provides methods for transforming some type to an 'OutputShape'.
 class (ToJSON a) => ShapeOutput a where
   dataOnly :: a -> OutputShape b
   nameOnly :: a -> OutputShape b

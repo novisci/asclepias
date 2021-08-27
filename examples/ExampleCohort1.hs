@@ -189,7 +189,7 @@ critEnrolled
        -> Feature "allEvents" [Event Day]
        -> Feature "isEnrolled" Status
        )
-critEnrolled = defIsEnrolled isEnrollmentEvent
+critEnrolled = buildIsEnrolled isEnrollmentEvent
 
 -- | Include the subject if both:
 --     * she is enrolled on index ('critEnrolled')
@@ -202,7 +202,7 @@ critEnrolled455
        -> Feature "isEnrolled" Status
        -> Feature "isContinuousEnrolled" Status
        )
-critEnrolled455 = defContinuousEnrollment baselineInterval isEnrollmentEvent 30
+critEnrolled455 = buildContinuousEnrollment baselineInterval isEnrollmentEvent 30
 
 -- | Exclude if the subject is dead before the time of index.
 critDead

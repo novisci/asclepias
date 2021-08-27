@@ -52,6 +52,7 @@ getFeaturesetAttrs (MkFeatureset l) = fmap getFeatureableAttrs l
 instance ToJSON Featureset where
   toJSON (MkFeatureset x) = toJSON x
 
+-- | A newtype wrapper for a 'NE.NonEmpty' 'Featureset'.
 newtype FeaturesetList = MkFeaturesetList (NE.NonEmpty Featureset) 
   deriving (Show)
 

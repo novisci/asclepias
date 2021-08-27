@@ -18,6 +18,8 @@ import safe GHC.Generics                 ( Generic )
 import safe GHC.Num                      ( Natural )
 import safe Data.Semiring                ( Semiring(..) )
 
+{- | Just a type holding a 'GHC.Num.Natural' value.
+-}
 newtype Count = Count Natural
   deriving (Eq, Show, Ord, Generic)
 

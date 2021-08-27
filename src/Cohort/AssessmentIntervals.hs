@@ -31,7 +31,7 @@ The assessment intervals provided are:
     as different features may require different followup intervals. 
 
 In future versions, one subject may have multiple values for an 'Index'
-corresponding to unique 'ObsUnit'. That is, there is a 1-to-1 map between 
+corresponding to unique 'Cohort.Core.ObsUnit'. That is, there is a 1-to-1 map between 
 index values and observational units, but there may be a 1-to-many map from 
 subjects to indices.
 
@@ -92,8 +92,6 @@ import IntervalAlgebra             ( Interval
                                    , end
                                    , beginerval
                                    , duration )
-
-
 import Cohort.Index                ( Index )
 
 {-| A type to contain baseline intervals. See the 'Baseline' typeclass for methods
@@ -115,13 +113,13 @@ Provides functions for creating a 'BaselineInterval' from an 'Index'. The
 
 [Meets]
 
-  @'relate' ('baseline' d i) i = Meets@
+  @'IntervalAlgebra.relate' ('baseline' d i) i = 'IntervalAlgebra.Meets'@
 
 The 'baselineBefore' function should satisfy:
 
 [Before]
   
-  @'relate' ('baselineBefore' s d i) i = Before@
+  @'IntervalAlgebra.relate' ('baselineBefore' s d i) i = 'IntervalAlgebra.Before'@
 
 >>> import Cohort.Index
 >>> import IntervalAlgebra
@@ -183,19 +181,19 @@ Provides functions for creating a 'FollowupInterval' from an 'Index'. The
 
 [StartedBy]
 
-  @'relate' ('followup' d i) i = StartedBy@
+  @'IntervalAlgebra.relate' ('followup' d i) i = 'IntervalAlgebra.StartedBy'@
 
-The 'follupwMetBy' function should satisfy:
+The 'followupMetBy' function should satisfy:
 
 [MetBy]
   
-  @'relate' ('followupMetBy' d i) i = MetBy@
+  @'IntervalAlgebra.relate' ('followupMetBy' d i) i = 'IntervalAlgebra.MetBy'@
 
-The 'follupwAfter' function should satisfy:
+The 'followupAfter' function should satisfy:
 
 [After]
 
-  @'relate' ('followupAfter' s d i) i = After@
+  @'IntervalAlgebra.relate' ('followupAfter' s d i) i = 'IntervalAlgebra.After'@
 
 >>> import Cohort.Index
 >>> import IntervalAlgebra

@@ -12,7 +12,7 @@ Maintainer  : bsaul@novisci.com
 module Features
   (
 
-  -- ** Defining and evaluating Features
+  -- ** Creating Features
     module Features.Compose
 
   -- ** Adding Attributes to Features

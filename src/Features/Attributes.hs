@@ -50,7 +50,7 @@ data Purpose = MkPurpose {
  } deriving (Eq, Show, Generic)
 
 {- |
-A data type for holding attritbutes of Features. This type and the @HasAttributes@
+A data type for holding attritbutes of Features. This type and the @'HasAttributes'@
 are likely to change in future versions.
 -}
 data Attributes = MkAttributes { 

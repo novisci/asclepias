@@ -98,8 +98,12 @@ unpackConcept :: Concept -> Text
 unpackConcept (Concept x) = x
 
 -- | @Concepts@ is a 'Set' of 'Concept's.
-newtype Concepts = Concepts { getConcepts :: Set Concept }
+newtype Concepts = Concepts ( Set Concept )
     deriving (Eq, Show)
+
+-- | Unwrap the `Concepts' newtype.
+getConcepts :: Concepts -> Set Concept
+getConcepts (Concepts x) = x
 
 instance Semigroup Concepts where
   Concepts x <> Concepts y = Concepts (x <> y)

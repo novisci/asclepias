@@ -17,4 +17,12 @@ import Hasklepias.Templates.Features.Enrollment
     ( buildIsEnrolled,
       buildContinuousEnrollment,
     )
-import Hasklepias.Templates.Features.NsatisfyP (buildNofX)
+import Hasklepias.Templates.Features.NsatisfyP 
+   (  buildNofX
+    , buildNofXBool
+    , buildNofXBinary
+    , buildNofXBinaryConcurBaseline
+    , buildNofConceptsBinaryConcurBaseline
+    , buildNofXWithGap
+    , buildNofXWithGapBool
+    , buildNofXWithGapBinary)

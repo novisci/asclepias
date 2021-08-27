@@ -54,17 +54,6 @@ buildIsEnrolled predicate = define
       .> includeIf
   )
 
-
--- f :: (Ord a) =>
--- --                       Feature indexName (Index i0 a) -> Feature eventsName (container (Event a)) -> Feature varName Status 
---   Predicate (Event a) -> Index Interval a  ->  [Event a]  ->  Status
--- f predicate index events = 
---        events
---       |> filter (getPredicate predicate)
---       |> combineIntervals
---       |> any (concur index)
---       |> includeIf
-
 makeIsEnrolledTestInputs
   :: (Integral b, IntervalSizeable a b)
   => TestName
@@ -125,7 +114,6 @@ buildIsEnrolledTests = testGroup
 
 TODO: describe this
 
->>> 1
 -}
 buildContinuousEnrollment
   :: ( Monoid (container (Interval a))
@@ -195,12 +183,6 @@ buildContinuousEnrollmentTestCases
 buildContinuousEnrollmentTestCases =
   [ f "Exclude if previously excluded" commonArgs (0, 1) [] Exclude Exclude
   , f "Exclude if no events"           commonArgs (0, 1) [] Include Exclude
-      {-
-                  -           <- Index
-         ----------           <- Baseline
-         ---     ---          <- Enrollment
-        |--------------|
-      -}
   , f "Exclude if gap >= 3"
       commonArgs
       (10, 11)
@@ -209,22 +191,22 @@ buildContinuousEnrollmentTestCases =
       Exclude
       {-
                   -           <- Index
+         ----------           <- Baseline
+         ---     ---          <- Enrollment
+        |--------------|
+      -}
+  , f "Exclude if gap >= 3" commonArgs (10, 11) [g (1, 7)]  Include Exclude
+      {-
+                  -           <- Index
         ----------            <- Baseline
          ------               <- Enrollment
         |--------------|
       -}
-  , f "Exclude if gap >= 3" commonArgs (10, 11) [g (1, 7)]  Include Exclude
+  , f "Exclude if gap >= 3" commonArgs (10, 11) [g (6, 13)] Include Exclude
         {-
                   -           <- Index
          ----------           <- Baseline
               -------         <- Enrollment
-        |--------------|
-      -}
-  , f "Exclude if gap >= 3" commonArgs (10, 11) [g (6, 13)] Include Exclude
-      {-
-                  -           <- Index
-         ----------           <- Baseline
-         --  -------          <- Enrollment
         |--------------|
       -}
   , f "Include if gaps less than 3"
@@ -236,13 +218,25 @@ buildContinuousEnrollmentTestCases =
       {-
                   -           <- Index
          ----------           <- Baseline
-          -------             <- Enrollment
+         --  -------          <- Enrollment
         |--------------|
       -}
   , f "Include if gaps less than 3"
       commonArgs
       (10, 11)
       [g (2, 9)]
+      Include
+      Include
+      {-
+                  -           <- Index
+         ----------           <- Baseline
+          -------             <- Enrollment
+        |--------------|
+      -}
+  , f "Include if gaps less than 3"
+      commonArgs
+      (10, 11)
+      [g (1, 6), g (4, 8)]
       Include
       Include
         {-
@@ -252,12 +246,6 @@ buildContinuousEnrollmentTestCases =
              ----
         |--------------|
       -}
-  , f "Include if gaps less than 3"
-      commonArgs
-      (10, 11)
-      [g (1, 6), g (4, 8)]
-      Include
-      Include
   ] where
   f = makeContinuousEnrollmentTestInputs
   g = makeEnrollmentEvent

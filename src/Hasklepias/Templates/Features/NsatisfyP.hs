@@ -13,33 +13,43 @@ Maintainer  : bsaul@novisci.com
 
 module Hasklepias.Templates.Features.NsatisfyP
   ( buildNofX
+  , buildNofXBool
+  , buildNofXBinary
+  , buildNofXBinaryConcurBaseline
+  , buildNofConceptsBinaryConcurBaseline
   , buildNsatisfyPTests
+  , buildNofXWithGap
+  , buildNofXWithGapBool
+  , buildNofXWithGapBinary
   ) where
 
 import           Cohort
+import qualified Control.Lens                  as Functor
 import           EventData
 import           Features
-import           Hasklepias.Misc                ( F )
 import           Hasklepias.FeatureEvents
-import           Hasklepias.Templates.TestUtilities
+import           Hasklepias.Misc                ( F )
 import           Hasklepias.Reexports
 import           Hasklepias.ReexportsUnsafe
+import           Hasklepias.Templates.TestUtilities
 import           Stype
 
 -- | All the buildNSatisfyP tests.
 buildNsatisfyPTests :: TestTree
 buildNsatisfyPTests =
-  testGroup
-    "NsatisfyP"
-    [ buildNofXTests
-    , buildNofXWithGapTests ]
+  testGroup "NsatisfyP" [buildNofXTests, buildNofXWithGapTests]
 
 {-|
 -}
 buildNofXBase
-  :: (Intervallic i0 a, Intervallic i1 a, Witherable container0, Witherable container1)
+  :: ( Intervallic i0 a
+     , Intervallic i1 a
+     , Witherable container0
+     , Witherable container1
+     )
   => (container0 (Event a) -> container1 (i1 a)) -- ^ function mapping a container of events to a container of intervallic intervals (which could be events!)
-  -> (container1 (i1 a) -> outputType) -- ^ function mapping the processed events to the output type
+  -> (container1 (i1 a) -> t) -- ^ function mapping the processed events to an intermediate type
+  -> (t -> outputType) -- ^ function casting intermediate type to output type
   -> (Index i0 a -> AssessmentInterval a) -- ^ function which maps index interval to interval in which to assess the feature
   -> ComparativePredicateOf2 (AssessmentInterval a) (Event a) -- ^ the interval relation of the input events to the assessment interval
   -> Predicate (Event a) -- ^ The predicate to filter to Enrollment events (e.g. 'FeatureEvents.isEnrollment')
@@ -48,23 +58,55 @@ buildNofXBase
        -> Feature eventsName (container0 (Event a))
        -> Feature varName outputType
        )
-buildNofXBase runProcess runPostProcess makeAssessmentInterval relation predicate = 
-  define
+buildNofXBase runProcess runPostProcess runCast makeAssessmentInterval relation predicate
+  = define
     (\index ->
       -- filter events to those satisfying both
       -- the given relation to the assessment interval
       -- AND the given predicate
-         filter (relation (makeAssessmentInterval index) &&& getPredicate predicate)
+      filter
+          (relation (makeAssessmentInterval index) &&& getPredicate predicate)
       -- run the processing function
-      .> runProcess
+        .> runProcess
       -- run the post processing function
-      .> runPostProcess
+        .> runPostProcess
+      -- run the casting function
+        .> runCast
     )
 
 {-| Do N events relating to the 'AssessmentInterval' in some way the satisfy 
     the given predicate? 
 -}
 buildNofX
+  :: (Intervallic i a, Witherable container)
+  => (Bool -> outputType) -- ^ casting function
+  -> Natural -- ^ minimum number of cases
+  -> (Index i a -> AssessmentInterval a) -- ^ function to transform a 'Cohort.Index' to an 'Cohort.AssessmentInterval'
+  -> ComparativePredicateOf2 (AssessmentInterval a) (Event a) -- ^ interval predicate
+  -> Predicate (Event a) -- ^ a predicate on events
+  -> Definition
+       (  Feature indexName (Index i a)
+       -> Feature eventsName (container (Event a))
+       -> Feature varName outputType
+       )
+buildNofX f n = buildNofXBase id (\x -> length x >= naturalToInt n) f
+
+-- | 'buildNofX' specialized to return 'Bool'.
+buildNofXBool
+  :: (Intervallic i a, Witherable container)
+  => Natural -- ^ minimum number of cases 
+  -> (Index i a -> AssessmentInterval a) -- ^ function to transform a 'Cohort.Index' to an 'Cohort.AssessmentInterval'
+  -> ComparativePredicateOf2 (AssessmentInterval a) (Event a) -- ^ interval predicate
+  -> Predicate (Event a) -- ^ a predicate on events
+  -> Definition
+       (  Feature indexName (Index i a)
+       -> Feature eventsName (container (Event a))
+       -> Feature varName Bool
+       )
+buildNofXBool = buildNofX id
+
+-- | 'buildNofX' specialized to return 'Stype.Binary'.
+buildNofXBinary
   :: (Intervallic i a, Witherable container)
   => Natural
   -> (Index i a -> AssessmentInterval a)
@@ -73,25 +115,52 @@ buildNofX
   -> Definition
        (  Feature indexName (Index i a)
        -> Feature eventsName (container (Event a))
-       -> Feature varName Bool
+       -> Feature varName Binary
        )
-buildNofX n = buildNofXBase id (\x -> length x >= naturalToInt n)
+buildNofXBinary = buildNofX fromBool
 
-{-| Do N events relating to the 'AssessmentInterval' in some way the satisfy 
-    the given predicate? 
+{- | 
+'buildNofXBinary' specialized to filter to events that 'IntervalAlgebra.concur' 
+with an 'Cohort.AssessmentInterval' created by 'Cohort.makeBaselineFromIndex' of
+a specified duration and a provided 'Data.Functor.Contravariant.Predicate'.
 -}
-buildNofXBinary
-  :: (Intervallic i a, Witherable t)
-  => Natural
-  -> (Index i a -> AssessmentInterval a)
-  -> ComparativePredicateOf2 (AssessmentInterval a) (Event a)
+buildNofXBinaryConcurBaseline
+  :: (Intervallic i0 a, Witherable t, IntervalSizeable a b, Baseline i0 a)
+  => Natural -- ^ minimum number of events.
+  -> b -- ^ duration of baseline (passed to 'Cohort.makeBaselineFromIndex')
   -> Predicate (Event a)
   -> Definition
-       (  Feature indexName (Index i a)
+       (  Feature indexName (Index i0 a)
        -> Feature eventsName (t (Event a))
-       -> Feature varName Binary 
+       -> Feature varName Binary
        )
-buildNofXBinary n = buildNofXBase id (\x -> length x >= naturalToInt n |> fromBool)
+buildNofXBinaryConcurBaseline n baselineDur =
+  buildNofXBinary n (makeBaselineFromIndex baselineDur) concur
+
+{- | 
+'buildNofXBinary' specialized to filter to events that 'IntervalAlgebra.concur' 
+with an 'Cohort.AssessmentInterval' created by 'Cohort.makeBaselineFromIndex' of
+a specified duration and that have a given set of 'EventData.Concepts'.
+-}
+buildNofConceptsBinaryConcurBaseline
+  :: (Intervallic i0 a, Witherable t, IntervalSizeable a b, Baseline i0 a)
+  => Natural -- ^ minimum number of events. 
+  -> b  -- ^ duration of baseline (passed to 'Cohort.makeBaselineFromIndex')
+  -> [Text] -- ^ list of 'EventData.Concepts' passed to 'EventData.containsConcepts'
+  -> Definition
+       (  Feature indexName (Index i0 a)
+       -> Feature eventsName (t (Event a))
+       -> Feature varName Bool
+       )
+buildNofConceptsBinaryConcurBaseline n baselineDur cpts = buildNofXBool
+  n
+  (makeBaselineFromIndex baselineDur)
+  concur
+  (containsConcepts cpts)
+
+--------------------------------------------------------------------------------
+-- NofX examples/tests
+--------------------------------------------------------------------------------
 
 type NofXArgs
   = ( Natural
@@ -175,47 +244,88 @@ buildNofXTests :: TestTree
 buildNofXTests = testGroup
   "Tests of NofX template"
   (fmap
-    (\x -> testCase (getTestName x)
-                    (makeAssertion x (uncurryN buildNofX (getBuilderArgs x)))
+    (\x -> testCase
+      (getTestName x)
+      (makeAssertion x (uncurryN buildNofXBool (getBuilderArgs x)))
     )
     buildNofXTestCases
   )
 
-{-| Do N events relating to the 'AssessmentInterval' in some way with at least
-    a given gap between them the satisfy the given predicate? 
+{-| Are there N gaps of at least the given duration between any pair of events 
+    that relate to the 'AssessmentInterval' by the given relation and the
+    satisfy the given predicate? 
 -}
 buildNofXWithGap
   :: ( Intervallic i a
      , IntervalSizeable a b
      , IntervalCombinable i a
-     , Witherable t
+     , Witherable container
      )
-  => Natural
-  -> b
+  => (Bool -> outputType)
+  -> Natural -- ^ the minimum number of gaps
+  -> b -- ^ the minimum duration of a gap
   -> (Index i a -> AssessmentInterval a)
   -> ComparativePredicateOf2 (AssessmentInterval a) (Event a)
   -> Predicate (Event a)
   -> Definition
        (  Feature indexName (Index i a)
-       -> Feature eventsName (t (Event a))
+       -> Feature eventsName (container (Event a))
+       -> Feature varName outputType
+       )
+buildNofXWithGap cast nGaps allowableGap = buildNofXBase
+  (-- just need the intervals  
+   fmap getInterval
+   -- pairGaps needs List input as the container type
+                    .> toList)
+  (-- get (Maybe) durations of interval gaps between all pairs
+     pairGaps
+   -- throw away any non-gaps
+  .> catMaybes
+   -- keep only those gap durations at least the allowableGap
+  .> filter (>= allowableGap)
+   -- are there at least as many events as desired?
+  .> \x -> length x >= naturalToInt nGaps
+  )
+  cast
+
+-- | 'buildNofXWithGap' specialized to return 'Bool'. 
+buildNofXWithGapBool
+  :: ( Intervallic i a
+     , IntervalSizeable a b
+     , IntervalCombinable i a
+     , Witherable container
+     )
+  => Natural -- ^ the minimum number of gaps
+  -> b -- ^ the minimum duration of a gap
+  -> (Index i a -> AssessmentInterval a)
+  -> ComparativePredicateOf2 (AssessmentInterval a) (Event a)
+  -> Predicate (Event a)
+  -> Definition
+       (  Feature indexName (Index i a)
+       -> Feature eventsName (container (Event a))
        -> Feature varName Bool
        )
-buildNofXWithGap n allowableGap = buildNofXBase
-  (-- just need the intervals  
-      fmap getInterval
-   -- pairGaps needs List input as the container type
-   .> toList 
-  )
-  (-- get (Maybe) durations of interval gaps between all pairs
-      pairGaps 
-   -- throw away any non-gaps
-   .> catMaybes 
-   -- keep only those gap durations longer than the allowableGap
-   .> filter (> allowableGap)
-   -- are there at least as many cases as desired?
-   .> \x -> length x >= naturalToInt n
-  )
+buildNofXWithGapBool = buildNofXWithGap id
 
+
+-- | 'buildNofXWithGap' specialized to return 'Stype.Binary'. 
+buildNofXWithGapBinary
+  :: ( Intervallic i a
+     , IntervalSizeable a b
+     , IntervalCombinable i a
+     , Witherable container
+     )
+  => Natural -- ^ the minimum number of gaps
+  -> b -- ^ the minimum duration of a gap
+  -> (Index i a -> AssessmentInterval a)
+  -> ComparativePredicateOf2 (AssessmentInterval a) (Event a)
+  -> Predicate (Event a)
+  -> Definition
+       (  Feature indexName (Index i a)
+       -> Feature eventsName (container (Event a))
+       -> Feature varName Binary
+       )
+buildNofXWithGapBinary = buildNofXWithGap fromBool
 
 type NofXWithGapArgs
   = ( Natural
@@ -244,18 +354,19 @@ buildNofXWithGapTestCases =
                               <- Enrollment
         |--------------|
       -}
-    , f "True if looking for (at least) no events and there are events satisfying gap condition"
-      (0, 3, makeBaselineFromIndex 10, concur, isEnrollmentEvent)
-      (10, 11)
-      [g (1, 2), g (8, 9)]
-      True
+  , f
+    "True if looking for (at least) no events and there are events satisfying gap condition"
+    (0, 3, makeBaselineFromIndex 10, concur, isEnrollmentEvent)
+    (10, 11)
+    [g (1, 2), g (8, 9)]
+    True
       {-
                    -          <- Index
          ----------           <- Baseline
          -       -            <- Enrollment
         |--------------|
       -}
-   , f "False if no events and looking for 1"
+  , f "False if no events and looking for 1 gap"
       (1, 3, makeBaselineFromIndex 10, concur, isEnrollmentEvent)
       (10, 11)
       []
@@ -266,7 +377,7 @@ buildNofXWithGapTestCases =
                               <- Enrollment
         |--------------|
       -}
-   , f "False if a single event and looking for gap"
+  , f "False if a single event and looking for gap"
       (1, 3, makeBaselineFromIndex 10, concur, isEnrollmentEvent)
       (10, 11)
       [g (8, 9)]
@@ -277,24 +388,22 @@ buildNofXWithGapTestCases =
                  -            <- Enrollment
         |--------------|
       -}
-  , f
-    "False if 2 events but not satisfying gap condition"
-    (1, 3, makeBaselineFromIndex 10, concur, isEnrollmentEvent)
-    (10, 11)
-    [g (6, 7), g (8, 9)]
-    False
+  , f "False if 1 gap but not satisfying gap condition"
+      (1, 3, makeBaselineFromIndex 10, concur, isEnrollmentEvent)
+      (10, 11)
+      [g (6, 7), g (8, 9)]
+      False
       {-
                    -          <- Index
          ----------           <- Baseline
                - -            <- Enrollment
         |--------------|
       -}
-  , f
-    "True if 2 events satisfy gap condition"
-    (1, 3, makeBaselineFromIndex 10, concur, containsConcepts ["A"])
-    (10, 11)
-    [h ["C", "A"] (2, 3), h ["A", "B"] (8, 9)]
-    True
+  , f "True if 1 gap satisfy gap condition"
+      (1, 3, makeBaselineFromIndex 10, concur, containsConcepts ["A"])
+      (10, 11)
+      [h ["C", "A"] (2, 3), h ["A", "B"] (8, 9)]
+      True
       {-
                    -          <- Index
          ----------           <- Baseline
@@ -302,18 +411,52 @@ buildNofXWithGapTestCases =
                  -            <- ["A", "B"] 
         |--------------|
       -}
-  , f
-    "True if 2 events satisfy gap condition "
-    (1, 3, makeBaselineFromIndex 10, concur, containsConcepts ["A"])
-    (10, 11)
-    [h ["C", "A"] (2, 3), h ["D", "E"] (5, 6), h ["A", "B"] (8, 9)]
-    True
+  , f "True if 1 gap satisfy gap condition "
+      (1, 3, makeBaselineFromIndex 10, concur, containsConcepts ["A"])
+      (10, 11)
+      [h ["C", "A"] (2, 3), h ["D", "E"] (5, 6), h ["A", "B"] (8, 9)]
+      True
       {-
                    -          <- Index
          ----------           <- Baseline
           -                   <- ["C", "A"]
               -               <- ["D", "E"]
                  -            <- ["A", "B"] 
+        |--------------|
+      -}
+  , f
+    "True if 1 gap satisfy gap condition"
+    (1, 3, makeBaselineFromIndex 10, concur, containsConcepts ["A"])
+    (10, 11)
+    [ h ["A"] (1, 2)
+    , h ["A"] (2, 3)
+    , h ["A"] (3, 4)
+    , h ["A"] (4, 5)
+    , h ["A"] (5, 6)
+    ]
+    True
+      {-
+                    -          <- Index
+          ----------           <- Baseline
+          -                    <- ["A"]
+           -                   <- ["A"]
+            -                  <- ["A"]
+             -                 <- ["A"]
+              -                <- ["A"]
+        |--------------|
+      -}
+  , f "False if no gap satisfy gap condition"
+      (1, 3, makeBaselineFromIndex 10, concur, containsConcepts ["A"])
+      (10, 11)
+      [h ["A"] (1, 2), h ["A"] (2, 3), h ["A"] (3, 4), h ["A"] (4, 5)]
+      False
+      {-
+                    -          <- Index
+          ----------           <- Baseline
+          -                    <- ["A"]
+           -                   <- ["A"]
+            -                  <- ["A"]
+             -                 <- ["A"]
         |--------------|
       -}
   ] where
@@ -325,42 +468,9 @@ buildNofXWithGapTests :: TestTree
 buildNofXWithGapTests = testGroup
   "Tests of NofXWithGap template"
   (fmap
-    (\x -> testCase (getTestName x)
-                    (makeAssertion x (uncurryN buildNofXWithGap (getBuilderArgs x)))
+    (\x -> testCase
+      (getTestName x)
+      (makeAssertion x (uncurryN buildNofXWithGapBool (getBuilderArgs x)))
     )
     buildNofXWithGapTestCases
   )
-
-
-{-| Do N events concurring with baseline of a given duration satisfy the given
-    predicate? 
--}
-buildNofXConcurBaseline
-  :: (Intervallic i0 a, Witherable t, IntervalSizeable a b, Baseline i0 a)
-  => Natural
-  -> b
-  -> Predicate (Event a)
-  -> Definition
-       (  Feature indexName (Index i0 a)
-       -> Feature eventsName (t (Event a))
-       -> Feature varName Bool
-       )
-buildNofXConcurBaseline n baselineDur =
-  buildNofX n (makeBaselineFromIndex baselineDur) concur
-
-{-| Do N events concurring with baseline of a given duration have a set of 
-    concepts? 
--}
-buildNofConceptsConcurBaseline
-  :: (Intervallic i0 a, Witherable t, IntervalSizeable a b, Baseline i0 a)
-  => Natural
-  -> b
-  -> [Text]
-  -> Definition
-       (  Feature indexName (Index i0 a)
-       -> Feature eventsName (t (Event a))
-       -> Feature varName Bool
-       )
-buildNofConceptsConcurBaseline n baselineDur cpts =
-  buildNofX n (makeBaselineFromIndex baselineDur) concur (containsConcepts cpts)
-

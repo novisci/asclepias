@@ -27,7 +27,7 @@ Maintainer  : bsaul@novisci.com
 
 module Features.Compose
   (
-  -- * Features and FeatureData
+  -- *** Features and FeatureData
     FeatureData
   , MissingReason(..)
   , Feature
@@ -43,12 +43,13 @@ module Features.Compose
   , getNameN
   , nameFeature
 
-  -- * Defining and evaluating Features
+  -- *** Feature Definitions
   , Definition(..)
   , Define(..)
   , DefineA(..)
-  , Eval
-  , eval
+
+  --- *** Evalution of Definitions
+  , Eval(..)
 
   ) where
 
@@ -197,9 +198,13 @@ derived from other @Feature@ via a @'Definition'@.
 -}
 {- tag::feature[] -}
 newtype (KnownSymbol name) => Feature name d =
-  MkFeature { getFData :: FeatureData d }
+  MkFeature  ( FeatureData d )
 {- end::feature[] -}
   deriving (Eq)
+
+-- | Gets the 'FeatureData' from a 'Feature'.
+getFData :: Feature name d -> FeatureData d
+getFData (MkFeature d) = d
 
 -- | A utility for constructing a @'Feature'@ from @'FeatureData'@.
 -- Since @name@ is a type, you may need to annotate the type when using this

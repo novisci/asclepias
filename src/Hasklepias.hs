@@ -15,6 +15,13 @@ module Hasklepias
     -- * Working with Features
   , module Features
 
+    -- * Feature definition builders 
+    {- | 
+    A collection of pre-defined functions which build common feature definitions
+    used in epidemiologic cohorts.
+    -}
+
+  , module Hasklepias.Templates
     -- * Utilities for defining Features from Events
     {- |
     Much of logic needed to define features from events depends on the 
@@ -25,9 +32,6 @@ module Hasklepias
     -}
   , module Hasklepias.FeatureEvents
   , module Hasklepias.Misc
-
-    -- ** Feature definition builders 
-  , module Hasklepias.Templates
 
     -- * Specifying and building cohorts
   , module Cohort

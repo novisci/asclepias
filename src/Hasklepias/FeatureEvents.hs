@@ -81,7 +81,11 @@ import EventData.Context.Domain             ( Domain(..)
 import Safe                                 ( headMay, lastMay )
 import Control.Applicative                  ( Applicative(liftA2) )
 import Control.Monad                        ( Functor(fmap), (=<<) )
+<<<<<<< HEAD
 import Data.Bool                            ( Bool(..), (&&), not, (||), otherwise )
+=======
+import Data.Bool                            ( Bool(..), (&&), not, (||) )
+>>>>>>> master
 import Data.Either                          ( either )
 import Data.Eq                              ( Eq )
 import Data.Foldable                        ( Foldable(length, null)

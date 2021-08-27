@@ -25,7 +25,8 @@ Maintainer  : bsaul@novisci.com
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE InstanceSigs #-}
 
-module Features.Compose(
+module Features.Compose
+  (
   -- * Features and FeatureData
     FeatureData
   , MissingReason(..)
@@ -49,24 +50,45 @@ module Features.Compose(
   , Eval
   , eval
 
-  -- , HasAttributes(..)
-) where
+  ) where
 
-import safe Control.Applicative        ( Applicative(..)
-                                        , liftA3, (<$>) )
-import safe Control.Monad              ( Functor(..), Monad(..)
-                                       , (=<<), join, liftM, liftM2, liftM3, liftM4)
-import safe Data.Either                ( Either(..) )
-import safe Data.Eq                    ( Eq(..) )
-import safe Data.Foldable              ( Foldable(foldr), fold )
-import safe Data.Function              ( ($), (.), id )
-import safe Data.List                  ( (++), transpose, concat )
-import safe Data.Proxy                 ( Proxy(..) )
-import safe Data.Text                  ( Text, pack )
-import safe Data.Traversable           ( Traversable(..) )
-import safe GHC.Generics               ( Generic )
-import safe GHC.Show                   ( Show(show) )
-import safe GHC.TypeLits               ( KnownSymbol, Symbol, symbolVal )
+import safe      Control.Applicative            ( (<$>)
+                                                , Applicative(..)
+                                                , liftA3
+                                                )
+import safe      Control.Monad                  ( (=<<)
+                                                , Functor(..)
+                                                , Monad(..)
+                                                , join
+                                                , liftM
+                                                , liftM2
+                                                , liftM3
+                                                , liftM4
+                                                )
+import safe      Data.Either                    ( Either(..) )
+import safe      Data.Eq                        ( Eq(..) )
+import safe      Data.Foldable                  ( Foldable(foldr)
+                                                , fold
+                                                )
+import safe      Data.Function                  ( ($)
+                                                , (.)
+                                                , id
+                                                )
+import safe      Data.List                      ( (++)
+                                                , concat
+                                                , transpose
+                                                )
+import safe      Data.Proxy                     ( Proxy(..) )
+import safe      Data.Text                      ( Text
+                                                , pack
+                                                )
+import safe      Data.Traversable               ( Traversable(..) )
+import safe      GHC.Generics                   ( Generic )
+import safe      GHC.Show                       ( Show(show) )
+import safe      GHC.TypeLits                   ( KnownSymbol
+                                                , Symbol
+                                                , symbolVal
+                                                )
 
 {- | 
 Defines the reasons that a @'FeatureData'@ value may be missing. Can be used to
@@ -155,10 +177,9 @@ instance Applicative FeatureData where
   liftA2 f (MkFeatureData x) (MkFeatureData y) = MkFeatureData (liftA2 f x y)
 
 instance Monad FeatureData where
-  (MkFeatureData x) >>= f =
-      case fmap f x of
-         Left l  -> MkFeatureData $ Left l
-         Right v -> v
+  (MkFeatureData x) >>= f = case fmap f x of
+    Left  l -> MkFeatureData $ Left l
+    Right v -> v
 
 instance Foldable FeatureData where
   foldr f x (MkFeatureData z) = foldr f x z
@@ -212,23 +233,24 @@ instance Traversable (Feature name) where
   traverse f (MkFeature x) = MkFeature <$> traverse f x
 
 instance Monad (Feature name) where
-   (MkFeature x) >>= f =
-        case fmap f x of
-          MkFeatureData (Left l)  -> MkFeature $ MkFeatureData (Left l)
-          MkFeatureData (Right r) ->  r
+  (MkFeature x) >>= f = case fmap f x of
+    MkFeatureData (Left  l) -> MkFeature $ MkFeatureData (Left l)
+    MkFeatureData (Right r) -> r
 
 {- |
 The @'FeatureN'@ type is similar to @'Feature'@ where the @name@ is included
 as a @Text@ field. This type is mainly for internal purposes in order to collect
 @Feature@s of the same type @d@ into a homogeneous container like a @'Data.List'@.
 -}
-data FeatureN d = MkFeatureN {
-        getNameN :: Text  -- ^ Get the name of a @FeatureN@.
-      , getDataN :: FeatureData d -- ^ Get the data of a @FeatureN@
-      } deriving (Eq, Show)
+data FeatureN d = MkFeatureN
+  { getNameN :: Text  -- ^ Get the name of a @FeatureN@.
+  , getDataN :: FeatureData d -- ^ Get the data of a @FeatureN@
+  }
+  deriving (Eq, Show)
 
 -- | A utility for converting a @'Feature'@ to @'FeatureN'@.
-nameFeature :: forall name d . (KnownSymbol name) => Feature name d -> FeatureN d
+nameFeature
+  :: forall name d . (KnownSymbol name) => Feature name d -> FeatureN d
 nameFeature (MkFeature d) = MkFeatureN (pack $ symbolVal (Proxy @name)) d
 
 {- | A @Definition@ can be thought of as a lifted function. Specifically, the
@@ -250,16 +272,15 @@ myFeature = define f
 See @'eval'@ for evaluating @Defintions@. 
 
 -}
-
 data Definition d where
-  D1  :: (b -> a) -> Definition (f1 b -> f0 a)
-  D1A :: (b -> f0 a) -> Definition (f1 b -> f0 a)
-  D2  :: (c -> b -> a) -> Definition (f2 c -> f1 b -> f0 a)
-  D2A :: (c -> b -> f0 a) -> Definition (f2 c -> f1 b -> f0 a)
-  D3  :: (d -> c -> b -> a) -> Definition (f3 d -> f2 c -> f1 b -> f0 a)
-  D3A :: (d -> c -> b -> f0 a) -> Definition (f3 d -> f2 c -> f1 b -> f0 a)
-  D4  :: (e -> d -> c -> b -> a) -> Definition (f4 e -> f3 d -> f2 c -> f1 b -> f0 a) 
-  D4A :: (e -> d -> c -> b -> f0 a) -> Definition (f4 e -> f3 d -> f2 c -> f1 b -> f0 a) 
+  D1  ::(b -> a) -> Definition (f1 b -> f0 a)
+  D1A ::(b -> f0 a) -> Definition (f1 b -> f0 a)
+  D2  ::(c -> b -> a) -> Definition (f2 c -> f1 b -> f0 a)
+  D2A ::(c -> b -> f0 a) -> Definition (f2 c -> f1 b -> f0 a)
+  D3  ::(d -> c -> b -> a) -> Definition (f3 d -> f2 c -> f1 b -> f0 a)
+  D3A ::(d -> c -> b -> f0 a) -> Definition (f3 d -> f2 c -> f1 b -> f0 a)
+  D4  ::(e -> d -> c -> b -> a) -> Definition (f4 e -> f3 d -> f2 c -> f1 b -> f0 a)
+  D4A ::(e -> d -> c -> b -> f0 a) -> Definition (f4 e -> f3 d -> f2 c -> f1 b -> f0 a)
 
 {- | Define (and @'DefineA@) provide a means to create new @'Definition'@s via 
 @'define'@ (@'defineA'@). The @'define'@ function takes a single function input 
@@ -298,25 +319,41 @@ class Define inputs def | def -> inputs where
 class DefineA inputs def | def -> inputs where
   defineA :: inputs -> Definition def
 
-instance Define (b -> a) (FeatureData b -> FeatureData a) where define = D1
-instance Define (c -> b -> a) (FeatureData c -> FeatureData b -> FeatureData a) where define = D2
-instance Define (d -> c -> b -> a) (FeatureData d -> FeatureData c -> FeatureData b -> FeatureData a) where define = D3
-instance Define (e -> d -> c -> b -> a) (FeatureData e -> FeatureData d -> FeatureData c -> FeatureData b -> FeatureData a) where define = D4
+instance Define (b -> a) (FeatureData b -> FeatureData a) where
+  define = D1
+instance Define (c -> b -> a) (FeatureData c -> FeatureData b -> FeatureData a) where
+  define = D2
+instance Define (d -> c -> b -> a) (FeatureData d -> FeatureData c -> FeatureData b -> FeatureData a) where
+  define = D3
+instance Define (e -> d -> c -> b -> a) (FeatureData e -> FeatureData d -> FeatureData c -> FeatureData b -> FeatureData a) where
+  define = D4
 
-instance DefineA (b -> FeatureData a) (FeatureData b -> FeatureData a) where defineA = D1A
-instance DefineA (c -> b -> FeatureData a) (FeatureData c -> FeatureData b -> FeatureData a) where defineA = D2A
-instance DefineA (d -> c -> b -> FeatureData a) (FeatureData d -> FeatureData c -> FeatureData b -> FeatureData a) where defineA = D3A
-instance DefineA (e -> d -> c -> b -> FeatureData a) (FeatureData e -> FeatureData d -> FeatureData c -> FeatureData b -> FeatureData a) where defineA = D4A
+instance DefineA (b -> FeatureData a) (FeatureData b -> FeatureData a) where
+  defineA = D1A
+instance DefineA (c -> b -> FeatureData a) (FeatureData c -> FeatureData b -> FeatureData a) where
+  defineA = D2A
+instance DefineA (d -> c -> b -> FeatureData a) (FeatureData d -> FeatureData c -> FeatureData b -> FeatureData a) where
+  defineA = D3A
+instance DefineA (e -> d -> c -> b -> FeatureData a) (FeatureData e -> FeatureData d -> FeatureData c -> FeatureData b -> FeatureData a) where
+  defineA = D4A
 
-instance Define (b -> a) (Feature n1 b -> Feature n0 a) where define = D1
-instance Define (c -> b -> a) (Feature n2 c -> Feature n1 b -> Feature n0 a) where define = D2
-instance Define (d -> c -> b -> a) (Feature n3 d -> Feature n2 c -> Feature n1 b -> Feature n0 a) where define = D3
-instance Define (e -> d -> c -> b -> a) (Feature n4 e -> Feature n3 d -> Feature n2 c -> Feature n1 b -> Feature n0 a) where define = D4
+instance Define (b -> a) (Feature n1 b -> Feature n0 a) where
+  define = D1
+instance Define (c -> b -> a) (Feature n2 c -> Feature n1 b -> Feature n0 a) where
+  define = D2
+instance Define (d -> c -> b -> a) (Feature n3 d -> Feature n2 c -> Feature n1 b -> Feature n0 a) where
+  define = D3
+instance Define (e -> d -> c -> b -> a) (Feature n4 e -> Feature n3 d -> Feature n2 c -> Feature n1 b -> Feature n0 a) where
+  define = D4
 
-instance DefineA (b -> Feature n0 a) (Feature n1 b -> Feature n0 a) where defineA = D1A
-instance DefineA (c -> b -> Feature n0 a) (Feature n2 c -> Feature n1 b -> Feature n0 a) where defineA = D2A
-instance DefineA (d -> c -> b -> Feature n0 a) (Feature n3 d -> Feature n2 c -> Feature n1 b -> Feature n0 a) where defineA = D3A
-instance DefineA (e -> d -> c -> b -> Feature n0 a) (Feature n4 e -> Feature n3 d -> Feature n2 c -> Feature n1 b -> Feature n0 a) where defineA = D4A
+instance DefineA (b -> Feature n0 a) (Feature n1 b -> Feature n0 a) where
+  defineA = D1A
+instance DefineA (c -> b -> Feature n0 a) (Feature n2 c -> Feature n1 b -> Feature n0 a) where
+  defineA = D2A
+instance DefineA (d -> c -> b -> Feature n0 a) (Feature n3 d -> Feature n2 c -> Feature n1 b -> Feature n0 a) where
+  defineA = D3A
+instance DefineA (e -> d -> c -> b -> Feature n0 a) (Feature n4 e -> Feature n3 d -> Feature n2 c -> Feature n1 b -> Feature n0 a) where
+  defineA = D4A
 
 
 {- | Evaluate a @Definition@. Note that (currently), the second argument of 'eval'
@@ -348,55 +385,54 @@ class Eval def args return | def -> args return where
 
 instance Eval (FeatureData b -> FeatureData a)
               (FeatureData b)  (FeatureData a) where
-  eval (D1 f)  x = fmap f x
+  eval (D1  f) x = fmap f x
   eval (D1A f) x = x >>= f
 
 instance Eval (Feature n1 b -> Feature n0 a)
               (Feature n1 b)  (Feature n0 a) where
-  eval (D1 f) (MkFeature x) = MkFeature $ fmap f x
-  eval (D1A f) (MkFeature x) =
-       case fmap f x of
-          MkFeatureData (Left l)  -> MkFeature $ MkFeatureData (Left l)
-          MkFeatureData (Right r) -> r
+  eval (D1  f) (MkFeature x) = MkFeature $ fmap f x
+  eval (D1A f) (MkFeature x) = case fmap f x of
+    MkFeatureData (Left  l) -> MkFeature $ MkFeatureData (Left l)
+    MkFeatureData (Right r) -> r
 
 
 instance Eval (FeatureData c -> FeatureData b -> FeatureData a)
               (FeatureData c,   FeatureData b) (FeatureData a) where
-  eval (D2 f) (x, y) = liftA2 f x y
+  eval (D2  f) (x, y) = liftA2 f x y
   eval (D2A f) (x, y) = join (liftA2 f x y)
 
 instance Eval (Feature n2 c -> Feature n1 b -> Feature n0 a)
               (Feature n2 c,   Feature n1 b)  (Feature n0 a)
   where
-  eval (D2 f) (MkFeature x, MkFeature y) = MkFeature $ liftA2 f x y
-  eval (D2A f) (MkFeature x, MkFeature y) =
-      case liftA2 f x y of
-          MkFeatureData (Left l)  -> MkFeature $ MkFeatureData (Left l)
-          MkFeatureData (Right r) ->  r
+  eval (D2  f) (MkFeature x, MkFeature y) = MkFeature $ liftA2 f x y
+  eval (D2A f) (MkFeature x, MkFeature y) = case liftA2 f x y of
+    MkFeatureData (Left  l) -> MkFeature $ MkFeatureData (Left l)
+    MkFeatureData (Right r) -> r
 
 instance Eval (FeatureData d -> FeatureData c -> FeatureData b -> FeatureData a)
               (FeatureData d,   FeatureData c,   FeatureData b)  (FeatureData a)
   where
-  eval (D3 f) (x, y, z) = liftA3 f x y z
+  eval (D3  f) (x, y, z) = liftA3 f x y z
   eval (D3A f) (x, y, z) = join (liftA3 f x y z)
 
 instance Eval (Feature n3 d -> Feature n2 c -> Feature n1 b -> Feature n0 a)
               (Feature n3 d,   Feature n2 c,   Feature n1 b)  (Feature n0 a)
    where
-  eval (D3 f) (MkFeature x, MkFeature y, MkFeature z) = MkFeature $ liftA3 f x y z
-  eval (D3A f) (MkFeature x, MkFeature y, MkFeature z) =
-      case liftA3 f x y z of
-          MkFeatureData (Left l)  -> MkFeature $ MkFeatureData (Left l)
-          MkFeatureData (Right r) -> r
+  eval (D3 f) (MkFeature x, MkFeature y, MkFeature z) =
+    MkFeature $ liftA3 f x y z
+  eval (D3A f) (MkFeature x, MkFeature y, MkFeature z) = case liftA3 f x y z of
+    MkFeatureData (Left  l) -> MkFeature $ MkFeatureData (Left l)
+    MkFeatureData (Right r) -> r
 
 instance Eval (Feature n4 e -> Feature n3 d -> Feature n2 c -> Feature n1 b -> Feature n0 a)
               (Feature n4 e,   Feature n3 d,   Feature n2 c,   Feature n1 b)  (Feature n0 a)
    where
-  eval (D4 f)  (MkFeature v, MkFeature x, MkFeature y, MkFeature z) = MkFeature $ liftM4 f v x y z
+  eval (D4 f) (MkFeature v, MkFeature x, MkFeature y, MkFeature z) =
+    MkFeature $ liftM4 f v x y z
   eval (D4A f) (MkFeature v, MkFeature x, MkFeature y, MkFeature z) =
-      case liftM4 f v x y z of
-          MkFeatureData (Left l)  -> MkFeature $ MkFeatureData (Left l)
-          MkFeatureData (Right r) -> r
+    case liftM4 f v x y z of
+      MkFeatureData (Left  l) -> MkFeature $ MkFeatureData (Left l)
+      MkFeatureData (Right r) -> r
 
 {- | Initializes @Feature@ @Attributes@ to empty strings -}
 

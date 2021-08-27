@@ -25,6 +25,7 @@ module Hasklepias.FeatureEvents(
 
     -- ** Reshaping containers
     , allPairs
+    , pairs
     , splitByConcepts
 
     -- ** Create filters
@@ -80,7 +81,7 @@ import EventData.Context.Domain             ( Domain(..)
 import Safe                                 ( headMay, lastMay )
 import Control.Applicative                  ( Applicative(liftA2) )
 import Control.Monad                        ( Functor(fmap), (=<<) )
-import Data.Bool                            ( Bool(..), (&&), not, (||) )
+import Data.Bool                            ( Bool(..), (&&), not, (||), otherwise )
 import Data.Either                          ( either )
 import Data.Eq                              ( Eq )
 import Data.Foldable                        ( Foldable(length, null)
@@ -111,7 +112,7 @@ isNotEmpty = not.null
 
 -- | Filter 'Events' to those that have any of the provided concepts.
 makeConceptsFilter ::
-    ( Filterable f ) => 
+    ( Filterable f ) =>
        [Text]    -- ^ the list of concepts by which to filter 
     -> f (Event a)
     -> f (Event a)
@@ -121,7 +122,7 @@ makeConceptsFilter cpts = filter (`hasConcepts` cpts)
 --   with the provided concepts. For example, see 'firstConceptOccurrence' and
 --  'lastConceptOccurrence'.
 nthConceptOccurrence ::
-    ( Filterable f ) => 
+    ( Filterable f ) =>
        (f (Event a) -> Maybe (Event a)) -- ^ function used to select a single event
     -> [Text]
     -> f (Event a)
@@ -131,7 +132,7 @@ nthConceptOccurrence f c = f.makeConceptsFilter c
 -- | Finds the *first* occurrence of an 'Event' with at least one of the concepts.
 --   Assumes the input 'Events' list is appropriately sorted.
 firstConceptOccurrence ::
-    ( Witherable f ) => 
+    ( Witherable f ) =>
       [Text]
     -> f (Event a)
     -> Maybe (Event a)
@@ -173,11 +174,14 @@ makePairedFilter :: Ord a =>
 makePairedFilter fi i fc = filter (makePairPredicate fi i fc)
 
 -- | Generate all pair-wise combinations from two lists.
-allPairs :: Applicative f => f a  -> f b -> f (a, b) 
+allPairs :: Applicative f => f a  -> f b -> f (a, b)
 allPairs = liftA2 (,)
 
--- | Generate all pair-wise combinations from a single lists
-pairs :: [a]  -> [(a,a)] 
+-- | Generate all pair-wise combinations of a single list.
+pairs :: [a]  -> [(a,a)]
+-- copied from the hgeometry library (https://hackage.haskell.org/package/hgeometry-0.12.0.4/docs/src/Data.Geometry.Arrangement.Internal.html#allPairs)
+-- TODO: better naming differences between pairs and allPairs?
+-- TODO: generalize this function over more containers?
 pairs = go
   where
     go []     = []
@@ -186,7 +190,7 @@ pairs = go
 -- | Split an @Events a@ into a pair of @Events a@. The first element contains
 --   events have any of the concepts in the first argument, similarly for the
 --   second element.
-splitByConcepts :: 
+splitByConcepts ::
     ( Filterable f ) =>
        [Text]
     -> [Text]
@@ -195,9 +199,12 @@ splitByConcepts ::
 splitByConcepts c1 c2 es = ( filter (`hasConcepts` c1) es
                            , filter (`hasConcepts` c2) es)
 
--- | 
-pairGaps :: (Intervallic i a, IntervalSizeable a b, IntervalCombinable i a) =>  [(i a)] -> [(Maybe b)]
-pairGaps es = fmap ((fmap duration) . uncurry (><)) (pairs es) 
+-- | Gets the durations of gaps (via 'IntervalAlgebra.(><)') between all pairs 
+--   of the input. 
+pairGaps :: (Intervallic i a, IntervalSizeable a b, IntervalCombinable i a) =>
+     [i a]
+  -> [Maybe b]
+pairGaps es = fmap (fmap duration . uncurry (><)) (pairs es)
 
 -- | Create a predicate function that checks whether within a provided spanning
 --   interval, are there (e.g. any, all) gaps of (e.g. <, <=, >=, >) a specified

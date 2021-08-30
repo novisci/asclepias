@@ -10,7 +10,7 @@ Maintainer  : bsaul@novisci.com
 {-# LANGUAGE NoImplicitPrelude #-}
 
 module EventData
-  ( -- * Events
+  ( -- ** Event Core
     module EventData.Core
     -- ** Event Contexts
   , module EventData.Context
@@ -24,6 +24,8 @@ module EventData
   , module EventData.Aeson
     -- ** Generating arbitrary events
   , module EventData.Arbitrary
+
+
   ) where
 
 import           EventData.Aeson
@@ -33,4 +35,5 @@ import           EventData.Context.Domain
 import           EventData.Core
 import           EventData.Predicates
 import           EventData.Accessors
+
 

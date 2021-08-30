@@ -1,4 +1,3 @@
-image: registry.novisci.com/nsstat/statocker/haskell:8.10.4
 
 before_script:
   - export VERSION=$(grep -e '^version:' hasklepias.cabal | sed 's/version:[[:space:]]*//g')
@@ -10,6 +9,8 @@ variables:
 stages:
   - docker
   - build
+  - docs
+  - upload-docs
 
 docker-build:
  stage : docker
@@ -51,4 +52,30 @@ test:
     - cabal --version
     - cabal test --test-show-details=always 
 
+docs: 
+  only: 
+    - master
+  image: registry.novisci.com/nsstat/asclepias/$PKG-build:latest
+  needs: []
+  stage: docs
+  artifacts:
+    paths:
+      - dist-newstyle/
+      - haddock-output.txt
+    expire_in: 1 hour
+  script:
+    - ghc --version
+    - cabal haddock --haddock-html-location='https://hackage.haskell.org/package/$pkg-$version/docs' --enable-documentation  --haddock-hyperlink-source --haddock-quickjump > haddock-output.txt
+
+upload: 
+  image: registry.novisci.com/nsstat/statocker/aws:latest
+  needs: ["docs"]
+  only: 
+    - master
+  stage: upload-docs
+  script:
+    - VAR=$(tail -1 haddock-output.txt)
+    - aws s3 sync $(dirname $VAR) s3://docs.novisci.com/asclepias/$VERSION/ --delete --acl public-read
+    - aws s3 sync $(dirname $VAR) s3://docs.novisci.com/asclepias/latest/ --delete --acl public-read
+    - aws cloudfront create-invalidation --distribution-id E171A73GHZQS0B --paths /asclepias/latest/
 

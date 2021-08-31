@@ -104,7 +104,7 @@ buildIsEnrolledTests = testGroup
   "Tests of isEnrolled template"
   (fmap
     (\x -> testCase (getTestName x)
-                    (makeAssertion x (buildIsEnrolled (getBuilderArgs x)))
+                    (makeAssertion x (uncurryN $ eval (buildIsEnrolled (getBuilderArgs x))))
     )
     buildIsEnrolledTestCases
   )
@@ -258,7 +258,7 @@ buildContinuousEnrollmentTests = testGroup
       (getTestName x)
       (makeAssertion
         x
-        (buildContinuousEnrollment (makeBaselineFromIndex 10) isEnrollmentEvent 3)
+        (uncurryN $ eval (buildContinuousEnrollment (makeBaselineFromIndex 10) isEnrollmentEvent 3))
       )
     )
     buildContinuousEnrollmentTestCases

@@ -39,7 +39,11 @@ import           Stype
 -- | All the buildNSatisfyP tests.
 buildNsatisfyPTests :: TestTree
 buildNsatisfyPTests =
-  testGroup "NsatisfyP" [buildNofXTests, buildNofXWithGapTests, buildNofUniqueBeginsTests]
+  testGroup "NsatisfyP" 
+    [ buildNofXTests
+    , buildNofXWithGapTests
+    , buildNofXOrNofYWithGapTests
+    , buildNofUniqueBeginsTests]
 
 {-|
 -}
@@ -60,7 +64,7 @@ buildNofXBase
        -> Feature eventsName (container0 (Event a))
        -> Feature varName outputType
        )
-buildNofXBase runProcess runPostProcess runCast makeAssessmentInterval relation predicate
+buildNofXBase runPreProcess runProcess runPostProcess makeAssessmentInterval relation predicate
   = define
     (\index ->
       -- filter events to those satisfying both
@@ -68,12 +72,12 @@ buildNofXBase runProcess runPostProcess runCast makeAssessmentInterval relation 
       -- AND the given predicate
       filter
           (relation (makeAssessmentInterval index) &&& getPredicate predicate)
+      -- run the preprocessing function
+        .> runPreProcess
       -- run the processing function
         .> runProcess
-      -- run the post processing function
-        .> runPostProcess
-      -- run the casting function
-        .> runCast (makeAssessmentInterval index)
+      -- run the postprocessing function
+        .> runPostProcess (makeAssessmentInterval index)
     )
 
 {-| Do N events relating to the 'AssessmentInterval' in some way the satisfy 
@@ -248,7 +252,7 @@ buildNofXTests = testGroup
   (fmap
     (\x -> testCase
       (getTestName x)
-      (makeAssertion x (uncurryN buildNofXBool (getBuilderArgs x)))
+      (makeAssertion x (uncurryN $ eval (uncurryN buildNofXBool (getBuilderArgs x))))
     )
     buildNofXTestCases
   )
@@ -472,14 +476,188 @@ buildNofXWithGapTests = testGroup
   (fmap
     (\x -> testCase
       (getTestName x)
-      (makeAssertion x (uncurryN buildNofXWithGapBool (getBuilderArgs x)))
+      (makeAssertion x (uncurryN $ eval $ uncurryN buildNofXWithGapBool (getBuilderArgs x)))
     )
     buildNofXWithGapTestCases
   )
 
+{-|
+Is either 'buildNofX' or 'buildNofXWithGap' satisfied
 
-{-
 -}
+buildNofXOrNofYWithGapBool
+  :: ( Intervallic i a
+     , IntervalSizeable a b
+     , IntervalCombinable i a
+     , Witherable container
+     )
+  => Natural -- ^ count passed to 'buildNofX'
+  -> Predicate (Event a)
+  -> Natural -- ^ the minimum number of gaps passed to 'buildNofXWithGap'
+  -> b -- ^ the minimum duration of a gap passed to 'buildNofXWithGap'
+  -> (Index i a -> AssessmentInterval a)
+  -> ComparativePredicateOf2 (AssessmentInterval a) (Event a)
+  -> Predicate (Event a)
+  -> Definition
+       (  Feature indexName (Index i a)
+       -> Feature eventsName (container (Event a))
+       -> Feature varName Bool
+       )
+buildNofXOrNofYWithGapBool xCount xPred gapCount gapDuration assess intervalPred yPred = 
+  D2C (||) 
+      (buildNofX id xCount assess intervalPred xPred)
+      (buildNofXWithGap id gapCount gapDuration assess intervalPred yPred)
+
+type NofXOrNofYWithGapArgs
+  = ( Natural
+    , Predicate (Event Int)
+    , Natural
+    , Int
+    , Index Interval Int -> AssessmentInterval Int
+    , ComparativePredicateOf2 (AssessmentInterval Int) (Event Int)
+    , Predicate (Event Int)
+    )
+
+type NofXOrNofYWithGapTestCase
+  = TestCase
+      (F "index" (Index Interval Int), F "events" [Event Int])
+      Bool
+      NofXOrNofYWithGapArgs
+
+buildNofXOrNofYWithGapTestCases :: [NofXOrNofYWithGapTestCase]
+buildNofXOrNofYWithGapTestCases =
+  [ f "True if looking for no events and there are no events"
+      (0, containsConcepts ["A"], 0, 3, makeBaselineFromIndex 10, concur, isEnrollmentEvent)
+      (10, 11)
+      []
+      True
+      {-
+                   -          <- Index
+         ----------           <- Baseline
+                              
+        |--------------|
+      -}
+  , f
+    "True if looking for (at least) no events and there are events satisfying gap condition"
+    (0, containsConcepts ["A"], 0, 3, makeBaselineFromIndex 10, concur, isEnrollmentEvent)
+    (10, 11)
+    [g (1, 2), g (8, 9)]
+    True
+      {-
+                   -          <- Index
+         ----------           <- Baseline
+         -       -            <- Enrollment
+        |--------------|
+      -}
+  , f "False if no X or Y events and looking for 1 X or 1 Y gap"
+      (1, containsConcepts ["A"], 1, 3, makeBaselineFromIndex 10, concur, isEnrollmentEvent)
+      (10, 11)
+      []
+      False
+      {-
+                   -          <- Index
+         ----------           <- Baseline
+                              <- Enrollment
+        |--------------|
+      -}
+  , f "False if a no X and Y single event and looking for gap"
+      (1, containsConcepts ["A"], 1, 3, makeBaselineFromIndex 10, concur, isEnrollmentEvent)
+      (10, 11)
+      [g (8, 9)]
+      False
+      {-
+                   -          <- Index
+         ----------           <- Baseline
+                 -            <- Enrollment
+        |--------------|
+      -}
+  , f "False if no X 1 gap but not satisfying gap condition"
+      (1, containsConcepts ["A"], 1, 3, makeBaselineFromIndex 10, concur, isEnrollmentEvent)
+      (10, 11)
+      [g (6, 7), g (8, 9)]
+      False
+      {-
+                   -          <- Index
+         ----------           <- Baseline
+               - -            <- Enrollment
+        |--------------|
+      -}
+  , f "True if 1 gap satisfy gap condition"
+      (1, containsConcepts ["D"], 1, 3, makeBaselineFromIndex 10, concur, containsConcepts ["A"])
+      (10, 11)
+      [h ["C", "A"] (2, 3), h ["A", "B"] (8, 9)]
+      True
+      {-
+                   -          <- Index
+         ----------           <- Baseline
+          -                   <- ["C", "A"]
+                 -            <- ["A", "B"] 
+        |--------------|
+      -}
+    , f "True if 1 X event"
+      (1, containsConcepts ["C"], 1, 3, makeBaselineFromIndex 10, concur, containsConcepts ["A"])
+      (10, 11)
+      [h ["C", "A"] (2, 3)]
+      True
+      {-
+                   -          <- Index
+         ----------           <- Baseline
+          -                   <- ["C", "A"]
+        |--------------|
+      -}
+  , f "True if 1 gap satisfy gap condition "
+      (2, containsConcepts ["D"], 1, 3, makeBaselineFromIndex 10, concur, containsConcepts ["A"])
+      (10, 11)
+      [h ["C", "A"] (2, 3), h ["D", "E"] (5, 6), h ["A", "B"] (8, 9)]
+      True
+      {-
+                   -          <- Index
+         ----------           <- Baseline
+          -                   <- ["C", "A"]
+              -               <- ["D", "E"]
+                 -            <- ["A", "B"] 
+        |--------------|
+      -}
+  , f "False if only one X and if no gap satisfy gap condition "
+      (2, containsConcepts ["D"], 1, 3, makeBaselineFromIndex 10, concur, containsConcepts ["A"])
+      (10, 11)
+      [h ["C", "A"] (2, 3), h ["D", "A"] (4, 5)]
+      False
+      {-
+                   -          <- Index
+         ----------           <- Baseline
+          -                   <- ["C", "A"]
+            -                 <- ["D", "A"]
+        |--------------|
+      -}
+  , f "True if two X and if no gap satisfy gap condition "
+      (2, containsConcepts ["D"], 1, 3, makeBaselineFromIndex 10, concur, containsConcepts ["A"])
+      (10, 11)
+      [h ["D", "A"] (2, 3), h ["D", "A"] (4, 5)]
+      True
+      {-
+                   -          <- Index
+         ----------           <- Baseline
+          -                   <- ["D", "A"]
+            -                 <- ["D", "A"]
+        |--------------|
+      -}
+
+  ] where
+  f = makeTestInputs
+  g = makeEnrollmentEvent
+  h = makeEventWithConcepts
+
+buildNofXOrNofYWithGapTests :: TestTree
+buildNofXOrNofYWithGapTests = testGroup
+  "Tests of NofXOrNofYWithGap template"
+  (fmap
+    (\x -> testCase
+      (getTestName x)
+      (makeAssertion x (uncurryN $ eval $ uncurryN buildNofXOrNofYWithGapBool (getBuilderArgs x)))
+    )
+    buildNofXOrNofYWithGapTestCases
+  )
 
 {-| Do N events relating to the 'AssessmentInterval' in some way the satisfy 
     the given predicate? 
@@ -579,7 +757,7 @@ buildNofUniqueBeginsTests = testGroup
   (fmap
     (\x -> testCase
       (getTestName x)
-      (makeAssertion x (uncurryN buildNofUniqueBegins (getBuilderArgs x)))
+      (makeAssertion x (uncurryN $ eval $ uncurryN buildNofUniqueBegins (getBuilderArgs x)))
     )
     buildNofUniqueBeginsTestCases
   )

@@ -137,16 +137,15 @@ import safe Data.Time.Calendar.Quarter      ( QuarterOfYear
 import safe Data.Text                       ( pack, Text )
 import safe Data.Tuple                      ( fst, snd, uncurry, curry )
 import safe Data.Tuple.Curry                ( curryN, uncurryN )
-import safe IntervalAlgebra
-import safe IntervalAlgebra.IntervalUtilities
-import safe IntervalAlgebra.PairedInterval
 
 import safe Witherable                      ( Filterable(filter), Witherable(..) )
 import safe Flow                            ( (!>), (.>), (<!), (<.), (<|), (|>) )
 import Safe                                 ( headMay, lastMay )
--- import Data.Vector.Fusion.Bundle (scanl1)
--- import Data.Map (fromList)
--- import qualified Data.Map as Set
+
+
+import safe          IntervalAlgebra
+import safe          IntervalAlgebra.IntervalUtilities
+import safe         IntervalAlgebra.PairedInterval
 
 setFromList :: (Ord a) =>  [a] -> Set.Set a
 setFromList = Set.fromList

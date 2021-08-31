@@ -26,4 +26,7 @@ import Hasklepias.Templates.Features.NsatisfyP
     , buildNofXWithGap
     , buildNofXWithGapBool
     , buildNofXWithGapBinary
-    , buildNofUniqueBegins)
+    , buildNofUniqueBegins
+    , buildNofXOrNofYWithGap
+    , buildNofXOrNofYWithGapBool
+    , buildNofXOrNofYWithGapBinary )

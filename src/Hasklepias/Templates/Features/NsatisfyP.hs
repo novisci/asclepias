@@ -23,6 +23,9 @@ module Hasklepias.Templates.Features.NsatisfyP
   , buildNofXWithGapBool
   , buildNofXWithGapBinary
   , buildNofUniqueBegins
+  , buildNofXOrNofYWithGap
+  , buildNofXOrNofYWithGapBool
+  , buildNofXOrNofYWithGapBinary
   ) where
 
 import           Cohort
@@ -485,6 +488,32 @@ buildNofXWithGapTests = testGroup
 Is either 'buildNofX' or 'buildNofXWithGap' satisfied
 
 -}
+buildNofXOrNofYWithGap
+  :: ( Intervallic i a
+     , IntervalSizeable a b
+     , IntervalCombinable i a
+     , Witherable container
+     )
+  => (outputType -> outputType -> outputType) 
+  -> (Bool -> outputType)
+  -> Natural -- ^ count passed to 'buildNofX'
+  -> Predicate (Event a)
+  -> Natural -- ^ the minimum number of gaps passed to 'buildNofXWithGap'
+  -> b -- ^ the minimum duration of a gap passed to 'buildNofXWithGap'
+  -> (Index i a -> AssessmentInterval a)
+  -> ComparativePredicateOf2 (AssessmentInterval a) (Event a)
+  -> Predicate (Event a)
+  -> Definition
+       (  Feature indexName (Index i a)
+       -> Feature eventsName (container (Event a))
+       -> Feature varName outputType
+       )
+buildNofXOrNofYWithGap f cast xCount xPred gapCount gapDuration assess intervalPred yPred = 
+  D2C f
+      (buildNofX cast xCount assess intervalPred xPred)
+      (buildNofXWithGap cast gapCount gapDuration assess intervalPred yPred)
+
+-- | 'buildNofXOrNofYWithGap' specialized to return @Bool@. 
 buildNofXOrNofYWithGapBool
   :: ( Intervallic i a
      , IntervalSizeable a b
@@ -503,10 +532,29 @@ buildNofXOrNofYWithGapBool
        -> Feature eventsName (container (Event a))
        -> Feature varName Bool
        )
-buildNofXOrNofYWithGapBool xCount xPred gapCount gapDuration assess intervalPred yPred = 
-  D2C (||) 
-      (buildNofX id xCount assess intervalPred xPred)
-      (buildNofXWithGap id gapCount gapDuration assess intervalPred yPred)
+buildNofXOrNofYWithGapBool = buildNofXOrNofYWithGap (||) id
+
+-- | 'buildNofXOrNofYWithGap' specialized to return @Binary@. 
+buildNofXOrNofYWithGapBinary
+  :: ( Intervallic i a
+     , IntervalSizeable a b
+     , IntervalCombinable i a
+     , Witherable container
+     )
+  => Natural -- ^ count passed to 'buildNofX'
+  -> Predicate (Event a)
+  -> Natural -- ^ the minimum number of gaps passed to 'buildNofXWithGap'
+  -> b -- ^ the minimum duration of a gap passed to 'buildNofXWithGap'
+  -> (Index i a -> AssessmentInterval a)
+  -> ComparativePredicateOf2 (AssessmentInterval a) (Event a)
+  -> Predicate (Event a)
+  -> Definition
+       (  Feature indexName (Index i a)
+       -> Feature eventsName (container (Event a))
+       -> Feature varName Binary
+       )
+buildNofXOrNofYWithGapBinary = 
+  buildNofXOrNofYWithGap (\x y -> fromBool $ (||) (toBool x)  (toBool y) ) fromBool
 
 type NofXOrNofYWithGapArgs
   = ( Natural

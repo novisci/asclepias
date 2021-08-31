@@ -38,7 +38,7 @@ import Cohort.Index
 import Features.Compose                 ( Feature
                                         , Definition(..)
                                         , Define(..)
-                                        , Eval(..) )
+                                        , eval )
 import Hasklepias.Misc
 
 import IntervalAlgebra
@@ -54,14 +54,29 @@ data TestCase a b builderArgs = MkTestCase {
   } deriving (Eq, Show)
 
 
-evalTestCase :: (Eval def defArgs return) =>
-  TestCase defArgs b builderArgs
-  -> Definition def
-  -> ( return, Feature "result" b )
-evalTestCase (MkTestCase buildArgs _ inputs truth) def = ( eval def inputs, truth )
+-- evalTestCase :: 
+--   TestCase defArgs b builderArgs
+--   -> (def -> return)
+--   -- -> Definition def
+--   -> ( return, Feature "result" b )
+-- evalTestCase (MkTestCase buildArgs _ inputs truth) def = ( eval def inputs, truth )
 
-makeAssertion :: (Eq b, Show b, Eval def defArgs (Feature "result" b)) =>
-  TestCase defArgs b  builderArgs -> Definition def -> Assertion
+evalTestCase :: 
+  TestCase defArgs b builderArgs
+  -> (defArgs -> return)
+  -- -> Definition def
+  -> ( return, Feature "result" b )
+evalTestCase (MkTestCase buildArgs _ inputs truth) def = ( def inputs, truth )
+
+-- makeAssertion :: (Eq b, Show b) =>
+--   TestCase defArgs b  builderArgs -> Definition def -> Assertion
+-- makeAssertion x def = uncurry (@?=) (evalTestCase x def)
+
+-- z :: Definition d -> (b -> a)
+-- z def = (eval def)
+
+makeAssertion :: (Eq b, Show b) =>
+  TestCase defArgs b builderArgs ->  (defArgs -> Feature "result" b) -> Assertion
 makeAssertion x def = uncurry (@?=) (evalTestCase x def)
 
 readIntervalSafe :: (Integral b, IntervalSizeable a b) => (a, a) -> Interval a

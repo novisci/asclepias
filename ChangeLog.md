@@ -1,5 +1,11 @@
 # Changelog for hasklepias
 
+## 0.18.0
+
+* Refactors the `Features.Compose` module a bit. Adds constructors for composing `Definition`. For example, `D1C :: (a2 -> a1 -> a)  -> Definition (F n1 b -> F n02 a2) -> Definition (F n1 b -> F n01 a1) -> Definition (F n1 b -> F n0 a )`. Such constructors allow one to build definitions from other definitions, provided the input types are the same. Note: there is *not* a single interface to these constructors like is provided by the `define` and `defineA` functions. The poorly designed `Eval` typeclass is now replaced with a single `eval` function which simply pattern matches on the various shapes of `Definition`s. I fully expect this module to get another refactor in the future, but it is shaping up OK.
+* Examples are updated according to the changes `define`/`eval`.
+* Adds the `buildNofXOrNofYWithGapBool` template, which can be used for the common feature or 2-outpatient events with at least some gap between them or 1 inpatient event.
+
 ## 0.17.1
 
 * Fixes silly mistake with git.

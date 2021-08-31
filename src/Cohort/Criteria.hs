@@ -50,7 +50,7 @@ import safe Features.Compose            ( getFeatureData
 
 -- | Defines the return type for @'Criterion'@ indicating whether to include or 
 -- exclude a subject.
-data Status = Include | Exclude deriving (Eq, Show)
+data Status = Include | Exclude deriving (Eq, Show, Generic)
 
 -- | Defines subject's diposition in a cohort either included or which criterion
 -- they were excluded by. See @'checkCohortStatus'@ for evaluating a @'Criteria'@

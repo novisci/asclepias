@@ -202,7 +202,8 @@ critEnrolled455
        -> Feature "isEnrolled" Status
        -> Feature "isContinuousEnrolled" Status
        )
-critEnrolled455 = buildContinuousEnrollment baselineInterval isEnrollmentEvent 30
+critEnrolled455 =
+  buildContinuousEnrollment baselineInterval isEnrollmentEvent 30
 
 -- | Exclude if the subject is dead before the time of index.
 critDead
@@ -278,10 +279,10 @@ makeCriteriaRunner index events =
  where
   crit1   = eval critFemale featEvs
   crit2   = eval critOver50 agefeat
-  crit3   = eval critEnrolled (featInd, featEvs)
-  crit4   = eval critEnrolled455 (featInd, featEvs, crit3)
-  crit5   = eval critDead (featInd, dead)
-  agefeat = eval age (featInd, featEvs)
+  crit3   = eval critEnrolled featInd featEvs
+  crit4   = eval critEnrolled455 featInd featEvs crit3
+  crit5   = eval critDead featInd dead
+  agefeat = eval age featInd featEvs
   dead    = eval deathDay featEvs
   featInd = featureIndex index
   featEvs = featureEvents events
@@ -290,10 +291,10 @@ makeCriteriaRunner index events =
 makeFeatureRunner :: Index Interval Day -> Events Day -> Featureset
 makeFeatureRunner index events = featureset
   (  packFeature idx
-  :| [ packFeature $ eval diabetes (idx, ef)
-     , packFeature $ eval ckd (idx, ef)
-     , packFeature $ eval ppi (idx, ef)
-     , packFeature $ eval glucocorticoids (idx, ef)
+  :| [ packFeature $ eval diabetes idx ef
+     , packFeature $ eval ckd idx ef
+     , packFeature $ eval ppi idx ef
+     , packFeature $ eval glucocorticoids idx ef
      ]
   )
  where

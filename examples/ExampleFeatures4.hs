@@ -460,7 +460,7 @@ testProtocols
   :: (Integral b, IntervalSizeable a b)
   => [Event a]
   -> Feature "pcskProtocols" (Protocols b)
-testProtocols input = eval pcskProtocols (idx, pcev)
+testProtocols input = eval pcskProtocols idx pcev
  where
   evs  = pure input
   idx  = eval index evs
@@ -512,16 +512,16 @@ testOutcomes
      , Feature "accident" (NegOutcomes b)
      )
 testOutcomes input =
-  (eval o1 (idx, flevs, prot, ctime), eval o2 (idx, flevs, prot, ctime))
+  (eval o1 idx flevs prot ctime, eval o2 idx flevs prot ctime)
  where
   evs   = pure input
   idx   = eval index evs
-  flevs = eval flupEvents (idx, evs)
+  flevs = eval flupEvents idx evs
   pcev  = eval pcskEvents evs
   dth   = eval death flevs
-  disen = eval disenrollment (idx, evs)
-  prot  = eval pcskProtocols (idx, pcev)
-  ctime = eval censorTime (dth, disen)
+  disen = eval disenrollment idx evs
+  prot  = eval pcskProtocols idx pcev
+  ctime = eval censorTime dth disen
 
 p1Outcomes
   :: (Integral b)

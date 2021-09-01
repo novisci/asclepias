@@ -159,9 +159,9 @@ buildNofConceptsBinaryConcurBaseline
   -> Definition
        (  Feature indexName (Index i0 a)
        -> Feature eventsName (t (Event a))
-       -> Feature varName Bool
+       -> Feature varName Binary 
        )
-buildNofConceptsBinaryConcurBaseline n baselineDur cpts = buildNofXBool
+buildNofConceptsBinaryConcurBaseline n baselineDur cpts = buildNofXBinary
   n
   (makeBaselineFromIndex baselineDur)
   concur

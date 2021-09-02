@@ -17,6 +17,7 @@ module ExampleCohort1
   ( exampleCohort1tests
   ) where
 import           Hasklepias
+import           Prelude                        ( uncurry )
 {-------------------------------------------------------------------------------
   Constants
 -------------------------------------------------------------------------------}
@@ -414,32 +415,76 @@ makeExpectedCohort
   :: AttritionInfo -> [ObsUnit Featureset] -> Cohort Featureset
 makeExpectedCohort a x = MkCohort (Just a, MkCohortData x)
 
+mkAl :: (CohortStatus, Natural) -> AttritionLevel
+mkAl = uncurry MkAttritionLevel
+
 expectedCohorts :: [Cohort Featureset]
 expectedCohorts = zipWith
   (curry MkCohort)
-  [ Just
-  $  MkAttritionInfo
-  $  (ExcludedBy (2, "isOver50"), 1)
-  :| [(ExcludedBy (4, "isContinuousEnrolled"), 1)]
-  , Just $ MkAttritionInfo $ (ExcludedBy (2, "isOver50"), 1) :| [(Included, 1)]
-  , Just $ MkAttritionInfo $ (ExcludedBy (2, "isOver50"), 1) :| [(Included, 1)]
-  , Just $ MkAttritionInfo $ (ExcludedBy (2, "isOver50"), 1) :| [(Included, 1)]
-  , Just
-  $  MkAttritionInfo
-  $  (ExcludedBy (2, "isOver50"), 1)
-  :| [(ExcludedBy (4, "isContinuousEnrolled"), 1)]
-  , Just
-  $  MkAttritionInfo
-  $  (ExcludedBy (2, "isOver50"), 1)
-  :| [(ExcludedBy (3, "isEnrolled"), 1)]
-  , Just
-  $  MkAttritionInfo
-  $  (ExcludedBy (2, "isOver50"), 1)
-  :| [(ExcludedBy (3, "isEnrolled"), 1)]
-  , Just
-  $  MkAttritionInfo
-  $  (ExcludedBy (2, "isOver50"), 1)
-  :| [(ExcludedBy (3, "isEnrolled"), 1)]
+  [ Just $ MkAttritionInfo 2 $ setFromList
+    [ mkAl (ExcludedBy (1, "isFemale"), 0)
+    , mkAl (ExcludedBy (2, "isOver50"), 1)
+    , mkAl (ExcludedBy (3, "isEnrolled"), 0)
+    , mkAl (ExcludedBy (4, "isContinuousEnrolled"), 1)
+    , mkAl (ExcludedBy (5, "isDead"), 0)
+    , mkAl (Included, 0)
+    ]
+  , Just $ MkAttritionInfo 2 $ setFromList
+    [ mkAl (ExcludedBy (1, "isFemale"), 0)
+    , mkAl (ExcludedBy (2, "isOver50"), 1)
+    , mkAl (ExcludedBy (3, "isEnrolled"), 0)
+    , mkAl (ExcludedBy (4, "isContinuousEnrolled"), 0)
+    , mkAl (ExcludedBy (5, "isDead"), 0)
+    , mkAl (Included, 1)
+    ]
+  , Just $ MkAttritionInfo 2 $ setFromList
+    [ mkAl (ExcludedBy (1, "isFemale"), 0)
+    , mkAl (ExcludedBy (2, "isOver50"), 1)
+    , mkAl (ExcludedBy (3, "isEnrolled"), 0)
+    , mkAl (ExcludedBy (4, "isContinuousEnrolled"), 0)
+    , mkAl (ExcludedBy (5, "isDead"), 0)
+    , mkAl (Included, 1)
+    ]
+  , Just $ MkAttritionInfo 2 $ setFromList
+    [ mkAl (ExcludedBy (1, "isFemale"), 0)
+    , mkAl (ExcludedBy (2, "isOver50"), 1)
+    , mkAl (ExcludedBy (3, "isEnrolled"), 0)
+    , mkAl (ExcludedBy (4, "isContinuousEnrolled"), 0)
+    , mkAl (ExcludedBy (5, "isDead"), 0)
+    , mkAl (Included, 1)
+    ]
+  , Just $ MkAttritionInfo 2 $ setFromList
+    [ mkAl (ExcludedBy (1, "isFemale"), 0)
+    , mkAl (ExcludedBy (2, "isOver50"), 1)
+    , mkAl (ExcludedBy (3, "isEnrolled"), 0)
+    , mkAl (ExcludedBy (4, "isContinuousEnrolled"), 1)
+    , mkAl (ExcludedBy (5, "isDead"), 0)
+    , mkAl (Included, 0)
+    ]
+  , Just $ MkAttritionInfo 2 $ setFromList
+    [ mkAl (ExcludedBy (1, "isFemale"), 0)
+    , mkAl (ExcludedBy (2, "isOver50"), 1)
+    , mkAl (ExcludedBy (3, "isEnrolled"), 1)
+    , mkAl (ExcludedBy (4, "isContinuousEnrolled"), 0)
+    , mkAl (ExcludedBy (5, "isDead"), 0)
+    , mkAl (Included, 0)
+    ]
+  , Just $ MkAttritionInfo 2 $ setFromList
+    [ mkAl (ExcludedBy (1, "isFemale"), 0)
+    , mkAl (ExcludedBy (2, "isOver50"), 1)
+    , mkAl (ExcludedBy (3, "isEnrolled"), 1)
+    , mkAl (ExcludedBy (4, "isContinuousEnrolled"), 0)
+    , mkAl (ExcludedBy (5, "isDead"), 0)
+    , mkAl (Included, 0)
+    ]
+  , Just $ MkAttritionInfo 2 $ setFromList
+    [ mkAl (ExcludedBy (1, "isFemale"), 0)
+    , mkAl (ExcludedBy (2, "isOver50"), 1)
+    , mkAl (ExcludedBy (3, "isEnrolled"), 1)
+    , mkAl (ExcludedBy (4, "isContinuousEnrolled"), 0)
+    , mkAl (ExcludedBy (5, "isDead"), 0)
+    , mkAl (Included, 0)
+    ]
   ]
   (fmap MkCohortData ([[]] ++ transpose [expectedObsUnita] ++ [[], [], [], []]))
 

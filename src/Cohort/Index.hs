@@ -13,7 +13,8 @@ Maintainer  : bsaul@novisci.com
 {-# LANGUAGE MultiParamTypeClasses #-}
 -- {-# LANGUAGE Safe #-}
 
-module Cohort.Index(
+module Cohort.Index
+  (
   {- |
     An 'Index' is an interval of time from which the assessment intervals for an
    observational unit may be derived. Assessment intervals (encoded in the type
@@ -21,23 +22,23 @@ module Cohort.Index(
    -}
     Index
   , makeIndex
-) where
+  ) where
 
-import GHC.Show                    ( Show )
-import GHC.Generics                ( Generic )
-import Data.Eq                     ( Eq )
-import Data.Functor                ( Functor(fmap) )
-import Data.Ord                    ( Ord )
-import IntervalAlgebra             ( Interval
-                                   , Intervallic(..)
-                                   )
-import Data.Aeson                  ( ToJSON )
+import           Data.Aeson                     ( ToJSON )
+import           Data.Eq                        ( Eq )
+import           Data.Functor                   ( Functor(fmap) )
+import           Data.Ord                       ( Ord )
+import           GHC.Generics                   ( Generic )
+import           GHC.Show                       ( Show )
+import           IntervalAlgebra                ( Interval
+                                                , Intervallic(..)
+                                                )
 
 {-|
 An @Index@ is a wrapper for an @Intervallic@ used to indicate that a particular
 interval is considered an index interval to which other intervals will be compared.
 -}
-newtype Index i a = MkIndex { 
+newtype Index i a = MkIndex {
     getIndex :: i a -- ^ Unwrap an @Index@
   } deriving (Eq, Show, Generic)
 
@@ -52,5 +53,5 @@ instance (Intervallic i a) => Intervallic (Index i) a where
   getInterval (MkIndex x) = getInterval x
   setInterval (MkIndex x) y = MkIndex (setInterval x y)
 
-instance (Intervallic i a, ToJSON (i a)) => ToJSON (Index i a) 
+instance (Intervallic i a, ToJSON (i a)) => ToJSON (Index i a)
 

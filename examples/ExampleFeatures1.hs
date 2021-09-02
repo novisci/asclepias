@@ -16,13 +16,8 @@ module ExampleFeatures1
   ( exampleFeatures1Spec
   ) where
 
-import           Cohort                         ( AssessmentInterval )
-import           Control.Monad
 import           ExampleEvents
-import           Features                       ( HasAttributes )
 import           Hasklepias
-import           Hasklepias                     ( IntervalSizeable )
-import           Hasklepias.ReexportsUnsafe     ( ToJSON )
 import           Test.Hspec
 
 {-
@@ -271,7 +266,10 @@ exampleFeatures1Spec = do
     $          evalCohort testCohortSpec
                           (MkPopulation [exampleSubject1, exampleSubject2])
     `shouldBe` MkCohort
-                 ( Just $ MkAttritionInfo $ pure (Included, 2)
+                 ( Just $ MkAttritionInfo 2 $ setFromList
+                   [ uncurry MkAttritionLevel (ExcludedBy (1, "includeAll"), 0)
+                   , uncurry MkAttritionLevel (Included                    , 2)
+                   ]
                  , MkCohortData
                    [ MkObsUnit "a" example1results
                    , MkObsUnit "b" example2results

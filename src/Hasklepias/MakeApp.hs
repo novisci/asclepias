@@ -99,9 +99,12 @@ logParseErrors :: [ParseError] -> IO ()
 logParseErrors x = mconcat $ fmap (parseErrorL <&) x
 
 -- | Make a command line cohort building application.
-makeCohortApp :: (FromJSON a, Show a, IntervalSizeable a b
-                  , ToJSON d0,
-                   ShapeCohort d0) =>
+makeCohortApp :: 
+  ( FromJSON a
+  , Show a
+  , IntervalSizeable a b
+  , ToJSON d0
+  , ShapeCohort d0) =>
        String  -- ^ cohort name
     -> String  -- ^ app version
     -> (Cohort d0 -> CohortShape shape) -- ^ a function which specifies the output shape

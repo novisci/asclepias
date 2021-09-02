@@ -36,13 +36,15 @@ import           Data.Aeson                     ( (.=)
                                                 , Value
                                                 , object
                                                 )
-import           Data.Function                  ( (.) )
+import           Data.Function                  ( (.), ($) )
 import           Data.Functor                   ( Functor(fmap) )
+import           Data.List                      ( zip )
 import           Data.List.NonEmpty            as NE
                                                 ( NonEmpty(..)
                                                 , fromList
                                                 , head
-                                                , zip
+                                                , toList
+                                                -- , zip
                                                 )
 import           Data.Tuple                     ( uncurry )
 import           Features.Featureset            ( Featureset
@@ -100,9 +102,9 @@ instance ShapeCohort Featureset where
   rowWise x = RowWise (shapeRowWise x)
 
 data ColumnWise = MkColumnWise
-  { colAttributes :: NonEmpty (OutputShape Type)
+  { colAttributes :: [OutputShape Type]
   , ids           :: [ID]
-  , colData       :: NonEmpty (NonEmpty (OutputShape Type))
+  , colData       :: [[OutputShape Type]]
   }
   deriving (Show, Generic)
 
@@ -110,15 +112,18 @@ instance ToJSON ColumnWise where
   toJSON x = object
     ["attributes" .= colAttributes x, "ids" .= ids x, "data" .= colData x]
 
-newtype IDRow = MkIDRow (ID, NonEmpty (OutputShape Type))
+newtype IDRow = MkIDRow (ID, [OutputShape Type])
   deriving ( Show, Generic )
 
 instance ToJSON IDRow where
   toJSON (MkIDRow x) = object [uncurry (.=) x]
 
+-- instance FromJSON IDRow 
+
+
 data RowWise = MkRowWise
-  { attributes :: NonEmpty (OutputShape Type)
-  , rowData    :: NonEmpty IDRow
+  { attributes :: [ OutputShape Type ]
+  , rowData    :: [ IDRow ]
   }
   deriving (Show, Generic)
 
@@ -127,19 +132,17 @@ instance ToJSON RowWise where
 
 shapeColumnWise :: Cohort Featureset -> ColumnWise
 shapeColumnWise x = MkColumnWise
-  (fmap (nameAttr . NE.head . getFeatureset) z)
+  (toList $ fmap (nameAttr . NE.head . getFeatureset) z)
   (getCohortIDs x)
-  (fmap (fmap dataOnly . getFeatureset) z)
-        -- TODO: don't use fromList; do something more principled
+  (toList $ fmap (toList . (fmap dataOnly . getFeatureset)) z)
  where
   z =
     getFeaturesetList (tpose (MkFeaturesetList (NE.fromList (getCohortData x))))
 
 shapeRowWise :: Cohort Featureset -> RowWise
 shapeRowWise x = MkRowWise
-  (fmap (nameAttr . NE.head . getFeatureset) z)
-  (fmap MkIDRow (zip ids (fmap (fmap dataOnly . getFeatureset) z)))
-        -- TODO: don't use fromList; do something more principled
- where
-  z   = NE.fromList (getCohortData x)
-  ids = fromList (getCohortIDs x)
+  (fmap (nameAttr . NE.head . getFeatureset) cd)
+  (fmap MkIDRow (zip ids  (fmap (toList . (fmap dataOnly . getFeatureset)) cd)))
+  where
+    cd   =  getCohortData x
+    ids =  getCohortIDs x

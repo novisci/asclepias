@@ -1,5 +1,10 @@
 # Changelog for hasklepias
 
+## 0.18.2
+
+* Mostly internal work to clean up `AttributionInfo` values. Now counts for all the criteria are included in the information, including 0 counts. Also added a total processed field. Adds a `Semigroup` instance for `AttributionInfo` so that attrition information can be later combined -- this will be useful, for example, when combining the same cohort across partitions.
+* Adds `FromJSON` instance for `AttributionInfo` (and its components), so that attrition info can be read back into a Haskell program.
+
 ## 0.18.1
 
 * Fixes incorrect type on `buildNofConceptsBinaryConcurBaseline` which returned `Bool` instead of `Binary`.

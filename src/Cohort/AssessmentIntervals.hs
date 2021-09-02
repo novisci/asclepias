@@ -13,7 +13,8 @@ Maintainer  : bsaul@novisci.com
 {-# LANGUAGE MultiParamTypeClasses #-}
 -- {-# LANGUAGE Safe #-}
 
-module Cohort.AssessmentIntervals(
+module Cohort.AssessmentIntervals
+  (
   {- |
 The assessment intervals provided are:
 
@@ -75,24 +76,27 @@ and instead perhaps use 'IntervalAlgebra.enclosedBy'.
   , makeFollowupFromIndex
   , makeFollowupMeetingIndex
   , makeFollowupAfterIndex
-) where
+  ) where
 
-import GHC.Generics                ( Generic )
-import GHC.Num                     ( Num((+)) )
-import GHC.Show                    ( Show )
-import Data.Eq                     ( Eq )
-import Data.Functor                ( Functor(fmap) )
-import Data.Function               ( ($) )
-import Data.Ord                    ( Ord, (<=) )
-import IntervalAlgebra             ( Interval
-                                   , Intervallic(..)
-                                   , IntervalSizeable(..)
-                                   , enderval
-                                   , begin
-                                   , end
-                                   , beginerval
-                                   , duration )
-import Cohort.Index                ( Index )
+import           Cohort.Index                   ( Index )
+import           Data.Eq                        ( Eq )
+import           Data.Function                  ( ($) )
+import           Data.Functor                   ( Functor(fmap) )
+import           Data.Ord                       ( (<=)
+                                                , Ord
+                                                )
+import           GHC.Generics                   ( Generic )
+import           GHC.Num                        ( Num((+)) )
+import           GHC.Show                       ( Show )
+import           IntervalAlgebra                ( Interval
+                                                , IntervalSizeable(..)
+                                                , Intervallic(..)
+                                                , begin
+                                                , beginerval
+                                                , duration
+                                                , end
+                                                , enderval
+                                                )
 
 {-| A type to contain baseline intervals. See the 'Baseline' typeclass for methods
 to create values of this type.
@@ -104,7 +108,7 @@ instance Functor BaselineInterval where
   fmap f (MkBaselineInterval x) = MkBaselineInterval (fmap f x)
 
 instance (Ord a) => Intervallic BaselineInterval a where
-  getInterval (MkBaselineInterval x)   = getInterval x
+  getInterval (MkBaselineInterval x) = getInterval x
   setInterval (MkBaselineInterval x) y = MkBaselineInterval (setInterval x y)
 
 {-| 
@@ -142,8 +146,8 @@ Before
 class Intervallic i a => Baseline i a where
   -- | Creates a 'BaselineInterval' of the given duration that 'IntervalAlgebra.Meets'
   -- the 'Index' interval.
-  baseline :: 
-    ( IntervalSizeable a b) => 
+  baseline ::
+    ( IntervalSizeable a b) =>
       b -- ^ duration of baseline
     -> Index i a -- ^ the 'Index' event
     -> BaselineInterval a
@@ -151,13 +155,13 @@ class Intervallic i a => Baseline i a where
 
   -- | Creates a 'BaselineInterval' of the given duration that 'IntervalAlgebra.precedes'
   -- the 'Index' interval. 
-  baselineBefore :: 
-    ( IntervalSizeable a b) => 
+  baselineBefore ::
+    ( IntervalSizeable a b) =>
        b -- ^ duration to shift back 
     -> b -- ^ duration of baseline
     -> Index i a -- ^ the 'Index' event
     -> BaselineInterval a
-  baselineBefore shiftBy dur index = 
+  baselineBefore shiftBy dur index =
     MkBaselineInterval $ enderval dur (begin (enderval shiftBy (begin index)))
 
 instance (Ord a) => Baseline Interval a
@@ -172,7 +176,7 @@ instance Functor FollowupInterval where
   fmap f (MkFollowupInterval x) = MkFollowupInterval (fmap f x)
 
 instance (Ord a) => Intervallic FollowupInterval a where
-  getInterval (MkFollowupInterval x)   = getInterval x
+  getInterval (MkFollowupInterval x) = getInterval x
   setInterval (MkFollowupInterval x) y = MkFollowupInterval (setInterval x y)
 
 {-| 
@@ -236,9 +240,9 @@ MkFollowupInterval (12, 21)
 After
 -}
 class Intervallic i a => Followup i a where
-  followup :: 
+  followup ::
     ( IntervalSizeable a b
-    , Intervallic i a) => 
+    , Intervallic i a) =>
       b -- ^ duration of followup
     -> Index i a -- ^ the 'Index' event
     -> FollowupInterval a
@@ -247,22 +251,22 @@ class Intervallic i a => Followup i a where
                  then duration index + moment' index
                  else dur
 
-  followupMetBy :: 
+  followupMetBy ::
     ( IntervalSizeable a b
-    , Intervallic i a) => 
+    , Intervallic i a) =>
       b -- ^ duration of followup
     -> Index i a -- ^ the 'Index' event
     -> FollowupInterval a
   followupMetBy dur index = MkFollowupInterval (beginerval dur (end index))
 
-  followupAfter :: 
+  followupAfter ::
     ( IntervalSizeable a b
     , Intervallic i a) =>
        b -- ^ duration add between the end of index and begin of followup
     -> b -- ^ duration of followup
     -> Index i a -- ^ the 'Index' event
     -> FollowupInterval a
-  followupAfter shiftBy dur index = 
+  followupAfter shiftBy dur index =
     MkFollowupInterval $ beginerval dur (end (beginerval shiftBy (end index)))
 
 instance (Ord a) => Followup Interval a
@@ -275,8 +279,8 @@ data AssessmentInterval a =
     deriving (Eq, Show, Generic)
 
 instance (Ord a) => Intervallic AssessmentInterval a where
-  getInterval (Bl x)   = getInterval x
-  getInterval (Fl x)   = getInterval x
+  getInterval (Bl x) = getInterval x
+  getInterval (Fl x) = getInterval x
 
   setInterval (Bl x) y = Bl (setInterval x y)
   setInterval (Fl x) y = Fl (setInterval x y)
@@ -292,12 +296,12 @@ instance Functor AssessmentInterval where
 -- >>> makeBaselineFromIndex 10 x
 -- Bl (MkBaselineInterval (0, 10))
 --
-makeBaselineFromIndex :: 
-  (Baseline i a, IntervalSizeable a b) => 
-     b 
+makeBaselineFromIndex
+  :: (Baseline i a, IntervalSizeable a b)
+  => b
   -> Index i a
   -> AssessmentInterval a
-makeBaselineFromIndex dur index = Bl ( baseline dur index )
+makeBaselineFromIndex dur index = Bl (baseline dur index)
 
 -- | Creates an 'AssessmentInterval' using the 'baselineBefore' function. 
 -- 
@@ -306,14 +310,14 @@ makeBaselineFromIndex dur index = Bl ( baseline dur index )
 -- >>> makeBaselineBeforeIndex 2 10 x
 -- Bl (MkBaselineInterval (-2, 8))
 --
-makeBaselineBeforeIndex :: 
-  (Baseline i a, IntervalSizeable a b) => 
-     b
-  -> b 
+makeBaselineBeforeIndex
+  :: (Baseline i a, IntervalSizeable a b)
+  => b
+  -> b
   -> Index i a
   -> AssessmentInterval a
-makeBaselineBeforeIndex shiftBy dur index = 
-  Bl ( baselineBefore shiftBy dur index )
+makeBaselineBeforeIndex shiftBy dur index =
+  Bl (baselineBefore shiftBy dur index)
 
 -- | Creates an 'AssessmentInterval' using the 'followup' function. 
 -- 
@@ -322,12 +326,12 @@ makeBaselineBeforeIndex shiftBy dur index =
 -- >>> makeFollowupFromIndex 10 x
 -- Fl (MkFollowupInterval (10, 20))
 --
-makeFollowupFromIndex :: 
-  (Followup i a, IntervalSizeable a b) => 
-      b
+makeFollowupFromIndex
+  :: (Followup i a, IntervalSizeable a b)
+  => b
   -> Index i a
   -> AssessmentInterval a
-makeFollowupFromIndex dur index = Fl ( followup dur index )
+makeFollowupFromIndex dur index = Fl (followup dur index)
 
 -- | Creates an 'AssessmentInterval' using the 'followupMetBy' function. 
 -- 
@@ -336,12 +340,12 @@ makeFollowupFromIndex dur index = Fl ( followup dur index )
 -- >>> makeFollowupMeetingIndex 10 x
 -- Fl (MkFollowupInterval (11, 21))
 --
-makeFollowupMeetingIndex :: 
-  (Followup i a, IntervalSizeable a b) => 
-      b
+makeFollowupMeetingIndex
+  :: (Followup i a, IntervalSizeable a b)
+  => b
   -> Index i a
   -> AssessmentInterval a
-makeFollowupMeetingIndex dur index = Fl ( followupMetBy dur index )
+makeFollowupMeetingIndex dur index = Fl (followupMetBy dur index)
 
 -- | Creates an 'AssessmentInterval' using the 'followupAfter' function. 
 -- 
@@ -350,10 +354,10 @@ makeFollowupMeetingIndex dur index = Fl ( followupMetBy dur index )
 -- >>> makeFollowupAfterIndex 10 10 x
 -- Fl (MkFollowupInterval (21, 31))
 --
-makeFollowupAfterIndex :: 
-  (Followup i a, IntervalSizeable a b) => 
-     b
+makeFollowupAfterIndex
+  :: (Followup i a, IntervalSizeable a b)
+  => b
   -> b
   -> Index i a
   -> AssessmentInterval a
-makeFollowupAfterIndex shiftBy dur index = Fl ( followupAfter shiftBy dur index )
+makeFollowupAfterIndex shiftBy dur index = Fl (followupAfter shiftBy dur index)

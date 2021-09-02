@@ -7,7 +7,7 @@ module Cohort.CoreSpec (
 
 import Features
 import Cohort
-import Data.List.NonEmpty
+import Data.Set (fromList)
 import Test.Hspec ( describe, pending, shouldBe, it, Spec )
 
 -- data Feat1
@@ -55,18 +55,38 @@ testCohort = specifyCohort buildCriteria buildFeatures
 
 testOut :: Cohort Features
 testOut = MkCohort
-  ( Just $ MkAttritionInfo $ (ExcludedBy (1, "feat2"), 1) :| [ (Included, 1) ]
+  ( Just $ MkAttritionInfo 2 $
+   fromList [ uncurry MkAttritionLevel (ExcludedBy (1, "feat2"), 1)
+            , uncurry MkAttritionLevel (Included, 1) ]
   , MkCohortData [MkObsUnit "2" 
                   ( makeFeature (featureDataR False)
                   , makeFeature (featureDataR 56)) ])
+
+testAttr1 :: AttritionInfo
+testAttr1 =  MkAttritionInfo 2 $
+   fromList [ uncurry MkAttritionLevel (ExcludedBy (1, "feat2"), 1)
+            , uncurry MkAttritionLevel (Included, 1) ] 
+
+testAttr2 :: AttritionInfo
+testAttr2 =  MkAttritionInfo 5 $
+   fromList [ uncurry MkAttritionLevel (ExcludedBy (1, "feat2"), 3)
+            , uncurry MkAttritionLevel (Included, 2) ] 
+
+testAttr1p2 :: AttritionInfo
+testAttr1p2 =  MkAttritionInfo 7 $
+   fromList [ uncurry MkAttritionLevel (ExcludedBy (1, "feat2"), 4)
+            , uncurry MkAttritionLevel (Included, 3) ]
 
 -- evalCohort testCohort testPopulation
 spec :: Spec
 spec = do
 
-  describe "checking d1" $
+  describe "checking evaluation of a cohort" $
     do
-
-      it "include f1" $
+      it "testCohort evaluates to testOut" $
         evalCohort testCohort testPopulation `shouldBe` testOut
 
+  describe "checking semigroup of attrition" $
+    do
+      it "testAttr1 <> testAttr2" $
+        testAttr1 <> testAttr2 `shouldBe` testAttr1p2

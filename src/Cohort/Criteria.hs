@@ -6,47 +6,78 @@ License     : BSD3
 Maintainer  : bsaul@novisci.com
 -}
 {-# OPTIONS_HADDOCK hide #-}
-{-# LANGUAGE Safe #-}
+-- {-# LANGUAGE Safe #-}
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE TupleSections #-}
 
-module Cohort.Criteria(
-      Criterion
-    , Criteria(..)
-    , Status(..)
-    , CohortStatus(..)
-    , criterion
-    , criteria
-    , excludeIf
-    , includeIf
-    , initStatusInfo
-    , checkCohortStatus
-) where
 
-import safe GHC.Generics                ( Generic )
-import safe GHC.Num                     ( Num((+)), Natural )
-import safe GHC.Show                    ( Show(show) )
-import safe GHC.TypeLits                ( KnownSymbol, symbolVal )
-import safe Control.Applicative         ( Applicative(pure) )
-import safe Control.Monad               ( Functor(..) )
-import safe Data.Bifunctor              ( Bifunctor(second) )
-import safe Data.Bool                   ( Bool(..), otherwise, not, (&&) )
-import safe Data.Either                 ( either )
-import safe Data.Eq                     ( Eq(..) )
-import safe Data.Function               ( ($), (.), const, id )
-import safe qualified Data.List.NonEmpty as NE
-                                        ( NonEmpty, zip, fromList, toList, map )
-import safe Data.List                   ( find, (++) )
-import safe Data.Maybe                  ( Maybe(..), maybe )
-import safe Data.Ord                    ( Ord(..), Ordering(..) )
-import safe Data.Semigroup              ( Semigroup((<>)) )
-import safe Data.Tuple                  ( fst, snd )
-import safe Data.Text                   ( Text, pack )
-import safe Features.Compose            ( getFeatureData
-                                        , Feature
-                                        , nameFeature
-                                        , FeatureN(..) )
+module Cohort.Criteria
+  ( Criterion
+  , Criteria(..)
+  , Status(..)
+  , CohortStatus(..)
+  , criterion
+  , criteria
+  , excludeIf
+  , includeIf
+  , initStatusInfo
+  , checkCohortStatus
+  ) where
+
+import           Control.Applicative            ( Applicative(pure) )
+import           Control.Monad                  ( Functor(..) )
+import           Data.Aeson                     ( (.=)
+                                                , ToJSON(..)
+                                                , object
+                                                )
+import           Data.Bifunctor                 ( Bifunctor(second) )
+import           Data.Bool                      ( (&&)
+                                                , Bool(..)
+                                                , not
+                                                , otherwise
+                                                )
+import           Data.Either                    ( either )
+import           Data.Eq                        ( Eq(..) )
+import           Data.Function                  ( ($)
+                                                , (.)
+                                                , const
+                                                , id
+                                                )
+import           Data.List                      ( (++)
+                                                , find
+                                                )
+import qualified Data.List.NonEmpty            as NE
+                                                ( NonEmpty
+                                                , fromList
+                                                , zip
+                                                )
+import           Data.Maybe                     ( Maybe(..)
+                                                , maybe
+                                                )
+import           Data.Ord                       ( Ord(..)
+                                                , Ordering(..)
+                                                )
+import           Data.Semigroup                 ( Semigroup((<>)) )
+import           Data.Text                      ( Text
+                                                , pack
+                                                )
+import           Data.Tuple                     ( fst
+                                                , snd
+                                                )
+import           Features.Compose               ( Feature
+                                                , FeatureN(..)
+                                                , getFeatureData
+                                                , nameFeature
+                                                )
+import           GHC.Generics                   ( Generic )
+import           GHC.Num                        ( Natural
+                                                , Num((+))
+                                                )
+import           GHC.Show                       ( Show(show) )
+import           GHC.TypeLits                   ( KnownSymbol
+                                                , symbolVal
+                                                )
 
 -- | Defines the return type for @'Criterion'@ indicating whether to include or 
 -- exclude a subject.
@@ -62,9 +93,9 @@ data CohortStatus =
 -- Defines an ordering to put @Included@ last in a container of @'CohortStatus'@.
 -- The @'ExcludedBy'@ are ordered by their number value.
 instance Ord CohortStatus where
-  compare Included Included = EQ
-  compare Included (ExcludedBy _) = GT
-  compare (ExcludedBy _) Included = LT
+  compare Included            Included            = EQ
+  compare Included            (ExcludedBy _)      = GT
+  compare (ExcludedBy _     ) Included            = LT
   compare (ExcludedBy (i, _)) (ExcludedBy (j, _)) = compare i j
 
 -- | Helper to convert a @Bool@ to a @'Status'@
@@ -102,36 +133,34 @@ newtype Criteria = MkCriteria {
 
 -- | Constructs a @'Criteria'@ from a @'NE.NonEmpty'@ collection of @'Criterion'@.
 criteria :: NE.NonEmpty Criterion -> Criteria
-criteria l = MkCriteria $ NE.zip (NE.fromList [1..]) l
+criteria l = MkCriteria $ NE.zip (NE.fromList [1 ..]) l
 
 -- | Unpacks a @'Criterion'@ into a (Text, Status) pair where the text is the
 -- name of the criterion and its @Status@ is the value of the status in the 
 -- @'Criterion'@. In the case, that the value of the @'Features.Compose.FeatureData'@ 
 -- within the @'Criterion'@ is @Left@, the status is set to @'Exclude'@. 
 getStatus :: Criterion -> (Text, Status)
-getStatus (MkCriterion x) =
-  either (const (nm, Exclude)) (nm,) ((getFeatureData . getDataN) x)
-    where nm = getNameN x
+getStatus (MkCriterion x) = either (const (nm, Exclude))
+                                   (nm, )
+                                   ((getFeatureData . getDataN) x)
+  where nm = getNameN x
 
 -- | Converts a subject's @'Criteria'@ into a @'NE.NonEmpty'@ triple of 
 -- (order of criterion, name of criterion, status)
-getStatuses ::
-  Criteria -> NE.NonEmpty (Natural, Text, Status)
+getStatuses :: Criteria -> NE.NonEmpty (Natural, Text, Status)
 getStatuses (MkCriteria x) =
-  fmap (\c -> (fst c, (fst.getStatus.snd) c, (snd.getStatus.snd) c)) x
+  fmap (\c -> (fst c, (fst . getStatus . snd) c, (snd . getStatus . snd) c)) x
 
 -- | An internal function used to @'Data.List.find'@ excluded statuses. Used in
 -- 'checkCohortStatus'.
-findExclude ::
-  Criteria -> Maybe (Natural, Text, Status)
-findExclude x =  find (\(_, _, z) -> z == Exclude) (getStatuses x)
+findExclude :: Criteria -> Maybe (Natural, Text, Status)
+findExclude x = find (\(_, _, z) -> z == Exclude) (getStatuses x)
 
 -- | Converts a subject's @'Criteria'@ to a @'CohortStatus'@. The status is set
 -- to @'Included'@ if none of the @'Criterion'@ have a status of @'Exclude'@.
-checkCohortStatus ::
-  Criteria -> CohortStatus
+checkCohortStatus :: Criteria -> CohortStatus
 checkCohortStatus x =
-    maybe Included (\(i, n, _) -> ExcludedBy (i, n)) (findExclude x)
+  maybe Included (\(i, n, _) -> ExcludedBy (i, n)) (findExclude x)
 
 -- | Utility to get the name of a @'Criterion'@.
 getCriterionName :: Criterion -> Text
@@ -141,4 +170,4 @@ getCriterionName (MkCriterion x) = getNameN x
 -- to collect generate all the possible Exclusion/Inclusion reasons. 
 initStatusInfo :: Criteria -> NE.NonEmpty CohortStatus
 initStatusInfo (MkCriteria z) =
-   NE.map (ExcludedBy . Data.Bifunctor.second getCriterionName) z <> pure Included
+  fmap (ExcludedBy . Data.Bifunctor.second getCriterionName) z <> pure Included

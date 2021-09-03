@@ -1,4 +1,3 @@
-{-# LANGUAGE BlockArguments #-}
 {-|
 Module      : Hasklepias.MakeApp
 Description : Functions for creating a cohort application
@@ -8,87 +7,114 @@ Maintainer  : bsaul@novisci.com
 -}
 {-# OPTIONS_HADDOCK hide #-}
 {-# LANGUAGE NoImplicitPrelude #-}
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE DerivingStrategies #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE FlexibleContexts      #-}
-{-# LANGUAGE FlexibleInstances     #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE DeriveDataTypeable #-}
-module Hasklepias.MakeApp (
-   makeCohortApp
-) where
 
-import Control.Monad                        ( Monad(return), Functor(fmap) )
-import Control.Applicative                  ( Applicative )
-import Data.Aeson                           ( encode, FromJSON, ToJSON(..) )
-import Data.Bifunctor                       ( Bifunctor(second) )
-import qualified Data.ByteString.Lazy as B
-import Data.ByteString.Lazy.Char8 as C      ( putStrLn )
-import Data.Function                        ( ($), (.) )
-import Data.List                            ( (++) )
-import Data.Maybe                           ( Maybe )
-import Data.Monoid                          ( Monoid(mconcat) )
-import Data.String                          ( String )
-import Data.Text                            ( pack, Text )
-import Data.Tuple                           ( fst, snd )
-import GHC.Show                             ( Show(show) )
-import GHC.IO                               ( IO )
+module Hasklepias.MakeApp
+  ( makeCohortApp
+  ) where
 
-import EventData                            ( Events )
-import Cohort
-import IntervalAlgebra                      ( IntervalSizeable )
+import           Control.Applicative            ( Applicative )
+import           Control.Monad                  ( Functor(fmap)
+                                                , Monad(return)
+                                                )
+import           Data.Aeson                     ( FromJSON
+                                                , ToJSON(..)
+                                                , encode
+                                                )
+import           Data.Bifunctor                 ( Bifunctor(second) )
+import qualified Data.ByteString.Lazy          as B
+import           Data.ByteString.Lazy.Char8    as C
+                                                ( putStrLn )
+import           Data.Function                  ( ($)
+                                                , (.)
+                                                )
+import           Data.List                      ( (++) )
+import           Data.Map.Strict                ( fromList
+                                                , toList
+                                                )
+import           Data.Maybe                     ( Maybe )
+import           Data.Monoid                    ( Monoid(mconcat) )
+import           Data.String                    ( String )
+import           Data.Text                      ( Text
+                                                , pack
+                                                )
+import           Data.Tuple                     ( fst
+                                                , snd
+                                                )
+import           GHC.IO                         ( IO )
+import           GHC.Show                       ( Show(show) )
 
-import Control.Monad.IO.Class               (MonadIO, liftIO)
-import Control.Monad.Reader                 (MonadReader (..), ReaderT (..))
-import Colog                                ( Message
-                                            , HasLog(..)
-                                            , WithLog
-                                            , LogAction(..)
-                                            , richMessageAction
-                                            , logInfo
-                                            , logError
-                                            , logStringStdout
-                                            , logStringStderr
-                                            , logText
-                                            , withLog
-                                            , logPrint
-                                            , logPrintStderr
-                                            , (<&)
-                                            , (>$)
-                                            , log )
-import System.Console.CmdArgs               ( Data, Typeable
-                                            , cmdArgs, summary, help, (&=) )
-import System.Environment                   (getArgs)
+import           Cohort
+import           EventData                      ( Events )
+import           IntervalAlgebra                ( IntervalSizeable )
+
+import           Colog                          ( (<&)
+                                                , (>$)
+                                                , HasLog(..)
+                                                , LogAction(..)
+                                                , Message
+                                                , WithLog
+                                                , log
+                                                , logError
+                                                , logInfo
+                                                , logPrint
+                                                , logPrintStderr
+                                                , logStringStderr
+                                                , logStringStdout
+                                                , logText
+                                                , richMessageAction
+                                                , withLog
+                                                )
+import           Control.Monad.IO.Class         ( MonadIO
+                                                , liftIO
+                                                )
+import           Control.Monad.Reader           ( MonadReader(..)
+                                                , ReaderT(..)
+                                                )
+import           System.Console.CmdArgs         ( (&=)
+                                                , Data
+                                                , Typeable
+                                                , cmdArgs
+                                                , help
+                                                , summary
+                                                )
+import           System.Environment             ( getArgs )
 
 -- a stub to add more arguments to later
-data MakeCohort = MakeCohort deriving (Show, Data, Typeable)
+data MakeCohort = MakeCohort
+  deriving (Show, Data, Typeable)
 
-makeAppArgs ::
-     String  -- ^ name of the application
+makeAppArgs
+  :: String  -- ^ name of the application
   -> String  -- ^ version of the application 
   -> MakeCohort
-makeAppArgs name version = MakeCohort
-    {
-    } &= help "Pass event data via stdin."
-      &= summary (name ++ " " ++ version)
+makeAppArgs name version =
+  MakeCohort{} &= help "Pass event data via stdin." &= summary
+    (name ++ " " ++ version)
 
-makeCohortBuilder :: (FromJSON a, Show a, IntervalSizeable a b, ToJSON d0, ShapeCohort d0, Monad m) =>
-     [CohortSpec (Events a) d0]
-  -> m (B.ByteString -> m ([ParseError], [Cohort d0]))
+makeCohortBuilder
+  :: ( FromJSON a
+     , Show a
+     , IntervalSizeable a b
+     , ToJSON d0
+     , ShapeCohort d0
+     , Monad m
+     )
+  => CohortSetSpec (Events a) d0
+  -> m (B.ByteString -> m ([ParseError], CohortSet d0))
 makeCohortBuilder specs =
-  return (return . second (\pop -> fmap (`evalCohort` pop) specs) . parsePopulationLines)
+  return (return . second (evalCohortSet specs) . parsePopulationLines)
 
-reshapeWith :: (Cohort d -> CohortShape shape) 
-        -> Cohort d 
-        -> (Maybe AttritionInfo, CohortShape shape)
-reshapeWith s x = (getAttritionInfo x, s x)
+reshapeCohortSet :: (Cohort d0 -> CohortJSON) -> CohortSet d0 -> CohortSetJSON
+reshapeCohortSet g x =
+  MkCohortSetJSON $ fromList $ fmap (fmap g) (toList $ getCohortSet x)
 
-shapeOutput ::  (Monad m, ShapeCohort d0) => (Cohort d0 -> CohortShape shape) 
-      -> m ([ParseError], [Cohort d0]) 
-      -> m ([ParseError], [(Maybe AttritionInfo, CohortShape shape)]) 
-shapeOutput shape = fmap (fmap (fmap (reshapeWith shape)))
-  -- fmap (fmap (fmap shape))
+shapeOutput
+  :: (Monad m, ShapeCohort d0)
+  => (Cohort d0 -> CohortJSON)
+  -> m ([ParseError], CohortSet d0)
+  -> m ([ParseError], CohortSetJSON)
+shapeOutput shape = fmap (fmap (reshapeCohortSet shape))
 
 -- logging based on example here:
 -- https://github.com/kowainik/co-log/blob/main/co-log/tutorials/Main.hs
@@ -99,36 +125,32 @@ logParseErrors :: [ParseError] -> IO ()
 logParseErrors x = mconcat $ fmap (parseErrorL <&) x
 
 -- | Make a command line cohort building application.
-makeCohortApp :: 
-  ( FromJSON a
-  , Show a
-  , IntervalSizeable a b
-  , ToJSON d0
-  , ShapeCohort d0) =>
-       String  -- ^ cohort name
-    -> String  -- ^ app version
-    -> (Cohort d0 -> CohortShape shape) -- ^ a function which specifies the output shape
-    -> [CohortSpec (Events a) d0]  -- ^ a list of cohort specifications
-    -> IO ()
-makeCohortApp name version shape spec =
-    do
-      args <- cmdArgs ( makeAppArgs name version )
-      let logger = logStringStdout
+makeCohortApp
+  :: (FromJSON a, Show a, IntervalSizeable a b, ToJSON d0, ShapeCohort d0)
+  => String  -- ^ cohort name
+  -> String  -- ^ app version
+  -> (Cohort d0 -> CohortJSON) -- ^ a function which specifies the output shape
+  -> CohortSetSpec (Events a) d0  -- ^ a list of cohort specifications
+  -> IO ()
+makeCohortApp name version shape spec = do
+  args <- cmdArgs (makeAppArgs name version)
+  -- let logger = logStringStdout
+  let errLog = logStringStderr
 
-      logger <& "Creating cohort builder..."
-      app <- makeCohortBuilder spec
+  errLog <& "Creating cohort builder..."
+  app <- makeCohortBuilder spec
 
-      logger <& "Reading data from stdin..."
-      -- TODO: give error if no contents within some amount of time
-      dat  <- B.getContents
+  errLog <& "Reading data from stdin..."
+  -- TODO: give error if no contents within some amount of time
+  dat <- B.getContents
 
-      logger <& "Bulding cohort..."
-      res <- shapeOutput shape (app dat)
+  errLog <& "Bulding cohort..."
+  res <- shapeOutput shape (app dat)
 
-      logParseErrors (fst res)
+  logParseErrors (fst res)
 
-      logger <& "Encoding cohort(s) output and writing to stdout..."
-      C.putStrLn (encode (fmap (second toJSONCohortShape) (snd res) ))
+  errLog <& "Encoding cohort(s) output and writing to stdout..."
+  C.putStrLn (encode (toJSON (snd res)))
 
-      logger <& "Cohort build complete!"
+  errLog <& "Cohort build complete!"
 

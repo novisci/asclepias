@@ -55,7 +55,7 @@ testCohort = specifyCohort buildCriteria buildFeatures
 
 testOut :: Cohort Features
 testOut = MkCohort
-  ( Just $ MkAttritionInfo 2 $
+  ( MkAttritionInfo 2 $
    fromList [ uncurry MkAttritionLevel (ExcludedBy (1, "feat2"), 1)
             , uncurry MkAttritionLevel (Included, 1) ]
   , MkCohortData [MkObsUnit "2" 

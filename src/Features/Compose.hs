@@ -24,6 +24,7 @@ module Features.Compose
     FeatureData
   , MissingReason(..)
   , Feature
+  , F
   , FeatureN
   , featureDataL
   , featureDataR
@@ -40,6 +41,7 @@ module Features.Compose
   , Definition(..)
   , Define(..)
   , DefineA(..)
+  , Def
 
   --- *** Evalution of Definitions
   , eval
@@ -83,6 +85,12 @@ import safe      GHC.TypeLits                   ( KnownSymbol
                                                 , Symbol
                                                 , symbolVal
                                                 )
+
+-- | Type synonym for 'Feature'.
+type F n a = Feature n a
+
+-- | Type synonym for 'Definition'.
+type Def d = Definition d
 
 {- | 
 Defines the reasons that a @'FeatureData'@ value may be missing. Can be used to
@@ -271,7 +279,6 @@ See @'eval'@ for evaluating @Defintions@.
 
 -}
 
-type F n d = Feature n d
 data Definition d  where
   Pure :: a -> Definition (F n0 a )
   D1  :: (b -> a) -> Definition (F n1 b -> F n0 a)

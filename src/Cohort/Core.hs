@@ -19,14 +19,21 @@ module Cohort.Core
   , CohortData(..)
   , Cohort(..)
   , CohortSpec
+  , CohortSetSpec
+  , CohortSet(..)
   , AttritionInfo(..)
   , AttritionLevel(..)
   , specifyCohort
   , makeObsUnitFeatures
   , evalCohort
   , getCohortIDs
+  , getCohortDataIDs
   , getCohortData
+  , getCohortDataData
   , getAttritionInfo
+  , makeCohortSpecs
+  , evalCohortSet
+  , getCohortSet
   ) where
 
 import           Cohort.Criteria                ( CohortStatus(..)
@@ -63,8 +70,10 @@ import           Data.Map.Strict               as Map
                                                 , unionsWith
                                                 )
 import           Data.Maybe                     ( Maybe(..)
+                                                , maybe
                                                 , catMaybes
                                                 )
+import           Data.Monoid                    ( mempty )
 import           Data.Ord                       ( Ord(..) )
 import           Data.Semigroup                 ( Semigroup((<>)) )
 import qualified Data.Set                      as Set
@@ -115,11 +124,11 @@ newtype CohortData d = MkCohortData { getObsData :: [ObsUnit d] }
 
 -- | A cohort is a list of observational units along with @'AttritionInfo'@ 
 -- regarding the number of subjects excluded by the @'Criteria'@. 
-newtype Cohort d = MkCohort (Maybe AttritionInfo, CohortData d)
+newtype Cohort d = MkCohort (AttritionInfo, CohortData d)
     deriving (Eq, Show, Generic)
 
 -- | Gets the attrition info from a cohort
-getAttritionInfo :: Cohort d -> Maybe AttritionInfo
+getAttritionInfo :: Cohort d -> AttritionInfo
 getAttritionInfo (MkCohort (x, _)) = x
 
 -- | Unpacks a @'Population'@ to a list of subjects.
@@ -213,21 +222,20 @@ initAttritionInfo x = Map.fromList
 
 -- An internal function used to measure attrition for a cohort.
 measureAttrition
-  :: Maybe Criteria -> [Subject CohortStatus] -> Maybe AttritionInfo
-measureAttrition (Just c) l =
-  Just $ MkAttritionInfo (length l) $ mapToSetAttrLevel $ unionsWith
+  :: Maybe Criteria -> [Subject CohortStatus] -> AttritionInfo
+measureAttrition c l =
+   MkAttritionInfo (length l) $ mapToSetAttrLevel $ unionsWith
     (+)
-    [ initAttritionInfo c
+    [ maybe mempty initAttritionInfo c
     , Map.fromListWith (+) $ fmap (\x -> (getSubjectData x, 1)) l
     , Map.fromList [(Included, 0)]
         -- including Included in the case that none of the evaluated criteria
         -- have status Include
     ]
-measureAttrition Nothing _ = Nothing
 
 -- | The internal function to evaluate a @'CohortSpec'@ on a @'Population'@. 
 evalUnits
-  :: CohortSpec d1 d0 -> Population d1 -> (Maybe AttritionInfo, CohortData d0)
+  :: CohortSpec d1 d0 -> Population d1 -> (AttritionInfo, CohortData d0)
 evalUnits spec pop =
   ( measureAttrition fcrit statuses
   , MkCohortData $ catMaybes $ zipWith (evalSubjectCohort (runFeatures spec))
@@ -243,10 +251,41 @@ evalUnits spec pop =
 evalCohort :: CohortSpec d1 d0 -> Population d1 -> Cohort d0
 evalCohort s p = MkCohort $ evalUnits s p
 
+-- | Get IDs from 'CohortData'.
+getCohortDataIDs :: CohortData d -> [ID]
+getCohortDataIDs (MkCohortData x) = fmap obsID x
+
 -- | Get IDs from a cohort.
 getCohortIDs :: Cohort d -> [ID]
-getCohortIDs (MkCohort (_, dat)) = fmap obsID (getObsData dat)
+getCohortIDs (MkCohort (_, dat)) = getCohortDataIDs dat
+
+-- | Get data from a cohort.
+getCohortDataData :: CohortData d -> [d]
+getCohortDataData (MkCohortData x) = fmap obsData x
 
 -- | Get data from a cohort.
 getCohortData :: Cohort d -> [d]
-getCohortData (MkCohort (_, dat)) = fmap obsData (getObsData dat)
+getCohortData (MkCohort (_, dat)) = getCohortDataData dat
+
+{-| A container hold multiple cohorts of the same type. The key is the name of 
+    the cohort; value is a cohort.
+-}
+newtype CohortSet d = MkCohortSet (Map Text (Cohort d))
+  deriving (Eq, Show, Generic)
+
+-- | Unwraps a 'CohortSet'.
+getCohortSet :: CohortSet d -> Map Text (Cohort d)
+getCohortSet (MkCohortSet x) = x
+
+{-| Key/value pairs of 'CohortSpec's. The keys are the names of the cohorts.
+-}
+newtype CohortSetSpec i d = MkCohortSetSpec (Map Text (CohortSpec i d))
+
+-- | Make a set of 'CohortSpec's from list input.
+makeCohortSpecs :: [(Text, d1 -> Criteria, d1 -> d0)] -> CohortSetSpec d1 d0
+makeCohortSpecs l =
+  MkCohortSetSpec $ fromList (fmap (\(n, c, f) -> (n, specifyCohort c f)) l)
+
+-- | Evaluates a @'CohortSetSpec'@ on a @'Population'@.
+evalCohortSet :: CohortSetSpec d1 d0 -> Population d1 -> CohortSet d0
+evalCohortSet (MkCohortSetSpec s) p = MkCohortSet $ fmap (`evalCohort` p) s

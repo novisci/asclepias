@@ -303,13 +303,22 @@ makeFeatureRunner index events = featureset
   ef  = featureEvents events
 
 -- | Make a cohort specification for each calendar time
-cohortSpecs :: [CohortSpec (Events Day) Featureset]
+-- cohortSpecs :: [CohortSpec (Events Day) Featureset]
+-- cohortSpecs =
+--   map (\x -> specifyCohort (makeCriteriaRunner x) (makeFeatureRunner x)) indices
+
+cohortSpecs :: CohortSetSpec (Events Day) Featureset
 cohortSpecs =
-  map (\x -> specifyCohort (makeCriteriaRunner x) (makeFeatureRunner x)) indices
+  makeCohortSpecs $
+    map (\x -> (pack $ show x, makeCriteriaRunner x, makeFeatureRunner x)) indices
+
 
 -- | A function that evaluates all the calendar cohorts for a population
-evalCohorts :: Population (Events Day) -> [Cohort Featureset]
-evalCohorts pop = map (`evalCohort` pop) cohortSpecs
+-- evalCohorts :: Population (Events Day) -> [Cohort Featureset]
+-- evalCohorts pop = map (`evalCohort` pop) cohortSpecs
+
+evalCohorts :: Population (Events Day) -> CohortSet Featureset
+evalCohorts = evalCohortSet cohortSpecs
 
 {-------------------------------------------------------------------------------
   Testing 
@@ -413,7 +422,7 @@ expectedObsUnita = zipWith MkObsUnit (replicate 5 "a") expectedFeatures1
 
 makeExpectedCohort
   :: AttritionInfo -> [ObsUnit Featureset] -> Cohort Featureset
-makeExpectedCohort a x = MkCohort (Just a, MkCohortData x)
+makeExpectedCohort a x = MkCohort (a, MkCohortData x)
 
 mkAl :: (CohortStatus, Natural) -> AttritionLevel
 mkAl = uncurry MkAttritionLevel
@@ -421,7 +430,7 @@ mkAl = uncurry MkAttritionLevel
 expectedCohorts :: [Cohort Featureset]
 expectedCohorts = zipWith
   (curry MkCohort)
-  [ Just $ MkAttritionInfo 2 $ setFromList
+  [ MkAttritionInfo 2 $ setFromList
     [ mkAl (ExcludedBy (1, "isFemale"), 0)
     , mkAl (ExcludedBy (2, "isOver50"), 1)
     , mkAl (ExcludedBy (3, "isEnrolled"), 0)
@@ -429,7 +438,7 @@ expectedCohorts = zipWith
     , mkAl (ExcludedBy (5, "isDead"), 0)
     , mkAl (Included, 0)
     ]
-  , Just $ MkAttritionInfo 2 $ setFromList
+  , MkAttritionInfo 2 $ setFromList
     [ mkAl (ExcludedBy (1, "isFemale"), 0)
     , mkAl (ExcludedBy (2, "isOver50"), 1)
     , mkAl (ExcludedBy (3, "isEnrolled"), 0)
@@ -437,7 +446,7 @@ expectedCohorts = zipWith
     , mkAl (ExcludedBy (5, "isDead"), 0)
     , mkAl (Included, 1)
     ]
-  , Just $ MkAttritionInfo 2 $ setFromList
+  , MkAttritionInfo 2 $ setFromList
     [ mkAl (ExcludedBy (1, "isFemale"), 0)
     , mkAl (ExcludedBy (2, "isOver50"), 1)
     , mkAl (ExcludedBy (3, "isEnrolled"), 0)
@@ -445,7 +454,7 @@ expectedCohorts = zipWith
     , mkAl (ExcludedBy (5, "isDead"), 0)
     , mkAl (Included, 1)
     ]
-  , Just $ MkAttritionInfo 2 $ setFromList
+  , MkAttritionInfo 2 $ setFromList
     [ mkAl (ExcludedBy (1, "isFemale"), 0)
     , mkAl (ExcludedBy (2, "isOver50"), 1)
     , mkAl (ExcludedBy (3, "isEnrolled"), 0)
@@ -453,7 +462,7 @@ expectedCohorts = zipWith
     , mkAl (ExcludedBy (5, "isDead"), 0)
     , mkAl (Included, 1)
     ]
-  , Just $ MkAttritionInfo 2 $ setFromList
+  , MkAttritionInfo 2 $ setFromList
     [ mkAl (ExcludedBy (1, "isFemale"), 0)
     , mkAl (ExcludedBy (2, "isOver50"), 1)
     , mkAl (ExcludedBy (3, "isEnrolled"), 0)
@@ -461,7 +470,7 @@ expectedCohorts = zipWith
     , mkAl (ExcludedBy (5, "isDead"), 0)
     , mkAl (Included, 0)
     ]
-  , Just $ MkAttritionInfo 2 $ setFromList
+  , MkAttritionInfo 2 $ setFromList
     [ mkAl (ExcludedBy (1, "isFemale"), 0)
     , mkAl (ExcludedBy (2, "isOver50"), 1)
     , mkAl (ExcludedBy (3, "isEnrolled"), 1)
@@ -469,7 +478,7 @@ expectedCohorts = zipWith
     , mkAl (ExcludedBy (5, "isDead"), 0)
     , mkAl (Included, 0)
     ]
-  , Just $ MkAttritionInfo 2 $ setFromList
+  , MkAttritionInfo 2 $ setFromList
     [ mkAl (ExcludedBy (1, "isFemale"), 0)
     , mkAl (ExcludedBy (2, "isOver50"), 1)
     , mkAl (ExcludedBy (3, "isEnrolled"), 1)
@@ -477,7 +486,7 @@ expectedCohorts = zipWith
     , mkAl (ExcludedBy (5, "isDead"), 0)
     , mkAl (Included, 0)
     ]
-  , Just $ MkAttritionInfo 2 $ setFromList
+  , MkAttritionInfo 2 $ setFromList
     [ mkAl (ExcludedBy (1, "isFemale"), 0)
     , mkAl (ExcludedBy (2, "isOver50"), 1)
     , mkAl (ExcludedBy (3, "isEnrolled"), 1)
@@ -488,6 +497,9 @@ expectedCohorts = zipWith
   ]
   (fmap MkCohortData ([[]] ++ transpose [expectedObsUnita] ++ [[], [], [], []]))
 
+expectedCohortSet :: CohortSet Featureset
+expectedCohortSet = MkCohortSet $ mapFromList $ zip (fmap (pack.show) indices) expectedCohorts
+
 exampleCohort1tests :: TestTree
 exampleCohort1tests = testGroup
   "Unit tests for calendar cohorts"
@@ -496,5 +508,5 @@ exampleCohort1tests = testGroup
       -- Featureable cannot be tested for equality directly, hence encoding to 
       -- JSON bytestring and testing that for equality
         encode (evalCohorts testPop)
-    @?= encode expectedCohorts
+    @?= encode expectedCohortSet
   ]

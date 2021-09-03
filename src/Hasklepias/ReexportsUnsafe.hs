@@ -8,18 +8,21 @@ Maintainer  : bsaul@novisci.com
 -}
 
 
-module Hasklepias.ReexportsUnsafe (
+module Hasklepias.ReexportsUnsafe
+  (
 
     -- * Re-exports
-      module Data.Aeson
-    , module GHC.IO
-    , module Test.Tasty
-    , module Test.Tasty.HUnit
-) where
+    module Data.Aeson
+  , module GHC.IO
+  , module Test.Tasty
+  , module Test.Tasty.HUnit
+  ) where
 
-import Data.Aeson        ( encode, ToJSON(..))
-import GHC.IO            ( IO(..) )
+import           Data.Aeson                     ( ToJSON(..)
+                                                , encode
+                                                )
+import           GHC.IO                         ( IO(..) )
 
 -- import GHC.Types                       ( Any )
-import Test.Tasty hiding (after)
-import Test.Tasty.HUnit 
+import           Test.Tasty              hiding ( after )
+import           Test.Tasty.HUnit

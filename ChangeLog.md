@@ -1,5 +1,20 @@
 # Changelog for hasklepias
 
+## 0.19.0
+
+* Overhauls the way that cohorts are written to JSON, mostly in the `Cohort.Output` module. The important bit is that intermediate types were added that can hold both row-wise and column-wise cohort data as list of `Value`s (`Data.Aeson` internal representation of JSON). These intermediate types were made `Semigroup` instances, which means that cohorts can be *combined*. Note that you should only combine cohorts (and set of cohorts) evaluated from the same set of cohort specifications. Since all types of the the underlying data are masked by `Value`, you technically can combine any values of these intermediate types, but the results would be generally be nonsensical. Use this feature of combining cohorts to (e.g.) collect the same cohort data processed on different partitions of population data. While users should not need to worry about these details, here is the semigroup behavior for two cohorts (i.e. `cohort1 <> cohort2`):
+  * In both row-wise and column-wise formats, attrition information is added as one would expect.
+  * In both row-wise and column-wise formats, feature attributes are kept from the first cohort (again, you should only combine two compatible cohorts).
+  * In row-wise format, row data is stacked.
+  * In column-wise format, data is stacked by column.
+  * If you try to combine a row-wise cohort with a column-wise cohort, the cohort in the second position is dropped altogether.
+* Adds a `CohortSet` type (which is technically not a `Set` but a `Map`) as a container for `Cohort`s, in this way each cohort can be named. Correspondingly, adds a `CohortSetSpec` type which is a `Map` of `CohortSpec`s.
+* Adds the constructor function `makeCohortSpecs` for easily making a `CohortSetSpec` from a list.
+* Adds the `evalCohortSet` function which evaluates a `CohortSetSpec` from `Population` into a `CohortSet`.
+* Moves the `F` type synonym for `Feature` to the `Feature` module.
+* Removes any the usage of `Data.List.NonEmpty.fromList` in `Cohort.Output` which was throwing an error when the input data is empty.
+* Adds the empty file `exampleData/emptyData.jsonl` for testing the app on empty data.
+
 ## 0.18.2
 
 * Mostly internal work to clean up `AttributionInfo` values. Now counts for all the criteria are included in the information, including 0 counts. Also added a total processed field. Adds a `Semigroup` instance for `AttributionInfo` so that attrition information can be later combined -- this will be useful, for example, when combining the same cohort across partitions.

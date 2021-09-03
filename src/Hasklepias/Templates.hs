@@ -8,9 +8,8 @@ Maintainer  : bsaul@novisci.com
 {-# OPTIONS_HADDOCK hide #-}
 {-# LANGUAGE NoImplicitPrelude #-}
 
-module Hasklepias.Templates (
-   module Hasklepias.Templates.Features
+module Hasklepias.Templates
+  ( module Hasklepias.Templates.Features
+  ) where
 
-) where
-
-import Hasklepias.Templates.Features
+import           Hasklepias.Templates.Features

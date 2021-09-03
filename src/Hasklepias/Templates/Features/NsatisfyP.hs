@@ -33,7 +33,6 @@ import qualified Control.Lens                  as Functor
 import           EventData
 import           Features
 import           Hasklepias.FeatureEvents
-import           Hasklepias.Misc                ( F )
 import           Hasklepias.Reexports
 import           Hasklepias.ReexportsUnsafe
 import           Hasklepias.Templates.TestUtilities

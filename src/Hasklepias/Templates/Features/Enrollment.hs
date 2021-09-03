@@ -22,7 +22,6 @@ module Hasklepias.Templates.Features.Enrollment
 import           Cohort
 import           EventData                  
 import           Features
-import           Hasklepias.Misc                ( F )
 import           Hasklepias.FeatureEvents
 import           Hasklepias.Templates.TestUtilities
 import           Hasklepias.Reexports

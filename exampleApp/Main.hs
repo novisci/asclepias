@@ -69,9 +69,10 @@ makeFeatureRunner events = featureset
   )
   where ef = featureEvents events
 
--- | Make a cohort specification for each calendar time
-cohortSpecs :: [CohortSpec (Events Day) Featureset]
-cohortSpecs = [specifyCohort makeCriteriaRunner makeFeatureRunner]
+-- | Make a cohort specification set
+cohortSpecs :: CohortSetSpec (Events Day) Featureset
+cohortSpecs = 
+  makeCohortSpecs [("example", makeCriteriaRunner, makeFeatureRunner)]
 
 main :: IO ()
-main = makeCohortApp "testCohort" "v0.1.0" colWise cohortSpecs
+main = makeCohortApp "testCohort" "v0.1.0" rowWise cohortSpecs

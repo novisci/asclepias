@@ -35,7 +35,8 @@ import           GHC.Real                       ( Integral )
 import GHC.Show                         ( Show )
 import EventData
 import Cohort.Index
-import Features.Compose                 ( Feature
+import Features.Compose                 ( F
+                                        , Feature
                                         , Definition(..)
                                         , Define(..)
                                         , eval )

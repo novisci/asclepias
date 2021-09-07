@@ -187,3 +187,22 @@ executable exampleApp
   build-depends:
       hasklepias
   default-language: Haskell2010
+
+executable collector
+  -- type: exitcode-stdio-1.0
+  main-is: Main.hs
+  hs-source-dirs:
+      collector
+  build-depends:
+       base >=4.14 && <4.15
+     , hasklepias
+     , lens
+     , aeson
+     , conduit
+     , conduit-extra
+     , bytestring
+     , text
+     , optparse-applicative
+     , amazonka
+     , amazonka-s3
+  default-language: Haskell2010

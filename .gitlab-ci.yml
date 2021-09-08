@@ -76,6 +76,7 @@ install:
       - dist-newstyle/
       - install/
   script:
+    - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin  $CI_REGISTRY
     - aws s3 cp $CI_PROJECT_DIR/install/collector-$VERSION-linux-$CI_RUNNER_EXECUTABLE_ARCH.tar.gz s3://download.novisci.com/hasklepias/collector-$VERSION-linux-$CI_RUNNER_EXECUTABLE_ARCH.tar.gz --acl public-read
 
    

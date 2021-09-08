@@ -9,6 +9,7 @@ variables:
 stages:
   - docker
   - build
+  - release
   - docs
   - upload-docs
 
@@ -38,7 +39,7 @@ build-asclepias:
     - cabal build
 
 install:
-  stage: build
+  stage: release
   needs: ["build-asclepias"]
   # NOTE: I couldn't get the $VERSION variable to work as in:
   #  image : registry.novisci.com/nsstat/asclepias/$PKG-build:$VERSION

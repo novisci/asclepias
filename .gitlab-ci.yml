@@ -56,6 +56,7 @@ install-apps:
     - cabal --version
     - mkdir install -p
     - cabal install --install-method=copy --installdir=install --overwrite-policy=always
+    - tar -czvf install/collector-$VERSION-linux-$CI_RUNNER_EXECUTABLE_ARCH.tar.gz install/collector
   # release:
   #   name: 'Release $TAG'
   #   description: 'Created using the release-cli $EXTRA_DESCRIPTION'  # $EXTRA_DESCRIPTION and the $TAG
@@ -78,7 +79,6 @@ install:
   script:
     - aws s3 cp $CI_PROJECT_DIR/install/collector-$VERSION-linux-$CI_RUNNER_EXECUTABLE_ARCH.tar.gz s3://download.novisci.com/hasklepias/collector-$VERSION-linux-$CI_RUNNER_EXECUTABLE_ARCH.tar.gz --acl public-read
 
-   
 
 test:
   stage: build

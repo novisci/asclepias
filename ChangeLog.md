@@ -2,7 +2,16 @@
 
 ## 0.20.0
 
-* Adds the `Hasklepias.CohortCollection` module which is exposed as the `collector` application. This application can be used to combine cohorts that were derived from different input data (e.g. different partitions of data). However, cohorts must be derived from the same specification using the same shape (e.g. `rowWise` or `colWise`). The application can be installed from the asclepias repository using `cabal install`. It is also available to download from `download.novisci.com`.
+* Adds the `Hasklepias.CohortCollection` module which is exposed as the `collector` application. This application can be used to combine cohorts that were derived from different input data (e.g. different partitions of data). However, cohorts must be derived from the same specification using the same shape (e.g. `rowWise` or `colWise`). The application can be installed from the asclepias repository using `cabal install`. It is also available to download from `download.novisci.com/hasklepias/collector-0.20.0-linux.tar.gz` (currently only available for linux (not sure of architecture)). The following gives an example of using the application on local files:
+
+```sh
+$ cat collector-test/tests/manifestrw.txt 
+testrw1.json
+testrw2.json
+testrw3.json
+$ collector -f collector-test/tests/manifestrw.txt -d collector-test/tests
+{"example":[{"totalProcessed":7,"attritionInfo":[{"attritionCount":2,"attritionLevel":{"contents":[1,"dummy"],"tag":"ExcludedBy"}},{"attritionCount":5,"attritionLevel":{"tag":"Included"}}]},{"contents":{"rowAttributes":[{"name":"myVar1","attrs":{"getPurpose":{"getTags":[],"getRole":["Outcome"]},"getDerivation":"","getLongLabel":"another label","getShortLabel":"somelabel"},"type":"Count"},{"name":"myVar2","attrs":{"getPurpose":{"getTags":[],"getRole":[]},"getDerivation":"","getLongLabel":"","getShortLabel":""},"type":"Bool"}],"rowData":[["a",[5,true]],["b",[5,true]],["c",[10,false]],["d",[99,true]],["f",[86,true]]]},"tag":"RW"}]}
+```
 
 ## 0.19.0
 

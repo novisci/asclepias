@@ -54,7 +54,7 @@ install-apps:
   script:
     - ghc --version
     - cabal --version
-    - mkdir install
+    - mkdir install -p
     - cabal install --install-method=copy --installdir=install
   # release:
   #   name: 'Release $TAG'

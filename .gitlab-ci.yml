@@ -10,6 +10,7 @@ stages:
   - docker
   - build
   - release
+  - deploy
   - docs
   - upload-docs
 
@@ -55,7 +56,6 @@ install:
     - cabal --version
     - mkdir install
     - cabal install --install-method=copy --installdir=install
-    - aws s3 cp $CI_PROJECT_DIR/install/collector-$VERSION-linux-$CI_RUNNER_EXECUTABLE_ARCH.tar.gz s3://download.novisci.com/hasklepias/collector-$VERSION-linux-$CI_RUNNER_EXECUTABLE_ARCH.tar.gz --acl public-read
   # release:
   #   name: 'Release $TAG'
   #   description: 'Created using the release-cli $EXTRA_DESCRIPTION'  # $EXTRA_DESCRIPTION and the $TAG
@@ -66,7 +66,19 @@ install:
   #       - name: 'asset1'
   #         url: 'https://download.novisci.com/hasklepias/collector-$VERSION-linux-$CI_RUNNER_EXECUTABLE_ARCH.tar.gz'
 
+install:
+  stage: deploy
+  needs: ["install"]
+  image: registry.novisci.com/statocker/aws-cli:latest
+  cache:
+    key: "$CI_JOB_NAME"
+    paths:
+      - dist-newstyle/
+      - install/
+  script:
+    - aws s3 cp $CI_PROJECT_DIR/install/collector-$VERSION-linux-$CI_RUNNER_EXECUTABLE_ARCH.tar.gz s3://download.novisci.com/hasklepias/collector-$VERSION-linux-$CI_RUNNER_EXECUTABLE_ARCH.tar.gz --acl public-read
 
+   
 
 test:
   stage: build

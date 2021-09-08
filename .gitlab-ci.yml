@@ -39,7 +39,7 @@ build-asclepias:
     - cabal --version
     - cabal build
 
-install:
+install-apps:
   stage: release
   needs: ["build-asclepias"]
   # NOTE: I couldn't get the $VERSION variable to work as in:
@@ -68,7 +68,7 @@ install:
 
 install:
   stage: deploy
-  needs: ["install"]
+  needs: ["install-apps"]
   image: registry.novisci.com/statocker/aws-cli:latest
   cache:
     key: "$CI_JOB_NAME"

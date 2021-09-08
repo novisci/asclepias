@@ -31,13 +31,13 @@ featureEvents = pure
 
 -- | Lift a subject's events in a feature
 featureDummy
-  :: Definition (Feature "allEvents" (Events Day) -> Feature "dummy" Count)
+  :: Definition (Feature "allEvents" (Events Day) -> Feature "myVar1" Count)
 featureDummy = define $ pure 5
 
 -- | Lift a subject's events in a feature
 anotherDummy
   :: Bool
-  -> Definition (Feature "allEvents" (Events Day) -> Feature "another" Bool)
+  -> Definition (Feature "allEvents" (Events Day) -> Feature "myVar2" Bool)
 anotherDummy x = define $ const x
 
 -- | Include the subject if she has an enrollment interval concurring with index.
@@ -45,10 +45,15 @@ critTrue
   :: Definition (Feature "allEvents" (Events Day) -> Feature "dummy" Status)
 critTrue = define $ pure Include
 
-instance HasAttributes "dummy" Count where
-  getAttributes _ = emptyAttributes
+instance HasAttributes "myVar1" Count where
+  getAttributes _ = 
+    MkAttributes {
+      getShortLabel = "somelabel"
+    , getLongLabel  = "another label"
+    , getDerivation = ""
+    , getPurpose = MkPurpose (setFromList [Outcome]) (setFromList [])}
 
-instance HasAttributes "another" Bool where
+instance HasAttributes "myVar2" Bool where
   getAttributes _ = emptyAttributes
 {-------------------------------------------------------------------------------
   Cohort Specifications and evaluation

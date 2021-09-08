@@ -1,6 +1,6 @@
 cabal-version:  2.2
 name:           hasklepias
-version:        0.19.0
+version:        0.20.0
 description:    Please see the README on GitHub at <https://github.com/novisci/asclepias#readme>
 homepage:       https://github.com/novisci/asclepias/#readme
 bug-reports:    https://github.com/novisci/asclepias/issues
@@ -49,6 +49,7 @@ library
       Hasklepias
       Hasklepias.FeatureEvents
       Hasklepias.MakeApp
+      Hasklepias.CohortCollection
       Hasklepias.Misc
       Hasklepias.Reexports
       Hasklepias.ReexportsUnsafe
@@ -75,12 +76,16 @@ library
       src
   build-depends:
       aeson >=1.4.0.0 && <2
+    , amazonka
+    , amazonka-s3
     , base >=4.14 && <4.15
     , bytestring == 0.10.12.0
     , cmdargs == 0.10.21
     , containers == 0.6.5.1
     , contravariant >= 1.4
     , co-log == 0.4.0.1
+    , conduit
+    , conduit-extra
     , flow == 1.0.22
     , ghc-prim == 0.6.1
     , interval-algebra == 0.10.2
@@ -180,7 +185,6 @@ test-suite examples
   default-language: Haskell2010
 
 executable exampleApp
-  -- type: exitcode-stdio-1.0
   main-is: Main.hs
   hs-source-dirs:
       exampleApp
@@ -189,20 +193,25 @@ executable exampleApp
   default-language: Haskell2010
 
 executable collector
-  -- type: exitcode-stdio-1.0
   main-is: Main.hs
   hs-source-dirs:
       collector
   build-depends:
        base >=4.14 && <4.15
      , hasklepias
-     , lens
-     , aeson
-     , conduit
-     , conduit-extra
      , bytestring
-     , text
      , optparse-applicative
-     , amazonka
-     , amazonka-s3
+  default-language: Haskell2010
+
+test-suite collector-test
+  type: exitcode-stdio-1.0
+  main-is: Main.hs
+  hs-source-dirs:
+      collector-test
+  build-depends:
+      hasklepias
+    , base >=4.14 && <4.15
+    , tasty  == 1.4.1
+    , tasty-silver 
+    , bytestring
   default-language: Haskell2010

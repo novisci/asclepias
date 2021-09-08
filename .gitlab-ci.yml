@@ -23,6 +23,7 @@ docker-build:
 
 build:
   stage: build
+  needs: []
   # NOTE: I couldn't get the $VERSION variable to work as in:
   #  image : registry.novisci.com/nsstat/asclepias/$PKG-build:$VERSION
   # hence, using latest tag, but this may not be ideal
@@ -35,6 +36,24 @@ build:
     - ghc --version
     - cabal --version
     - cabal build
+
+install:
+  stage: build
+  needs: [build]
+  # NOTE: I couldn't get the $VERSION variable to work as in:
+  #  image : registry.novisci.com/nsstat/asclepias/$PKG-build:$VERSION
+  # hence, using latest tag, but this may not be ideal
+  image: registry.novisci.com/nsstat/asclepias/$PKG-build:latest
+  cache:
+    key: "$CI_JOB_NAME"
+    paths:
+      - dist-newstyle/
+      - install/
+  script:
+    - ghc --version
+    - cabal --version
+    - mkdir install
+    - cabal install --install-method=copy --installdir=install
 
 test:
   stage: build

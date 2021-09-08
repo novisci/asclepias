@@ -55,7 +55,7 @@ install-apps:
     - ghc --version
     - cabal --version
     - mkdir install -p
-    - cabal install --install-method=copy --installdir=install
+    - cabal install --install-method=copy --installdir=install --overwrite-policy=always
   # release:
   #   name: 'Release $TAG'
   #   description: 'Created using the release-cli $EXTRA_DESCRIPTION'  # $EXTRA_DESCRIPTION and the $TAG

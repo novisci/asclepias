@@ -78,7 +78,6 @@ install:
       - dist-newstyle/
       - install/
   script:
-    - aws help
     - aws s3 cp $CI_PROJECT_DIR/install/collector-$VERSION-linux.tar.gz s3://download.novisci.com/hasklepias/collector-$VERSION-linux.tar.gz --acl public-read
 
 

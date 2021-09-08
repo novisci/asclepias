@@ -2,7 +2,7 @@
 
 ## 0.20.0
 
-* Adds the `Hasklepias.CohortCollection` module which is exposed as the `collector` application. This application can be used to combine cohorts that were derived from different input data (e.g. different partitions of data). However, cohorts must be derived from the same specification using the same shape (e.g. `rowWise` or `colWise`). The application can be installed from the asclepias repository using `cabal install`.
+* Adds the `Hasklepias.CohortCollection` module which is exposed as the `collector` application. This application can be used to combine cohorts that were derived from different input data (e.g. different partitions of data). However, cohorts must be derived from the same specification using the same shape (e.g. `rowWise` or `colWise`). The application can be installed from the asclepias repository using `cabal install`. It is also available to download from `download.novisci.com`.
 
 ## 0.19.0
 

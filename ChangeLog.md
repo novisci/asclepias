@@ -1,5 +1,9 @@
 # Changelog for hasklepias
 
+## 0.20.0
+
+* Adds the `Hasklepias.CohortCollection` module which is exposed as the `collector` application. This application can be used to combine cohorts that were derived from different input data (e.g. different partitions of data). However, cohorts must be derived from the same specification using the same shape (e.g. `rowWise` or `colWise`). The application can be installed from the asclepias repository using `cabal install`.
+
 ## 0.19.0
 
 * Overhauls the way that cohorts are written to JSON, mostly in the `Cohort.Output` module. The important bit is that intermediate types were added that can hold both row-wise and column-wise cohort data as list of `Value`s (`Data.Aeson` internal representation of JSON). These intermediate types were made `Semigroup` instances, which means that cohorts can be *combined*. Note that you should only combine cohorts (and set of cohorts) evaluated from the same set of cohort specifications. Since all types of the the underlying data are masked by `Value`, you technically can combine any values of these intermediate types, but the results would be generally be nonsensical. Use this feature of combining cohorts to (e.g.) collect the same cohort data processed on different partitions of population data. While users should not need to worry about these details, here is the semigroup behavior for two cohorts (i.e. `cohort1 <> cohort2`):

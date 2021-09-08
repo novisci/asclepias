@@ -24,7 +24,7 @@ docker-build:
 
 build-asclepias:
   stage: build
-  needs: []
+  needs: ["docker-build"]
   # NOTE: I couldn't get the $VERSION variable to work as in:
   #  image : registry.novisci.com/nsstat/asclepias/$PKG-build:$VERSION
   # hence, using latest tag, but this may not be ideal
@@ -55,7 +55,8 @@ install:
     - cabal --version
     - mkdir install
     - cabal install --install-method=copy --installdir=install
-    - release-cli create --name "Release $CI_COMMIT_SHA" --description "Created using the release-cli $EXTRA_DESCRIPTION" --tag-name "v${MAJOR}.${MINOR}.${REVISION}" --ref "$CI_COMMIT_SHA" --released-at "2020-07-15T08:00:00Z" --milestone "m1" --milestone "m2" --milestone "m3" --assets-link "{\"name\":\"asset1\",\"url\":\"https://example.com/assets/1\",\"link_type\":\"other\"}
+    # - aws 
+    # - release-cli create --name "Release $CI_COMMIT_SHA" --description "Created using the release-cli $EXTRA_DESCRIPTION" --tag-name "v${MAJOR}.${MINOR}.${REVISION}" --ref "$CI_COMMIT_SHA" --released-at "2020-07-15T08:00:00Z" --milestone "m1" --milestone "m2" --milestone "m3" --assets-link "{\"name\":\"asset1\",\"url\":\"https://example.com/assets/1\",\"link_type\":\"other\"}
 
 
 

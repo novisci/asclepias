@@ -51,18 +51,18 @@ install-apps:
     paths:
       - dist-newstyle/
       - install/
-      - collector*
+      - cohort-collector*
   artifacts :
     name: "${CI_PROJECT_NAME}-${SAFE_REF_NAME}"
     paths:
-      - "collector*.tar.gz"
+      - "cohort-collector*.tar.gz"
     expire_in: 1 week
   script:
     - ghc --version
     - cabal --version
     - mkdir install -p
-    - cabal install --install-method=copy --installdir=install --overwrite-policy=always
-    - tar -czvf collector-$VERSION-linux.tar.gz install/collector
+    - cabal install cohort-collector --install-method=copy --installdir=install --overwrite-policy=always
+    - tar -czvf cohort-collector-$VERSION-linux-$(uname -m).tar.gz install/cohort-collector
   # release:
   #   name: 'Release $TAG'
   #   description: 'Created using the release-cli $EXTRA_DESCRIPTION'  # $EXTRA_DESCRIPTION and the $TAG

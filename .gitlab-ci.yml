@@ -83,7 +83,7 @@ install:
   #     - dist-newstyle/
   #     - install/
   script:
-    - aws s3 cp $CI_PROJECT_DIR/collector-$VERSION-linux.tar.gz s3://download.novisci.com/hasklepias/collector-$VERSION-linux.tar.gz --acl public-read
+    - aws s3 cp $CI_PROJECT_DIR/cohort-collector-$VERSION-linux.tar.gz s3://download.novisci.com/hasklepias/cohort-collector-$VERSION-linux.tar.gz --acl public-read
 
 
 test:

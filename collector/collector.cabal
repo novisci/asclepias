@@ -1,0 +1,67 @@
+cabal-version:  2.2
+name:           cohort-collector
+version:        0.20.0
+description:    Please see the README on GitHub at <https://github.com/novisci/asclepias#readme>
+homepage:       https://github.com/novisci/asclepias/#readme
+bug-reports:    https://github.com/novisci/asclepias/issues
+author:         Bradley Saul
+maintainer:     bsaul@novisci.com
+copyright:      NoviSci, Inc
+category:       Data Science
+synopsis:       embedded DSL for defining epidemiologic cohorts
+license:        BSD-3-Clause
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    ChangeLog.md
+
+source-repository head
+  type: git
+  location: https://github.com/novisci/asclepias
+
+library
+  exposed-modules:
+      CohortCollection
+  hs-source-dirs:
+      src
+  build-depends:
+      aeson >=1.4.0.0 && <2
+    , amazonka
+    , amazonka-s3
+    , base >=4.14 && <4.15
+    , bytestring == 0.10.12.0
+    , cmdargs == 0.10.21
+    , hasklepias
+    , conduit
+    , conduit-extra
+    , flow == 1.0.22
+    , lens == 5.0.1
+    , lens-aeson == 1.1.1
+    , text == 1.2.4.1
+    , time >= 1.11
+  default-language: Haskell2010
+
+executable collector
+  main-is: Main.hs
+  hs-source-dirs:
+      app
+  build-depends:
+       base >=4.14 && <4.15
+     , cohort-collector
+     , bytestring
+     , optparse-applicative
+  default-language: Haskell2010
+
+test-suite collector-test
+  type: exitcode-stdio-1.0
+  main-is: Main.hs
+  hs-source-dirs:
+      test
+  build-depends:
+      cohort-collector
+    , base >=4.14 && <4.15
+    , tasty  == 1.4.1
+    , tasty-silver 
+    , bytestring
+  default-language: Haskell2010

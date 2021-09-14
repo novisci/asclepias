@@ -37,7 +37,7 @@ build-asclepias:
   script:
     - ghc --version
     - cabal --version
-    - cabal build
+    - cabal build all
 
 install-apps:
   stage: release
@@ -100,7 +100,7 @@ test:
   script:
     - ghc --version
     - cabal --version
-    - cabal test --test-show-details=always 
+    - cabal test all --test-show-details=always 
 
 docs: 
   only: 

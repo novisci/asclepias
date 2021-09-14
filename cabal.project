@@ -1,0 +1,4 @@
+packages: core
+        , collector
+        , edm
+        , stype

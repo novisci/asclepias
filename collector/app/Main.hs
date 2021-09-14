@@ -10,7 +10,7 @@ import qualified Data.ByteString.Lazy.Char8    as C
                                                 , putStrLn
                                                 , toStrict
                                                 )
-import           Hasklepias                     ( runCollectionApp, getLocations, Input(..) )
+import           CohortCollection
 import           Options.Applicative
 
 

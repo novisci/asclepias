@@ -47,9 +47,6 @@ module Hasklepias
     -- ** Creating an executable cohort application
   , module Hasklepias.MakeApp
 
-    -- ** Collecting cohorts run on different partitions
-  , module Hasklepias.CohortCollection
-
     -- * Statistical Types
   , module Stype
 
@@ -67,7 +64,6 @@ import           Features
 
 import           Cohort
 
-import           Hasklepias.CohortCollection
 import           Hasklepias.FeatureEvents
 import           Hasklepias.MakeApp
 import           Hasklepias.Misc

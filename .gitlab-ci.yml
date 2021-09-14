@@ -1,7 +1,7 @@
 
 before_script:
-  - export VERSION=$(grep -e '^version:' hasklepias.cabal | sed 's/version:[[:space:]]*//g')
-  - export NAME=$(grep -e '^name:' hasklepias.cabal | sed 's/name:[[:space:]]*//g')
+  - export VERSION=$(grep -e '^version:' core/hasklepias.cabal | sed 's/version:[[:space:]]*//g')
+  - export NAME=$(grep -e '^name:' core/hasklepias.cabal | sed 's/name:[[:space:]]*//g')
 
 variables:
   PKG: hasklepias 

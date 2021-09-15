@@ -24,16 +24,14 @@ module EventData
   , module EventData.Aeson
     -- ** Generating arbitrary events
   , module EventData.Arbitrary
-
-
   ) where
 
+import           EventData.Accessors
 import           EventData.Aeson
 import           EventData.Arbitrary
 import           EventData.Context
 import           EventData.Context.Domain
 import           EventData.Core
 import           EventData.Predicates
-import           EventData.Accessors
 
 

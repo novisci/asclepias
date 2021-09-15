@@ -7,6 +7,8 @@ Maintainer  : bsaul@novisci.com
 -}
 {-# OPTIONS_HADDOCK hide #-}
 {-# LANGUAGE NoImplicitPrelude #-}
+{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE DataKinds #-}
 
 module EventData.Accessors
   ( viewBirthYears
@@ -16,9 +18,7 @@ module EventData.Accessors
   , previewBirthYear
   ) where
 
-import           Control.Lens                   ( (^.)
-                                                , preview
-                                                )
+import           Lens.Micro                     ( (^?) )
 import           Control.Monad                  ( (=<<)
                                                 , Functor(fmap)
                                                 )
@@ -29,6 +29,9 @@ import           Data.Function                  ( ($)
                                                 , const
                                                 )
 import           Data.Functor.Contravariant     ( Predicate(..) )
+import           Data.Generics.Internal.VL.Lens ( (^.) )
+import           Data.Generics.Product          ( HasField(field) )
+import           Data.Generics.Sum              ( AsAny(_As) )
 import           Data.Maybe                     ( Maybe(..) )
 import           Data.Ord                       ( Ord )
 import           Data.Text                      ( Text )
@@ -47,8 +50,7 @@ import           EventData.Context              ( Concepts
                                                 , facts
                                                 , hasConcepts
                                                 )
-import           EventData.Context.Domain       ( Domain
-                                                , _Demographics
+import           EventData.Context.Domain       ( Domain(..)
                                                 , demo
                                                 , info
                                                 )
@@ -69,7 +71,8 @@ import           Witherable                     ( Filterable(filter, mapMaybe)
 
 -- | Preview demographics information from a domain
 previewDemoInfo :: Domain -> Maybe Text
-previewDemoInfo dmn = (^. demo . info) =<< preview _Demographics dmn
+previewDemoInfo dmn =
+  (^. field @"demo" . field @"info") =<< (dmn ^? _As @"Demographics")
 
 -- | Utility for reading text into a maybe integer
 intMayMap :: Text -> Maybe Integer -- TODO: this is ridiculous
@@ -83,15 +86,19 @@ previewBirthYear dmn = intMayMap =<< previewDemoInfo dmn
 -- | Returns a (possibly empty) list of birth years from a set of events
 viewBirthYears :: (Witherable f) => f (Event a) -> [Year]
 viewBirthYears x = mapMaybe
-  (\e -> previewBirthYear =<< Just (ctxt e ^. facts))
+  (\e -> previewBirthYear (facts $ ctxt e))
+  -- (\e -> previewBirthYear =<< Just (ctxt e ^. (field @"facts")))
+  -- (\e -> previewBirthYear =<< Just (ctxt e ^. facts))
   (toList $ filter (getPredicate isBirthYearEvent) x)
 
 -- | Returns a (possibly empty) list of Gender values from a set of events
 viewGenders :: (Witherable f) => f (Event a) -> [Text]
-viewGenders x = mapMaybe (\e -> previewDemoInfo =<< Just (ctxt e ^. facts))
-                         (toList $ filter (getPredicate isGenderFactEvent) x)
+viewGenders x = mapMaybe
+  (\e -> previewDemoInfo =<< Just (ctxt e ^. field @"facts"))
+  (toList $ filter (getPredicate isGenderFactEvent) x)
 
 -- | Returns a (possibly empty) list of Gender values from a set of events
 viewStates :: (Witherable f) => f (Event a) -> [Text]
-viewStates x = mapMaybe (\e -> previewDemoInfo =<< Just (ctxt e ^. facts))
-                        (toList $ filter (getPredicate isStateFactEvent) x)
+viewStates x = mapMaybe
+  (\e -> previewDemoInfo =<< Just (ctxt e ^. field @"facts"))
+  (toList $ filter (getPredicate isStateFactEvent) x)

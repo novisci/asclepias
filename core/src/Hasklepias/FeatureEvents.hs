@@ -101,14 +101,12 @@ import           EventData.Context              ( Concept
                                                 , Concepts
                                                 , Context
                                                 , HasConcept(hasConcepts)
-                                                , _facts
                                                 , facts
                                                 )
 import           EventData.Context.Domain       ( DemographicsFacts(..)
                                                 , DemographicsField(..)
                                                 , DemographicsInfo(..)
                                                 , Domain(..)
-                                                , _Demographics
                                                 , demo
                                                 , info
                                                 )

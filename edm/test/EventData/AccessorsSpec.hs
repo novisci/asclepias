@@ -4,8 +4,10 @@ module EventData.AccessorsSpec (spec) where
 import IntervalAlgebra
 import EventData ( Event, event )
 import EventData.Accessors
+import EventData.Predicates
 import EventData.Context as HC ( context, packConcepts )
 import Test.Hspec ( shouldBe, it, Spec )
+import Data.Functor.Contravariant
 import Data.Maybe (Maybe(Nothing))
 import Data.Set(fromList)
 import EventData.Context.Domain
@@ -20,10 +22,18 @@ evnt2 = event ( beginerval (4 :: Int) (2 :: Int) )
 evnts :: [Event Int]
 evnts = [evnt1, evnt2]
 
+demoYear :: Domain
+demoYear = Demographics $ DemographicsFacts (DemographicsInfo BirthYear (Just "1987"))
+
+
 evntGender :: Event Int
 evntGender = event ( beginerval (4 :: Int) (2 :: Int) )
          ( HC.context (Demographics ( DemographicsFacts (DemographicsInfo Gender (Just "F"))))
            (packConcepts [] ))
+
+evntYear :: Event Int
+evntYear = event ( beginerval (4 :: Int) (2 :: Int) )
+         ( HC.context demoYear (packConcepts [] ))
 
 spec :: Spec
 spec = do
@@ -33,3 +43,10 @@ spec = do
       viewGenders evnts `shouldBe` []
     it "viewGenders with a demographic event" $
       viewGenders [evntGender] `shouldBe` ["F"]
+
+    it "previewBirthYear on demographic domain" $
+      previewBirthYear demoYear `shouldBe` Just 1987
+    it "isBirthYearEvent on demographic domain with BirthYear" $
+      getPredicate isBirthYearEvent evntYear `shouldBe` True
+    it "viewBirthYears on demographic event" $
+      viewBirthYears [evntYear] `shouldBe` [1987]

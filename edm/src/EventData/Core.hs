@@ -71,14 +71,14 @@ instance HasConcept (ConceptEvent a) where
 -- | Drops an @Event@ to a @ConceptEvent@ by moving the concepts in the data
 --   position in the paired interval and throwing out the facts and source.
 toConceptEvent :: (Show a, Ord a) => Event a -> ConceptEvent a
-toConceptEvent e = makePairedInterval (_concepts $ ctxt e) (getInterval e)
+toConceptEvent e = makePairedInterval (concepts $ ctxt e) (getInterval e)
 
 -- | Creates a new @'ConceptEvent'@ from an @'Event'@ by taking the intersection
 -- of the list of Concepts in the first argument and any Concepts in the @'Event'@.
 -- This is a way to keep only the concepts you want in an event.
 toConceptEventOf :: (Show a, Ord a) => [Concept] -> Event a -> ConceptEvent a
 toConceptEventOf cpts e = makePairedInterval
-  (toConcepts $ intersection (fromList cpts) (getConcepts $ _concepts $ ctxt e))
+  (toConcepts $ intersection (fromList cpts) (getConcepts $ concepts $ ctxt e))
   (getInterval e)
 
 -- | Create a new @'ConceptEvent'@.

@@ -10,18 +10,15 @@ Maintainer  : bsaul@novisci.com
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE Trustworthy #-}
 {-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE TemplateHaskell #-}
+-- {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE ScopedTypeVariables #-}
+-- {-# LANGUAGE ScopedTypeVariables #-}
 module EventData.Context.Domain(
     Domain(..)
-    , _Demographics
     , module EventData.Context.Domain.Demographics
-    , _Enrollment
     , module EventData.Context.Domain.Enrollment
 ) where
 
-import Control.Lens                             ( makePrisms )
 import Data.Eq                                  ( Eq )
 import Data.Text                                ( Text, empty )
 import GHC.Generics                             ( Generic )
@@ -37,4 +34,3 @@ data Domain =
     | UnimplementedDomain ()
     deriving ( Eq, Show, Generic )
 
-makePrisms ''Domain

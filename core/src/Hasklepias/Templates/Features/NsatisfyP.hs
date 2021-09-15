@@ -29,7 +29,6 @@ module Hasklepias.Templates.Features.NsatisfyP
   ) where
 
 import           Cohort
-import qualified Control.Lens                  as Functor
 import           EventData
 import           Features
 import           Hasklepias.FeatureEvents

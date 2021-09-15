@@ -9,14 +9,15 @@ Maintainer  : bsaul@novisci.com
 
 {-# OPTIONS_HADDOCK hide #-}
 {-# LANGUAGE NoImplicitPrelude #-}
+{-# LANGUAGE DeriveGeneric #-}
 -- {-# LANGUAGE Safe #-}
-{-# LANGUAGE TemplateHaskell #-}
+-- {-# LANGUAGE TemplateHaskell #-}
 
 module EventData.Context
   ( Context(..)
-  , concepts
-  , facts
-  , source
+  -- , concepts
+  -- , facts
+  -- , source
   , context
   , Concept
   , Concepts
@@ -30,7 +31,6 @@ module EventData.Context
   , Source
   ) where
 
-import           Control.Lens                   ( makeLenses )
 import           Data.Bool                      ( Bool )
 import           Data.Eq                        ( Eq )
 import           Data.Function                  ( ($)
@@ -56,6 +56,7 @@ import           Data.Set                       ( Set
                                                 )
 import           Data.Text                      ( Text )
 import           EventData.Context.Domain       ( Domain )
+import           GHC.Generics                   ( Generic )
 import           GHC.Show                       ( Show(show) )
 
 -- | A @Context@ consists of three parts: @concepts@, @facts@, and @source@. 
@@ -63,18 +64,18 @@ import           GHC.Show                       ( Show(show) )
 -- At this time, @facts@ and @source@ are simply stubs to be fleshed out in 
 -- later versions of hasklepias. 
 data Context = Context
-  { _concepts :: Concepts
-  , _facts    :: Domain
-  , _source   :: Maybe Source
+  { concepts :: Concepts
+  , facts    :: Domain
+  , source   :: Maybe Source
   }
-  deriving (Eq, Show)
+  deriving (Eq, Show, Generic)
 
 data Source = Source
   deriving (Eq, Show)
 
 instance HasConcept Context where
   hasConcept ctxt concept =
-    member (packConcept concept) (getConcepts $ _concepts ctxt)
+    member (packConcept concept) (getConcepts $ concepts ctxt)
 
 -- | Smart contructor for Context type
 --
@@ -142,4 +143,4 @@ class HasConcept a where
 instance HasConcept Concepts where
   hasConcept (Concepts e) concept = member (packConcept concept) e
 
-makeLenses ''Context
+-- makeLenses ''Context

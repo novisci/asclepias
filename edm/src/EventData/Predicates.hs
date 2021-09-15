@@ -73,13 +73,13 @@ instance EventPredicate Context a where
   liftToEventPredicate = contramap ctxt
 
 instance EventPredicate Domain a where
-  liftToEventPredicate = contramap (_facts . ctxt)
+  liftToEventPredicate = contramap (facts . ctxt)
 
 instance EventPredicate Concepts a where
-  liftToEventPredicate = contramap (_concepts . ctxt)
+  liftToEventPredicate = contramap (concepts . ctxt)
 
 instance EventPredicate (Maybe Source) a where
-  liftToEventPredicate = contramap (_source . ctxt)
+  liftToEventPredicate = contramap (source . ctxt)
 
 instance (Ord a) => EventPredicate (Interval a) a where
   liftToEventPredicate = contramap getInterval

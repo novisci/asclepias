@@ -69,8 +69,6 @@ library
     , flow == 1.0.22
     , ghc-prim == 0.6.1
     , interval-algebra == 0.10.2
-    , lens == 5.0.1
-    , lens-aeson == 1.1.1
     , nonempty-containers == 0.3.4.1
     , safe >= 0.3
     , tasty  == 1.4.1
@@ -113,7 +111,6 @@ test-suite hasklepias-test
     , hasklepias
     , hspec
     , interval-algebra == 0.10.2
-    , lens == 5.0.1
     , text >=1.2.3
     , time >=1.11
     , unordered-containers >=0.2.10

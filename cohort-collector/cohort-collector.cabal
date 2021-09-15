@@ -26,20 +26,20 @@ library
   hs-source-dirs:
       src
   build-depends:
-      aeson >=1.4.0.0 && <2
-    , amazonka
-    , amazonka-s3
+    -- Internal
+      hasklepias
+    
+    -- External
+    , aeson >=1.4.0.0 && <2
+    , amazonka == 1.6.1
+    , amazonka-s3 == 1.6.1
     , base >=4.14 && <4.15
     , bytestring == 0.10.12.0
     , cmdargs == 0.10.21
-    , hasklepias
     , conduit
     , conduit-extra
-    , flow == 1.0.22
-    , lens == 5.0.1
-    , lens-aeson == 1.1.1
+    , microlens == 0.4.12.0
     , text == 1.2.4.1
-    , time >= 1.11
   default-language: Haskell2010
 
 executable cohort-collector

@@ -16,7 +16,7 @@ import           Conduit                        ( (.|)
                                                 , runResourceT
                                                 , yieldMany
                                                 )
-import           Control.Lens                   ( (<&>)
+import           Lens.Micro                     ( (<&>)
                                                 , (^.)
                                                 , set
                                                 )
@@ -69,7 +69,7 @@ getLocations (S3Input b k) =
     .   C.lines
     <$> doGetObject b k
 
--- | 
+-- | Type to hold input information. Either from file or from S3. 
 data Input =
      FileInput (Maybe FilePath) FilePath
    | S3Input BucketName ObjectKey

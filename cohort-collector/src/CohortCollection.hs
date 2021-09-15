@@ -3,7 +3,7 @@
 
 {-# LANGUAGE GADTs #-}
 
-module Hasklepias.CohortCollection 
+module CohortCollection 
   ( runCollectionApp
   , getLocations
   , Location(..)

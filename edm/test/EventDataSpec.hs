@@ -7,7 +7,6 @@ import           Data.Maybe
 import           EventData
 import           EventData.Context             as HC
 import           EventData.Context.Domain       ( Domain(UnimplementedDomain) )
-import           Hasklepias.FeatureEvents
 import           IntervalAlgebra
 import           IntervalAlgebra.IntervalUtilities
 import           Test.Hspec                     ( Spec

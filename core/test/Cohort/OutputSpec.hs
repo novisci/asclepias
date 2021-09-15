@@ -7,9 +7,7 @@ module Cohort.OutputSpec (
 
 import Cohort
 import Data.Aeson
-import Data.HashMap.Internal as H
-import Data.Vector as V (fromList)
-import qualified Data.Set as Set (fromList)
+import GHC.Exts ( IsList(..) )
 import Test.Hspec ( describe, pending, shouldBe, it, Spec )
 import qualified Data.ByteString.Lazy          as B
                                                 ( ByteString )
@@ -18,7 +16,7 @@ import Features (emptyAttributes)
 attr1 :: Maybe AttritionInfo
 attr1 = 
   Just $ MkAttritionInfo 2 $
-    Set.fromList [ uncurry MkAttritionLevel (ExcludedBy (1, "feat2"), 1)
+    fromList [ uncurry MkAttritionLevel (ExcludedBy (1, "feat2"), 1)
              , uncurry MkAttritionLevel (Included, 1)]
 
 cw1 :: B.ByteString
@@ -38,10 +36,10 @@ ep = toJSON emptyAttributes
 
 cwt :: CohortDataShapeJSON 
 cwt = CW $ MkColumnWiseJSON 
-  [ Object $ H.fromList [("name", String "dummy")
+  [ Object $ fromList [("name", String "dummy")
                     , ("attrs", ep)
                     , ("type", String "Count")]
-  , Object $ H.fromList [("name", String "another")
+  , Object $ fromList [("name", String "another")
                     , ("attrs", ep)
                     , ("type", String "Bool")]
   ]
@@ -52,17 +50,17 @@ cwt = CW $ MkColumnWiseJSON
 
 rwt :: CohortDataShapeJSON 
 rwt = RW $ MkRowWiseJSON 
-  [ Object $ H.fromList [("name", String "dummy")
+  [ Object $ fromList [("name", String "dummy")
                     , ("attrs", ep)
                     , ("type", String "Count")]
-  , Object $ H.fromList [("name", String "another")
+  , Object $ fromList [("name", String "another")
                     , ("attrs", ep)
                     , ("type", String "Bool")]
   ]
-  [ Array $ V.fromList [String "a", Array $ V.fromList [ Number 5, Bool True]]
-  , Array $ V.fromList [String "b", Array $ V.fromList [ Number 5, Bool True]]
-  , Array $ V.fromList [String "c", Array $ V.fromList [ Number 6, Bool False]]
-  , Array $ V.fromList [String "d", Array $ V.fromList [ Number 8, Bool True]]
+  [ Array $ fromList [String "a", Array $ fromList [ Number 5, Bool True]]
+  , Array $ fromList [String "b", Array $ fromList [ Number 5, Bool True]]
+  , Array $ fromList [String "c", Array $ fromList [ Number 6, Bool False]]
+  , Array $ fromList [String "d", Array $ fromList [ Number 8, Bool True]]
   ]
 
 cw1p2 :: B.ByteString 

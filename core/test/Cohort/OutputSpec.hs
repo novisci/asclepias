@@ -22,16 +22,16 @@ attr1 =
              , uncurry MkAttritionLevel (Included, 1)]
 
 cw1 :: B.ByteString
-cw1 = "{\"contents\":{\"ids\":[\"a\",\"b\"],\"colData\":[[5,5],[true,true]],\"colAttributes\":[{\"name\":\"dummy\",\"attrs\":{\"getPurpose\":{\"getTags\":[],\"getRole\":[]},\"getDerivation\":\"\",\"getLongLabel\":\"\",\"getShortLabel\":\"\"},\"type\":\"Count\"},{\"name\":\"another\",\"attrs\":{\"getPurpose\":{\"getTags\":[],\"getRole\":[]},\"getDerivation\":\"\",\"getLongLabel\":\"\",\"getShortLabel\":\"\"},\"type\":\"Bool\"}]},\"tag\":\"CW\"}"
+cw1 = "{\"contents\":{\"ids\":[\"a\",\"b\"],\"cohortData\":[[5,5],[true,true]],\"attributes\":[{\"name\":\"dummy\",\"attrs\":{\"getPurpose\":{\"getTags\":[],\"getRole\":[]},\"getDerivation\":\"\",\"getLongLabel\":\"\",\"getShortLabel\":\"\"},\"type\":\"Count\"},{\"name\":\"another\",\"attrs\":{\"getPurpose\":{\"getTags\":[],\"getRole\":[]},\"getDerivation\":\"\",\"getLongLabel\":\"\",\"getShortLabel\":\"\"},\"type\":\"Bool\"}]},\"tag\":\"CW\"}"
 
 cw2 :: B.ByteString
-cw2 = "{\"contents\":{\"ids\":[\"c\",\"d\"],\"colData\":[[6,8],[false,true]],\"colAttributes\":[{\"name\":\"dummy\",\"attrs\":{\"getPurpose\":{\"getTags\":[],\"getRole\":[]},\"getDerivation\":\"\",\"getLongLabel\":\"\",\"getShortLabel\":\"\"},\"type\":\"Count\"},{\"name\":\"another\",\"attrs\":{\"getPurpose\":{\"getTags\":[],\"getRole\":[]},\"getDerivation\":\"\",\"getLongLabel\":\"\",\"getShortLabel\":\"\"},\"type\":\"Bool\"}]},\"tag\":\"CW\"}"
+cw2 = "{\"contents\":{\"ids\":[\"c\",\"d\"],\"cohortData\":[[6,8],[false,true]],\"attributes\":[{\"name\":\"dummy\",\"attrs\":{\"getPurpose\":{\"getTags\":[],\"getRole\":[]},\"getDerivation\":\"\",\"getLongLabel\":\"\",\"getShortLabel\":\"\"},\"type\":\"Count\"},{\"name\":\"another\",\"attrs\":{\"getPurpose\":{\"getTags\":[],\"getRole\":[]},\"getDerivation\":\"\",\"getLongLabel\":\"\",\"getShortLabel\":\"\"},\"type\":\"Bool\"}]},\"tag\":\"CW\"}"
 
 rw1 :: B.ByteString
-rw1 = "{\"contents\":{\"rowAttributes\":[{\"name\":\"dummy\",\"attrs\":{\"getPurpose\":{\"getTags\":[],\"getRole\":[]},\"getDerivation\":\"\",\"getLongLabel\":\"\",\"getShortLabel\":\"\"},\"type\":\"Count\"},{\"name\":\"another\",\"attrs\":{\"getPurpose\":{\"getTags\":[],\"getRole\":[]},\"getDerivation\":\"\",\"getLongLabel\":\"\",\"getShortLabel\":\"\"},\"type\":\"Bool\"}],\"rowData\":[[\"a\",[5,true]],[\"b\",[5,true]]]},\"tag\":\"RW\"}"
+rw1 = "{\"contents\":{\"attributes\":[{\"name\":\"dummy\",\"attrs\":{\"getPurpose\":{\"getTags\":[],\"getRole\":[]},\"getDerivation\":\"\",\"getLongLabel\":\"\",\"getShortLabel\":\"\"},\"type\":\"Count\"},{\"name\":\"another\",\"attrs\":{\"getPurpose\":{\"getTags\":[],\"getRole\":[]},\"getDerivation\":\"\",\"getLongLabel\":\"\",\"getShortLabel\":\"\"},\"type\":\"Bool\"}],\"cohortData\":[[\"a\",[5,true]],[\"b\",[5,true]]]},\"tag\":\"RW\"}"
 
 rw2 :: B.ByteString
-rw2 = "{\"contents\":{\"rowAttributes\":[{\"name\":\"dummy\",\"attrs\":{\"getPurpose\":{\"getTags\":[],\"getRole\":[]},\"getDerivation\":\"\",\"getLongLabel\":\"\",\"getShortLabel\":\"\"},\"type\":\"Count\"},{\"name\":\"another\",\"attrs\":{\"getPurpose\":{\"getTags\":[],\"getRole\":[]},\"getDerivation\":\"\",\"getLongLabel\":\"\",\"getShortLabel\":\"\"},\"type\":\"Bool\"}],\"rowData\":[[\"c\",[6,false]],[\"d\",[8,true]]]},\"tag\":\"RW\"}"
+rw2 = "{\"contents\":{\"attributes\":[{\"name\":\"dummy\",\"attrs\":{\"getPurpose\":{\"getTags\":[],\"getRole\":[]},\"getDerivation\":\"\",\"getLongLabel\":\"\",\"getShortLabel\":\"\"},\"type\":\"Count\"},{\"name\":\"another\",\"attrs\":{\"getPurpose\":{\"getTags\":[],\"getRole\":[]},\"getDerivation\":\"\",\"getLongLabel\":\"\",\"getShortLabel\":\"\"},\"type\":\"Bool\"}],\"cohortData\":[[\"c\",[6,false]],[\"d\",[8,true]]]},\"tag\":\"RW\"}"
 
 ep :: Value
 ep = toJSON emptyAttributes
@@ -66,10 +66,10 @@ rwt = RW $ MkRowWiseJSON
   ]
 
 cw1p2 :: B.ByteString 
-cw1p2 = "{\"contents\":{\"ids\":[\"a\",\"b\",\"c\",\"d\"],\"colData\":[[5,5,6,8],[true,true,false,true]],\"colAttributes\":[{\"name\":\"dummy\",\"attrs\":{\"getPurpose\":{\"getTags\":[],\"getRole\":[]},\"getDerivation\":\"\",\"getLongLabel\":\"\",\"getShortLabel\":\"\"},\"type\":\"Count\"},{\"name\":\"another\",\"attrs\":{\"getPurpose\":{\"getTags\":[],\"getRole\":[]},\"getDerivation\":\"\",\"getLongLabel\":\"\",\"getShortLabel\":\"\"},\"type\":\"Bool\"}]},\"tag\":\"CW\"}"
+cw1p2 = "{\"contents\":{\"ids\":[\"a\",\"b\",\"c\",\"d\"],\"cohortData\":[[5,5,6,8],[true,true,false,true]],\"attributes\":[{\"name\":\"dummy\",\"attrs\":{\"getPurpose\":{\"getTags\":[],\"getRole\":[]},\"getDerivation\":\"\",\"getLongLabel\":\"\",\"getShortLabel\":\"\"},\"type\":\"Count\"},{\"name\":\"another\",\"attrs\":{\"getPurpose\":{\"getTags\":[],\"getRole\":[]},\"getDerivation\":\"\",\"getLongLabel\":\"\",\"getShortLabel\":\"\"},\"type\":\"Bool\"}]},\"tag\":\"CW\"}"
 
 rw1p2 :: B.ByteString
-rw1p2 = "{\"contents\":{\"rowAttributes\":[{\"name\":\"dummy\",\"attrs\":{\"getPurpose\":{\"getTags\":[],\"getRole\":[]},\"getDerivation\":\"\",\"getLongLabel\":\"\",\"getShortLabel\":\"\"},\"type\":\"Count\"},{\"name\":\"another\",\"attrs\":{\"getPurpose\":{\"getTags\":[],\"getRole\":[]},\"getDerivation\":\"\",\"getLongLabel\":\"\",\"getShortLabel\":\"\"},\"type\":\"Bool\"}],\"rowData\":[[\"a\",[5,true]],[\"b\",[5,true]],[\"c\",[6,false]],[\"d\",[8,true]]]},\"tag\":\"RW\"}"
+rw1p2 = "{\"contents\":{\"cohortData\":[[\"a\",[5,true]],[\"b\",[5,true]],[\"c\",[6,false]],[\"d\",[8,true]]],\"attributes\":[{\"name\":\"dummy\",\"attrs\":{\"getPurpose\":{\"getTags\":[],\"getRole\":[]},\"getDerivation\":\"\",\"getLongLabel\":\"\",\"getShortLabel\":\"\"},\"type\":\"Count\"},{\"name\":\"another\",\"attrs\":{\"getPurpose\":{\"getTags\":[],\"getRole\":[]},\"getDerivation\":\"\",\"getLongLabel\":\"\",\"getShortLabel\":\"\"},\"type\":\"Bool\"}]},\"tag\":\"RW\"}"
  
 
 spec :: Spec

@@ -1,5 +1,10 @@
 # Changelog for hasklepias
 
+## 0.21.0
+
+* Reorganizes project into multiple sub-projects. E.g., `core`, `cohort-collector`, `edm`, and `stype` are now each a separate Haskell package their own `.cabal` file.
+* Adds the `DuplicateRecordFields` language extension to the `Cohort.Output` module, so that field names in both row-wise and column-wise output formats are shared. Namely, `rowAttributes` --> `attributes` and `colAttributes` --> `attributes` and `colData` --> `cohortData` and `rowData` --> `cohortData`.
+
 ## 0.20.0
 
 * Adds the `Hasklepias.CohortCollection` module which is exposed as the `collector` application. This application can be used to combine cohorts that were derived from different input data (e.g. different partitions of data). However, cohorts must be derived from the same specification using the same shape (e.g. `rowWise` or `colWise`). The application can be installed from the asclepias repository using `cabal install`. It is also available to download from `download.novisci.com/hasklepias/collector-0.20.0-linux.tar.gz` (currently only available for linux (not sure of architecture)). The following gives an example of using the application on local files:

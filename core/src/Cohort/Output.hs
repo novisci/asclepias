@@ -8,12 +8,9 @@ Maintainer  : bsaul@novisci.com
 {-# OPTIONS_HADDOCK hide #-}
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE StandaloneDeriving #-}
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE DeriveAnyClass #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE DuplicateRecordFields #-}
 
 module Cohort.Output
   ( CohortJSON
@@ -175,9 +172,9 @@ instance ToJSON ColumnWise where
 
 -- | A type to hold 'Cohort' information in a column-wise manner.
 data ColumnWiseJSON = MkColumnWiseJSON
-  { colAttributes :: [Value]
-  , ids           :: [Value]
-  , colData       :: [[Value]]
+  { attributes  :: [Value]
+  , ids        :: [Value]
+  , cohortData :: [[Value]]
   }
   deriving (Eq, Show, Generic)
 
@@ -218,8 +215,8 @@ instance ToJSON RowWise where
 
 -- | A type to hold 'Cohort' information in a row-wise manner.
 data RowWiseJSON = MkRowWiseJSON
-  { rowAttributes :: [Value]
-  , rowData    :: [Value]
+  { attributes :: [Value]
+  , cohortData :: [Value]
   }
   deriving (Eq, Show, Generic)
 

@@ -18,8 +18,8 @@ cat exampleApp/exampleData.jsonl | cabal exec exampleApp
 ## Uploading test files to S3
 
 ```sh
-aws s3 sync  collector-test/tests/ s3://nsstatdev-main-usea1-projects-cohorts/sandbox/ --exclude "*" --include "*.json"
-aws s3 sync  collector-test/tests/ s3://nsstatdev-main-usea1-projects-cohorts/sandbox/ --exclude "*" --include "s3manifest*"
+aws s3 sync  cohort-collector/test/tests/ s3://nsstatdev-main-usea1-projects-cohorts/sandbox/ --exclude "*" --include "*.json"
+aws s3 sync  cohort-collector/test/tests/ s3://nsstatdev-main-usea1-projects-cohorts/sandbox/ --exclude "*" --include "s3manifest*"
 ```
 
 ## Running collector on S3 data examples
@@ -27,6 +27,6 @@ aws s3 sync  collector-test/tests/ s3://nsstatdev-main-usea1-projects-cohorts/sa
 (whatever machine you run this on needs to have appropriate AWS credentials)
 
 ```sh
-collector -b nsstatdev-main-usea1-projects-cohorts -m sandbox/s3manifestrw.txt
-collector -b nsstatdev-main-usea1-projects-cohorts -m sandbox/s3manifestcw.txt
+cohort-collector -b nsstatdev-main-usea1-projects-cohorts -m sandbox/s3manifestrw.txt
+cohort-collector -b nsstatdev-main-usea1-projects-cohorts -m sandbox/s3manifestcw.txt
 ```

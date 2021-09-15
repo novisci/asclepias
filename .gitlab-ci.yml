@@ -1,7 +1,8 @@
 
 before_script:
-  - export VERSION=$(grep -e '^version:' hasklepias.cabal | sed 's/version:[[:space:]]*//g')
-  - export NAME=$(grep -e '^name:' hasklepias.cabal | sed 's/name:[[:space:]]*//g')
+  - export VERSION=$(grep -e '^version:' core/hasklepias.cabal | sed 's/version:[[:space:]]*//g')
+  - export NAME=$(grep -e '^name:' core/hasklepias.cabal | sed 's/name:[[:space:]]*//g')
+  - export COLLECTOR_BUNDLE=cohort-collector-$VERSION-linux-$(uname -m).tar.gz
 
 variables:
   PKG: hasklepias 
@@ -37,7 +38,7 @@ build-asclepias:
   script:
     - ghc --version
     - cabal --version
-    - cabal build
+    - cabal build all
 
 install-apps:
   stage: release
@@ -51,18 +52,18 @@ install-apps:
     paths:
       - dist-newstyle/
       - install/
-      - collector*
+      - cohort-collector*
   artifacts :
     name: "${CI_PROJECT_NAME}-${SAFE_REF_NAME}"
     paths:
-      - "collector*.tar.gz"
+      - "cohort-collector*.tar.gz"
     expire_in: 1 week
   script:
     - ghc --version
     - cabal --version
     - mkdir install -p
-    - cabal install --install-method=copy --installdir=install --overwrite-policy=always
-    - tar -czvf collector-$VERSION-linux.tar.gz install/collector
+    - cabal install cohort-collector --install-method=copy --installdir=install --overwrite-policy=always
+    - tar -czvf $COLLECTOR_BUNDLE install/cohort-collector
   # release:
   #   name: 'Release $TAG'
   #   description: 'Created using the release-cli $EXTRA_DESCRIPTION'  # $EXTRA_DESCRIPTION and the $TAG
@@ -83,7 +84,7 @@ install:
   #     - dist-newstyle/
   #     - install/
   script:
-    - aws s3 cp $CI_PROJECT_DIR/collector-$VERSION-linux.tar.gz s3://download.novisci.com/hasklepias/collector-$VERSION-linux.tar.gz --acl public-read
+    - aws s3 cp $CI_PROJECT_DIR/$COLLECTOR_BUNDLE s3://download.novisci.com/hasklepias/$COLLECTOR_BUNDLE --acl public-read
 
 
 test:
@@ -100,7 +101,7 @@ test:
   script:
     - ghc --version
     - cabal --version
-    - cabal test --test-show-details=always 
+    - cabal test all --test-show-details=always 
 
 docs: 
   only: 
@@ -115,7 +116,7 @@ docs:
     expire_in: 1 hour
   script:
     - ghc --version
-    - cabal haddock --haddock-html-location='https://hackage.haskell.org/package/$pkg-$version/docs' --enable-documentation  --haddock-hyperlink-source --haddock-quickjump > haddock-output.txt
+    - cabal haddock hasklepias --haddock-html-location='https://hackage.haskell.org/package/$pkg-$version/docs' --enable-documentation  --haddock-hyperlink-source --haddock-quickjump > haddock-output.txt
 
 upload: 
   image: registry.novisci.com/nsstat/statocker/aws:latest

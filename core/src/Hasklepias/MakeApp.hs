@@ -65,12 +65,6 @@ import           Colog                          ( (<&)
                                                 , richMessageAction
                                                 , withLog
                                                 )
-import           Control.Monad.IO.Class         ( MonadIO
-                                                , liftIO
-                                                )
-import           Control.Monad.Reader           ( MonadReader(..)
-                                                , ReaderT(..)
-                                                )
 import           System.Console.CmdArgs         ( (&=)
                                                 , Data
                                                 , Typeable
@@ -78,7 +72,6 @@ import           System.Console.CmdArgs         ( (&=)
                                                 , help
                                                 , summary
                                                 )
-import           System.Environment             ( getArgs )
 
 -- a stub to add more arguments to later
 data MakeCohort = MakeCohort

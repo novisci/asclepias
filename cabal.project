@@ -1,0 +1,4 @@
+packages: core
+        , cohort-collector
+        , edm
+        , stype

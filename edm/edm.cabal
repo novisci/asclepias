@@ -1,6 +1,6 @@
 cabal-version:  2.2
 name:           edm 
-version:        0.20.0
+version:        0.21.0
 description:    Please see the README on GitHub at <https://github.com/novisci/asclepias#readme>
 homepage:       https://github.com/novisci/asclepias/#readme
 bug-reports:    https://github.com/novisci/asclepias/issues
@@ -14,7 +14,7 @@ license-file:   LICENSE
 build-type:     Simple
 extra-source-files:
     README.md
-    -- ChangeLog.md
+    ChangeLog.md
 
 source-repository head
   type: git
@@ -44,7 +44,6 @@ library
     , interval-algebra == 0.10.2
     , generic-lens == 2.2.0.0
     , microlens == 0.4.12.0
-    -- , safe >= 0.3
     , text == 1.2.4.1
     , time >= 1.11
     , QuickCheck

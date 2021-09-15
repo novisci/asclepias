@@ -15,9 +15,6 @@ Maintainer  : bsaul@novisci.com
 
 module EventData.Context
   ( Context(..)
-  -- , concepts
-  -- , facts
-  -- , source
   , context
   , Concept
   , Concepts
@@ -143,4 +140,3 @@ class HasConcept a where
 instance HasConcept Concepts where
   hasConcept (Concepts e) concept = member (packConcept concept) e
 
--- makeLenses ''Context

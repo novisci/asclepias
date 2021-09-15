@@ -60,13 +60,10 @@ import           Data.List                      ( replicate
                                                 )
 import qualified Data.List.NonEmpty            as NEL
                                                 ( NonEmpty(..)
-                                                , toList
                                                 )
 import           Data.Map.Strict               as Map
                                                 ( Map
-                                                , fromList
                                                 , fromListWith
-                                                , toList
                                                 , unionsWith
                                                 )
 import           Data.Maybe                     ( Maybe(..)
@@ -78,11 +75,10 @@ import           Data.Ord                       ( Ord(..) )
 import           Data.Semigroup                 ( Semigroup((<>)) )
 import qualified Data.Set                      as Set
                                                 ( Set
-                                                , fromList
-                                                , toList
                                                 )
 import           Data.Text                      ( Text )
 import           Data.Tuple                     ( uncurry )
+import           GHC.Exts                       ( IsList(..) )
 import           GHC.Generics                   ( Generic )
 import           GHC.Int                        ( Int )
 import           GHC.Num                        ( Natural
@@ -201,10 +197,10 @@ data AttritionInfo = MkAttritionInfo
 
 setAttrLevlToMap :: Set.Set AttritionLevel -> Map.Map CohortStatus Natural
 setAttrLevlToMap x =
-  Map.fromList $ (\(MkAttritionLevel l c) -> (l, c)) <$> Set.toList x
+  fromList $ (\(MkAttritionLevel l c) -> (l, c)) <$> toList x
 
 mapToSetAttrLevel :: Map.Map CohortStatus Natural -> Set.Set AttritionLevel
-mapToSetAttrLevel x = Set.fromList $ uncurry MkAttritionLevel <$> Map.toList x
+mapToSetAttrLevel x = fromList $ uncurry MkAttritionLevel <$> toList x
 
 -- | Two @AttritionInfo@ values can be combined, but this meant for combining
 --   attrition info from the same set of @Criteria@.
@@ -217,8 +213,8 @@ instance Semigroup AttritionInfo where
 
 -- Initializes @AttritionInfo@ from a @'Criteria'@.
 initAttritionInfo :: Criteria -> Map.Map CohortStatus Natural
-initAttritionInfo x = Map.fromList
-  $ zip (NEL.toList (initStatusInfo x)) (replicate (length (getCriteria x)) 0)
+initAttritionInfo x = fromList
+  $ zip (toList (initStatusInfo x)) (replicate (length (getCriteria x)) 0)
 
 -- An internal function used to measure attrition for a cohort.
 measureAttrition
@@ -228,7 +224,7 @@ measureAttrition c l =
     (+)
     [ maybe mempty initAttritionInfo c
     , Map.fromListWith (+) $ fmap (\x -> (getSubjectData x, 1)) l
-    , Map.fromList [(Included, 0)]
+    , fromList [(Included, 0)]
         -- including Included in the case that none of the evaluated criteria
         -- have status Include
     ]

@@ -13,6 +13,7 @@ module Hasklepias.ReexportsUnsafe
 
     -- * Re-exports
     module Data.Aeson
+  , module GHC.Exts
   , module GHC.IO
   , module Test.Tasty
   , module Test.Tasty.HUnit
@@ -21,6 +22,7 @@ module Hasklepias.ReexportsUnsafe
 import           Data.Aeson                     ( ToJSON(..)
                                                 , encode
                                                 )
+import           GHC.Exts                       ( IsList(fromList) )
 import           GHC.IO                         ( IO(..) )
 
 -- import GHC.Types                       ( Any )

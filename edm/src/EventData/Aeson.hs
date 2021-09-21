@@ -65,6 +65,7 @@ import           Prelude                        ( ($)
                                                 , fmap
                                                 , id
                                                 , pure
+                                                , show
                                                 )
 
 instance (FromJSON a, Show a, IntervalSizeable a b) => FromJSON (Interval a) where
@@ -76,7 +77,7 @@ instance (FromJSON a, Show a, IntervalSizeable a b) => FromJSON (Interval a) whe
     let e2 = fromMaybe (add (moment @a) b) e
     let ei = parseInterval b e2
     case ei of
-      Left  e -> fail e
+      Left  e -> fail (show e)
       Right i -> return i
 
 instance FromJSON Domain where

@@ -2,6 +2,7 @@
 
 ## 0.21.0
 
+* Updates `interval-algebra` dependency to `1.0.0`.
 * Reorganizes project into multiple sub-projects. E.g., `core`, `cohort-collector`, `edm`, and `stype` are now each a separate Haskell package their own `.cabal` file.
 * Adds the `DuplicateRecordFields` language extension to the `Cohort.Output` module, so that field names in both row-wise and column-wise output formats are shared. Namely, `rowAttributes` --> `attributes` and `colAttributes` --> `attributes` and `colData` --> `cohortData` and `rowData` --> `cohortData`.
 

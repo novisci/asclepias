@@ -20,7 +20,7 @@ module Hasklepias.Templates.Features.Enrollment
   ) where
 
 import           Cohort
-import           EventData                  
+import           EventData
 import           Features
 import           Hasklepias.FeatureEvents
 import           Hasklepias.Templates.TestUtilities
@@ -38,7 +38,7 @@ buildIsEnrolled
      , Applicative container
      , Witherable container
      )
-  => 
+  =>
   Predicate (Event a) -- ^ The predicate to filter to Enrollment events (e.g. 'FeatureEvents.isEnrollment')
   -> Definition
        (  Feature indexName (Index i0 a)

@@ -1,7 +1,8 @@
 
 before_script:
-  - export VERSION=$(grep -e '^version:' hasklepias.cabal | sed 's/version:[[:space:]]*//g')
-  - export NAME=$(grep -e '^name:' hasklepias.cabal | sed 's/name:[[:space:]]*//g')
+  - export VERSION=$(grep -e '^version:' core/hasklepias.cabal | sed 's/version:[[:space:]]*//g')
+  - export NAME=$(grep -e '^name:' core/hasklepias.cabal | sed 's/name:[[:space:]]*//g')
+  - export COLLECTOR_BUNDLE=cohort-collector-$VERSION-linux-$(uname -m).tar.gz
 
 variables:
   PKG: hasklepias 
@@ -9,6 +10,8 @@ variables:
 stages:
   - docker
   - build
+  - release
+  - deploy
   - docs
   - upload-docs
 
@@ -21,8 +24,9 @@ docker-build:
     - docker push $CI_REGISTRY_IMAGE/$PKG-build:$VERSION
     - docker push $CI_REGISTRY_IMAGE/$PKG-build:latest
 
-build:
+build-asclepias:
   stage: build
+  needs: ["docker-build"]
   # NOTE: I couldn't get the $VERSION variable to work as in:
   #  image : registry.novisci.com/nsstat/asclepias/$PKG-build:$VERSION
   # hence, using latest tag, but this may not be ideal
@@ -34,7 +38,54 @@ build:
   script:
     - ghc --version
     - cabal --version
-    - cabal build
+    - cabal build all
+
+install-apps:
+  stage: release
+  needs: ["build-asclepias"]
+  # NOTE: I couldn't get the $VERSION variable to work as in:
+  #  image : registry.novisci.com/nsstat/asclepias/$PKG-build:$VERSION
+  # hence, using latest tag, but this may not be ideal
+  image: registry.novisci.com/nsstat/asclepias/$PKG-build:latest
+  cache:
+    key: "$CI_JOB_NAME"
+    paths:
+      - dist-newstyle/
+      - install/
+      - cohort-collector*
+  artifacts :
+    name: "${CI_PROJECT_NAME}-${SAFE_REF_NAME}"
+    paths:
+      - "cohort-collector*.tar.gz"
+    expire_in: 1 week
+  script:
+    - ghc --version
+    - cabal --version
+    - mkdir install -p
+    - cabal install cohort-collector --install-method=copy --installdir=install --overwrite-policy=always
+    - tar -czvf $COLLECTOR_BUNDLE install/cohort-collector
+  # release:
+  #   name: 'Release $TAG'
+  #   description: 'Created using the release-cli $EXTRA_DESCRIPTION'  # $EXTRA_DESCRIPTION and the $TAG
+  #   tag_name: '$TAG'                                                 # variables must be defined elsewhere
+  #   ref: '$CI_COMMIT_SHA'                                            # in the pipeline. For example, in the
+  #   assets:
+  #     links:
+  #       - name: 'asset1'
+  #         url: 'https://download.novisci.com/hasklepias/collector-$VERSION-linux-$CI_RUNNER_EXECUTABLE_ARCH.tar.gz'
+
+install:
+  stage: deploy
+  needs: ["install-apps"]
+  image: registry.novisci.com/nsstat/statocker/aws
+  # cache:
+  #   key: "$CI_JOB_NAME"
+  #   paths:
+  #     - dist-newstyle/
+  #     - install/
+  script:
+    - aws s3 cp $CI_PROJECT_DIR/$COLLECTOR_BUNDLE s3://download.novisci.com/hasklepias/$COLLECTOR_BUNDLE --acl public-read
+
 
 test:
   stage: build
@@ -50,7 +101,7 @@ test:
   script:
     - ghc --version
     - cabal --version
-    - cabal test --test-show-details=always 
+    - cabal test all --test-show-details=always 
 
 docs: 
   only: 
@@ -65,7 +116,7 @@ docs:
     expire_in: 1 hour
   script:
     - ghc --version
-    - cabal haddock --haddock-html-location='https://hackage.haskell.org/package/$pkg-$version/docs' --enable-documentation  --haddock-hyperlink-source --haddock-quickjump > haddock-output.txt
+    - cabal haddock hasklepias --haddock-html-location='https://hackage.haskell.org/package/$pkg-$version/docs' --enable-documentation  --haddock-hyperlink-source --haddock-quickjump > haddock-output.txt
 
 upload: 
   image: registry.novisci.com/nsstat/statocker/aws:latest

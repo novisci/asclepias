@@ -11,4 +11,4 @@ The initial versions of `hasklepias` will focus on the ability to derive feature
 
 ## Getting started
 
-See the [manual](doc/manual.adoc) and the [examples](examples)
+See the [manual](https://docs.novisci.com/asclepias/latest/index.html) and the [examples](examples)

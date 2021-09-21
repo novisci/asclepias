@@ -1,5 +1,10 @@
 FROM registry.novisci.com/nsstat/statocker/haskell:8.10.4
-# ARG version
-COPY hasklepias.cabal .
+
+COPY cabal.project .
+COPY core/hasklepias.cabal core/hasklepias.cabal
+COPY cohort-collector/cohort-collector.cabal cohort-collector/cohort-collector.cabal
+COPY edm/edm.cabal edm/edm.cabal
+COPY stype/stype.cabal stype/stype.cabal
+
 RUN cabal update
-RUN cabal build --only-dependencies
+RUN cabal build all --only-dependencies

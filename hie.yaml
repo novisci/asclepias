@@ -1,0 +1,10 @@
+cradle:
+  cabal:
+    - path: "./core/"
+      component: "hasklepias"
+    - path: "./edm/"
+      component: "edm"
+    - path: "./cohort-collector/"
+      component: "cohort-collector"
+    - path: "./stype/"
+      component: "stype"

@@ -25,6 +25,5 @@ import           Data.Aeson                     ( ToJSON(..)
 import           GHC.Exts                       ( IsList(fromList) )
 import           GHC.IO                         ( IO(..) )
 
--- import GHC.Types                       ( Any )
 import           Test.Tasty              hiding ( after )
 import           Test.Tasty.HUnit

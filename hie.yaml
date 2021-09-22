@@ -1,7 +1,11 @@
 cradle:
   cabal:
-    - path: "./core/"
-      component: "hasklepias"
+    - path: "./hasklepias-core/"
+      component: "hasklepias-core"
+    - path: "./hasklepias-main/"
+      component: "hasklepias-main"
+    - path: "./hasklepias-templates/"
+      component: "hasklepias-templates"  
     - path: "./edm/"
       component: "edm"
     - path: "./cohort-collector/"

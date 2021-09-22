@@ -13,7 +13,7 @@ These functions may be moved to more appropriate modules in future versions.
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
 
-module Hasklepias.Templates.TestUtilities (
+module Templates.TestUtilities (
     TestCase(..)
   , evalTestCase
   , makeAssertion
@@ -22,17 +22,17 @@ module Hasklepias.Templates.TestUtilities (
   , makeEventWithConcepts
 ) where
 
-import Control.Applicative ( Applicative(pure) )
-import Data.Bool ( Bool (True) )
-import Data.Eq                          ( Eq )
-import Data.Monoid ( Monoid(mempty) )
-import Data.Text ( Text )
-import Data.Tuple                       ( uncurry )
-import           Data.Tuple.Curry
+-- import Control.Applicative ( Applicative(pure) )
+-- import Data.Bool ( Bool (True) )
+-- import Data.Eq                          ( Eq )
+-- import Data.Monoid ( Monoid(mempty) )
+-- import Data.Text ( Text )
+-- import Data.Tuple                       ( uncurry )
+-- import           Data.Tuple.Curry
 -- ( uncurryN )
-import           GHC.Real                       ( Integral )
+-- import           GHC.Real                       ( Integral )
 
-import GHC.Show                         ( Show )
+-- import GHC.Show                         ( Show )
 import EventData
 import Cohort.Index
 import Features.Compose                 ( F
@@ -41,10 +41,11 @@ import Features.Compose                 ( F
                                         , Define(..)
                                         , eval )
 import Hasklepias.Misc
-
-import IntervalAlgebra
-import Test.Tasty                       ( TestName )
-import Test.Tasty.HUnit                 ( (@?=), Assertion )
+import Hasklepias.Reexports
+import Hasklepias.ReexportsUnsafe
+-- import IntervalAlgebra
+-- import Test.Tasty                       ( TestName )
+-- import Test.Tasty.HUnit                 ( (@?=), Assertion )
 
 
 data TestCase a b builderArgs = MkTestCase {

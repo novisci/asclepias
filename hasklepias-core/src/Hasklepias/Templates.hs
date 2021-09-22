@@ -9,7 +9,7 @@ Maintainer  : bsaul@novisci.com
 {-# LANGUAGE NoImplicitPrelude #-}
 
 module Hasklepias.Templates
-  ( module Hasklepias.Templates.Features
+  ( module Templates.Features
   ) where
 
-import           Hasklepias.Templates.Features
+import          Templates.Features

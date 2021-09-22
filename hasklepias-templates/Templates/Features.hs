@@ -8,16 +8,16 @@ Maintainer  : bsaul@novisci.com
 {-# OPTIONS_HADDOCK hide #-}
 {-# LANGUAGE NoImplicitPrelude #-}
 
-module Hasklepias.Templates.Features (
-     module Hasklepias.Templates.Features.Enrollment
-   , module Hasklepias.Templates.Features.NsatisfyP
+module Templates.Features (
+     module Templates.Features.Enrollment
+   , module Templates.Features.NsatisfyP
 ) where
 
-import Hasklepias.Templates.Features.Enrollment
+import Templates.Features.Enrollment
     ( buildIsEnrolled,
       buildContinuousEnrollment,
     )
-import Hasklepias.Templates.Features.NsatisfyP 
+import Templates.Features.NsatisfyP 
    (  buildNofX
     , buildNofXBool
     , buildNofXBinary

@@ -12,7 +12,7 @@ Maintainer  : bsaul@novisci.com
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TupleSections #-}
 
-module Hasklepias.Templates.Features.NsatisfyP
+module Templates.Features.NsatisfyP
   ( buildNsatisfyPTests
   , buildNofX
   , buildNofXBool
@@ -34,8 +34,8 @@ import           Features
 import           Hasklepias.FeatureEvents
 import           Hasklepias.Reexports
 import           Hasklepias.ReexportsUnsafe
-import           Hasklepias.Templates.TestUtilities
 import           Stype
+import           Templates.TestUtilities
 
 -- | All the buildNSatisfyP tests.
 buildNsatisfyPTests :: TestTree

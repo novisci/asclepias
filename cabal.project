@@ -1,4 +1,7 @@
-packages: core
+packages: hasklepias-core
+        , hasklepias-main
+        , hasklepias-templates
         , cohort-collector
         , edm
         , stype
+

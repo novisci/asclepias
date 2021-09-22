@@ -8,6 +8,8 @@ Maintainer  : bsaul@novisci.com
 
 -}
 
+{-# LANGUAGE NoImplicitPrelude #-}
+
 module Hasklepias
   ( -- $about
 
@@ -29,7 +31,7 @@ module Hasklepias
     used in epidemiologic cohorts.
     -}
 
-  , module Hasklepias.Templates
+  , module Templates.Features
     -- * Utilities for defining Features from Events
     {- |
     Much of logic needed to define features from events depends on the 
@@ -103,7 +105,7 @@ import Hasklepias.ReexportsUnsafe
       AssertionPredicable(..),
       AssertionPredicate,
       HUnitFailure(..) )
-import           Hasklepias.Templates
+import           Templates.Features
 
 import           Stype
 

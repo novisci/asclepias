@@ -13,7 +13,7 @@ Maintainer  : bsaul@novisci.com
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 
-module Hasklepias.Templates.Features.Enrollment
+module Templates.Features.Enrollment
   ( buildIsEnrolled
   , buildContinuousEnrollment
   , buildEnrollmentTests
@@ -23,9 +23,9 @@ import           Cohort
 import           EventData
 import           Features
 import           Hasklepias.FeatureEvents
-import           Hasklepias.Templates.TestUtilities
 import           Hasklepias.Reexports
 import           Hasklepias.ReexportsUnsafe
+import           Templates.TestUtilities
 
 {-| Is Enrolled
 

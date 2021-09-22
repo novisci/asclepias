@@ -3,7 +3,7 @@ module Main(
 ) where
 
 import Test.Tasty                 ( defaultMain )
-import Hasklepias.Templates.Tests ( templateTests )
+import Templates.Tests ( templateTests )
 
 main :: IO ()
 main =  defaultMain templateTests

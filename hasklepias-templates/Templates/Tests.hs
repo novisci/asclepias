@@ -10,13 +10,14 @@ These functions may be moved to more appropriate modules in future versions.
 {-# OPTIONS_HADDOCK hide #-}
 {-# LANGUAGE NoImplicitPrelude #-}
 
-module Hasklepias.Templates.Tests (
+module Templates.Tests (
    templateTests
 ) where
 
+
 import Test.Tasty                               ( testGroup, TestTree )                       
-import Hasklepias.Templates.Features.Enrollment ( buildEnrollmentTests )
-import Hasklepias.Templates.Features.NsatisfyP  ( buildNsatisfyPTests )
+import Templates.Features.Enrollment ( buildEnrollmentTests )
+import Templates.Features.NsatisfyP  ( buildNsatisfyPTests )
 
 templateTests :: TestTree
 templateTests = 

@@ -11,13 +11,7 @@ module Templates.Features.BuildIsEnrolled
   , buildIsEnrolledTests
   ) where
 
-import           Cohort
-import           EventData
-import           Features
-import           Hasklepias.FeatureEvents
-import           Hasklepias.Reexports
-import           Hasklepias.ReexportsUnsafe
-import           Templates.TestUtilities
+import           Templates.FeatureReqs
 ```
 
 Some description goes here.

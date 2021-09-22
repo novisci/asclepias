@@ -10,17 +10,13 @@ Maintainer  : bsaul@novisci.com
 
 module Templates.Features (
      module Templates.Features.BuildIsEnrolled
-   , module Templates.Features.Enrollment
+   , module Templates.Features.BuildContinuousEnrollment
    , module Templates.Features.NsatisfyP
 ) where
 
 import Templates.Features.BuildIsEnrolled
+import Templates.Features.BuildContinuousEnrollment
 
-import Templates.Features.Enrollment
-    ( 
-      -- buildIsEnrolled,
-      buildContinuousEnrollment,
-    )
 import Templates.Features.NsatisfyP 
    (  buildNofX
     , buildNofXBool

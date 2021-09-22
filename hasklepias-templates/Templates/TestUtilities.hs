@@ -22,17 +22,7 @@ module Templates.TestUtilities (
   , makeEventWithConcepts
 ) where
 
--- import Control.Applicative ( Applicative(pure) )
--- import Data.Bool ( Bool (True) )
--- import Data.Eq                          ( Eq )
--- import Data.Monoid ( Monoid(mempty) )
--- import Data.Text ( Text )
--- import Data.Tuple                       ( uncurry )
--- import           Data.Tuple.Curry
--- ( uncurryN )
--- import           GHC.Real                       ( Integral )
 
--- import GHC.Show                         ( Show )
 import EventData
 import Cohort.Index
 import Features.Compose                 ( F
@@ -43,10 +33,6 @@ import Features.Compose                 ( F
 import Hasklepias.Misc
 import Hasklepias.Reexports
 import Hasklepias.ReexportsUnsafe
--- import IntervalAlgebra
--- import Test.Tasty                       ( TestName )
--- import Test.Tasty.HUnit                 ( (@?=), Assertion )
-
 
 data TestCase a b builderArgs = MkTestCase {
     getBuilderArgs :: builderArgs
@@ -74,8 +60,6 @@ evalTestCase (MkTestCase buildArgs _ inputs truth) def = ( def inputs, truth )
 --   TestCase defArgs b  builderArgs -> Definition def -> Assertion
 -- makeAssertion x def = uncurry (@?=) (evalTestCase x def)
 
--- z :: Definition d -> (b -> a)
--- z def = (eval def)
 
 makeAssertion :: (Eq b, Show b) =>
   TestCase defArgs b builderArgs ->  (defArgs -> Feature "result" b) -> Assertion

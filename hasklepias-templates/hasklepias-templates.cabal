@@ -24,11 +24,12 @@ library
   exposed-modules:
       Templates.Features
       Templates.Tests
-      Templates.TestUtilities
-      Templates.Features.Enrollment
       Templates.Features.NsatisfyP
   other-modules:
       Templates.Features.BuildIsEnrolled
+      Templates.Features.BuildContinuousEnrollment
+      Templates.FeatureReqs
+      Templates.TestUtilities
   hs-source-dirs: .
   build-depends:
     -- Internal packages

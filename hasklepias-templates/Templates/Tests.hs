@@ -15,15 +15,15 @@ module Templates.Tests (
 ) where
 
 
-import Test.Tasty                               ( testGroup, TestTree )  
-import Templates.Features.BuildIsEnrolled       ( buildIsEnrolledTests )                     
-import Templates.Features.Enrollment            ( buildEnrollmentTests )
-import Templates.Features.NsatisfyP             ( buildNsatisfyPTests )
+import Test.Tasty                                    ( testGroup, TestTree )  
+import Templates.Features.BuildIsEnrolled            ( buildIsEnrolledTests )                     
+import Templates.Features.BuildContinuousEnrollment  ( buildContinuousEnrollmentTests )
+import Templates.Features.NsatisfyP                  ( buildNsatisfyPTests )
 
 templateTests :: TestTree
 templateTests = 
    testGroup 
       "tests of feature templates" 
       [ buildIsEnrolledTests 
-      , buildEnrollmentTests
+      , buildContinuousEnrollmentTests
       , buildNsatisfyPTests ]

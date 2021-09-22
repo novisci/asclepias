@@ -61,6 +61,7 @@ install-apps:
   script:
     - ghc --version
     - cabal --version
+    - cabal update
     - mkdir install -p
     - cabal install cohort-collector --install-method=copy --installdir=install --overwrite-policy=always
     - tar -czvf $COLLECTOR_BUNDLE install/cohort-collector

@@ -27,6 +27,8 @@ library
       Templates.TestUtilities
       Templates.Features.Enrollment
       Templates.Features.NsatisfyP
+  other-modules:
+      Templates.Features.BuildIsEnrolled
   hs-source-dirs: .
   build-depends:
     -- Internal packages
@@ -36,7 +38,13 @@ library
     
     -- External packages
       , tasty  == 1.4.1
+      , markdown-unlit
   default-language: Haskell2010
+  ghc-options:    -pgmL markdown-unlit
+  build-tool-depends: markdown-unlit:markdown-unlit
+  default-extensions: 
+    NoImplicitPrelude
+    DataKinds
 
 test-suite templates
   type: exitcode-stdio-1.0

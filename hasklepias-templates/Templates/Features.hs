@@ -9,12 +9,16 @@ Maintainer  : bsaul@novisci.com
 {-# LANGUAGE NoImplicitPrelude #-}
 
 module Templates.Features (
-     module Templates.Features.Enrollment
+     module Templates.Features.BuildIsEnrolled
+   , module Templates.Features.Enrollment
    , module Templates.Features.NsatisfyP
 ) where
 
+import Templates.Features.BuildIsEnrolled
+
 import Templates.Features.Enrollment
-    ( buildIsEnrolled,
+    ( 
+      -- buildIsEnrolled,
       buildContinuousEnrollment,
     )
 import Templates.Features.NsatisfyP 

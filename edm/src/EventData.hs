@@ -7,7 +7,6 @@ License     : BSD3
 Maintainer  : bsaul@novisci.com
 -}
 {-# LANGUAGE NoImplicitPrelude #-}
-
 module EventData
   ( -- ** Event Core
     module EventData.Core

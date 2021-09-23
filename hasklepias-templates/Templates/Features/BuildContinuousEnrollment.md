@@ -3,6 +3,8 @@ title: some-title
 tags: [these, are tags]
 ---
 
+This is my documentation.
+
 ```haskell
 module Templates.Features.BuildContinuousEnrollment
   ( buildContinuousEnrollment
@@ -12,11 +14,16 @@ module Templates.Features.BuildContinuousEnrollment
 import           Templates.FeatureReqs
 ```
 
+The following example does blah...
+
+```examples
+f = buildContinuousEnrollment myMapper myPred 8 
+```
 
 ```haskell
 buildContinuousEnrollment
   :: ( Monoid (container (Interval a))
-     , Monoid (container (Maybe (Interval a)))
+    , Monoid (container (Maybe (Interval a)))
      , Applicative container
      , Witherable container
      , IntervalSizeable a b
@@ -70,8 +77,9 @@ makeContinuousEnrollmentTestInputs name buildArgs intrvl e prev s = MkTestCase
 commonArgs
   :: (Index Interval Int -> AssessmentInterval Int, Predicate (Event a), Int)
 commonArgs = (makeBaselineFromIndex 10, isEnrollmentEvent, 3)
+```
 
-
+```haskell
 buildContinuousEnrollmentTestCases
   :: [ TestCase
          ( F "index" (Index Interval Int)
@@ -90,7 +98,7 @@ buildContinuousEnrollmentTestCases =
       [g (1, 4), g (9, 12)]
       Include
       Exclude
-      {-
+      {- 
                   -           <- Index
          ----------           <- Baseline
          ---     ---          <- Enrollment
@@ -165,4 +173,3 @@ buildContinuousEnrollmentTests = testGroup
     buildContinuousEnrollmentTestCases
   )
 ```
-

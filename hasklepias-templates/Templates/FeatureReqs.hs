@@ -10,6 +10,7 @@ module Templates.FeatureReqs (
   , module Hasklepias.FeatureEvents
   , module Hasklepias.Reexports
   , module Hasklepias.ReexportsUnsafe
+  , module Stype
   , module Templates.TestUtilities 
 ) where
 
@@ -19,4 +20,5 @@ import           Features
 import           Hasklepias.FeatureEvents
 import           Hasklepias.Reexports
 import           Hasklepias.ReexportsUnsafe
+import           Stype
 import           Templates.TestUtilities

@@ -6,27 +6,21 @@ Maintainer  : bsaul@novisci.com
 
 -}
 {-# OPTIONS_HADDOCK hide #-}
-{-# LANGUAGE NoImplicitPrelude #-}
 
 module Templates.Features (
      module Templates.Features.BuildIsEnrolled
    , module Templates.Features.BuildContinuousEnrollment
-   , module Templates.Features.NsatisfyP
+   , module Templates.Features.BuildNofXBase
+   , module Templates.Features.BuildNofX
+   , module Templates.Features.BuildNofXWithGap
+   , module Templates.Features.BuildNofXOrNofYWithGap
+   , module Templates.Features.BuildNofUniqueBegins
 ) where
 
 import Templates.Features.BuildIsEnrolled
 import Templates.Features.BuildContinuousEnrollment
-
-import Templates.Features.NsatisfyP 
-   (  buildNofX
-    , buildNofXBool
-    , buildNofXBinary
-    , buildNofXBinaryConcurBaseline
-    , buildNofConceptsBinaryConcurBaseline
-    , buildNofXWithGap
-    , buildNofXWithGapBool
-    , buildNofXWithGapBinary
-    , buildNofUniqueBegins
-    , buildNofXOrNofYWithGap
-    , buildNofXOrNofYWithGapBool
-    , buildNofXOrNofYWithGapBinary )
+import Templates.Features.BuildNofXBase
+import Templates.Features.BuildNofX
+import Templates.Features.BuildNofXWithGap
+import Templates.Features.BuildNofXOrNofYWithGap
+import Templates.Features.BuildNofUniqueBegins

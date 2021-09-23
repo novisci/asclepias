@@ -8,7 +8,6 @@ Maintainer  : bsaul@novisci.com
 These functions may be moved to more appropriate modules in future versions.
 -}
 {-# OPTIONS_HADDOCK hide #-}
-{-# LANGUAGE NoImplicitPrelude #-}
 
 module Templates.Tests (
    templateTests
@@ -18,12 +17,19 @@ module Templates.Tests (
 import Test.Tasty                                    ( testGroup, TestTree )  
 import Templates.Features.BuildIsEnrolled            ( buildIsEnrolledTests )                     
 import Templates.Features.BuildContinuousEnrollment  ( buildContinuousEnrollmentTests )
-import Templates.Features.NsatisfyP                  ( buildNsatisfyPTests )
+import Templates.Features.BuildNofX                  ( buildNofXTests )
+import Templates.Features.BuildNofXWithGap           ( buildNofXWithGapTests )
+import Templates.Features.BuildNofXOrNofYWithGap     ( buildNofXOrNofYWithGapTests )
+import Templates.Features.BuildNofUniqueBegins       ( buildNofUniqueBeginsTests )
 
 templateTests :: TestTree
 templateTests = 
    testGroup 
-      "tests of feature templates" 
+      "Tests of feature building templates" 
       [ buildIsEnrolledTests 
       , buildContinuousEnrollmentTests
-      , buildNsatisfyPTests ]
+      , buildNofXTests
+      , buildNofXWithGapTests
+      , buildNofXOrNofYWithGapTests
+      , buildNofUniqueBeginsTests
+      ]

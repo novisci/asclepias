@@ -8,10 +8,6 @@ Maintainer  : bsaul@novisci.com
 These functions may be moved to more appropriate modules in future versions.
 -}
 {-# OPTIONS_HADDOCK hide #-}
-{-# LANGUAGE NoImplicitPrelude #-}
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE FlexibleContexts #-}
 
 module Templates.TestUtilities (
     TestCase(..)
@@ -20,6 +16,7 @@ module Templates.TestUtilities (
   , readIntervalSafe
   , makeEnrollmentEvent
   , makeEventWithConcepts
+  , makeTestInputs
 ) where
 
 
@@ -92,4 +89,21 @@ makeTestTemplate name buildArgs intrvl e b = MkTestCase
   buildArgs
   name
   (pure (makeIndex (readIntervalSafe intrvl) ), pure e)
+  (pure b)
+
+makeTestInputs
+  :: (Integral b, IntervalSizeable a b)
+  => TestName
+  -> bargs
+  -> (a, a)
+  -> [Event a]
+  -> returnType 
+  -> TestCase
+       (F "index" (Index Interval a), F "events" [Event a])
+       returnType
+       bargs
+makeTestInputs name buildArgs intrvl e b = MkTestCase
+  buildArgs
+  name
+  (pure (makeIndex (readIntervalSafe intrvl)), pure e)
   (pure b)

@@ -110,7 +110,7 @@ docs:
   # only: 
   #   - master
   image: registry.novisci.com/nsstat/asclepias/$PKG-build:latest
-  needs: []
+  needs: ["docker-build"]
   stage: docs
   artifacts:
     paths:

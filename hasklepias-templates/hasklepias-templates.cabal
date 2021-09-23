@@ -25,6 +25,7 @@ library
       Templates.Features
       Templates.Tests
   other-modules:
+      Templates.Features.BuildScratch
       Templates.Features.BuildIsEnrolled
       Templates.Features.BuildContinuousEnrollment
       Templates.Features.BuildNofXBase

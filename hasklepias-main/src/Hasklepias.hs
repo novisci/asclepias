@@ -70,41 +70,7 @@ import           Hasklepias.FeatureEvents
 import           Hasklepias.MakeApp
 import           Hasklepias.Misc
 import           Hasklepias.Reexports
-import Hasklepias.ReexportsUnsafe
-    ( IO(..),
-      encode,
-      ToJSON(..),
-      HasCallStack,
-      adjustOption,
-      askOption,
-      defaultIngredients,
-      defaultMain,
-      localOption,
-      withResource,
-      defaultMainWithIngredients,
-      after_,
-      testGroup,
-      includingOptions,
-      mkTimeout,
-      testCase,
-      testCaseInfo,
-      (@=?),
-      (@?),
-      (@?=),
-      assertBool,
-      assertEqual,
-      assertFailure,
-      assertString,
-      testCaseSteps,
-      DependencyType(..),
-      TestName,
-      TestTree,
-      Timeout(..),
-      Assertable(..),
-      Assertion,
-      AssertionPredicable(..),
-      AssertionPredicate,
-      HUnitFailure(..) )
+import           Hasklepias.ReexportsUnsafe
 import           Templates.Features
 
 import           Stype

@@ -22,6 +22,10 @@ module Templates.Features.BuildNofXBase
 import           Templates.FeatureReqs
 ```
 
+```{r, echo = FALSE }
+x <- 1
+```
+
 ## Usage
 
 The `exampleBuilder` function returns another feature builder that performs this logic:

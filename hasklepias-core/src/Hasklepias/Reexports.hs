@@ -7,12 +7,13 @@ License     : BSD3
 Maintainer  : bsaul@novisci.com
 -}
 
+{-# OPTIONS_HADDOCK hide #-}
 {-# LANGUAGE Safe #-}
 
 module Hasklepias.Reexports
   (
 
-    -- * Re-exports
+    -- ** Re-exports
     module GHC.Num
   , module GHC.Real
   , module GHC.Generics

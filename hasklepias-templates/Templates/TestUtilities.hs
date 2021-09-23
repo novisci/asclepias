@@ -7,7 +7,7 @@ Maintainer  : bsaul@novisci.com
 
 These functions may be moved to more appropriate modules in future versions.
 -}
-{-# OPTIONS_HADDOCK hide #-}
+-- {-# OPTIONS_HADDOCK hide #-}
 
 module Templates.TestUtilities (
     TestCase(..)

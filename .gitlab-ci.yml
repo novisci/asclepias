@@ -1,8 +1,8 @@
 
 before_script:
-  - export VERSION=$(grep -e '^version:' hasklepias-main/hasklepias-main.cabal | sed 's/version:[[:space:]]*//g')
+  - export MAINVERSION=$(grep -e '^version:' hasklepias-main/hasklepias-main.cabal | sed 's/version:[[:space:]]*//g')
   # - export NAME=$(grep -e '^name:' hasklepias-core/hasklepias.cabal | sed 's/name:[[:space:]]*//g')
-  - export COLLECTOR_BUNDLE=cohort-collector-$VERSION-linux-$(uname -m).tar.gz
+
 
 variables:
   PKG: hasklepias 
@@ -20,8 +20,8 @@ docker-build:
  image: docker:19.03.8
  script:
     - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin  $CI_REGISTRY
-    - docker build --tag $CI_REGISTRY_IMAGE/$PKG-build:$VERSION --tag $CI_REGISTRY_IMAGE/$PKG-build:latest .
-    - docker push $CI_REGISTRY_IMAGE/$PKG-build:$VERSION
+    - docker build --tag $CI_REGISTRY_IMAGE/$PKG-build:$MAINVERSION --tag $CI_REGISTRY_IMAGE/$PKG-build:latest .
+    - docker push $CI_REGISTRY_IMAGE/$PKG-build:$MAINVERSION
     - docker push $CI_REGISTRY_IMAGE/$PKG-build:latest
 
 build-asclepias:
@@ -59,6 +59,8 @@ install-apps:
       - "cohort-collector*.tar.gz"
     expire_in: 1 week
   script:
+    - export COLLECTORVERSION=$(./scripts/get-version-from-cabal.sh cohort-collector/cohort-collector.cabalcohort-collector/cohort-collector.cabal)
+    - export COLLECTOR_BUNDLE=cohort-collector-$COLLECTORVERSION-linux-$(uname -m).tar.gz
     - ghc --version
     - cabal --version
     - cabal update
@@ -75,17 +77,17 @@ install-apps:
   #       - name: 'asset1'
   #         url: 'https://download.novisci.com/hasklepias/collector-$VERSION-linux-$CI_RUNNER_EXECUTABLE_ARCH.tar.gz'
 
-install:
-  stage: deploy
-  needs: ["install-apps"]
-  image: registry.novisci.com/nsstat/statocker/aws
-  # cache:
-  #   key: "$CI_JOB_NAME"
-  #   paths:
-  #     - dist-newstyle/
-  #     - install/
-  script:
-    - aws s3 cp $CI_PROJECT_DIR/$COLLECTOR_BUNDLE s3://download.novisci.com/hasklepias/$COLLECTOR_BUNDLE --acl public-read
+# install:
+#   stage: deploy
+#   needs: ["install-apps"]
+#   image: registry.novisci.com/nsstat/statocker/aws
+#   # cache:
+#   #   key: "$CI_JOB_NAME"
+#   #   paths:
+#   #     - dist-newstyle/
+#   #     - install/
+#   script:
+#     - aws s3 cp $CI_PROJECT_DIR/$COLLECTOR_BUNDLE s3://download.novisci.com/hasklepias/$COLLECTOR_BUNDLE --acl public-read
 
 
 test:
@@ -117,17 +119,15 @@ docs:
     expire_in: 1 hour
   script:
     - ghc --version
-    - cabal haddock hasklepias-main --haddock-html-location='https://hackage.haskell.org/package/$pkg-$version/docs' --enable-documentation  --haddock-hyperlink-source --haddock-quickjump > haddock-output.txt
+    - cabal haddock all --haddock-html-location='https://hackage.haskell.org/package/$pkg-$version/docs' --enable-documentation  --haddock-hyperlink-source --haddock-quickjump > haddock-output.txt
 
 upload: 
   image: registry.novisci.com/nsstat/statocker/aws:latest
   needs: ["docs"]
-  only: 
-    - master
+  # only: 
+  #   - master
   stage: upload-docs
   script:
-    - VAR=$(tail -1 haddock-output.txt)
-    - aws s3 sync $(dirname $VAR) s3://docs.novisci.com/asclepias/$VERSION/ --delete --acl public-read
-    - aws s3 sync $(dirname $VAR) s3://docs.novisci.com/asclepias/latest/ --delete --acl public-read
-    - aws cloudfront create-invalidation --distribution-id E171A73GHZQS0B --paths /asclepias/latest/
+    - cat haddock-output.txt | ./scripts/upload-docs-to-s3.sh
+
 

@@ -1,7 +1,7 @@
 {- Just a module containing imports used in Feature builders so only one module
    needs to be imported at the top of a feature builder module
 -}
-{-# OPTIONS_HADDOCK hide #-}
+-- {-# OPTIONS_HADDOCK hide #-}
 
 module Templates.FeatureReqs (
     module Cohort

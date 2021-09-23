@@ -4,7 +4,9 @@ TODO: link to docs
 
 ## Creating a new builder
 
-### Create a symbolic link for `.md`
+While initially developing the builder function and tests, you can use the `Templates.FeatrureScratch.hs` file in order to have IDE support. Once you're satisfied with the function, you will move the code to a markdown file.
+
+### Create a symbolic link for the markdown file
 
 The `./scripts/create-template-link.sh` provides a utility for creating the appropriate link. For example, the following creates `BuildNofX.lhs` as a symbolic link `BuildNofX.md`.
 
@@ -16,12 +18,11 @@ The `./scripts/create-template-link.sh` provides a utility for creating the appr
 
 In `hasklepias-templates.cabal`, add the new module to the `other-modules section, as in:
 
-```
+```cabal
   other-modules:
       ...
       Templates.Features.BuildMyNewFeature
       ...
-
 ```
 
 ### Reexport the new module in the `Features` module

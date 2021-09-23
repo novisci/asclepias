@@ -8,7 +8,7 @@ Maintainer  : bsaul@novisci.com
 Provides functions used in defining @'Features.Feature'@ from 
 @'EventData.Event'@s.
 -}
-{-# OPTIONS_HADDOCK hide #-}
+-- {-# OPTIONS_HADDOCK hide #-}
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE TupleSections #-}
 

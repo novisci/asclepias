@@ -7,11 +7,12 @@ License     : BSD3
 Maintainer  : bsaul@novisci.com
 -}
 
+{-# OPTIONS_HADDOCK hide #-}
 
 module Hasklepias.ReexportsUnsafe
   (
 
-    -- * Re-exports
+    -- ** Re-exports of (potentially) unsafe functions
     module Data.Aeson
   , module GHC.Exts
   , module GHC.IO

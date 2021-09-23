@@ -6,7 +6,7 @@ License     : BSD3
 Maintainer  : bsaul@novisci.com
 Stability   : experimental
 -}
-{-# OPTIONS_HADDOCK hide #-}
+-- {-# OPTIONS_HADDOCK hide #-}
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE FlexibleContexts #-}

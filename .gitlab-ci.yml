@@ -107,8 +107,8 @@ test:
     - cabal test all --test-show-details=always 
 
 docs: 
-  only: 
-    - master
+  # only: 
+  #   - master
   image: registry.novisci.com/nsstat/asclepias/$PKG-build:latest
   needs: []
   stage: docs

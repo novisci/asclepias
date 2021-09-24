@@ -1,0 +1,111 @@
+cabal-version:  2.2
+name:           hasklepias-core
+version:        0.21.0
+description:    Please see the README on GitHub at <https://github.com/novisci/asclepias#readme>
+homepage:       https://github.com/novisci/asclepias/#readme
+bug-reports:    https://github.com/novisci/asclepias/issues
+author:         Bradley Saul
+maintainer:     bsaul@novisci.com
+copyright:      NoviSci, Inc
+category:       Data Science
+synopsis:       embedded DSL for defining epidemiologic cohorts
+license:        BSD-3-Clause
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    ChangeLog.md
+
+source-repository head
+  type: git
+  location: https://github.com/novisci/asclepias
+
+library
+  exposed-modules:
+      Features
+      Features.Attributes
+      Features.Compose
+      Features.Featureable
+      Features.Output
+      Features.Featureset
+      Cohort
+      Cohort.AssessmentIntervals
+      Cohort.Core
+      Cohort.Input
+      Cohort.Output
+      Cohort.Criteria
+      Cohort.Index
+      Hasklepias.FeatureEvents
+      Hasklepias.MakeApp
+      Hasklepias.Misc
+      Hasklepias.Reexports
+      Hasklepias.ReexportsUnsafe
+  hs-source-dirs:
+      src
+  build-depends:
+    -- Internal packages
+      edm
+    , stype
+
+    -- External packages
+    , aeson >=1.4.0.0 && <2
+    , base >=4.14 && <4.15
+    , bytestring == 0.10.12.0
+    , cmdargs == 0.10.21
+    , containers == 0.6.5.1
+    , contravariant >= 1.4
+    , co-log == 0.4.0.1
+    , flow == 1.0.22
+    , ghc-prim == 0.6.1
+    , interval-algebra == 1.0.0
+    , nonempty-containers == 0.3.4.1
+    , safe >= 0.3
+    , tasty  == 1.4.1
+    , tasty-hunit == 0.10.0.3
+    , text == 1.2.4.1
+    , time >= 1.11
+    , tuple == 0.3.0.2
+    , QuickCheck
+    , unordered-containers == 0.2.14.0
+    , vector == 0.12.2.0
+    , witherable == 0.4.1
+  default-language: Haskell2010
+
+test-suite hasklepias-core-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      FeaturesSpec
+      Features.OutputSpec
+      Features.FeaturesetSpec
+      Cohort.InputSpec
+      Cohort.CoreSpec
+      Cohort.AssessmentIntervalsSpec
+      Cohort.CriteriaSpec
+      Cohort.OutputSpec
+      Hasklepias.FeatureEventsSpec
+      Paths_hasklepias_core
+  autogen-modules:
+      Paths_hasklepias_core
+  hs-source-dirs:
+      test
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+    -- Internal
+      hasklepias-core
+
+    -- External
+    , aeson >=1.4.0.0 && <2
+    , base >=4.7 && <5
+    , bytestring >=0.10
+    , containers >=0.6.0
+    , edm
+    , flow == 1.0.22
+    , hspec
+    , interval-algebra == 1.0.0
+    , text >=1.2.3
+    , time >=1.11
+    , unordered-containers >=0.2.10
+    , vector >=0.12
+    , QuickCheck
+  default-language: Haskell2010

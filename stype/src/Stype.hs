@@ -7,8 +7,6 @@ Maintainer  : bsaul@novisci.com
 
 -}
 
-{-# OPTIONS_HADDOCK hide #-}
--- {-# LANGUAGE Safe #-}
 
 module Stype
   ( module Stype.Numeric

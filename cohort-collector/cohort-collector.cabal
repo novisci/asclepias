@@ -27,7 +27,7 @@ library
       src
   build-depends:
     -- Internal
-      hasklepias
+      hasklepias-core
     
     -- External
     , aeson >=1.4.0.0 && <2

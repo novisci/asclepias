@@ -1,0 +1,70 @@
+cabal-version:  2.2
+name:           hasklepias-templates
+version:        0.1.0
+description:    Please see the README on GitHub at <https://github.com/novisci/asclepias#readme>
+homepage:       https://github.com/novisci/asclepias/#readme
+bug-reports:    https://github.com/novisci/asclepias/issues
+author:         Bradley Saul
+maintainer:     bsaul@novisci.com
+copyright:      NoviSci, Inc
+category:       Data Science
+synopsis:       embedded DSL for defining epidemiologic cohorts
+license:        BSD-3-Clause
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    ChangeLog.md
+
+source-repository head
+  type: git
+  location: https://github.com/novisci/asclepias
+
+library
+  exposed-modules:
+      Templates.Features
+      Templates.Tests
+  other-modules:
+      Templates.Features.BuildScratch
+      Templates.Features.BuildIsEnrolled
+      Templates.Features.BuildContinuousEnrollment
+      Templates.Features.BuildNofXBase
+      Templates.Features.BuildNofX
+      Templates.Features.BuildNofXWithGap
+      Templates.Features.BuildNofXOrNofYWithGap
+      Templates.Features.BuildNofUniqueBegins
+      Templates.FeatureReqs
+      Templates.TestUtilities
+  hs-source-dirs: .
+  build-depends:
+    -- Internal packages
+        hasklepias-core
+      , edm
+      , stype
+    
+    -- External packages
+      , tasty  == 1.4.1
+      , markdown-unlit
+  default-language: Haskell2010
+  ghc-options:
+     -pgmL markdown-unlit 
+  build-tool-depends: 
+        markdown-unlit:markdown-unlit
+      , autoexporter:autoexporter
+  default-extensions: 
+    NoImplicitPrelude
+    DataKinds
+    OverloadedStrings
+    TupleSections
+
+test-suite templates
+  type: exitcode-stdio-1.0
+  main-is: Main.hs
+  hs-source-dirs:
+      template-test
+  build-depends:
+      hasklepias-templates
+    , base >=4.14 && <42.2
+    , tasty  == 1.4.1
+  default-language: Haskell2010
+

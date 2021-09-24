@@ -3,9 +3,9 @@ title: some-title
 tags: [these, are tags]
 ---
 
-This is my documentation.
 
-```haskell
+
+```haskell top
 module Templates.Features.BuildContinuousEnrollment
   ( buildContinuousEnrollment
   , buildContinuousEnrollmentTests
@@ -19,6 +19,8 @@ The following example does blah...
 ```examples
 f = buildContinuousEnrollment myMapper myPred 8 
 ```
+
+## Definition
 
 ```haskell
 buildContinuousEnrollment
@@ -48,6 +50,8 @@ buildContinuousEnrollment makeAssessmentInterval predicate allowableGap = define
       )
   )
 ```
+
+## Examples
 
 ```haskell
 type ContEnrollArgs

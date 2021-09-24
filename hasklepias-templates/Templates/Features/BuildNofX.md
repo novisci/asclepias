@@ -5,9 +5,9 @@ tags: []
 
 ## Description
 
-Do N events relating to the 'AssessmentInterval' in some way the satisfy the given predicate?
+Do N events relating to the assessment interval in some way the satisfy the given predicate?
 
-```haskell module
+```haskell
 module Templates.Features.BuildNofX
   ( buildNofX
   , buildNofXBool

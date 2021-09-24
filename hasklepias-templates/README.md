@@ -25,24 +25,6 @@ In `hasklepias-templates.cabal`, add the new module to the `other-modules sectio
       ...
 ```
 
-### Reexport the new module in the `Features` module
-
-In the `Templates.Features` module, import your new module:
-
-```haskell
-import    Templates.Features.BuildMyNewFeature
-```
-
-as well as re-export your new module at the top of the `Features` module:
-
-```haskell
-module Templates.Features (
-     ...
-   , module Templates.Features.BuildMyNewFeature
-   , ...
-) where
-```
-
 ### Add the builder's tests to the `Tests` module
 
 Import the tests of your new feature builder in the `Templates.Tests` module:

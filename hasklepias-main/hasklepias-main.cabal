@@ -22,7 +22,7 @@ source-repository head
 
 library
   exposed-modules:
-      Hasklepias 
+      Hasklepias
   hs-source-dirs:
       src
   build-depends:
@@ -32,28 +32,6 @@ library
     , hasklepias-core
     , hasklepias-templates
 
-    -- -- External packages
-    -- , aeson >=1.4.0.0 && <2
-    -- , base >=4.14 && <4.15
-    -- , bytestring == 0.10.12.0
-    -- , cmdargs == 0.10.21
-    -- , containers == 0.6.5.1
-    -- , contravariant >= 1.4
-    -- , co-log == 0.4.0.1
-    -- , flow == 1.0.22
-    -- , ghc-prim == 0.6.1
-    -- , interval-algebra == 1.0.0
-    -- , nonempty-containers == 0.3.4.1
-    -- , safe >= 0.3
-    -- , tasty  == 1.4.1
-    -- , tasty-hunit == 0.10.0.3
-    -- , text == 1.2.4.1
-    -- , time >= 1.11
-    -- , tuple == 0.3.0.2
-    -- , QuickCheck
-    -- , unordered-containers == 0.2.14.0
-    -- , vector == 0.12.2.0
-    -- , witherable == 0.4.1
   default-language: Haskell2010
 
 test-suite examples

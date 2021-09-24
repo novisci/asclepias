@@ -119,7 +119,8 @@ docs:
     expire_in: 1 hour
   script:
     - ghc --version
-    - cabal haddock all --haddock-html-location='https://hackage.haskell.org/package/$pkg-$version/docs' --enable-documentation  --haddock-hyperlink-source --haddock-quickjump > haddock-output.txt
+    # - cabal haddock all --haddock-html-location='https://hackage.haskell.org/package/$pkg-$version/docs' --enable-documentation  --haddock-hyperlink-source --haddock-quickjump > haddock-output.txt
+    - cabal haddock all --haddock-html-location='https://docs.novisci.com/asclepias/$pkg/$version' --enable-documentation  --haddock-hyperlink-source --haddock-quickjump > haddock-output.txt
 
 upload: 
   image: registry.novisci.com/nsstat/statocker/aws:latest

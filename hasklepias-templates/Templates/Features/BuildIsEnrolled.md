@@ -3,6 +3,8 @@ title: some-title
 tags: [these, are tags]
 ---
 
+## Description
+
 The is Enrolled template
 
 ```haskell
@@ -14,7 +16,7 @@ module Templates.Features.BuildIsEnrolled
 import           Templates.FeatureReqs
 ```
 
-Some description goes here.
+## Definition
 
 ```haskell
 buildIsEnrolled
@@ -38,6 +40,8 @@ buildIsEnrolled predicate = define
       .> includeIf
   )
 ```
+
+## Examples
 
 ```haskell
 makeIsEnrolledTestInputs

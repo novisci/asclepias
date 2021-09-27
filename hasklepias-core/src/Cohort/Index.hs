@@ -33,14 +33,13 @@ import           GHC.Show                       ( Show )
 import           IntervalAlgebra                ( Interval
                                                 , Intervallic(..)
                                                 )
-
+import Features
 {-|
 An @Index@ is a wrapper for an @Intervallic@ used to indicate that a particular
 interval is considered an index interval to which other intervals will be compared.
 -}
-newtype Index i a = MkIndex {
-    getIndex :: i a -- ^ Unwrap an @Index@
-  } deriving (Eq, Show, Generic)
+newtype Index i a = MkIndex (i a) 
+  deriving (Eq, Show, Generic)
 
 -- | Creates a new @'Index'@.
 makeIndex :: Intervallic i a => i a -> Index i a

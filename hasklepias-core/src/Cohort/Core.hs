@@ -138,24 +138,59 @@ getSubjectData (MkSubject (_, x)) = x
 makeObsUnitFeatures :: (d1 -> d0) -> Subject d1 -> ObsUnit d0
 makeObsUnitFeatures f (MkSubject (id, dat)) = MkObsUnit id (f dat)
 
+newtype IndexSet i a = MkIndexSet ( Set.Set (Index i a) )
+
 -- | A cohort specification consist of two functions: one that transforms a subject's
 -- input data into a @'Criteria'@ and another that transforms a subject's input data
 -- into the desired return type.
-data CohortSpec d1 d0 = MkCohortSpec
-  { runCriteria :: d1 -> Criteria
-        -- (Feature (Index i a))
-  , runFeatures :: d1 -> d0
+data CohortSpec d1 d0 i a = MkCohortSpec
+  { runIndices  :: d1 -> IndexSet i a
+  , runCriteria :: d1 -> Index i a -> Criteria
+  , runFeatures :: d1 -> Index i a -> d0
   }
 
 -- | Creates a @'CohortSpec'@.
-specifyCohort :: (d1 -> Criteria) -> (d1 -> d0) -> CohortSpec d1 d0
+specifyCohort ::
+     (d1 -> IndexSet i a)
+  -> (d1 -> Index i a -> Criteria)
+  -> (d1 -> Index i a -> d0)
+  -> CohortSpec d1 d0 i a
 specifyCohort = MkCohortSpec
 
 -- | Evaluates the @'runCriteria'@ of a @'CohortSpec'@ on a @'Population'@ to 
 -- return a list of @Subject Criteria@ (one per subject in the population). 
-evalCriteria :: CohortSpec d1 d0 -> Population d1 -> [Subject Criteria]
-evalCriteria (MkCohortSpec runCrit _) (MkPopulation pop) =
-  fmap (fmap runCrit) pop
+evalIndices ::
+     CohortSpec d1 d0 i a
+  -> Population d1
+  -> [Subject (IndexSet i a, d1)]
+  -- -> [ObsUnit (Index i a, d1)]
+evalIndices (MkCohortSpec runInd _ _) (MkPopulation pop) =
+   fmap (fmap (\x -> (runInd x, x))) pop
+
+f :: Subject (IndexSet i a, d1) -> Set.Set (ObsUnit (Index i a, d1))
+f (MkSubject (id, (MkIndexSet is, d))) = fmap (\x -> MkObsUnit id (x, d))  is
+
+-- flattenIndices :: 
+--      [Subject (IndexSet i a, d1)]  
+--   -> [ObsUnit (Index i a, d1)]   
+-- flattenIndices = fmap (\(MkSubject (id, (MkIndexSet is, d))) -> MkObsUnit (id, )   ) 
+
+-- | Evaluates the @'runCriteria'@ of a @'CohortSpec'@ on a @'Population'@ to 
+-- return a list of @Subject Criteria@ (one per subject in the population). 
+evalCriteria ::
+     CohortSpec d1 d0 i a
+  -> [Subject (IndexSet i a, d1)]
+  -> [Subject (Set.Set Criteria, IndexSet i a, d1)]
+evalCriteria (MkCohortSpec _ runCrit _) = 
+  fmap (fmap (\(MkIndexSet is, d) -> (fmap (runCrit d) is, MkIndexSet is, d)))
+  -- fmap (fmap runCrit) pop
+
+
+-- | Evaluates the @'runCriteria'@ of a @'CohortSpec'@ on a @'Population'@ to 
+-- return a list of @Subject Criteria@ (one per subject in the population). 
+-- evalCriteria :: CohortSpec d1 d0 i a -> Population d1 -> [Subject Criteria]
+-- evalCriteria (MkCohortSpec _ runCrit _) (MkPopulation pop) =
+--   fmap (fmap runCrit) pop
 
 -- | Convert a list of @Subject Criteria@ into a list of @Subject CohortStatus@
 evalCohortStatus :: [Subject Criteria] -> [Subject CohortStatus]
@@ -230,7 +265,7 @@ measureAttrition c l =
 
 -- | The internal function to evaluate a @'CohortSpec'@ on a @'Population'@. 
 evalUnits
-  :: CohortSpec d1 d0 -> Population d1 -> (AttritionInfo, CohortData d0)
+  :: CohortSpec d1 d0 i a-> Population d1 -> (AttritionInfo, CohortData d0)
 evalUnits spec pop =
   ( measureAttrition fcrit statuses
   , MkCohortData $ catMaybes $ zipWith (evalSubjectCohort (runFeatures spec))
@@ -243,7 +278,7 @@ evalUnits spec pop =
   statuses = evalCohortStatus crits
 
 -- | Evaluates a @'CohortSpec'@ on a @'Population'@.
-evalCohort :: CohortSpec d1 d0 -> Population d1 -> Cohort d0
+evalCohort :: CohortSpec d1 d0 i a-> Population d1 -> Cohort d0
 evalCohort s p = MkCohort $ evalUnits s p
 
 -- | Get IDs from 'CohortData'.
@@ -274,13 +309,13 @@ getCohortSet (MkCohortSet x) = x
 
 {-| Key/value pairs of 'CohortSpec's. The keys are the names of the cohorts.
 -}
-newtype CohortSetSpec i d = MkCohortSetSpec (Map Text (CohortSpec i d))
+newtype CohortSetSpec d1 d0 i a = MkCohortSetSpec (Map Text (CohortSpec d1 d0 i a))
 
 -- | Make a set of 'CohortSpec's from list input.
-makeCohortSpecs :: [(Text, d1 -> Criteria, d1 -> d0)] -> CohortSetSpec d1 d0
+makeCohortSpecs :: [(Text, d1 -> Criteria, d1 -> d0)] -> CohortSetSpec d1 d0 i a
 makeCohortSpecs l =
   MkCohortSetSpec $ fromList (fmap (\(n, c, f) -> (n, specifyCohort c f)) l)
 
 -- | Evaluates a @'CohortSetSpec'@ on a @'Population'@.
-evalCohortSet :: CohortSetSpec d1 d0 -> Population d1 -> CohortSet d0
+evalCohortSet :: CohortSetSpec d1 d0 i a-> Population d1 -> CohortSet d0
 evalCohortSet (MkCohortSetSpec s) p = MkCohortSet $ fmap (`evalCohort` p) s

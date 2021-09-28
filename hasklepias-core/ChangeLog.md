@@ -1,5 +1,9 @@
 # Changelog for hasklepias
 
+## 0.22.0
+
+* Moves attrition related types out of `Cohort.Core` into `Cohort.Attrition`
+
 ## 0.21.0
 
 * Updates `interval-algebra` dependency to `1.0.0`.

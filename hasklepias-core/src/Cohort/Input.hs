@@ -17,7 +17,7 @@ module Cohort.Input
   , ParseError(..)
   ) where
 
-import           Cohort.Core                    ( ID
+import           Cohort.Core                    ( SubjectID
                                                 , Population(..)
                                                 , Subject(MkSubject)
                                                 )
@@ -71,9 +71,9 @@ import           IntervalAlgebra                ( IntervalSizeable )
 import           Prelude                        ( String )
 
 
-newtype SubjectEvent a = MkSubjectEvent (ID, Event a)
+newtype SubjectEvent a = MkSubjectEvent (SubjectID, Event a)
 
-subjectEvent :: ID -> Event a -> SubjectEvent a
+subjectEvent :: SubjectID -> Event a -> SubjectEvent a
 subjectEvent x y = MkSubjectEvent (x, y)
 
 instance (FromJSON a, Show a, IntervalSizeable a b) => FromJSON (SubjectEvent a) where

@@ -7,7 +7,9 @@ module Cohort.CoreSpec (
 
 import Features
 import Cohort
-import Data.Set (fromList)
+import Cohort.Attrition
+import IntervalAlgebra
+import Data.Set (fromList, empty, singleton)
 import Test.Hspec ( describe, pending, shouldBe, it, Spec )
 
 -- data Feat1
@@ -38,27 +40,31 @@ testSubject2 = MkSubject ("2", 54)
 testPopulation :: Population Int
 testPopulation = MkPopulation [testSubject1, testSubject2]
 
-buildCriteria :: Int -> Criteria
-buildCriteria dat = criteria $ pure ( criterion feat1 )
+-- create a dummy index
+buildIndices :: Int -> IndexSet Interval Int
+buildIndices i = MkIndexSet (singleton (makeIndex $ beginerval 1 i))
+
+buildCriteria :: Index Interval Int -> Int -> Criteria
+buildCriteria _ dat = criteria $ pure ( criterion feat1 )
   where feat1 = eval d2 $ pure dat
 
 type Features = (Feature "feat1" Bool, Feature "feat3" Int)
-buildFeatures :: Int -> Features
-buildFeatures dat  =
+buildFeatures :: Index Interval Int -> Int -> Features
+buildFeatures _ dat  =
     ( eval d1 input
     , eval d3 input
     )
     where input = pure dat
 
-testCohort :: CohortSpec Int Features
-testCohort = specifyCohort buildCriteria buildFeatures
+testCohort :: CohortSpec Int Features Interval Int
+testCohort = specifyCohort buildIndices buildCriteria buildFeatures
 
 testOut :: Cohort Features
 testOut = MkCohort
   ( MkAttritionInfo 2 $
    fromList [ uncurry MkAttritionLevel (ExcludedBy (1, "feat2"), 1)
             , uncurry MkAttritionLevel (Included, 1) ]
-  , MkCohortData [MkObsUnit "2" 
+  , MkCohortData [MkObsUnit (makeObsID 1 "2") 
                   ( makeFeature (featureDataR False)
                   , makeFeature (featureDataR 56)) ])
 

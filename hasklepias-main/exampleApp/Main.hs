@@ -59,25 +59,29 @@ instance HasAttributes "myVar2" Bool where
   Cohort Specifications and evaluation
 -------------------------------------------------------------------------------}
 
+-- | 
+makeIndexRunner :: Events Day -> IndexSet Interval Day
+makeIndexRunner _ = MkIndexSet emptySet
+
 -- | Make a function that runs the criteria
-makeCriteriaRunner :: Events Day -> Criteria
-makeCriteriaRunner events = criteria $ pure (criterion crit1)
+makeCriteriaRunner :: Index Interval Day -> Events Day -> Criteria
+makeCriteriaRunner _ events = criteria $ pure (criterion crit1)
  where
   crit1   = eval critTrue featEvs
   featEvs = featureEvents events
 
 -- | Make a function that runs the features for a calendar index
-makeFeatureRunner :: Events Day -> Featureset
-makeFeatureRunner events = featureset
+makeFeatureRunner :: Index Interval Day -> Events Day -> Featureset
+makeFeatureRunner _ events = featureset
   (  packFeature (eval featureDummy ef)
   :| [packFeature (eval (anotherDummy True) ef)]
   )
   where ef = featureEvents events
 
 -- | Make a cohort specification set
-cohortSpecs :: CohortSetSpec (Events Day) Featureset
+cohortSpecs :: CohortSetSpec (Events Day) Featureset Interval Day
 cohortSpecs = 
-  makeCohortSpecs [("example", makeCriteriaRunner, makeFeatureRunner)]
+  makeCohortSpecs [("example", makeIndexRunner, makeCriteriaRunner, makeFeatureRunner)]
 
 main :: IO ()
 main = makeCohortApp "testCohort" "v0.1.0" rowWise cohortSpecs

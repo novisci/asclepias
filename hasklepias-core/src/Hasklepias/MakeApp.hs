@@ -92,7 +92,7 @@ makeCohortBuilder
      , ShapeCohort d0
      , Monad m
      )
-  => CohortSetSpec (Events a) d0
+  => CohortSetSpec (Events a) d0 i a
   -> m (B.ByteString -> m ([ParseError], CohortSet d0))
 makeCohortBuilder specs =
   return (return . second (evalCohortSet specs) . parsePopulationLines)
@@ -122,7 +122,7 @@ makeCohortApp
   => String  -- ^ cohort name
   -> String  -- ^ app version
   -> (Cohort d0 -> CohortJSON) -- ^ a function which specifies the output shape
-  -> CohortSetSpec (Events a) d0  -- ^ a list of cohort specifications
+  -> CohortSetSpec (Events a) d0 i a  -- ^ a list of cohort specifications
   -> IO ()
 makeCohortApp name version shape spec = do
   args <- cmdArgs (makeAppArgs name version)

@@ -14,7 +14,7 @@ module Templates.Features.BuildNofX
   , buildNofXBinary
   , buildNofXBinaryConcurBaseline
   , buildNofConceptsBinaryConcurBaseline
-  , buildNofXTests 
+  , buildNofXTests
   ) where
 
 import           Templates.FeatureReqs

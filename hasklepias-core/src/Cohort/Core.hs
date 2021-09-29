@@ -9,8 +9,7 @@ Maintainer  : bsaul@novisci.com
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TupleSections #-}
-{-# LANGUAGE TupleSections #-}
-{-# LANGUAGE LambdaCase #-}
+{{-# LANGUAGE LambdaCase #-}
 -- {-# LANGUAGE Safe #-}
 
 module Cohort.Core

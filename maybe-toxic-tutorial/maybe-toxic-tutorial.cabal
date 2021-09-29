@@ -1,0 +1,52 @@
+cabal-version:      2.4
+name:               maybe-toxic-tutorial
+version:            0.1.0.0
+
+-- A short (one-line) description of the package.
+-- synopsis:
+
+-- A longer description of the package.
+-- description:
+
+-- A URL where users can report bugs.
+-- bug-reports:
+
+-- The license under which the package is released.
+-- license:
+author:             bbrown
+maintainer:         bbrown@targetrwe.com
+
+-- A copyright notice.
+-- copyright:
+-- category:
+extra-source-files: CHANGELOG.md
+
+library
+    exposed-modules:  
+        TypeExamples
+        , TypeExercises
+        , IntervalExamples
+        , IntervalExercises
+
+    -- Modules included in this library but not exported.
+    -- other-modules:
+
+    -- LANGUAGE extensions used by modules in this package.
+    -- other-extensions:
+    build-depends:    
+        base ^>=4.14.2.0
+        , interval-algebra >=1.0.0
+        -- following interval algebra
+        , time (>=1.8 && <2)
+    hs-source-dirs:   src
+    default-language: Haskell2010
+
+test-suite maybe-toxic-tutorial-tests
+    default-language: Haskell2010
+    type:             exitcode-stdio-1.0
+    hs-source-dirs:   test
+    main-is:          Tests.hs
+    build-depends:   
+        base ^>=4.14.2.0
+        , hspec >= 2.8
+        , hspec-discover >= 2.8

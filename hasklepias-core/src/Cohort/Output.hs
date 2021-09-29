@@ -172,7 +172,7 @@ instance ToJSON ColumnWise where
 
 -- | A type to hold 'Cohort' information in a column-wise manner.
 data ColumnWiseJSON = MkColumnWiseJSON
-  { attributes  :: [Value]
+  { attributes :: [Value]
   , ids        :: [Value]
   , cohortData :: [[Value]]
   }

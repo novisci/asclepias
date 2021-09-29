@@ -10,6 +10,7 @@ Maintainer  : bsaul@novisci.com
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TupleSections #-}
 {-# LANGUAGE TupleSections #-}
+{-# LANGUAGE LambdaCase #-}
 -- {-# LANGUAGE Safe #-}
 
 module Cohort.Core
@@ -43,9 +44,12 @@ import           Cohort.Criteria                ( CohortStatus(..)
                                                 , initStatusInfo
                                                 )
 import           Cohort.Index
-import           Control.Applicative            ( (<$>) )
+import           Control.Applicative            ( (<$>)
+                                                , pure
+                                                )
 import           Control.Monad                  ( (=<<)
                                                 , Functor(fmap)
+                                                , join
                                                 )
 import           Data.Aeson                     ( FromJSON
                                                 , ToJSON(..)
@@ -73,12 +77,15 @@ import qualified Data.Set                      as Set
 import           Data.Text                      ( Text
                                                 , pack
                                                 )
+import           Data.Traversable               ( sequenceA )
 import           Data.Tuple                     ( curry )
 import           GHC.Exts                       ( IsList(..) )
 import           GHC.Generics                   ( Generic )
 import           GHC.Num                        ( Natural )
 import           GHC.Show                       ( Show(..) )
 import           Safe                           ( headMay )
+import           Test.Tasty.Ingredients.ConsoleReporter
+                                                ( Statistics(statFailures) )
 
 
 -- | A subject identifier. Currently, simply @Text@.
@@ -88,6 +95,10 @@ type SubjectID = Text
 -- type ObsID = Text
 newtype ObsID = MkObsID (SubjectID, Natural)
   deriving (Eq, Show, Generic)
+
+-- | Smart constructor for @'ObsID'@.
+makeObsID :: Natural -> SubjectID -> ObsID
+makeObsID = (flip . curry) MkObsID
 
 -- | A subject is just a pair of @ID@ and data.
 newtype Subject d = MkSubject (SubjectID, d)
@@ -99,7 +110,7 @@ instance Functor Subject where
 instance (FromJSON d) => FromJSON (Subject d) where
 
 -- | A population is a list of @'Subject'@s
-newtype Population d = MkPopulation  [Subject d]
+newtype Population d = MkPopulation [Subject d]
     deriving (Eq, Show, Generic)
 
 instance Functor Population where
@@ -160,62 +171,75 @@ getSubjectData (MkSubject (_, x)) = x
 -- into the desired return type.
 data CohortSpec d1 d0 i a = MkCohortSpec
   { runIndices  :: d1 -> IndexSet i a
-  , runCriteria :: Index i a -> d1 -> Criteria
+  , runCriteria :: d1 -> Criteria
   , runFeatures :: Index i a -> d1 -> d0
   }
 
 -- | Creates a @'CohortSpec'@.
 specifyCohort
   :: (d1 -> IndexSet i a)
-  -> (Index i a -> d1 -> Criteria)
+  -> (d1 -> Criteria)
   -> (Index i a -> d1 -> d0)
   -> CohortSpec d1 d0 i a
 specifyCohort = MkCohortSpec
 
 -- internal functions to evalIndices
-_evalIndices
+evalIndicesOnSubjects
   :: CohortSpec d1 d0 i a -> Population d1 -> [(IndexSet i a, Subject d1)]
-_evalIndices spec (MkPopulation pop) =
+evalIndicesOnSubjects spec (MkPopulation pop) =
   fmap (\x -> (runIndices spec (getSubjectData x), x)) pop
 
-makeObsID :: Natural -> SubjectID -> ObsID
-makeObsID =  (flip . curry) MkObsID
+data Step1 d i a = MkStep1 (ObsUnit d) (Maybe (Index i a))
 
-g :: (IndexSet i a, Subject d1) -> [(Index i a, ObsUnit d1)]
-g (MkIndexSet is, MkSubject (id, d)) =
-  zipWith (\x y -> (x, MkObsUnit (makeObsID y id) d)) (Set.toList is) [1..]
+doStep1 :: (IndexSet i a, Subject d1) -> [Step1 d1 i a]
+doStep1 (MkIndexSet indices, MkSubject (id, d)) = case indices of
+  Nothing  -> pure $ MkStep1 (MkObsUnit (makeObsID 1 id) d) Nothing
+  Just set -> zipWith
+    (\x y -> MkStep1 (MkObsUnit (makeObsID y id) d) (Just x))
+    (Set.toList set)
+    [1 ..]
 
 -- | Evaluates the @'runIndices'@ of a @'CohortSpec'@ on a @'Population'@ to 
 -- return a list of @(Index i a, ObsUnit d)@ (one per observational unit). 
-evalIndices
-  :: CohortSpec d1 d0 i a -> Population d1 -> [(Index i a, ObsUnit d1)]
-evalIndices spec x = g =<< _evalIndices spec x
--- evalIndices spec = flattenIndices . fmap g . _evalIndices spec
+evalIndices :: CohortSpec d1 d0 i a -> Population d1 -> [Step1 d1 i a]
+evalIndices spec x = doStep1 =<< evalIndicesOnSubjects spec x
+
+newtype Step2 d i a = MkStep2 (Criteria, Step1 d i a)
 
 -- | Evaluates the @'runCriteria'@ of a @'CohortSpec'@ on a @'Population'@ to 
 -- return a list of @(Criteria, Index i a, ObsUnit d1)@. 
-evalCriteria
-  :: CohortSpec d1 d0 i a
-  -> [(Index i a, ObsUnit d1)]
-  -> [(Criteria, Index i a, ObsUnit d1)]
-evalCriteria spec = fmap (\(i, d) -> (runCriteria spec i (obsData d), i, d))
+evalCriteria :: CohortSpec d1 d0 i a -> [Step1 d1 i a] -> [Step2 d1 i a]
+evalCriteria spec = fmap
+  (\(MkStep1 ou mi) -> MkStep2 (runCriteria spec (obsData ou), MkStep1 ou mi))
+
+data Step3 d i a =
+    I1 CohortStatus
+  | I2 CohortStatus (ObsUnit d) (Index i a)
+
+doStep3 :: Step2 d i a -> Step3 d i a
+doStep3 (MkStep2 (c, MkStep1 ou i)) = case (status, i) of
+  (Included, Just index) -> I2 status ou index
+  _                      -> I1 status
+  where status = checkCohortStatus i c
+
+step3toStatus :: Step3 d i a -> CohortStatus
+step3toStatus (I1 x    ) = x
+step3toStatus (I2 x _ _) = x
 
 -- | Convert a list of @(Criteria, Index i a, ObsUnit d)@ into a list of 
 --   @(CohortStatus, Index i a, ObsUnit d)@
-evalCohortStatus
-  :: [(Criteria, Index i a, ObsUnit d)]
-  -> [(CohortStatus, Index i a, ObsUnit d)]
-evalCohortStatus = fmap (\(x, y, z) -> (checkCohortStatus x, y, z))
+evalCohortStatus :: [Step2 d i a] -> [Step3 d i a]
+evalCohortStatus = fmap doStep3
 
 -- | Internal function for mapping an @ObsUnit d1@ along with its corresponding 
 --   @CohortStatus@ and @Index@ into @Maybe (ObsUnit d0)@. 
 evalFeatures
   :: (Index i a -> d1 -> d0)
-  -> (CohortStatus, Index i a, ObsUnit d1)
+  -> Step3 d1 i a
   -> Maybe (ObsUnit d0)
-evalFeatures f (status, index, obsUnit) = case status of
-  Included     -> Just $ fmap (f index) obsUnit
-  ExcludedBy _ -> Nothing
+evalFeatures f x = case x of
+  I2 status obsUnit index -> Just $ fmap (f index) obsUnit
+  _                       -> Nothing
 
 -- | The internal function to evaluate a @'CohortSpec'@ on a @'Population'@. 
 evalCohort :: CohortSpec d1 d0 i a -> Population d1 -> Cohort d0
@@ -224,11 +248,11 @@ evalCohort spec pop = MkCohort
   , MkCohortData $ mapMaybe (evalFeatures (runFeatures spec)) unitsWithStatus
   )
  where
-  indices          = evalIndices spec pop
-  unitsWithCrits   = evalCriteria spec indices
-  unitsWithStatus  = evalCohortStatus unitsWithCrits
-  firstCrit        = (\(x, _, _) -> x) <$> headMay unitsWithCrits
-  statuses         = (\(x, _, _) -> x) <$> unitsWithStatus
+  indices         = evalIndices spec pop
+  unitsWithCrits  = evalCriteria spec indices
+  unitsWithStatus = evalCohortStatus unitsWithCrits
+  firstCrit       = (\(MkStep2 (c, _)) -> c) <$> headMay unitsWithCrits
+  statuses        = step3toStatus <$> unitsWithStatus
 
 {-| A container hold multiple cohorts of the same type. The key is the name of 
     the cohort; value is a cohort.
@@ -240,18 +264,12 @@ newtype CohortSet d = MkCohortSet (Map Text (Cohort d))
 getCohortSet :: CohortSet d -> Map Text (Cohort d)
 getCohortSet (MkCohortSet x) = x
 
-{-| Key/value pairs of 'CohortSpec's. The keys are the names of the cohorts.
--}
+-- | Key/value pairs of 'CohortSpec's. The keys are the names of the cohorts.
 newtype CohortSetSpec d1 d0 i a = MkCohortSetSpec (Map Text (CohortSpec d1 d0 i a))
 
 -- | Make a set of 'CohortSpec's from list input.
 makeCohortSpecs
-  :: [ ( Text
-       , d1 -> IndexSet i a
-       , Index i a -> d1 -> Criteria
-       , Index i a -> d1 -> d0
-       )
-     ]
+  :: [(Text, d1 -> IndexSet i a, d1 -> Criteria, Index i a -> d1 -> d0)]
   -> CohortSetSpec d1 d0 i a
 makeCohortSpecs l = MkCohortSetSpec
   $ fromList (fmap (\(n, i, c, f) -> (n, specifyCohort i c f)) l)

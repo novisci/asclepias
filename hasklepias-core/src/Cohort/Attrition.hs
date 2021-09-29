@@ -43,7 +43,6 @@ import           GHC.Num                        ( Natural
                                                 )
 import           GHC.Show                       ( Show )
 
-
 -- | A type which collects counts of a 'CohortStatus'
 data AttritionLevel = MkAttritionLevel
   { attritionLevel :: CohortStatus
@@ -56,7 +55,7 @@ instance Ord AttritionLevel where
   compare (MkAttritionLevel l1 _) (MkAttritionLevel l2 _) = compare l1 l2
 
 -- | NOTE: the @Semigroup@ instance prefers the 'attritionLevel' from the left,
---   so be sure that you're combining 
+--   so be sure that you're combining two of the same level. 
 instance Semigroup AttritionLevel where
   (<>) (MkAttritionLevel l1 c1) (MkAttritionLevel _ c2) =
     MkAttritionLevel l1 (c1 + c2)
@@ -100,7 +99,8 @@ measureAttrition c l =
     (+)
     [ maybe mempty initAttritionInfo c
     , Map.fromListWith (+) $ fmap (, 1) l
+    , fromList [(SubjectHasNoIndex, 0)]
     , fromList [(Included, 0)]
-      -- including Included in the case that none of the evaluated criteria
-      -- have status Include
+      -- including SubjectHasNoIndex and Included in the case that none of the
+      -- evaluated criteria have either of those statuses
     ]

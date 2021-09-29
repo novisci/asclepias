@@ -6,7 +6,7 @@ License     : BSD3
 Maintainer  : bsaul@novisci.com
 
 To run as an example: 
-cat exampleApp/exampleData.jsonl| cabal exec exampleApp
+cat hasklepias-main/exampleApp/exampleData.jsonl| cabal exec exampleApp
 -}
 
 {-# LANGUAGE OverloadedStrings #-}
@@ -61,11 +61,11 @@ instance HasAttributes "myVar2" Bool where
 
 -- | 
 makeIndexRunner :: Events Day -> IndexSet Interval Day
-makeIndexRunner _ = MkIndexSet emptySet
+makeIndexRunner _ = MkIndexSet (Just $ fromList [makeIndex $ beginerval 1 (fromGregorian 2010 7 6)]) 
 
 -- | Make a function that runs the criteria
-makeCriteriaRunner :: Index Interval Day -> Events Day -> Criteria
-makeCriteriaRunner _ events = criteria $ pure (criterion crit1)
+makeCriteriaRunner :: Events Day -> Criteria
+makeCriteriaRunner events = criteria $ pure (criterion crit1)
  where
   crit1   = eval critTrue featEvs
   featEvs = featureEvents events
@@ -84,4 +84,4 @@ cohortSpecs =
   makeCohortSpecs [("example", makeIndexRunner, makeCriteriaRunner, makeFeatureRunner)]
 
 main :: IO ()
-main = makeCohortApp "testCohort" "v0.1.0" rowWise cohortSpecs
+main = runApp $ makeCohortApp "testCohort" "v0.1.0" rowWise cohortSpecs

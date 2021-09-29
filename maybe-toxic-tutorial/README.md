@@ -20,24 +20,24 @@ The tutorial will be broken into conceptual blocks. Each concept will have three
 ## A work in progress
 A rough roadmap for modules to add is below. If you think this general idea is useful and want to add or modify content --- go for it! Doing so is itself a good learning experience and has been for me.
 
-* [] Type basic
+* [ ] Type basic
 		- Reading and using type declarations in type signatures
 		- Typeclasses
 		- Implementing a type as an instance of a typeclass
 		- Maybe
-* [] Functional programming basics
+* [ ] Functional programming basics
 		- lambda functions as the building block
 		- currying
 		- folds and maps
 		- a functional state of mind
-* [] Interval algebra
+* [ ] Interval algebra
     - creating intervals
 		- relating intervals
 		- modifying intervals
 		- defining our own intervals
 		- defining structures that contain intervals
-* [] Asclepias basics
-* [] Asclepias advanced
+* [ ] Asclepias basics
+* [ ] Asclepias extended
 
 ## How to use
 For now this will live in asclepias.

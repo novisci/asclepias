@@ -30,6 +30,7 @@ library
       Features.Featureset
       Cohort
       Cohort.AssessmentIntervals
+      Cohort.Attrition
       Cohort.Core
       Cohort.Input
       Cohort.Output

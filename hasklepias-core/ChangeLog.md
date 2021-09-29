@@ -1,4 +1,21 @@
-# Changelog for hasklepias
+# Changelog for hasklepias-core
+
+## 0.22.0
+
+* Changes the type for `CohortSpec` to the type below, which makes the dependency of a cohort on one or more indices explicit. An `IndexSet` is `Maybe (Set Interval i a)`, where `Nothing` indicates that a subject does not have any indices. In the case that there are one or more indices, each index corresponds to exactly one observational unit (`ObsUnit`). After `runIndices` is evaluated, the `runCriteria` function is run on each observational unit. Then for each `ObsUnit` with a `CohortStatus` of `Included`, `runFeatures` is evaluated to create the final output type `d0`.
+
+```haskell
+data CohortSpec d1 d0 i a = MkCohortSpec
+  { runIndices  :: d1 -> IndexSet i a
+  , runCriteria :: d1 -> Criteria
+  , runFeatures :: Index i a -> d1 -> d0
+  }
+```
+
+* Adds the `ObsID` type as the id type for `ObsUnit`. This is the pair `(SubjectID, Natural)`, where the `SubjectID` is the subject from which the `ObsUnit` originated and the `Natural` is the index of the index. For example, the first observational unit for subject "a" would have the id of `MkObsID ("a", 1)`; the second `MkObsID ("a", 2)`; and so on.
+* Moves attrition related types out of `Cohort.Core` into `Cohort.Attrition`.
+* Adds `SubjectHasNoIndex` as a variant to `CohortStatus` to represent cases where a subject does not have any indices.
+* Adds the `CohortApp` type, which `makeCohortApp` now returns. In this way, the `CohortApp` can tested using a golden test. The application can be run to `IO ()` using the `runApp` function.  
 
 ## 0.21.0
 

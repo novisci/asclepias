@@ -79,6 +79,7 @@ import           GHC.TypeLits                   ( KnownSymbol
                                                 , symbolVal
                                                 )
 
+import Cohort.Index
 -- | Defines the return type for @'Criterion'@ indicating whether to include or 
 -- exclude a subject.
 data Status = Include | Exclude deriving (Eq, Show, Generic)
@@ -87,15 +88,22 @@ data Status = Include | Exclude deriving (Eq, Show, Generic)
 -- they were excluded by. See @'checkCohortStatus'@ for evaluating a @'Criteria'@
 -- to determine CohortStatus.
 data CohortStatus =
-  Included | ExcludedBy (Natural, Text)
+    SubjectHasNoIndex
+  | ExcludedBy (Natural, Text)
+  | Included
     deriving (Eq, Show, Generic)
 
--- Defines an ordering to put @Included@ last in a container of @'CohortStatus'@.
+-- Defines an ordering to put @SubjectHasNoIndex@ first and @Included@ last. 
 -- The @'ExcludedBy'@ are ordered by their number value.
 instance Ord CohortStatus where
   compare Included            Included            = EQ
+  compare SubjectHasNoIndex   SubjectHasNoIndex   = EQ
   compare Included            (ExcludedBy _)      = GT
-  compare (ExcludedBy _     ) Included            = LT
+  compare (ExcludedBy _ )     Included            = LT
+  compare Included            SubjectHasNoIndex   = GT
+  compare SubjectHasNoIndex   Included            = LT
+  compare (ExcludedBy _  )    SubjectHasNoIndex   = GT
+  compare SubjectHasNoIndex   (ExcludedBy _  )    = LT
   compare (ExcludedBy (i, _)) (ExcludedBy (j, _)) = compare i j
 
 -- | Helper to convert a @Bool@ to a @'Status'@
@@ -158,8 +166,9 @@ findExclude x = find (\(_, _, z) -> z == Exclude) (getStatuses x)
 
 -- | Converts a subject's @'Criteria'@ to a @'CohortStatus'@. The status is set
 -- to @'Included'@ if none of the @'Criterion'@ have a status of @'Exclude'@.
-checkCohortStatus :: Criteria -> CohortStatus
-checkCohortStatus x =
+checkCohortStatus :: Maybe (Index i a) -> Criteria -> CohortStatus
+checkCohortStatus Nothing _  = SubjectHasNoIndex 
+checkCohortStatus (Just index) x =
   maybe Included (\(i, n, _) -> ExcludedBy (i, n)) (findExclude x)
 
 -- | Utility to get the name of a @'Criterion'@.

@@ -24,12 +24,11 @@ module Cohort.Output
   ) where
 
 import           Control.Applicative            ( (<$>) )
-import           Cohort.Core                    ( AttritionInfo
-                                                , AttritionLevel
-                                                , Cohort(..)
+import           Cohort.Attrition
+import           Cohort.Core                    ( Cohort(..)
                                                 , CohortData
                                                 , CohortSet(..)
-                                                , ID
+                                                , ObsID
                                                 , ObsUnit
                                                 , getCohortData
                                                 , getCohortDataData
@@ -84,6 +83,7 @@ import           GHC.Show                       ( Show )
 import           GHC.Types                      ( Type )
 import           Safe                           ( headMay )
 
+instance ToJSON ObsID where 
 instance (ToJSON d) => ToJSON (ObsUnit d) where
 instance (ToJSON d) => ToJSON (CohortData d) where
 instance (ToJSON d) => ToJSON (Cohort d) where
@@ -164,7 +164,7 @@ instance ShapeCohort Featureset  where
 ---- ColumnWise ---- 
 
 data ColumnWise = MkColumnWise [OutputShape Type] -- attributes
-                                                  [ID] -- ids
+                                                  [ObsID] -- ids
                                                        [[OutputShape Type]] -- data
   deriving (Show, Generic)
 
@@ -172,7 +172,7 @@ instance ToJSON ColumnWise where
 
 -- | A type to hold 'Cohort' information in a column-wise manner.
 data ColumnWiseJSON = MkColumnWiseJSON
-  { attributes  :: [Value]
+  { attributes :: [Value]
   , ids        :: [Value]
   , cohortData :: [[Value]]
   }
@@ -201,7 +201,7 @@ shapeColumnWise x = MkColumnWise
 
 ---- Rowwise ---- 
 
-newtype IDRow = MkIDRow (ID, [OutputShape Type])
+newtype IDRow = MkIDRow (ObsID, [OutputShape Type])
   deriving ( Show, Generic )
 
 instance ToJSON IDRow where

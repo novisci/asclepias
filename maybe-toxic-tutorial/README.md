@@ -51,3 +51,14 @@ For now this will live in asclepias.
 4. side-by-side (ideally) load the module in ghci by typing `:l {path_to_module/TypeExamples.hs`. For example, if `maybe-toxic-tutorial` is my current working directory I would run the following in ghci `:l src/TypeExamples.hs`
 
 5. look at the examples, run the code in ghci, try the exercises.
+
+## How to contribute
+Any old way you want to. But if you want some ideas:
+
+- add/modify examples in existing tutorials
+- add/modify exercises in existing tutorials
+- build the testing framework
+- add tests (when the testing framework is built out, probably best to add these when you add exercises)
+- add commentary to anything you felt was unclear
+- add tutorials, eg for functional programming basics
+- modify this README, especially the task list above

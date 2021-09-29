@@ -23,6 +23,7 @@ source-repository head
 library
   exposed-modules:
       Hasklepias
+      Hasklepias.ExampleApp
   hs-source-dirs:
       src
   build-depends:
@@ -48,6 +49,7 @@ test-suite examples
       examples
   build-depends:
       hasklepias-main
+    , hasklepias-core
     , hspec
     , base >=4.14 && <4.15
     , tasty  == 1.4.1
@@ -61,4 +63,18 @@ executable exampleApp
       exampleApp
   build-depends:
       hasklepias-main
+  default-language: Haskell2010
+
+test-suite exampleApp-test
+  type: exitcode-stdio-1.0
+  main-is: Main.hs
+  hs-source-dirs:
+      exampleApp-test
+  build-depends:
+      hasklepias-main
+    , hasklepias-core
+    , base >=4.14 && <4.15
+    , tasty  == 1.4.1
+    , tasty-silver 
+    , bytestring
   default-language: Haskell2010

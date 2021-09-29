@@ -100,10 +100,10 @@ instance Ord CohortStatus where
   compare SubjectHasNoIndex   SubjectHasNoIndex   = EQ
   compare Included            (ExcludedBy _)      = GT
   compare (ExcludedBy _ )     Included            = LT
-  compare Included            SubjectHasNoIndex   = LT
-  compare SubjectHasNoIndex   Included            = GT
-  compare (ExcludedBy _  )    SubjectHasNoIndex   = LT
-  compare SubjectHasNoIndex   (ExcludedBy _  )    = GT
+  compare Included            SubjectHasNoIndex   = GT
+  compare SubjectHasNoIndex   Included            = LT
+  compare (ExcludedBy _  )    SubjectHasNoIndex   = GT
+  compare SubjectHasNoIndex   (ExcludedBy _  )    = LT
   compare (ExcludedBy (i, _)) (ExcludedBy (j, _)) = compare i j
 
 -- | Helper to convert a @Bool@ to a @'Status'@

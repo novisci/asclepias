@@ -12,6 +12,7 @@ import IntervalAlgebra
 import Data.Set (fromList, empty, singleton)
 import Test.Hspec ( describe, pending, shouldBe, it, Spec )
 
+
 -- data Feat1
 
 d1 :: Definition (Feature "feat" Int -> Feature "feat1" Bool)
@@ -62,7 +63,8 @@ testCohort = specifyCohort buildIndices buildCriteria buildFeatures
 testOut :: Cohort Features
 testOut = MkCohort
   ( MkAttritionInfo 2 $
-   fromList [ uncurry MkAttritionLevel (ExcludedBy (1, "feat2"), 1)
+   fromList [ uncurry MkAttritionLevel (SubjectHasNoIndex, 0)
+            , uncurry MkAttritionLevel (ExcludedBy (1, "feat2"), 1)
             , uncurry MkAttritionLevel (Included, 1) ]
   , MkCohortData [MkObsUnit (makeObsID 1 "2") 
                   ( makeFeature (featureDataR False)
@@ -70,17 +72,20 @@ testOut = MkCohort
 
 testAttr1 :: AttritionInfo
 testAttr1 =  MkAttritionInfo 2 $
-   fromList [ uncurry MkAttritionLevel (ExcludedBy (1, "feat2"), 1)
+   fromList [ uncurry MkAttritionLevel (SubjectHasNoIndex, 0)
+            , uncurry MkAttritionLevel (ExcludedBy (1, "feat2"), 1)
             , uncurry MkAttritionLevel (Included, 1) ] 
 
 testAttr2 :: AttritionInfo
 testAttr2 =  MkAttritionInfo 5 $
-   fromList [ uncurry MkAttritionLevel (ExcludedBy (1, "feat2"), 3)
+   fromList [ uncurry MkAttritionLevel (SubjectHasNoIndex, 0)
+            , uncurry MkAttritionLevel (ExcludedBy (1, "feat2"), 3)
             , uncurry MkAttritionLevel (Included, 2) ] 
 
 testAttr1p2 :: AttritionInfo
 testAttr1p2 =  MkAttritionInfo 7 $
-   fromList [ uncurry MkAttritionLevel (ExcludedBy (1, "feat2"), 4)
+   fromList [ uncurry MkAttritionLevel (SubjectHasNoIndex, 0)
+            , uncurry MkAttritionLevel (ExcludedBy (1, "feat2"), 4)
             , uncurry MkAttritionLevel (Included, 3) ]
 
 -- evalCohort testCohort testPopulation

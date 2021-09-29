@@ -34,7 +34,7 @@ spec = do
     do
 
       it "noIndex " $
-          checkCohortStatus Nothing (criteria $ pure (f1 Include)) `shouldBe` NoIndex
+          checkCohortStatus Nothing (criteria $ pure (f1 Include)) `shouldBe` SubjectHasNoIndex
 
       it "include f1" $
           checkCohortStatus index (criteria $ pure (f1 Include)) `shouldBe` Included

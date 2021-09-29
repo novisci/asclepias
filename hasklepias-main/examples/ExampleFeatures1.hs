@@ -19,7 +19,7 @@ module ExampleFeatures1
 import           ExampleEvents
 import           Hasklepias
 import           Test.Hspec
-
+import           Cohort.Attrition -- imported for test case
 {-
 Index is defined as the first occurrence of an Orca bite.
 -}
@@ -197,8 +197,8 @@ type MyData
     , Feature "discontinuation" (Maybe (Int, Int))
     )
 
-getUnitFeatures :: Events Int -> MyData
-getUnitFeatures x =
+getUnitFeatures :: Index Interval Int -> Events Int -> MyData
+getUnitFeatures _ x =
   ( idx
   , eval
     (buildContinuousEnrollment bline (containsConcepts ["enrollment"]) 60)
@@ -218,14 +218,20 @@ getUnitFeatures x =
   bl  = fmap bline idx
   fl  = fmap flwup idx
 
+-- just a dummy set for now
+dummyIndex :: Index Interval Int
+dummyIndex = makeIndex $ beginerval 1 0 
+
+dummyIndexSet :: Events Int -> IndexSet Interval Int
+dummyIndexSet _ = MkIndexSet (Just $ setFromList [dummyIndex])
 
 includeAll :: Events Int -> Criteria
 includeAll x = criteria $ pure
   (criterion (makeFeature (featureDataR Include) :: Feature "includeAll" Status)
   )
 
-testCohortSpec :: CohortSpec (Events Int) MyData
-testCohortSpec = specifyCohort includeAll getUnitFeatures
+testCohortSpec :: CohortSpec (Events Int) MyData Interval Int
+testCohortSpec = specifyCohort dummyIndexSet includeAll getUnitFeatures
 
 example1results :: MyData
 example1results =
@@ -255,11 +261,11 @@ exampleFeatures1Spec :: Spec
 exampleFeatures1Spec = do
 
   it "getUnitFeatures from exampleEvents1"
-    $          getUnitFeatures exampleEvents1
+    $          getUnitFeatures dummyIndex exampleEvents1 
     `shouldBe` example1results
 
   it "getUnitFeatures from exampleEvents2"
-    $          getUnitFeatures exampleEvents2
+    $          getUnitFeatures dummyIndex exampleEvents2
     `shouldBe` example2results
 
   it "mapping a population to cohort"
@@ -269,10 +275,11 @@ exampleFeatures1Spec = do
                  ( MkAttritionInfo 2 $ setFromList
                    [ uncurry MkAttritionLevel (ExcludedBy (1, "includeAll"), 0)
                    , uncurry MkAttritionLevel (Included                    , 2)
+                   , uncurry MkAttritionLevel (SubjectHasNoIndex           , 0)
                    ]
                  , MkCohortData
-                   [ MkObsUnit "a" example1results
-                   , MkObsUnit "b" example2results
+                   [ MkObsUnit (makeObsID 1 "a") example1results
+                   , MkObsUnit (makeObsID 1 "b") example2results
                    ]
                  )
 

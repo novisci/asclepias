@@ -129,11 +129,6 @@ medHx cpt = define
 featureEvents :: Events Day -> Feature "allEvents" (Events Day)
 featureEvents = pure
 
--- | Lift a calendar index into a feature
-featureIndex
-  :: Index Interval Day -> Feature "calendarIndex" (Index Interval Day)
-featureIndex = pure
-
 -- | The subject's age at time of index. Returns an error if there no birth year
 --   records.
 age
@@ -288,7 +283,7 @@ makeCriteriaRunner index events =
   crit5   = eval critDead featInd dead
   agefeat = eval age featInd featEvs
   dead    = eval deathDay featEvs
-  featInd = featureIndex index
+  featInd = pure index
   featEvs = featureEvents events
 
 -- | Make a function that runs the features for a calendar index
@@ -302,14 +297,10 @@ makeFeatureRunner index events = featureset
      ]
   )
  where
-  idx = featureIndex index
+  idx = pure index
   ef  = featureEvents events
 
 -- | Make a cohort specification for each calendar time
--- cohortSpecs :: [CohortSpec (Events Day) Featureset]
--- cohortSpecs =
---   map (\x -> specifyCohort (makeCriteriaRunner x) (makeFeatureRunner x)) indices
-
 cohortSpecs :: CohortSetSpec (Events Day) Featureset Interval Day
 cohortSpecs =
   makeCohortSpecs $
@@ -317,9 +308,6 @@ cohortSpecs =
 
 
 -- | A function that evaluates all the calendar cohorts for a population
--- evalCohorts :: Population (Events Day) -> [Cohort Featureset]
--- evalCohorts pop = map (`evalCohort` pop) cohortSpecs
-
 evalCohorts :: Population (Events Day) -> CohortSet Featureset
 evalCohorts = evalCohortSet cohortSpecs
 

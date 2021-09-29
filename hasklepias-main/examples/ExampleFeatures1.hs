@@ -23,15 +23,10 @@ import           Cohort.Attrition -- imported for test case
 {-
 Index is defined as the first occurrence of an Orca bite.
 -}
-indexDef
-  :: (Ord a)
-  => Definition
-       (Feature "events" (Events a) -> Feature "index" (Index Interval a))
-indexDef = defineA
-  (\events -> case firstConceptOccurrence ["wasBitByOrca"] events of
-    Nothing -> makeFeature $ featureDataL (Other "No occurrence of Orca bite")
-    Just x  -> pure (makeIndex $ getInterval x)
-  )
+defineIndexSet :: Ord a => Events a -> IndexSet Interval a
+defineIndexSet events = 
+  MkIndexSet $ fmap (setFromList . pure . makeIndex . getInterval) $
+    headMay $ makeConceptsFilter ["wasBitByOrca"] events
 
 {-  
 The baseline interval is the interval (b - 60, b), where b is the begin of 
@@ -198,7 +193,7 @@ type MyData
     )
 
 getUnitFeatures :: Index Interval Int -> Events Int -> MyData
-getUnitFeatures _ x =
+getUnitFeatures index x =
   ( idx
   , eval
     (buildContinuousEnrollment bline (containsConcepts ["enrollment"]) 60)
@@ -214,7 +209,7 @@ getUnitFeatures _ x =
   )
  where
   evs = pure x
-  idx = eval indexDef evs
+  idx = pure index
   bl  = fmap bline idx
   fl  = fmap flwup idx
 
@@ -222,16 +217,13 @@ getUnitFeatures _ x =
 dummyIndex :: Index Interval Int
 dummyIndex = makeIndex $ beginerval 1 0 
 
-dummyIndexSet :: Events Int -> IndexSet Interval Int
-dummyIndexSet _ = MkIndexSet (Just $ setFromList [dummyIndex])
-
 includeAll :: Events Int -> Criteria
 includeAll x = criteria $ pure
   (criterion (makeFeature (featureDataR Include) :: Feature "includeAll" Status)
   )
 
 testCohortSpec :: CohortSpec (Events Int) MyData Interval Int
-testCohortSpec = specifyCohort dummyIndexSet includeAll getUnitFeatures
+testCohortSpec = specifyCohort defineIndexSet includeAll getUnitFeatures
 
 example1results :: MyData
 example1results =
@@ -245,41 +237,25 @@ example1results =
   , pure $ Just (78, 18)
   )
 
-example2results :: MyData
-example2results =
-  ( makeFeature $ featureDataL (Other "No occurrence of Orca bite")
-  , makeFeature $ featureDataL (Other "No occurrence of Orca bite")
-  , makeFeature $ featureDataL (Other "No occurrence of Orca bite")
-  , makeFeature $ featureDataL (Other "No occurrence of Orca bite")
-  , makeFeature $ featureDataL (Other "No occurrence of Orca bite")
-  , makeFeature $ featureDataL (Other "No occurrence of Orca bite")
-  , makeFeature $ featureDataL (Other "No occurrence of Orca bite")
-  , makeFeature $ featureDataL (Other "No occurrence of Orca bite")
-  )
 
 exampleFeatures1Spec :: Spec
 exampleFeatures1Spec = do
 
   it "getUnitFeatures from exampleEvents1"
-    $          getUnitFeatures dummyIndex exampleEvents1 
+    $          getUnitFeatures (makeIndex (beginerval 1 60)) exampleEvents1 
     `shouldBe` example1results
-
-  it "getUnitFeatures from exampleEvents2"
-    $          getUnitFeatures dummyIndex exampleEvents2
-    `shouldBe` example2results
 
   it "mapping a population to cohort"
     $          evalCohort testCohortSpec
                           (MkPopulation [exampleSubject1, exampleSubject2])
     `shouldBe` MkCohort
                  ( MkAttritionInfo 2 $ setFromList
-                   [ uncurry MkAttritionLevel (ExcludedBy (1, "includeAll"), 0)
-                   , uncurry MkAttritionLevel (Included                    , 2)
-                   , uncurry MkAttritionLevel (SubjectHasNoIndex           , 0)
+                   [ uncurry MkAttritionLevel (SubjectHasNoIndex           , 1)
+                   , uncurry MkAttritionLevel (ExcludedBy (1, "includeAll"), 0)
+                   , uncurry MkAttritionLevel (Included                    , 1)
                    ]
                  , MkCohortData
                    [ MkObsUnit (makeObsID 1 "a") example1results
-                   , MkObsUnit (makeObsID 1 "b") example2results
                    ]
                  )
 

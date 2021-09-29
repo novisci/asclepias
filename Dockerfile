@@ -7,6 +7,7 @@ COPY hasklepias-main/hasklepias-main.cabal hasklepias-main/hasklepias-main.cabal
 COPY cohort-collector/cohort-collector.cabal cohort-collector/cohort-collector.cabal
 COPY edm/edm.cabal edm/edm.cabal
 COPY stype/stype.cabal stype/stype.cabal
+COPY maybe-toxic-tutorial/maybe-toxic-tutorial.cabal maybe-toxic-tutorial/maybe-toxic-tutorial.cabal
 
 RUN cabal update
 RUN cabal build all --only-dependencies

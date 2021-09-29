@@ -34,7 +34,7 @@ library
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:
     build-depends:    
-        base ^>=4.14.2.0
+        base >=4.14 && <4.15
         , interval-algebra >=1.0.0
         -- following interval algebra
         , time (>=1.8 && <2)
@@ -47,6 +47,6 @@ test-suite maybe-toxic-tutorial-tests
     hs-source-dirs:   test
     main-is:          Tests.hs
     build-depends:   
-        base ^>=4.14.2.0
+        base >=4.14 && <4.15
         , hspec >= 2.8
         , hspec-discover >= 2.8

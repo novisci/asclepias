@@ -6,6 +6,7 @@ module Cohort.OutputSpec (
  ) where
 
 import Cohort
+import Cohort.Attrition
 import Data.Aeson
 import GHC.Exts ( IsList(..) )
 import Test.Hspec ( describe, pending, shouldBe, it, Spec )

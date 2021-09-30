@@ -17,7 +17,7 @@ module ExampleCohort1
   ( exampleCohort1tests
   ) where
 import           Hasklepias
-import           Prelude                        ( uncurry )
+import           Cohort.Attrition -- imported for test cases
 {-------------------------------------------------------------------------------
   Constants
 -------------------------------------------------------------------------------}
@@ -128,11 +128,6 @@ medHx cpt = define
 -- | Lift a subject's events in a feature
 featureEvents :: Events Day -> Feature "allEvents" (Events Day)
 featureEvents = pure
-
--- | Lift a calendar index into a feature
-featureIndex
-  :: Index Interval Day -> Feature "calendarIndex" (Index Interval Day)
-featureIndex = pure
 
 -- | The subject's age at time of index. Returns an error if there no birth year
 --   records.
@@ -270,6 +265,9 @@ instance HasAttributes  "glucocorticoids" Bool where
   Cohort Specifications and evaluation
 -------------------------------------------------------------------------------}
 
+makeIndexRunner :: Index Interval Day -> Events Day -> IndexSet Interval Day
+makeIndexRunner i _ = MkIndexSet (Just $ setFromList [i])
+
 -- | Make a function that runs the criteria for a calendar index
 makeCriteriaRunner :: Index Interval Day -> Events Day -> Criteria
 makeCriteriaRunner index events =
@@ -285,7 +283,7 @@ makeCriteriaRunner index events =
   crit5   = eval critDead featInd dead
   agefeat = eval age featInd featEvs
   dead    = eval deathDay featEvs
-  featInd = featureIndex index
+  featInd = pure index
   featEvs = featureEvents events
 
 -- | Make a function that runs the features for a calendar index
@@ -299,24 +297,17 @@ makeFeatureRunner index events = featureset
      ]
   )
  where
-  idx = featureIndex index
+  idx = pure index
   ef  = featureEvents events
 
 -- | Make a cohort specification for each calendar time
--- cohortSpecs :: [CohortSpec (Events Day) Featureset]
--- cohortSpecs =
---   map (\x -> specifyCohort (makeCriteriaRunner x) (makeFeatureRunner x)) indices
-
-cohortSpecs :: CohortSetSpec (Events Day) Featureset
+cohortSpecs :: CohortSetSpec (Events Day) Featureset Interval Day
 cohortSpecs =
   makeCohortSpecs $
-    map (\x -> (pack $ show x, makeCriteriaRunner x, makeFeatureRunner x)) indices
+    map (\x -> (pack $ show x, makeIndexRunner x, makeCriteriaRunner x, makeFeatureRunner)) indices
 
 
 -- | A function that evaluates all the calendar cohorts for a population
--- evalCohorts :: Population (Events Day) -> [Cohort Featureset]
--- evalCohorts pop = map (`evalCohort` pop) cohortSpecs
-
 evalCohorts :: Population (Events Day) -> CohortSet Featureset
 evalCohorts = evalCohortSet cohortSpecs
 
@@ -418,7 +409,7 @@ expectedFeatures1 = map
   ]
 
 expectedObsUnita :: [ObsUnit Featureset]
-expectedObsUnita = zipWith MkObsUnit (replicate 5 "a") expectedFeatures1
+expectedObsUnita = zipWith MkObsUnit (replicate 5 (makeObsID 1 "a")) expectedFeatures1
 
 makeExpectedCohort
   :: AttritionInfo -> [ObsUnit Featureset] -> Cohort Featureset
@@ -431,7 +422,8 @@ expectedCohorts :: [Cohort Featureset]
 expectedCohorts = zipWith
   (curry MkCohort)
   [ MkAttritionInfo 2 $ setFromList
-    [ mkAl (ExcludedBy (1, "isFemale"), 0)
+    [ mkAl (SubjectHasNoIndex, 0)
+    , mkAl (ExcludedBy (1, "isFemale"), 0)
     , mkAl (ExcludedBy (2, "isOver50"), 1)
     , mkAl (ExcludedBy (3, "isEnrolled"), 0)
     , mkAl (ExcludedBy (4, "isContinuousEnrolled"), 1)
@@ -439,7 +431,8 @@ expectedCohorts = zipWith
     , mkAl (Included, 0)
     ]
   , MkAttritionInfo 2 $ setFromList
-    [ mkAl (ExcludedBy (1, "isFemale"), 0)
+    [ mkAl (SubjectHasNoIndex, 0)
+    , mkAl (ExcludedBy (1, "isFemale"), 0)
     , mkAl (ExcludedBy (2, "isOver50"), 1)
     , mkAl (ExcludedBy (3, "isEnrolled"), 0)
     , mkAl (ExcludedBy (4, "isContinuousEnrolled"), 0)
@@ -447,7 +440,8 @@ expectedCohorts = zipWith
     , mkAl (Included, 1)
     ]
   , MkAttritionInfo 2 $ setFromList
-    [ mkAl (ExcludedBy (1, "isFemale"), 0)
+    [ mkAl (SubjectHasNoIndex, 0)
+    , mkAl (ExcludedBy (1, "isFemale"), 0)
     , mkAl (ExcludedBy (2, "isOver50"), 1)
     , mkAl (ExcludedBy (3, "isEnrolled"), 0)
     , mkAl (ExcludedBy (4, "isContinuousEnrolled"), 0)
@@ -455,7 +449,8 @@ expectedCohorts = zipWith
     , mkAl (Included, 1)
     ]
   , MkAttritionInfo 2 $ setFromList
-    [ mkAl (ExcludedBy (1, "isFemale"), 0)
+    [ mkAl (SubjectHasNoIndex, 0)
+    , mkAl (ExcludedBy (1, "isFemale"), 0)
     , mkAl (ExcludedBy (2, "isOver50"), 1)
     , mkAl (ExcludedBy (3, "isEnrolled"), 0)
     , mkAl (ExcludedBy (4, "isContinuousEnrolled"), 0)
@@ -463,7 +458,8 @@ expectedCohorts = zipWith
     , mkAl (Included, 1)
     ]
   , MkAttritionInfo 2 $ setFromList
-    [ mkAl (ExcludedBy (1, "isFemale"), 0)
+    [ mkAl (SubjectHasNoIndex, 0)
+    , mkAl (ExcludedBy (1, "isFemale"), 0)
     , mkAl (ExcludedBy (2, "isOver50"), 1)
     , mkAl (ExcludedBy (3, "isEnrolled"), 0)
     , mkAl (ExcludedBy (4, "isContinuousEnrolled"), 1)
@@ -471,7 +467,8 @@ expectedCohorts = zipWith
     , mkAl (Included, 0)
     ]
   , MkAttritionInfo 2 $ setFromList
-    [ mkAl (ExcludedBy (1, "isFemale"), 0)
+    [ mkAl (SubjectHasNoIndex, 0)
+    , mkAl (ExcludedBy (1, "isFemale"), 0)
     , mkAl (ExcludedBy (2, "isOver50"), 1)
     , mkAl (ExcludedBy (3, "isEnrolled"), 1)
     , mkAl (ExcludedBy (4, "isContinuousEnrolled"), 0)
@@ -479,7 +476,8 @@ expectedCohorts = zipWith
     , mkAl (Included, 0)
     ]
   , MkAttritionInfo 2 $ setFromList
-    [ mkAl (ExcludedBy (1, "isFemale"), 0)
+    [ mkAl (SubjectHasNoIndex, 0)
+    , mkAl (ExcludedBy (1, "isFemale"), 0)
     , mkAl (ExcludedBy (2, "isOver50"), 1)
     , mkAl (ExcludedBy (3, "isEnrolled"), 1)
     , mkAl (ExcludedBy (4, "isContinuousEnrolled"), 0)
@@ -487,7 +485,8 @@ expectedCohorts = zipWith
     , mkAl (Included, 0)
     ]
   , MkAttritionInfo 2 $ setFromList
-    [ mkAl (ExcludedBy (1, "isFemale"), 0)
+    [ mkAl (SubjectHasNoIndex, 0)
+    , mkAl (ExcludedBy (1, "isFemale"), 0)
     , mkAl (ExcludedBy (2, "isOver50"), 1)
     , mkAl (ExcludedBy (3, "isEnrolled"), 1)
     , mkAl (ExcludedBy (4, "isContinuousEnrolled"), 0)

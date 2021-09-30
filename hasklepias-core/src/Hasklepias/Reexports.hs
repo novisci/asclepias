@@ -51,6 +51,7 @@ module Hasklepias.Reexports
   , setFromList
   , mapFromList
   , mapToList
+  , emptySet
   ) where
 
 import safe      Control.Applicative            ( (<$>)
@@ -132,6 +133,7 @@ import safe      Data.Ord                       ( Ord(..)
 import safe      Data.Proxy                     ( Proxy(..) )
 import safe qualified Data.Set                 as Set
                                                 ( Set(..)
+                                                , empty
                                                 , fromList
                                                 , member
                                                 )
@@ -204,3 +206,6 @@ mapFromList = M.fromList
 
 mapToList :: (Ord k) => M.Map k a -> [(k, a)]
 mapToList = M.toList
+
+emptySet :: Set.Set a
+emptySet = Set.empty

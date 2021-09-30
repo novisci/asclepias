@@ -20,6 +20,8 @@ module Cohort
   , module Cohort.AssessmentIntervals
    -- ** Criteria
   , module Cohort.Criteria
+   -- ** Attrition
+  , module Cohort.Attrition
 
    -- ** Cohort I/O
    -- *** Input
@@ -29,6 +31,7 @@ module Cohort
   ) where
 
 import           Cohort.AssessmentIntervals
+import           Cohort.Attrition (AttritionInfo, AttritionLevel, measureAttrition)
 import           Cohort.Core
 import           Cohort.Criteria
 import           Cohort.Index

@@ -1,5 +1,9 @@
 # Changelog for hasklepias-core
 
+## 0.22.1
+
+* Adds functionality to the application resulting from `makeCohortApp` to read data from `stdin`, a local file, or an S3 location.
+
 ## 0.22.0
 
 * Changes the type for `CohortSpec` to the type below, which makes the dependency of a cohort on one or more indices explicit. An `IndexSet` is `Maybe (Set Interval i a)`, where `Nothing` indicates that a subject does not have any indices. In the case that there are one or more indices, each index corresponds to exactly one observational unit (`ObsUnit`). After `runIndices` is evaluated, the `runCriteria` function is run on each observational unit. Then for each `ObsUnit` with a `CohortStatus` of `Included`, `runFeatures` is evaluated to create the final output type `d0`.

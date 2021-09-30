@@ -217,8 +217,8 @@ getUnitFeatures index x =
 dummyIndex :: Index Interval Int
 dummyIndex = makeIndex $ beginerval 1 0 
 
-includeAll :: Events Int -> Criteria
-includeAll x = criteria $ pure
+includeAll :: Index Interval Int -> Events Int -> Criteria
+includeAll _ _ = criteria $ pure
   (criterion (makeFeature (featureDataR Include) :: Feature "includeAll" Status)
   )
 

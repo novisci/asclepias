@@ -304,7 +304,7 @@ makeFeatureRunner index events = featureset
 cohortSpecs :: CohortSetSpec (Events Day) Featureset Interval Day
 cohortSpecs =
   makeCohortSpecs $
-    map (\x -> (pack $ show x, makeIndexRunner x, makeCriteriaRunner x, makeFeatureRunner)) indices
+    map (\x -> (pack $ show x, makeIndexRunner x, makeCriteriaRunner, makeFeatureRunner)) indices
 
 
 -- | A function that evaluates all the calendar cohorts for a population

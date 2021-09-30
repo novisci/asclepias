@@ -1,5 +1,9 @@
 # Changelog for hasklepias-main
 
+## 0.22.3
+
+* Updates examples to run with updates to `hasklepias-core`.
+
 ## 0.22.2
 
 * Adds tests for the example application.

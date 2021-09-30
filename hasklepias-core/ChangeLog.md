@@ -1,5 +1,9 @@
 # Changelog for hasklepias-core
 
+## 0.22.2
+
+* Adds `Index i a` as an argument to the `runCriteria` function of a `CohortSpec`, so that `Criteria` can depend on an index -- an obvious need in retrospect.
+
 ## 0.22.1
 
 * Adds functionality to the application resulting from `makeCohortApp` to read data from `stdin`, a local file, or an S3 location.

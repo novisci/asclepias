@@ -53,8 +53,8 @@ makeIndexRunner :: Events Day -> IndexSet Interval Day
 makeIndexRunner _ = MkIndexSet (Just $ fromList [makeIndex $ beginerval 1 (fromGregorian 2010 7 6)]) 
 
 -- | Make a function that runs the criteria
-makeCriteriaRunner :: Events Day -> Criteria
-makeCriteriaRunner events = criteria $ pure (criterion crit1)
+makeCriteriaRunner :: Index Interval Day -> Events Day -> Criteria
+makeCriteriaRunner _ events = criteria $ pure (criterion crit1)
  where
   crit1   = eval critTrue featEvs
   featEvs = featureEvents events

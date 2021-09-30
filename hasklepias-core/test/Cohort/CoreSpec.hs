@@ -45,8 +45,8 @@ testPopulation = MkPopulation [testSubject1, testSubject2]
 buildIndices :: Int -> IndexSet Interval Int
 buildIndices i = MkIndexSet $ Just (singleton (makeIndex $ beginerval 1 i))
 
-buildCriteria :: Int -> Criteria
-buildCriteria dat = criteria $ pure ( criterion feat1 )
+buildCriteria :: Index Interval Int -> Int ->  Criteria
+buildCriteria _ dat = criteria $ pure ( criterion feat1 )
   where feat1 = eval d2 $ pure dat
 
 type Features = (Feature "feat1" Bool, Feature "feat3" Int)

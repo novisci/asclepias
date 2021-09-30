@@ -133,9 +133,9 @@ import safe      Data.Ord                       ( Ord(..)
 import safe      Data.Proxy                     ( Proxy(..) )
 import safe qualified Data.Set                 as Set
                                                 ( Set(..)
+                                                , empty
                                                 , fromList
                                                 , member
-                                                , empty
                                                 )
 import safe      Data.Text                      ( Text
                                                 , pack

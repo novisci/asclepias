@@ -1,6 +1,6 @@
 cabal-version:  2.2
 name:           hasklepias-core
-version:        0.21.0
+version:        0.22.1
 description:    Please see the README on GitHub at <https://github.com/novisci/asclepias#readme>
 homepage:       https://github.com/novisci/asclepias/#readme
 bug-reports:    https://github.com/novisci/asclepias/issues
@@ -50,16 +50,21 @@ library
 
     -- External packages
     , aeson >=1.4.0.0 && <2
+    , amazonka == 1.6.1
+    , amazonka-s3 == 1.6.1
     , base >=4.14 && <4.15
     , bytestring == 0.10.12.0
     , cmdargs == 0.10.21
     , containers == 0.6.5.1
     , contravariant >= 1.4
     , co-log == 0.4.0.1
+    , conduit-extra
     , flow == 1.0.22
     , ghc-prim == 0.6.1
     , interval-algebra == 1.0.0
+    , microlens == 0.4.12.0
     , nonempty-containers == 0.3.4.1
+    , optparse-applicative
     , safe >= 0.3
     , tasty  == 1.4.1
     , tasty-hunit == 0.10.0.3

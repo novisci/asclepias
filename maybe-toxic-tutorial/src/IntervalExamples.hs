@@ -221,6 +221,28 @@ meetingRunsOver' = expandr (moment' shortestMeeting) shortestMeeting
 conflictsWithAny :: Meeting Hour -> [Meeting Hour] -> Bool
 conflictsWithAny m = any (concur m)
 
+-- A little functional programming example
+-- the . is an operator on functions. see more in the functional programming
+-- basics tutorial (TODO).
+-- f . g is the function defined by f(g(x)) for any x
+conflictsWithAny' :: Meeting Hour -> [Meeting Hour] -> Bool
+conflictsWithAny' = any . concur
+
+-- you also might see the $ operator, similar to . but subtly different
+-- the difference is in the type-ing. whereas . is an operator on *functions* $ operates on values.
+-- so f $ g has no meaning. f $ g x is the same (in math notation) as f(g(x)) for any x
+-- compare the type of . to that of $ by typing the following into ghci
+-- :t (.)
+-- :t ($)
+-- see also the wiki
+-- https://wiki.haskell.org/Function_composition
+-- https://wiki.haskell.org/$
+
+-- finally, to hammer it home, try removing the m in the statement below.
+-- you'll get a type error.
+conflictsWithAny'' :: Meeting Hour -> [Meeting Hour] -> Bool
+conflictsWithAny'' m = any $ concur m
+
 -- is my Meeting the first one of the day? 
 -- its OK if it 'meets' another interval, meaning its end time matches the
 -- start time, which is not true of the Before interval relation. to capture

@@ -7,20 +7,25 @@ Maintainer  : bsaul@novisci.com
 -}
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE DeriveDataTypeable #-}
+{-# LANGUAGE GADTs #-}
+{-# LANGUAGE BlockArguments #-}
 
 module Hasklepias.MakeApp
   ( CohortApp(..)
   , makeCohortApp
+  , shapeOutput
   , runApp
+  , runAppWithLocation
   ) where
 
 import           Control.Applicative            ( Applicative )
-import           Control.Monad                  ( Functor(fmap)
+import           Control.Monad                  ( (=<<)
+                                                , Functor(fmap)
                                                 , Monad(..)
-                                                , (=<<)
                                                 )
 import           Data.Aeson                     ( FromJSON
                                                 , ToJSON(..)
+                                                , decode
                                                 , encode
                                                 )
 import           Data.Bifunctor                 ( Bifunctor(second) )
@@ -34,7 +39,7 @@ import           Data.List                      ( (++) )
 import           Data.Map.Strict                ( fromList
                                                 , toList
                                                 )
-import           Data.Maybe                     ( Maybe )
+import           Data.Maybe                     ( Maybe(..) )
 import           Data.Monoid                    ( Monoid(mconcat) )
 import           Data.String                    ( String )
 import           Data.Text                      ( Text
@@ -43,7 +48,9 @@ import           Data.Text                      ( Text
 import           Data.Tuple                     ( fst
                                                 , snd
                                                 )
-import           GHC.IO                         ( IO )
+import           GHC.IO                         ( FilePath
+                                                , IO
+                                                )
 import           GHC.Show                       ( Show(show) )
 
 import           Cohort
@@ -67,26 +74,75 @@ import           Colog                          ( (<&)
                                                 , richMessageAction
                                                 , withLog
                                                 )
-import           System.Console.CmdArgs         ( (&=)
-                                                , Data
-                                                , Typeable
-                                                , cmdArgs
-                                                , help
-                                                , summary
+import qualified Data.ByteString.Char8         as CH
+import qualified Data.ByteString.Lazy          as B
+import qualified Data.ByteString.Lazy.Char8    as C
+                                                ( lines
+                                                , putStrLn
+                                                , toStrict
                                                 )
+import           Data.Semigroup                 ( Semigroup((<>)) )
+import qualified Data.Text                     as T
+import           Hasklepias.Misc                ( Location(..)
+                                                , readData
+                                                )
+import           Network.AWS.S3
+import           Options.Applicative
 
--- a stub to add more arguments to later
+-- | Type to hold input information. Either from file or from S3. 
+data Input =
+     StdInput
+   | FileInput (Maybe FilePath) FilePath
+   | S3Input BucketName ObjectKey
+   deriving (Show)
+
+inputToLocation :: Input -> Location
+inputToLocation StdInput        = StdIn
+inputToLocation (FileInput d f) = Local (pre f)
+ where
+  pre = case d of
+    Nothing -> (<>) ""
+    Just s  -> (<>) (s <> "/")
+inputToLocation (S3Input b k) = S3 NorthVirginia b k
+
+stdInput :: Parser Input
+stdInput = pure StdInput
+
+fileInput :: Parser Input
+fileInput =
+  FileInput
+    <$> optional
+          (strOption $ long "dir" <> short 'd' <> metavar "DIRECTORY" <> help
+            "optional directory"
+          )
+    <*> strOption
+          (long "file" <> short 'f' <> metavar "INPUT" <> help "Input file")
+
+s3input :: Parser Input
+s3input =
+  S3Input
+    <$> strOption
+          (long "bucket" <> short 'b' <> metavar "Bucket" <> help "S3 bucket")
+    <*> strOption
+          (long "key" <> short 'k' <> metavar "KEY" <> help "S3 location")
+
 data MakeCohort = MakeCohort
-  deriving (Show, Data, Typeable)
+  { input :: Input
+  , ouput :: FilePath
+  }
 
-makeAppArgs
-  :: String  -- ^ name of the application
-  -> String  -- ^ version of the application 
-  -> MakeCohort
-makeAppArgs name version =
-  MakeCohort{} &= help "Pass event data via stdin." &= summary
-    (name ++ " " ++ version)
+mainOptions :: Parser MakeCohort
+mainOptions = MakeCohort <$> (fileInput <|> s3input <|> stdInput) <*> strOption
+  (long "output" <> short 'o' <> metavar "FILE" <> value "output.json" <> help
+    "Output location"
+  )
 
+makeAppArgs :: String -> String -> ParserInfo MakeCohort
+makeAppArgs name version = Options.Applicative.info
+  (mainOptions <**> helper)
+  (fullDesc <> header (name ++ " " ++ version))
+
+-- | Creates a cohort builder function
 makeCohortBuilder
   :: ( FromJSON a
      , Show a
@@ -96,7 +152,7 @@ makeCohortBuilder
      , Monad m
      )
   => CohortSetSpec (Events a) d0 i a
-  -> m (B.ByteString -> m ([ParseError], CohortSet d0))
+  -> m (B.ByteString -> m ([SubjectParseError], CohortSet d0))
 makeCohortBuilder specs =
   return (return . second (evalCohortSet specs) . parsePopulationLines)
 
@@ -107,20 +163,20 @@ reshapeCohortSet g x =
 shapeOutput
   :: (Monad m, ShapeCohort d0)
   => (Cohort d0 -> CohortJSON)
-  -> m ([ParseError], CohortSet d0)
-  -> m ([ParseError], CohortSetJSON)
+  -> m ([SubjectParseError], CohortSet d0)
+  -> m ([SubjectParseError], CohortSetJSON)
 shapeOutput shape = fmap (fmap (reshapeCohortSet shape))
 
 -- logging based on example here:
 -- https://github.com/kowainik/co-log/blob/main/co-log/tutorials/Main.hs
-parseErrorL :: LogAction IO ParseError
+parseErrorL :: LogAction IO SubjectParseError
 parseErrorL = logPrintStderr
 
-logParseErrors :: [ParseError] -> IO ()
+logParseErrors :: [SubjectParseError] -> IO ()
 logParseErrors x = mconcat $ fmap (parseErrorL <&) x
 
 -- | Type containing the cohort app
-newtype CohortApp m = MkCohortApp { runCohortApp :: m B.ByteString }
+newtype CohortApp m = MkCohortApp { runCohortApp :: Maybe Location -> m B.ByteString }
 
 -- | Make a command line cohort building application.
 makeCohortApp
@@ -130,30 +186,37 @@ makeCohortApp
   -> (Cohort d0 -> CohortJSON) -- ^ a function which specifies the output shape
   -> CohortSetSpec (Events a) d0 i a  -- ^ a list of cohort specifications
   -> CohortApp IO
-makeCohortApp name version shape spec = 
-  MkCohortApp $ do
-    args <- cmdArgs (makeAppArgs name version)
-    -- let logger = logStringStdout
-    let errLog = logStringStderr
+makeCohortApp name version shape spec = MkCohortApp $
+  \l -> do
+  options <- execParser (makeAppArgs name version)
+  let errLog = logStringStderr
 
-    errLog <& "Creating cohort builder..."
-    app <- makeCohortBuilder spec
+  errLog <& "Creating cohort builder..."
+  app <- makeCohortBuilder spec
 
-    errLog <& "Reading data from stdin..."
-    -- TODO: give error if no contents within some amount of time
-    dat <- B.getContents
+  errLog <& "Reading data from stdin..."
+  -- TODO: give error if no contents within some amount of time
+  
+  -- let loc = inputToLocation $ input options
+  let loc = case l of
+            Nothing -> inputToLocation $ input options
+            Just x  -> x
 
-    errLog <& "Bulding cohort..."
-    res <- shapeOutput shape (app dat)
+  dat <- readData loc
 
-    logParseErrors (fst res)
+  errLog <& "Bulding cohort..."
+  res <- shapeOutput shape (app dat)
 
-    errLog <& "Encoding cohort(s) output and writing to stdout..."
-    
-    return (encode (toJSON (snd res)))
-  --  ( C.putStrLn (encode (toJSON (snd res))) )
+  logParseErrors (fst res)
 
-  -- errLog <& "Cohort build complete!"
+  errLog <& "Encoding cohort(s) output and writing to stdout..."
 
+  return (encode (toJSON (snd res)))
+
+-- | Just run the thing.
 runApp :: CohortApp IO -> IO ()
-runApp x = C.putStrLn =<< runCohortApp x
+runApp x = C.putStrLn =<< runCohortApp x Nothing
+
+-- | Just run the thing with a set location (e.g for testing).
+runAppWithLocation :: Location -> CohortApp IO -> IO B.ByteString
+runAppWithLocation l x = runCohortApp x (Just l)

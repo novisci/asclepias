@@ -16,10 +16,6 @@ import           Conduit                        ( (.|)
                                                 , runResourceT
                                                 , yieldMany
                                                 )
-import           Lens.Micro                     ( (<&>)
-                                                , (^.)
-                                                , set
-                                                )
 import           Data.Aeson                     ( decode
                                                 , encode
                                                 )
@@ -30,32 +26,19 @@ import qualified Data.ByteString.Lazy.Char8    as C
                                                 , putStrLn
                                                 , toStrict
                                                 )
-import           Data.Conduit.Binary            ( sinkLbs )
 import qualified Data.Conduit.List             as CL
 import           Data.Maybe                     ( fromMaybe )
 import qualified Data.Text                     as T
                                                 ( pack )
-import           Cohort.Output                     ( CohortSetJSON )
+import           Cohort.Output                  ( CohortSetJSON )
 import           Network.AWS
 import           Network.AWS.S3
 import           System.IO                      ( stderr )
+import           Hasklepias.Misc
 
 
-data Location where
-  Local ::FilePath -> Location
-  S3    ::BucketName -> ObjectKey -> Location
-
-getData :: Location -> IO (Maybe CohortSetJSON)
-getData (Local x) = decode <$> B.readFile x
-getData (S3 b k ) = decode <$> doGetObject b k
-
-doGetObject :: BucketName -> ObjectKey -> IO B.ByteString
-doGetObject b k = do
-  lgr <- newLogger Debug stderr
-  env <- newEnv Discover <&> set envLogger lgr . set envRegion NorthVirginia
-  runResourceT . runAWS env $ do
-    result <- send $ getObject b k
-    (result ^. gorsBody) `sinkBody` sinkLbs
+getCohortData :: Location -> IO (Maybe CohortSetJSON)
+getCohortData x = fmap decode (readData x)
 
 getLocations :: Input -> IO [Location]
 getLocations (FileInput d f) = fmap (fmap Local)
@@ -65,9 +48,9 @@ getLocations (FileInput d f) = fmap (fmap Local)
     Nothing -> (<>) ""
     Just s  -> (<>) (s <> "/")
 getLocations (S3Input b k) =
-  fmap (\x -> S3 b (ObjectKey $ T.pack $ CH.unpack $ C.toStrict x))
+  fmap (\x -> S3 NorthVirginia b (ObjectKey $ T.pack $ CH.unpack $ C.toStrict x))
     .   C.lines
-    <$> doGetObject b k
+    <$> getS3Object NorthVirginia b k
 
 -- | Type to hold input information. Either from file or from S3. 
 data Input =
@@ -78,7 +61,7 @@ data Input =
 -- | Run collection on a list of 'Location's
 runCollectionApp :: [Location] -> IO B.ByteString
 runCollectionApp fs = do
-  r <- runConduit $ yieldMany fs .| foldMapMC getData
+  r <- runConduit $ yieldMany fs .| foldMapMC getCohortData
   let x = fmap encode r
   let z = fromMaybe B.empty x
   return z

@@ -14,7 +14,7 @@ module Cohort.Input
   ( parsePopulationLines
   , parsePopulationIntLines
   , parsePopulationDayLines
-  , ParseError(..)
+  , SubjectParseError(..)
   ) where
 
 import           Cohort.Core                    ( SubjectID
@@ -96,15 +96,15 @@ decodeIntoSubj
 decodeIntoSubj x = first pack $ eitherDecode x
 
 -- | Contains the line number and error message.
-newtype ParseError = MkParseError (Natural, Text) deriving (Eq, Show)
+newtype SubjectParseError = MkSubjectParseError (Natural, Text) deriving (Eq, Show)
 
 -- |  Parse @Event Int@ from json lines.
 parseSubjectLines
   :: (FromJSON a, Show a, IntervalSizeable a b)
   => B.ByteString
-  -> ([ParseError], [SubjectEvent a])
+  -> ([SubjectParseError], [SubjectEvent a])
 parseSubjectLines l = partitionEithers $ zipWith
-  (\x i -> first (\t -> MkParseError (i, t)) (decodeIntoSubj $ B.fromStrict x))
+  (\x i -> first (\t -> MkSubjectParseError (i, t)) (decodeIntoSubj $ B.fromStrict x))
   (C.lines $ B.toStrict l)
   [1 ..]
 
@@ -112,15 +112,15 @@ parseSubjectLines l = partitionEithers $ zipWith
 parsePopulationLines
   :: (FromJSON a, Show a, IntervalSizeable a b)
   => B.ByteString
-  -> ([ParseError], Population (Events a))
+  -> ([SubjectParseError], Population (Events a))
 parsePopulationLines x = fmap mapIntoPop (parseSubjectLines x)
 
 -- |  Parse @Event Int@ from json lines.
 parsePopulationIntLines
-  :: B.ByteString -> ([ParseError], Population (Events Int))
+  :: B.ByteString -> ([SubjectParseError], Population (Events Int))
 parsePopulationIntLines x = fmap mapIntoPop (parseSubjectLines x)
 
 -- |  Parse @Event Day@ from json lines.
 parsePopulationDayLines
-  :: B.ByteString -> ([ParseError], Population (Events Day))
+  :: B.ByteString -> ([SubjectParseError], Population (Events Day))
 parsePopulationDayLines x = fmap mapIntoPop (parseSubjectLines x)

@@ -12,4 +12,4 @@ module Hasklepias.Templates
   ( module Templates.Features
   ) where
 
-import          Templates.Features
+import           Templates.Features

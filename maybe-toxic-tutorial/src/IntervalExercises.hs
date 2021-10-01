@@ -95,8 +95,9 @@ instance Num UTCChunked where
    signum = undefined
    fromInteger = undefined
 
+-- TODO again, you want to ensure your interval endpoints have the same
+-- chunksize, so that should be part of the type
 instance IntervalSizeable UTCChunked NominalDiffTime where
-   -- all of that was just to get to this point: moment is part of the data
    moment' x  = c
       where UTCChunked { chunkSize = c } = begin $ getInterval x
 

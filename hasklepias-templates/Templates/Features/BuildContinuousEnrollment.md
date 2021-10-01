@@ -57,50 +57,27 @@ buildContinuousEnrollment makeAssessmentInterval predicate allowableGap = define
 type ContEnrollArgs
   = (Index Interval Int -> AssessmentInterval Int, Predicate (Event Int), Int)
 
-makeContinuousEnrollmentTestInputs
-  :: (Integral b, IntervalSizeable a b)
-  => TestName
-  -> ContEnrollArgs
-  -> (a, a)
-  -> [Event a]
-  -> Status
-  -> Status
-  -> TestCase
-       ( F "index" (Index Interval a)
-       , F "events" [Event a]
-       , F "prev" Status
-       )
-       Status
-       ContEnrollArgs
-makeContinuousEnrollmentTestInputs name buildArgs intrvl e prev s = MkTestCase
-  buildArgs
-  name
-  (pure (makeIndex (readIntervalSafe intrvl)), pure e, pure prev)
-  (pure s)
-
-commonArgs
-  :: (Index Interval Int -> AssessmentInterval Int, Predicate (Event a), Int)
-commonArgs = (makeBaselineFromIndex 10, isEnrollmentEvent, 3)
-```
-
-```haskell
-buildContinuousEnrollmentTestCases
-  :: [ TestCase
+type ContEnrollTestCase = TestCase
          ( F "index" (Index Interval Int)
          , F "events" [Event Int]
          , F "prev" Status
          )
          Status
          ContEnrollArgs
-     ]
+
+buildContinuousEnrollmentTestCases :: [ ContEnrollTestCase]
 buildContinuousEnrollmentTestCases =
-  [ f "Exclude if previously excluded" commonArgs (0, 1) [] Exclude Exclude
-  , f "Exclude if no events"           commonArgs (0, 1) [] Include Exclude
+  [ f "Exclude if previously excluded" 
+      (makeBaselineFromIndex 10, isEnrollmentEvent, 3) 
+      (pure $ makeIndex $readIntervalSafe (0, 1), pure [], pure Exclude)
+       Exclude
+  , f "Exclude if no events" 
+      (makeBaselineFromIndex 10, isEnrollmentEvent, 3) 
+      (pure $ makeIndex $ readIntervalSafe (0, 1), pure [], pure Include)
+      Exclude
   , f "Exclude if gap >= 3"
-      commonArgs
-      (10, 11)
-      [g (1, 4), g (9, 12)]
-      Include
+      (makeBaselineFromIndex 10, isEnrollmentEvent, 3)
+      (pure $ makeIndex $ readIntervalSafe (10, 11), pure [g (1, 4), g (9, 12)], pure Include)
       Exclude
       {- 
                   -           <- Index
@@ -108,14 +85,20 @@ buildContinuousEnrollmentTestCases =
          ---     ---          <- Enrollment
         |--------------|
       -}
-  , f "Exclude if gap >= 3" commonArgs (10, 11) [g (1, 7)]  Include Exclude
+  , f "Exclude if gap >= 3" 
+      (makeBaselineFromIndex 10, isEnrollmentEvent, 3)
+      (pure $ makeIndex $ readIntervalSafe (10, 11), pure [g (1, 7)], pure  Include)
+      Exclude
       {-
                   -           <- Index
         ----------            <- Baseline
          ------               <- Enrollment
         |--------------|
       -}
-  , f "Exclude if gap >= 3" commonArgs (10, 11) [g (6, 13)] Include Exclude
+  , f "Exclude if gap >= 3"
+     (makeBaselineFromIndex 10, isEnrollmentEvent, 3) 
+     (pure $ makeIndex $ readIntervalSafe (10, 11), pure [g (6, 13)], pure Include)
+     Exclude
         {-
                   -           <- Index
          ----------           <- Baseline
@@ -123,10 +106,8 @@ buildContinuousEnrollmentTestCases =
         |--------------|
       -}
   , f "Include if gaps less than 3"
-      commonArgs
-      (10, 11)
-      [g (1, 3), g (5, 12)]
-      Include
+      (makeBaselineFromIndex 10, isEnrollmentEvent, 3)
+      (pure $ makeIndex $ readIntervalSafe (10, 11), pure [g (1, 3), g (5, 12)], pure Include)
       Include
       {-
                   -           <- Index
@@ -135,10 +116,8 @@ buildContinuousEnrollmentTestCases =
         |--------------|
       -}
   , f "Include if gaps less than 3"
-      commonArgs
-      (10, 11)
-      [g (2, 9)]
-      Include
+      (makeBaselineFromIndex 10, isEnrollmentEvent, 3)
+      (pure $ makeIndex $ readIntervalSafe (10, 11), pure [g (2, 9)], pure Include)
       Include
       {-
                   -           <- Index
@@ -147,10 +126,8 @@ buildContinuousEnrollmentTestCases =
         |--------------|
       -}
   , f "Include if gaps less than 3"
-      commonArgs
-      (10, 11)
-      [g (1, 6), g (4, 8)]
-      Include
+      (makeBaselineFromIndex 10, isEnrollmentEvent, 3)
+      (pure $ makeIndex $ readIntervalSafe (10, 11), pure [g (1, 6), g (4, 8)], pure Include)
       Include
         {-
                   -           <- Index
@@ -160,20 +137,12 @@ buildContinuousEnrollmentTestCases =
         |--------------|
       -}
   ] where
-  f = makeContinuousEnrollmentTestInputs
+  f = makeTestCase
   g = makeEnrollmentEvent
 
 buildContinuousEnrollmentTests :: TestTree
-buildContinuousEnrollmentTests = testGroup
-  "Tests of continuous enrollment template"
-  (fmap
-    (\x -> testCase
-      (getTestName x)
-      (makeAssertion
-        x
-        (uncurryN $ eval (buildContinuousEnrollment (makeBaselineFromIndex 10) isEnrollmentEvent 3))
-      )
-    )
-    buildContinuousEnrollmentTestCases
-  )
+buildContinuousEnrollmentTests = makeTestGroup 
+   "Tests of continuous enrollment template"
+    buildContinuousEnrollment 
+    buildContinuousEnrollmentTestCases 
 ```

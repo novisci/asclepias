@@ -9,101 +9,123 @@ These functions may be moved to more appropriate modules in future versions.
 -}
 -- {-# OPTIONS_HADDOCK hide #-}
 
-module Templates.TestUtilities (
-    TestCase(..)
-  , evalTestCase
-  , makeAssertion
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+
+module Templates.TestUtilities
+  ( TestCase(..)
   , readIntervalSafe
   , makeEnrollmentEvent
   , makeEventWithConcepts
-  , makeTestInputs
-) where
+  , makeTestCase
+  , makeTestCaseOfIndexAndEvents
+  , makeTestGroup
+  , OneTuple
+  ) where
 
 
-import EventData
-import Cohort.Index
-import Features.Compose                 ( F
-                                        , Feature
-                                        , Definition(..)
-                                        , Define(..)
-                                        , eval )
-import Hasklepias.Misc
-import Hasklepias.Reexports
-import Hasklepias.ReexportsUnsafe
+import           Cohort.Index
+import           Data.Tuple.OneTuple
+import           EventData
+import           Features.Compose               ( Define(..)
+                                                , Definition(..)
+                                                , F
+                                                , Feature
+                                                , eval
+                                                )
+import           Hasklepias.Misc
+import           Hasklepias.Reexports
+import           Hasklepias.ReexportsUnsafe
 
-data TestCase a b builderArgs = MkTestCase {
-    getBuilderArgs :: builderArgs
-  , getTestName :: TestName
-  , getInputs :: a
-  , getTruth  :: Feature "result" b
-  } deriving (Eq, Show)
-
-
--- evalTestCase :: 
---   TestCase defArgs b builderArgs
---   -> (def -> return)
---   -- -> Definition def
---   -> ( return, Feature "result" b )
--- evalTestCase (MkTestCase buildArgs _ inputs truth) def = ( eval def inputs, truth )
-
-evalTestCase :: 
-  TestCase defArgs b builderArgs
-  -> (defArgs -> return)
-  -- -> Definition def
-  -> ( return, Feature "result" b )
-evalTestCase (MkTestCase buildArgs _ inputs truth) def = ( def inputs, truth )
-
--- makeAssertion :: (Eq b, Show b) =>
---   TestCase defArgs b  builderArgs -> Definition def -> Assertion
--- makeAssertion x def = uncurry (@?=) (evalTestCase x def)
-
-
-makeAssertion :: (Eq b, Show b) =>
-  TestCase defArgs b builderArgs ->  (defArgs -> Feature "result" b) -> Assertion
-makeAssertion x def = uncurry (@?=) (evalTestCase x def)
-
+{-
+  a just few utilities for constructing intervals/events
+-}
 readIntervalSafe :: (Integral b, IntervalSizeable a b) => (a, a) -> Interval a
 readIntervalSafe (b, e) = beginerval (diff e b) b
 
 makeEnrollmentEvent :: (Integral b, IntervalSizeable a b) => (a, a) -> Event a
-makeEnrollmentEvent intrvl =
-  event (readIntervalSafe intrvl) (context (Enrollment (EnrollmentFacts ())) mempty)
+makeEnrollmentEvent intrvl = event
+  (readIntervalSafe intrvl)
+  (context (Enrollment (EnrollmentFacts ())) mempty)
 
-makeEventWithConcepts :: (Integral b, IntervalSizeable a b) => [Text] -> (a, a) -> Event a
+makeEventWithConcepts
+  :: (Integral b, IntervalSizeable a b) => [Text] -> (a, a) -> Event a
 makeEventWithConcepts cpts intrvl = event
   (readIntervalSafe intrvl)
   (context (Enrollment (EnrollmentFacts ())) (packConcepts cpts))
 
-makeTestTemplate
-  :: (Integral b, IntervalSizeable a b)
-  => TestName  -- ^ name of the test
-  -> builderArgs -- ^ tuple of arguments pass to the definition builder
-  -> (a, a)    -- ^ index interval 
-  -> [Event a] -- ^ test events
-  -> resultType -- ^ expected result
-  -> TestCase
-       (F "index" (Index Interval a), F "events" [Event a])
-       resultType
-       builderArgs
-makeTestTemplate name buildArgs intrvl e b = MkTestCase
-  buildArgs
-  name
-  (pure (makeIndex (readIntervalSafe intrvl) ), pure e)
-  (pure b)
+{-
+  types/functions for creating test cases and evaluating them
+-}
 
-makeTestInputs
+data TestCase a b builderArgs = MkTestCase
+  { getBuilderArgs :: builderArgs
+  , getTestName    :: TestName
+  , getInputs      :: a
+  , getTruth       :: Feature "result" b
+  }
+  deriving (Eq, Show)
+
+evalTestCase
+  :: TestCase defArgs b builderArgs
+  -> (defArgs -> return)
+  -> (return, Feature "result" b)
+evalTestCase (MkTestCase buildArgs _ inputs truth) def = (def inputs, truth)
+
+makeAssertion
+  :: (Eq b, Show b)
+  => TestCase defArgs b builderArgs
+  -> (defArgs -> Feature "result" b)
+  -> Assertion
+makeAssertion x def = uncurry (@?=) (evalTestCase x def)
+
+makeTestCase
+  :: TestName
+  -> bargs
+  -> inputType
+  -> returnType
+  -> TestCase inputType returnType bargs
+makeTestCase name buildArgs i b = MkTestCase buildArgs name i (pure b)
+
+makeTestCaseOfIndexAndEvents
   :: (Integral b, IntervalSizeable a b)
   => TestName
   -> bargs
   -> (a, a)
   -> [Event a]
-  -> returnType 
+  -> returnType
   -> TestCase
        (F "index" (Index Interval a), F "events" [Event a])
        returnType
        bargs
-makeTestInputs name buildArgs intrvl e b = MkTestCase
-  buildArgs
+makeTestCaseOfIndexAndEvents name buildArgs intrvl e = makeTestCase
   name
+  buildArgs
   (pure (makeIndex (readIntervalSafe intrvl)), pure e)
-  (pure b)
+
+
+makeBuilderAssertion
+  :: ( Eq b1
+     , Show b1
+     , Curry (a -> Feature "result" b1) b2
+     , Curry (t -> Definition b2) b3
+     )
+  => b3
+  -> TestCase a b1 t
+  -> Assertion
+makeBuilderAssertion f x =
+  makeAssertion x (uncurryN $ eval $ uncurryN f (getBuilderArgs x))
+
+makeTestGroup
+  :: ( Eq b1
+     , Show b1
+     , Curry (a -> Feature "result" b1) b2
+     , Curry (t -> Definition b2) b3
+     )
+  => TestName
+  -> b3
+  -> [TestCase a b1 t]
+  -> TestTree
+makeTestGroup n f cases = testGroup
+  n
+  (fmap (\x -> testCase (getTestName x) (makeBuilderAssertion f x)) cases)

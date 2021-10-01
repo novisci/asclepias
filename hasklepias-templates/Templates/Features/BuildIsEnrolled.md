@@ -44,59 +44,51 @@ buildIsEnrolled predicate = define
 ## Examples
 
 ```haskell
-makeIsEnrolledTestInputs
-  :: (Integral b, IntervalSizeable a b)
-  => TestName
-  -> Predicate (Event a)
-  -> (a, a)
-  -> [Event a]
-  -> Status
-  -> TestCase
-       (F "index" (Index Interval a), F "events" [Event a])
-       Status
-       (Predicate (Event a))
-makeIsEnrolledTestInputs name buildArgs intrvl e s = MkTestCase
-  buildArgs
-  name
-  (pure (makeIndex $ readIntervalSafe intrvl), pure e)
-  (pure s)
+type IsEnrolledArgs
+  = ( OneTuple (Predicate (Event Int ) )) 
+  -- use of OneTuple is because buildIsEnrolled takes a single argument and the
+  -- OneTuple is needed to match the Curry constraints in the makeBuilderAssertion
+  -- (via makeTestGroup). In the buildIsEnrolledTestCases, the OneTuple by its
+  -- Applicative instance using `pure`. 
+
+type IsEnrolledTestCase = 
+  TestCase
+         (F "index" (Index Interval Int), F "events" [Event Int])
+         Status
+         IsEnrolledArgs
 ```
 
 ```haskell
-buildIsEnrolledTestCases
-  :: [ TestCase
-         (F "index" (Index Interval Int), F "events" [Event Int])
-         Status
-         (Predicate (Event Int))
-     ]
+buildIsEnrolledTestCases :: [ IsEnrolledTestCase ]
 buildIsEnrolledTestCases =
-  [ f "Exclude if no events" isEnrollmentEvent (0, 1) [] Exclude
+  [ f "Exclude if no events" 
+     ( pure isEnrollmentEvent )
+     (0, 1) 
+     [] 
+     Exclude
   , f "Exclude if only interval meets"
-      isEnrollmentEvent
+      ( pure isEnrollmentEvent )
       (0, 1)
       [g (1, 6)]
       Exclude
   , f "Include if concurring interval"
-      isEnrollmentEvent
+      ( pure isEnrollmentEvent )
       (0, 1)
       [g (-1, 4)]
       Include
   , f "Include if concurring interval"
-      isEnrollmentEvent
+      ( pure isEnrollmentEvent )
       (0, 1)
       [g (-1, 1), g (1, 4)]
       Include
   ] where
-  f = makeIsEnrolledTestInputs
+  f = makeTestCaseOfIndexAndEvents
   g = makeEnrollmentEvent
 
+
 buildIsEnrolledTests :: TestTree
-buildIsEnrolledTests = testGroup
-  "Tests of isEnrolled template"
-  (fmap
-    (\x -> testCase (getTestName x)
-                    (makeAssertion x (uncurryN $ eval (buildIsEnrolled (getBuilderArgs x))))
-    )
-    buildIsEnrolledTestCases
-  )
+buildIsEnrolledTests = makeTestGroup 
+   "Tests of isEnrolled template"
+    buildIsEnrolled
+    buildIsEnrolledTestCases 
 ```

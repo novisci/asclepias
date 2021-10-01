@@ -107,7 +107,6 @@ buildNofXWithGapBinary = buildNofXWithGap fromBool
 ## Examples
 
 ```haskell
-
 type NofXWithGapArgs
   = ( Natural
     , Int
@@ -241,19 +240,13 @@ buildNofXWithGapTestCases =
         |--------------|
       -}
   ] where
-  f = makeTestInputs
+  f = makeTestCaseOfIndexAndEvents
   g = makeEnrollmentEvent
   h = makeEventWithConcepts
 
 buildNofXWithGapTests :: TestTree
-buildNofXWithGapTests = testGroup
+buildNofXWithGapTests = makeTestGroup 
   "Tests of NofXWithGap template"
-  (fmap
-    (\x -> testCase
-      (getTestName x)
-      (makeAssertion x (uncurryN $ eval $ uncurryN (buildNofXWithGap id) (getBuilderArgs x)))
-    )
-    buildNofXWithGapTestCases
-  )
-
+    (buildNofXWithGap id) 
+    buildNofXWithGapTestCases 
 ```

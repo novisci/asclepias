@@ -241,19 +241,14 @@ buildNofXOrNofYWithGapTestCases =
       -}
 
   ] where
-  f = makeTestInputs
+  f = makeTestCaseOfIndexAndEvents
   g = makeEnrollmentEvent
   h = makeEventWithConcepts
 
 buildNofXOrNofYWithGapTests :: TestTree
-buildNofXOrNofYWithGapTests = testGroup
-  "Tests of NofXOrNofYWithGap template"
-  (fmap
-    (\x -> testCase
-      (getTestName x)
-      (makeAssertion x (uncurryN $ eval $ uncurryN (buildNofXOrNofYWithGap (||) id) (getBuilderArgs x)))
-    )
-    buildNofXOrNofYWithGapTestCases
-  )
+buildNofXOrNofYWithGapTests = makeTestGroup 
+  "Tests of NofXWithGap template"
+    (buildNofXOrNofYWithGap (||) id)
+    buildNofXOrNofYWithGapTestCases 
 
 ```

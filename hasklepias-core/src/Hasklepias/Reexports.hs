@@ -164,6 +164,7 @@ import safe      Data.Tuple                     ( curry
                                                 )
 import safe      Data.Tuple.Curry               ( curryN
                                                 , uncurryN
+                                                , Curry(..)
                                                 )
 import safe      GHC.Generics                   ( Generic )
 import safe      GHC.Num                        ( Integer(..)

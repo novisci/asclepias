@@ -115,18 +115,13 @@ buildNofUniqueBeginsTestCases =
         |--------------|
       -}
   ] where
-  f = makeTestInputs
+  f = makeTestCaseOfIndexAndEvents
   h = makeEventWithConcepts
 
 buildNofUniqueBeginsTests :: TestTree
-buildNofUniqueBeginsTests = testGroup
-  "Tests ofNofUniqueBegins template"
-  (fmap
-    (\x -> testCase
-      (getTestName x)
-      (makeAssertion x (uncurryN $ eval $ uncurryN buildNofUniqueBegins (getBuilderArgs x)))
-    )
-    buildNofUniqueBeginsTestCases
-  )
+buildNofUniqueBeginsTests = makeTestGroup 
+   "Tests ofNofUniqueBegins template"
+    buildNofUniqueBegins
+    buildNofUniqueBeginsTestCases 
 
 ```

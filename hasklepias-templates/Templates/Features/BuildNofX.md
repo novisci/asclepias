@@ -116,7 +116,6 @@ buildNofConceptsBinaryConcurBaseline n baselineDur cpts = buildNofXBinary
   (containsConcepts cpts)
 ```
 
-
 ## Examples
 
 ```haskell
@@ -178,18 +177,14 @@ buildNofXTestCases =
     [h ["A", "C"] (-3, -2)]
     False
   ] where
-  f = makeTestInputs
+  f = makeTestCaseOfIndexAndEvents
   g = makeEnrollmentEvent
   h = makeEventWithConcepts
 
 buildNofXTests :: TestTree
-buildNofXTests = testGroup
-  "Tests of NofX template"
-  (fmap
-    (\x -> testCase
-      (getTestName x)
-      (makeAssertion x (uncurryN $ eval (uncurryN (buildNofX id) (getBuilderArgs x))))
-    )
-    buildNofXTestCases
-  )
+buildNofXTests = makeTestGroup 
+   "Tests of NofX template"
+    (buildNofX id)
+    buildNofXTestCases 
+
 ```

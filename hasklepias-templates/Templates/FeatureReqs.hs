@@ -3,16 +3,16 @@
 -}
 -- {-# OPTIONS_HADDOCK hide #-}
 
-module Templates.FeatureReqs (
-    module Cohort
+module Templates.FeatureReqs
+  ( module Cohort
   , module EventData
   , module Features
   , module Hasklepias.FeatureEvents
   , module Hasklepias.Reexports
   , module Hasklepias.ReexportsUnsafe
   , module Stype
-  , module Templates.TestUtilities 
-) where
+  , module Templates.TestUtilities
+  ) where
 
 import           Cohort
 import           EventData

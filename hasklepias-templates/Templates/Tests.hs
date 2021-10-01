@@ -9,27 +9,34 @@ These functions may be moved to more appropriate modules in future versions.
 -}
 -- {-# OPTIONS_HADDOCK hide #-}
 
-module Templates.Tests (
-   templateTests
-) where
+module Templates.Tests
+  ( templateTests
+  ) where
 
 
-import Test.Tasty                                    ( testGroup, TestTree )  
-import Templates.Features.BuildIsEnrolled            ( buildIsEnrolledTests )                     
-import Templates.Features.BuildContinuousEnrollment  ( buildContinuousEnrollmentTests )
-import Templates.Features.BuildNofX                  ( buildNofXTests )
-import Templates.Features.BuildNofXWithGap           ( buildNofXWithGapTests )
-import Templates.Features.BuildNofXOrNofYWithGap     ( buildNofXOrNofYWithGapTests )
-import Templates.Features.BuildNofUniqueBegins       ( buildNofUniqueBeginsTests )
+import           Templates.Features.BuildContinuousEnrollment
+                                                ( buildContinuousEnrollmentTests
+                                                )
+import           Templates.Features.BuildIsEnrolled
+                                                ( buildIsEnrolledTests )
+import           Templates.Features.BuildNofUniqueBegins
+                                                ( buildNofUniqueBeginsTests )
+import           Templates.Features.BuildNofX   ( buildNofXTests )
+import           Templates.Features.BuildNofXOrNofYWithGap
+                                                ( buildNofXOrNofYWithGapTests )
+import           Templates.Features.BuildNofXWithGap
+                                                ( buildNofXWithGapTests )
+import           Test.Tasty                     ( TestTree
+                                                , testGroup
+                                                )
 
 templateTests :: TestTree
-templateTests = 
-   testGroup 
-      "Tests of feature building templates" 
-      [ buildIsEnrolledTests 
-      , buildContinuousEnrollmentTests
-      , buildNofXTests
-      , buildNofXWithGapTests
-      , buildNofXOrNofYWithGapTests
-      , buildNofUniqueBeginsTests
-      ]
+templateTests = testGroup
+  "Tests of feature building templates"
+  [ buildIsEnrolledTests
+  , buildContinuousEnrollmentTests
+  , buildNofXTests
+  , buildNofXWithGapTests
+  , buildNofXOrNofYWithGapTests
+  , buildNofUniqueBeginsTests
+  ]

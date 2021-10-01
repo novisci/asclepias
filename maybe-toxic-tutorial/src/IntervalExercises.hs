@@ -9,6 +9,7 @@ module IntervalExercises ( ) where
 -- add imports here as necessary
 -- you might need to add those to the .cabal file first
 import IntervalExamples
+import IntervalAlgebra
 import Data.Time.Clock
 import Data.Time.Calendar
 
@@ -35,6 +36,80 @@ import Data.Time.Calendar
       -}
 
 
+   {- NOTE 
+       Below is just some messing around to see if this exercise even really is
+       doable. I think it might need to be fleshed out quite a bit as an
+       exercise, or greatly simplified.
+       -}
+
+
+-- NOTE implicitly chunks are relative to the 0 day and hour of the Modified Julian Calendar
+-- midnight on 1858-11-17
+-- see https://hackage.haskell.org/package/time-1.12/docs/Data-Time-Calendar.html#t:Day
+
+data UTCChunked = UTCChunked { chunkSize :: NominalDiffTime, nChunks :: Integer } deriving (Eq)
+
+-- Utilities
+chunkComparable :: UTCChunked -> UTCChunked -> Bool
+chunkComparable UTCChunked { chunkSize = cx } UTCChunked { chunkSize = cy } = cx == cy
+
+-- TODO is there not an existing constructor from DiffTime?
+-- could write in terms of defaultUTC rather than hard-coding
+chunkedToUTCTime :: UTCChunked -> UTCTime
+chunkedToUTCTime cx = addUTCTime dt ref
+   where 
+      ref = UTCTime { utctDay = ModifiedJulianDay 0, utctDayTime = 0 }
+      UTCChunked { chunkSize = sx, nChunks = tx } = cx
+      dt = sx * fromInteger tx
+        
+chunkedFromUTCTime :: UTCTime -> UTCChunked
+chunkedFromUTCTime = undefined
+
+
+-- UTCChunked instances
+instance Show UTCChunked where
+   show = show . chunkedToUTCTime
+
+instance Ord UTCChunked where
+   (<=) cx cy
+     | chunkComparable cx cy = tx <= ty
+     | otherwise = undefined
+        where UTCChunked { nChunks = tx } = cx
+              UTCChunked { nChunks = ty } = cy
+
+-- TODO this is where you really want to enforce chunkSize matching in the type
+-- to avoid the undefined behavior and all that boilerplate. you could make a
+-- sum type which is, say, FifteenMinute | OneMinute or whatever and use that
+-- for chunksize
+instance Num UTCChunked where
+   (+) cx cy
+     | chunkComparable cx cy = cx { nChunks = ty + tx}
+     | otherwise = undefined
+     where
+        UTCChunked { nChunks = tx } = cx
+        UTCChunked { nChunks = ty } = cy
+   -- TODO
+   (-) = undefined
+   (*) = undefined
+   abs = undefined
+   signum = undefined
+   fromInteger = undefined
+
+instance IntervalSizeable UTCChunked NominalDiffTime where
+   -- all of that was just to get to this point: moment is part of the data
+   moment' x  = c
+      where UTCChunked { chunkSize = c } = begin $ getInterval x
+
+   add x c = c { nChunks = dn + t }
+      where
+         UTCChunked { chunkSize = s, nChunks = t } = c
+         dn = toInteger $ truncate (x / s)
+
+   diff = undefined
+
+
+-- Old stuff
+
 -- DEFINE the MeetChunk type based on NominalDiffTime
 -- check the docs for the typeclass constraints (left of the =>) for the 'b'
 -- type in the IntervalSizeable typeclass. You'll want to derive those
@@ -55,6 +130,7 @@ import Data.Time.Calendar
 --
 
 
+
 -- CREATE a default MeetingData UTCTime 
 -- that starts at the current local time whenever this function happens to be
 -- run. 
@@ -62,12 +138,12 @@ import Data.Time.Calendar
 -- to spare some trouble sifting through docs, i've created a default UTCTime
 -- you can use
 
-dayDefault :: Day
-dayDefault = fromGregorian 2021 10 31
+defaultDay :: Day
+defaultDay = fromGregorian 2021 10 31
 
--- 12pm (8 am in EST) on dayDefault
-utcDefault :: UTCTime
-utcDefault = UTCTime dayDefault (fromInteger (8 * 60 ^ 2))
+-- 12pm (8 am in EST) on defaultDay
+defaultUTC :: UTCTime
+defaultUTC = UTCTime defaultDay (fromInteger (12 * 60 ^ 2))
 
 defaultMeeting :: MeetingData UTCTime
 defaultMeeting = undefined

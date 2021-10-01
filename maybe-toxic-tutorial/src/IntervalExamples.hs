@@ -7,7 +7,7 @@
 {-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 
-module IntervalExamples ( Meeting
+module IntervalExamples ( Meeting (..)
                         , MeetingData
                         , Natural
                         , naturalFromInteger
@@ -231,6 +231,7 @@ conflictsWithAny' = any . concur
 -- you also might see the $ operator, similar to . but subtly different
 -- the difference is in the type-ing. whereas . is an operator on *functions* $ operates on values.
 -- so f $ g has no meaning. f $ g x is the same (in math notation) as f(g(x)) for any x
+-- $ is just a way to remove () really, for a debatable gain in readability
 -- compare the type of . to that of $ by typing the following into ghci
 -- :t (.)
 -- :t ($)

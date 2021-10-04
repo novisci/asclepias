@@ -4,17 +4,115 @@
 {-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 
-module IntervalExercises ( ) where
+module IntervalExercises (module IntervalExercises) where
 
 -- add imports here as necessary
 -- you might need to add those to the .cabal file first
-import IntervalExamples
-import IntervalAlgebra
-import Data.Time.Clock
-import Data.Time.Calendar
+import           Data.Time.Calendar
+import           Data.Time.Clock
+import           IntervalAlgebra
+import           IntervalExamples
+
+   {-
+      A WRETCHED DAY OF MEETINGS
+      -}
+
+-- CREATING AND MODIFYING INTERVALS
+
+-- EXERCISE: TODO
+-- Create a parseMeeting function that appropriately wraps the parseInterval
+-- function for the type signature provided below
+
+-- Hint: You can either use pattern matching as in the nutinRight function
+-- example to handle the Left, Right cases (within a 'where' statement), or if
+-- you are comfortable with the Functor typeclass you can use Either as an
+-- instance of that typeclass. See the Either instance list in the base Haskell
+-- docs. 
+-- https://hackage.haskell.org/package/base-4.15.0.0/docs/Data-Either.html#t:Either
+
+parseMeeting :: Hour -> Hour -> Either ParseErrorInterval (Meeting Hour)
+parseMeeting = undefined
+
+-- EXERCISE: TODO
+-- Create a version of unitInterval called unitMeeting that creates the
+-- shortest meeting possible, starting from a given Hour
+unitMeeting :: Hour -> Meeting Hour
+unitMeeting = undefined
+
+-- BONUS EXERCISE: TODO
+-- Create a version of unitInterval that is as general as it can be. Hint: look at the type signature of beginerval.
+-- NOTE i don't actually think this is doable within the exported
+-- interval-algebra api, or at least i don't see a way around the following
+-- difficulty: This implementation is the kind of thing i'd lie to write, but
+-- it doesn't work because the compiler cannot infer the type of a required by
+-- moment, even though we do not actually need to know a for moment. i'm not
+-- sure what the issue here is.
+
+--unitInterval' :: IntervalSizeable a b => a -> Interval a
+--unitInterval' = beginerval (moment :: b)
+
+
+-- EXERCISE: TODO
+-- Create a function that reschedules a meeting to a different start time,
+-- keeping the same duration. to avoid confusion with the reschedule type below, i've called it shiftMeeting
+shiftMeeting :: Hour -> Meeting Hour -> Meeting Hour
+shiftMeeting = undefined
+
+
+-- Here i create a type alias called Schedule of a list of MeetingData Hour objects, which could represent the collection of meetings on a given day. It's just to make for easier typing.
+
+-- A reminder about basic differences between newtypes and type aliases: type
+-- aliases are defined with the type keyword whereas new types are defined with
+-- the newtype keyword. a type alias is essentially a prorammer aid: a type
+-- defined as `type Thing = Int` will allow any function using with the type
+-- signature Thing -> Thing to accept an Int and vice-versa. newtype Thing =
+-- Thing Int defines a constructor function on the right-hand-side of = (also
+-- called Thing here), and in addition the compiler does not view Thing as
+-- equivalent to Int. See this SO post for the differences between newtype and
+-- data declarations.  http://stackoverflow.com/questions/5889696/ddg#5889784
+
+
+type Schedule = [MeetingData Hour]
+
+
+-- EXERCISE: TODO
+-- Write a function to sort a Schedule by interval start points
+
+sortSchedule :: Schedule -> Schedule
+sortSchedule = undefined
+
+
+-- EXERCISE: TODO
+-- Write a function that checks whether any of the meetings in a Schedule have
+-- shared support (meaning they overlap in any way)
+
+hasOverlap :: Schedule -> Bool
+hasOverlap = undefined
+
+
+-- EXERCISE: TODO
+-- Write a function that takes a list of Hour meeting start times and returns
+-- Either String Schedule. This function will try (and possibly fail) to create
+-- a Schedule of duration 1 meetings that do not conflict. If none of the Hour
+-- start times is duplicated, the function should return Right Schedule, where
+-- Schedule is the sorted meeting schedule. Otherwise, it should return Left
+-- String, where String is an appropriate error message.
+
+makeBasicSchedule :: [Hour] -> Either String Schedule
+makeBasicSchedule = undefined
+
+
+-- EXERCISE: TODO
+-- Create another version of makeBasicSchedule that allows for variable
+-- durations, for example by taking [(Integer, Hour)] as input
+-- write the type signature for this function yourself.
+makeSchedule = undefined
+
 
 
   {-
+     EXTRA CHALLENGE
+
      MEETING IN UTC TIME
 
      Hour was a fine construct for making a Meeting that represented a single calendar day. But we might wish to have a meeting type that can
@@ -36,7 +134,7 @@ import Data.Time.Calendar
       -}
 
 
-   {- NOTE 
+   {- NOTE
        Below is just some messing around to see if this exercise even really is
        doable. I think it might need to be fleshed out quite a bit as an
        exercise, or greatly simplified.
@@ -47,109 +145,96 @@ import Data.Time.Calendar
 -- midnight on 1858-11-17
 -- see https://hackage.haskell.org/package/time-1.12/docs/Data-Time-Calendar.html#t:Day
 
-data UTCChunked = UTCChunked { chunkSize :: NominalDiffTime, nChunks :: Integer } deriving (Eq)
+class ChunkSize a where
+   chunksizeToNominalDiffTime :: a -> NominalDiffTime
+
+data UTCChunked a
+  = UTCChunked
+      { chunkSize :: a
+      , nChunks   :: Integer
+      }
+  deriving (Eq)
+
 
 -- Utilities
-chunkComparable :: UTCChunked -> UTCChunked -> Bool
-chunkComparable UTCChunked { chunkSize = cx } UTCChunked { chunkSize = cy } = cx == cy
-
 -- TODO is there not an existing constructor from DiffTime?
 -- could write in terms of defaultUTC rather than hard-coding
-chunkedToUTCTime :: UTCChunked -> UTCTime
+chunkedToUTCTime :: (ChunkSize a, Eq a) => UTCChunked a -> UTCTime
 chunkedToUTCTime cx = addUTCTime dt ref
-   where 
+   where
       ref = UTCTime { utctDay = ModifiedJulianDay 0, utctDayTime = 0 }
       UTCChunked { chunkSize = sx, nChunks = tx } = cx
-      dt = sx * fromInteger tx
-        
-chunkedFromUTCTime :: UTCTime -> UTCChunked
-chunkedFromUTCTime = undefined
+      dt = chunksizeToNominalDiffTime sx * fromInteger tx
+
+-- EXERCISE: TODO
+--chunkedFromUTCTime :: (ChunkSize a) => a -> UTCTime -> UTCChunked a
+--chunkedFromUTCTime cs t = truncate (td + ts) / chunksizeToNominalDiffTime cs
+--   where
+--      td = nominalDay * 
 
 
 -- UTCChunked instances
-instance Show UTCChunked where
+instance (Eq a, ChunkSize a) => Show (UTCChunked a) where
    show = show . chunkedToUTCTime
 
-instance Ord UTCChunked where
-   (<=) cx cy
-     | chunkComparable cx cy = tx <= ty
-     | otherwise = undefined
-        where UTCChunked { nChunks = tx } = cx
-              UTCChunked { nChunks = ty } = cy
+instance (Eq a, ChunkSize a) => Ord (UTCChunked a) where
+   (<=) cx cy = tx <= ty
+      where UTCChunked { nChunks = tx } = cx
+            UTCChunked { nChunks = ty } = cy
 
--- TODO this is where you really want to enforce chunkSize matching in the type
--- to avoid the undefined behavior and all that boilerplate. you could make a
--- sum type which is, say, FifteenMinute | OneMinute or whatever and use that
--- for chunksize
-instance Num UTCChunked where
-   (+) cx cy
-     | chunkComparable cx cy = cx { nChunks = ty + tx}
-     | otherwise = undefined
-     where
-        UTCChunked { nChunks = tx } = cx
-        UTCChunked { nChunks = ty } = cy
-   -- TODO
+-- Note that chunksSize is required to be the same type.
+-- it is up to you to ensure that implies the chunksizes are equal
+instance (Eq a, ChunkSize a) => Num (UTCChunked a) where
+   (+) cx cy = cx { nChunks = ty + tx }
+     where UTCChunked { nChunks = tx } = cx
+           UTCChunked { nChunks = ty } = cy
+   -- EXERCISE: TODO
    (-) = undefined
    (*) = undefined
    abs = undefined
    signum = undefined
    fromInteger = undefined
 
--- TODO again, you want to ensure your interval endpoints have the same
--- chunksize, so that should be part of the type
-instance IntervalSizeable UTCChunked NominalDiffTime where
-   moment' x  = c
+instance (Eq a, ChunkSize a) => IntervalSizeable (UTCChunked a) NominalDiffTime where
+   moment' x  = chunksizeToNominalDiffTime c
       where UTCChunked { chunkSize = c } = begin $ getInterval x
 
    add x c = c { nChunks = dn + t }
       where
          UTCChunked { chunkSize = s, nChunks = t } = c
-         dn = toInteger $ truncate (x / s)
+         dn = toInteger $ truncate (x / chunksizeToNominalDiffTime s)
 
+   -- EXERCISE: TODO
    diff = undefined
 
 
+
+-- MAKE STUFF
+
+data FifteenMin = FifteenMin deriving (Show, Eq)
+data OneMin = OneMin deriving (Show, Eq)
+
+instance ChunkSize FifteenMin where
+   chunksizeToNominalDiffTime _ = fromRational 60 * 15
+
+instance ChunkSize OneMin where
+   chunksizeToNominalDiffTime _ = fromRational 60
+
+m1 = UTCChunked { chunkSize = FifteenMin, nChunks = 10 }
+m2 = UTCChunked { chunkSize = FifteenMin, nChunks = 20 }
+m3 = UTCChunked { chunkSize = OneMin, nChunks = 20 }
+
+good = m1 + m2
+-- compile-time error
+-- bad = m2 + m3
+
+
+
+
 -- Old stuff
-
--- DEFINE the MeetChunk type based on NominalDiffTime
--- check the docs for the typeclass constraints (left of the =>) for the 'b'
--- type in the IntervalSizeable typeclass. You'll want to derive those
--- typeclasses, along with the Show and Eq typeclasses.
-
--- newtype MeetChunk =
-
-
--- IMPLEMENT the IntervalSizeable instance for UTCTime MeetChunk with a moment of 15 minutes
--- the existing implementation will be a handy reference
--- https://hackage.haskell.org/package/interval-algebra-1.0.0/docs/src/IntervalAlgebra.Core.html#line-792
--- look in the docs for NominalDiffTime to get a handle on units
-
---instance IntervalSizeable UTCTime MeetChunk where
---   moment = undefined
---   add = undefined
---   diff = undefined
---
-
-
-
--- CREATE a default MeetingData UTCTime 
--- that starts at the current local time whenever this function happens to be
--- run. 
-
--- to spare some trouble sifting through docs, i've created a default UTCTime
--- you can use
-
 defaultDay :: Day
 defaultDay = fromGregorian 2021 10 31
 
 -- 12pm (8 am in EST) on defaultDay
 defaultUTC :: UTCTime
 defaultUTC = UTCTime defaultDay (fromInteger (12 * 60 ^ 2))
-
-defaultMeeting :: MeetingData UTCTime
-defaultMeeting = undefined
-
-
-
--- TODO add exercises
-

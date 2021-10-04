@@ -8,6 +8,7 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 
 module IntervalExamples ( Meeting (..)
+                        , Hour (..)
                         , MeetingData
                         , Natural
                         , naturalFromInteger
@@ -36,6 +37,40 @@ enderDefault = enderval 0 0
 -- TODO
 startFromEnd :: Interval Int
 startFromEnd = enderval 2 2
+
+-- TODO
+-- a function that builds an interval of smallest possible length starting from
+-- a given value. 
+unitInterval :: Int -> Interval Int
+unitInterval = beginerval 0
+
+
+-- MODIFYING INTERVALS
+-- Two typeclasses largely determine how we can create and
+-- manipulate intervals: IntervalSizeable and Intervallic.
+-- Now is a good time to check the interval-algebra docs to
+-- familiarize yourself with those classes and their
+-- methods.
+-- https://hackage.haskell.org/package/interval-algebra-1.0.0/docs/IntervalAlgebra-Core.html#t:Intervallic
+
+-- There is really only one way to modify an interval: adjust the left endpoint
+-- or the right one. And you can only expand it, you can't make it shorter.
+
+-- expand to the right
+longerDefault :: Interval Int
+longerDefault = expandr 2 beginnerDefault 
+
+-- if the first argument is less than the 'moment' value
+-- defined in the appropriate IntervalSizeable instance,
+-- then the interval is unchanged. The moment value for
+-- IntervalSizeable Int Int is 1, so this operation doesn't
+-- change anything.
+beginnerDefault' = expandr 0 beginnerDefault
+
+-- (-1) is still less than 1 so this also doesn't change the interval
+longerDefault' = expandr (-1) longerDefault
+
+
 
 -- CREATING INTERVALS WHEN ERRORS ARE POSSIBLE
 -- The Either type is useful for error handling. Either a b has two possible
@@ -130,7 +165,7 @@ startMetOrBefore = metOrBefore startFromEnd beginnerDefault
 
       Here we'll mess with a Meeting data type, which represents a single meeting (like those on your calendar) in one-hour chunks.
       The Meeting will be defined in terms of Hour chunks, another type that is a Natural number type with functions to constrain it to be between 0 and 24.
-      These types and their related typeclass instances are defined at the end of this example.
+  Skip ahead to see how Meeting and Hour are defined as instances of the main typeclasses in interval-algebra, Intervallic and IntervalSizeable.
 -}
 
 
@@ -186,7 +221,10 @@ badStart = Meeting (beginerval 3 (Hour (-2)))
 
 
 -- MODIFYING A MEETING
--- TODO more examples
+-- Since meeting is an instance of the typeclass Intervallic, and Hour is
+-- IntervalSizeable, we get access to all of the methods in interval-algebra
+-- for modifying intervals. See below for how those instances are defined in
+-- this case.
 
 -- extend shortestMeeting to the right by 1 unit
 meetingRunsOver :: Meeting Hour

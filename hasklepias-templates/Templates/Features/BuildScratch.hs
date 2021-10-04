@@ -63,3 +63,22 @@ buildAge ::
   -> F ageName Natural
   )
 buildAge f g = defineA (fAge f g)
+
+-- Race --
+
+{-
+
+Race = White | Black | AmericanIndian | Asian | NativeAmerican 
+Ethnicity =  Latino | NotLatino 
+
+Def (
+   F "race" String 
+   -> F "events" [Event String]
+   
+)
+-}
+
+fRace :: [Text] -> F "Race" [Text] 
+
+fRace = pure
+

@@ -25,7 +25,7 @@ module EventData.Context
   , packConcepts
   , unpackConcepts
   , HasConcept(..)
-  , Source
+  , Source(..)
   ) where
 
 import           Data.Bool                      ( Bool )
@@ -55,6 +55,7 @@ import           Data.Text                      ( Text )
 import           EventData.Context.Domain       ( Domain )
 import           GHC.Generics                   ( Generic )
 import           GHC.Show                       ( Show(show) )
+import           GHC.Num                        ( Integer )
 
 -- | A @Context@ consists of three parts: @concepts@, @facts@, and @source@. 
 -- 
@@ -67,8 +68,13 @@ data Context = Context
   }
   deriving (Eq, Show, Generic)
 
-data Source = Source
-  deriving (Eq, Show)
+data Source = Source 
+    { column :: Maybe Text
+    , file   :: Maybe Text
+    , row    :: Maybe Integer
+    , table  :: Text
+    }
+  deriving (Eq, Show, Generic)
 
 instance HasConcept Context where
   hasConcept ctxt concept =
@@ -76,10 +82,9 @@ instance HasConcept Context where
 
 -- | Smart contructor for Context type
 --
--- Creates 'Context' from a list of 'Concept's. At this time, the @facts@ and
--- @source@ are both set to 'Nothing'.
-context :: Domain -> Concepts -> Context
-context d x = Context x d Nothing
+-- Creates 'Context' from a list of 'Concept's. 
+context :: Domain -> Concepts -> Maybe Source -> Context
+context d x  = Context x d
 
 -- | A @Concept@ is textual "tag" for a context.
 newtype Concept = Concept Text deriving (Eq, Ord)

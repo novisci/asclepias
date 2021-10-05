@@ -317,7 +317,7 @@ evalCohorts = evalCohortSet cohortSpecs
 -------------------------------------------------------------------------------}
 m :: Year -> MonthOfYear -> Int -> Integer -> [Text] -> Domain -> Event Day
 m y m d dur c dmn =
-  event (beginerval dur (fromGregorian y m d)) (context dmn (packConcepts c))
+  event (beginerval dur (fromGregorian y m d)) (context dmn (packConcepts c) Nothing)
 
 testData1 :: Events Day
 testData1 = sort

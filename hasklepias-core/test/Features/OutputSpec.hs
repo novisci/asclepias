@@ -19,7 +19,7 @@ import EventData.Context.Domain
 
 
 ex1 :: Events Int
-ex1 = [event (beginerval 10 0) (context (UnimplementedDomain ()) (packConcepts ["enrollment"]))]
+ex1 = [event (beginerval 10 0) (context (UnimplementedDomain ()) (packConcepts ["enrollment"]) Nothing)]
 
 index:: (Ord a) =>
      Events a

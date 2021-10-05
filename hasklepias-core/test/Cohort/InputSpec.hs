@@ -6,6 +6,7 @@ import EventData
 import Cohort
 import EventData.Context as HC
 import EventData.Context.Domain
+import qualified EventData.Context.Facts as F
 import Data.Aeson
 import Data.Maybe
 import Data.Time as DT
@@ -19,10 +20,12 @@ testInputsDay1 =
       "[\"abc\", \"2020-01-01\", \"2020-01-02\", \"Diagnosis\",\
       \[\"someThing\"],\
       \{\"domain\":\"Diagnosis\",\
+      \ \"facts\":{\"code\":{\"code\":\"abc\"}},\
       \ \"time\":{\"begin\":\"2020-01-01\",\"end\":\"2020-01-02\"}}]\n\
       \[\"abc\", \"2020-01-05\", \"2020-01-06\", \"Diagnosis\",\
       \[\"someThing\"],\
       \{\"domain\":\"Diagnosis\",\
+      \ \"facts\":{\"code\":{\"code\":\"abc\"}},\
       \ \"time\":{\"begin\":\"2020-01-05\",\"end\":\"2020-01-06\"}}]"
 
 
@@ -31,29 +34,40 @@ testInputsDay2 =
       "[\"def\", \"2020-01-01\", null, \"Diagnosis\",\
       \[\"someThing\"],\
       \{\"domain\":\"Diagnosis\",\
+      \ \"facts\":{\"code\":{\"code\":\"abc\"}},\
       \ \"time\":{\"begin\":\"2020-01-01\",\"end\":\"2020-01-02\"}}]\n\
       \[\"def\", \"2020-01-05\", null, \"Diagnosis\",\
       \[\"someThing\"],\
       \{\"domain\":\"Diagnosis\",\
+      \ \"facts\":{\"code\":{\"code\":\"abc\"}},\
       \ \"time\":{\"begin\":\"2020-01-05\",\"end\":\"2020-01-06\"}}]"
 
 testInputsDayBad :: B.ByteString
 testInputsDayBad =
       "[\"ghi\", \"2020-01-01\", null, \"Diagnosis\",\
       \[\"someThing\"],\
-      \{\"time\":{\"begin\":\"2020-01-01\",\"end\":\"2020-01-02\"}}]\n\
+      \{\"facts\":{\"code\":{\"code\":\"abc\"}},\
+      \ \"time\":{\"begin\":\"2020-01-01\",\"end\":\"2020-01-02\"}}]\n\
       \[\"ghi\", \"2020-01-05\", null, \"Diagnosis\",\
       \[\"someThing\"],\
       \{\"domain\":\"Diagnosis\",\
+      \ \"facts\":{\"code\":{\"code\":\"abc\"}},\
       \ \"time\":{\"begin\":\"2020-01-05\",\"end\":\"2020-01-04\"}}]"
 
 testInput = testInputsDay1 <> "\n" <> testInputsDay2
 
+dx :: Domain
+dx = Diagnosis
+  (DiagnosisFacts { code     = F.Code { F.code = "abc", F.codebook = Nothing }
+                  , claim    = Nothing
+                  , location = Nothing
+                  }
+  )
 
 testOutDay1 = event (beginerval 1 (fromGregorian 2020 1 1))
-               (HC.context ( UnimplementedDomain () ) (packConcepts ["someThing"]))
+               (HC.context  dx  (packConcepts ["someThing"]) Nothing)
 testOutDay2 = event (beginerval 1 (fromGregorian 2020 1 5))
-               (HC.context ( UnimplementedDomain () ) (packConcepts [ "someThing"]))
+               (HC.context dx (packConcepts [ "someThing"]) Nothing)
 
 
 testOutPop = MkPopulation [

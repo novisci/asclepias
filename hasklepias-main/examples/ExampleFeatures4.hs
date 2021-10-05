@@ -44,7 +44,7 @@ t3 (_, _, x) = x
 toEvent
   :: (IntervalSizeable a b, Show a, Integral b) => EventData a b -> Event a
 toEvent x = event (beginerval (t1 x) (t2 x))
-                  (context (UnimplementedDomain ()) (packConcepts [t3 x]))
+                  (context (UnimplementedDomain ()) (packConcepts [t3 x]) Nothing)
 
 toEvents
   :: (Show a, IntervalSizeable a b, Integral b) => [EventData a b] -> Events a
@@ -83,7 +83,7 @@ data CensorReason =
   -- The order matters here in that if two censoring events occur on the same
   -- day then the reason for censoring will be chosen based on the following 
   -- ordering.
-    Death
+    DeathCensor -- disambiguating from Death Domain
   | Disenrollment
   | Discontinuation
   | Noncompliance
@@ -370,7 +370,7 @@ censorTime
        )
 censorTime = define
   (\dth disrl -> minimum
-    [ makeOccurrence Death         dth
+    [ makeOccurrence DeathCensor   dth
     , makeOccurrence Disenrollment disrl
               -- etc
     ]

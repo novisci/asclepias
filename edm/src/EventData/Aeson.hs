@@ -83,6 +83,9 @@ instance FromJSON Domain where
       "Demographics" -> Demographics <$> o .: "facts"
       "Diagnosis"    -> Diagnosis <$> o .: "facts"
       "Enrollment"   -> pure $ Enrollment (EnrollmentFacts ())
+      "Labs"         -> Labs <$> o .: "facts"
+      "Medication"   -> Medication <$> o .: "facts"
+      "Procedure"    -> Procedure <$> o .: "facts"
       _              -> pure (UnimplementedDomain ())
 
 instance FromJSON Concept where

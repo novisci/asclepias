@@ -1,4 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE DuplicateRecordFields #-}
+
 module Cohort.InputSpec (spec) where
 
 import IntervalAlgebra

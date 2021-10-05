@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE DuplicateRecordFields #-}
 module EventData.AesonSpec
   ( spec
   ) where
@@ -144,7 +145,7 @@ jsonSrc1Test =
   "{\"table\":\"someTable\",\"row\":1,\"file\":\"someFile\",\"column\":\"someColumn\"}"
 
 jsonOtherTest :: B.ByteString
-jsonOtherTest = "{\"domain\":\"Labs\",\"facts\":{\"code\":{\"code\":\"XYZ\"}}}"
+jsonOtherTest = "{\"domain\":\"NotANothing\",\"facts\":{\"code\":{\"code\":\"XYZ\"}}}"
 
 spec :: Spec
 spec = do

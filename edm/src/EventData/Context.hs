@@ -10,8 +10,6 @@ Maintainer  : bsaul@novisci.com
 -- {-# OPTIONS_HADDOCK hide #-}
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE DeriveGeneric #-}
--- {-# LANGUAGE Safe #-}
--- {-# LANGUAGE TemplateHaskell #-}
 
 module EventData.Context
   ( Context(..)

@@ -63,7 +63,8 @@ instance (Ord (i a)) => Ord (Index i a) where
 instance (Intervallic i a, ToJSON (i a)) => ToJSON (Index i a)
 
 -- | A type containing (maybe) a @Data.Set.Set@ of indices.
-newtype IndexSet i a = MkIndexSet ( Maybe (Set.Set (Index i a)))
+newtype IndexSet i a = MkIndexSet ( Maybe (Set.Set (Index i a))) 
+  deriving (Eq, Show, Generic)
 
 -- | Simply a @'Feature'@ of an @'Index'@ named @"index"@.
 type FIndex n i a = Feature n (Index i a)

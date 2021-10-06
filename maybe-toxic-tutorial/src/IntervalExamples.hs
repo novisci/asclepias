@@ -27,8 +27,8 @@ import           IntervalAlgebra
 -- CREATING INTERVALS
 
 -- TODO make notes
-beginnerDefault :: Interval Int
-beginnerDefault = beginerval 0 0
+beginerDefault :: Interval Int
+beginerDefault = beginerval 0 0
 
 
 enderDefault :: Interval Int
@@ -58,14 +58,14 @@ unitInterval = beginerval 0
 
 -- expand to the right
 longerDefault :: Interval Int
-longerDefault = expandr 2 beginnerDefault 
+longerDefault = expandr 2 beginerDefault 
 
 -- if the first argument is less than the 'moment' value
 -- defined in the appropriate IntervalSizeable instance,
 -- then the interval is unchanged. The moment value for
 -- IntervalSizeable Int Int is 1, so this operation doesn't
 -- change anything.
-beginnerDefault' = expandr 0 beginnerDefault
+beginerDefault' = expandr 0 beginerDefault
 
 -- (-1) is still less than 1 so this also doesn't change the interval
 longerDefault' = expandr (-1) longerDefault
@@ -89,7 +89,7 @@ nutin = parseInterval (0 :: Int) (0 :: Int)
 -- will be Left ParseErrorInterval and we will return the default.
 nutinRight :: Either ParseErrorInterval (Interval Int) -> Interval Int
 nutinRight (Right x) = x
-nutinRight _         = beginnerDefault
+nutinRight _         = beginerDefault
 
 
 -- COMPARING INTERVALS
@@ -98,7 +98,7 @@ nutinRight _         = beginnerDefault
 -- https://hackage.haskell.org/package/interval-algebra-1.0.0/docs/IntervalAlgebra-Core.html#g:5
 
 relDefaults :: IntervalRelation
-relDefaults = relate beginnerDefault enderDefault
+relDefaults = relate beginerDefault enderDefault
 
 -- predicates for checking relations
 -- only one relation can hold for each ordered pair of intervals x y
@@ -111,7 +111,7 @@ relDefaults = relate beginnerDefault enderDefault
 -- NOTE: we're using the 'infix' versions of these functions as indicated by
 -- the backticks, meaning we do x `metBy` y instead of metBy x y
 alwaysFalse :: Bool
-alwaysFalse = (enderDefault `metBy` beginnerDefault) && (enderDefault `before` beginnerDefault)
+alwaysFalse = (enderDefault `metBy` beginerDefault) && (enderDefault `before` beginerDefault)
 
 -- create a predicate function that is the union (logical 'or') of two predicate functions. Note the type signature and compare to that of the operator (<|>) in docs. In particular the ComparativePredicateOf2 type just wraps functions that take two possibly different types of intervals and return a Bool
 
@@ -143,22 +143,56 @@ anotherMetOrBefore = unionPredicates' [metBy, meets, before]
 
 
 -- True
--- beginnerDefault is (0, 1)
+-- beginerDefault is (0, 1)
 -- enderDefault is (-1, 0)
--- beginnerDefault is metBy enderDefault
+-- beginerDefault is metBy enderDefault
 defaultsMetOrBefore :: Bool
-defaultsMetOrBefore = metOrBefore beginnerDefault enderDefault
+defaultsMetOrBefore = metOrBefore beginerDefault enderDefault
 
 -- Also True, since we consider metBy OR meets
 defaultsMetOrBefore' :: Bool
-defaultsMetOrBefore' = metOrBefore enderDefault beginnerDefault
+defaultsMetOrBefore' = metOrBefore enderDefault beginerDefault
 
 -- False
 -- since relations are disjoint: startFromEnd is (0, 2) and has relation
--- StartedBy relative to beginnerDefault
+-- StartedBy relative to beginerDefault
 startMetOrBefore :: Bool
-startMetOrBefore = metOrBefore startFromEnd beginnerDefault
+startMetOrBefore = metOrBefore startFromEnd beginerDefault
 
+
+-- MORE UTILITIES
+-- and there are still many more
+-- https://hackage.haskell.org/package/interval-algebra-1.0.0/docs/IntervalAlgebra-IntervalUtilities.html
+
+-- these first to are not from IntervalAlgebra but will help with examples
+
+-- build an *infinite* list of intervals of unit duration by mapping over end points
+beginerList :: [Interval Int]
+beginerList = map (beginerval (0::Int)) [0..]
+
+-- make beginerList finite by taking the first N elements
+beginerListN :: Int -> [Interval Int]
+beginerListN n = take n beginerList
+
+
+-- a very dumb way to create an interval with duration n 
+-- combineIntervals does what it says: combined intervals that meet or share support
+-- lengthNInterval 3
+-- [(0, 3)]
+lengthNInterval :: Int -> [Interval Int]
+lengthNInterval = combineIntervals . beginerListN
+
+-- more interesting is what happens when you have a mix of overlapping and disjoint intervals
+-- guess and check the output
+choppyIntervals :: [Interval Int]
+choppyIntervals = combineIntervals [beginerval 1 0, beginerval 2 0, beginerval 2 1, beginerval 2 4, beginerval 1 5]
+
+-- there are several filtering operations, which you can think of as comparing a list of intervals and filtering those that satisfy some relation to a reference interval
+-- for example, here we filter beginerList to those such that (10, 11) is *after* a given interval in the list (ie filter intervals before (10, 11)),  where 'after' is the IntervalAlgebra function
+tenIsAfter :: [Interval Int]
+tenIsAfter = filterAfter (beginerval 1 10) (beginerListN 20)
+
+-- NOTE applying the above to beginerList rather than a finite list crashes the program by trying to evaluate an infinite list. is there not a way for it to terminate, since the list is ordered?
 
 
   {- MEETINGS: AN EXTENDED EXAMPLE

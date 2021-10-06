@@ -36,6 +36,7 @@ library
       EventData.Context.Domain.Death
       EventData.Context.Domain.Demographics
       EventData.Context.Domain.Diagnosis
+      EventData.Context.Domain.Eligibility
       EventData.Context.Domain.Enrollment
       EventData.Context.Domain.Labs
       EventData.Context.Domain.Medication
@@ -43,9 +44,11 @@ library
       EventData.Context.Facts.Claim
       EventData.Context.Facts.Code
       EventData.Context.Facts.Codebook
+      EventData.Context.Facts.Exchange
       EventData.Context.Facts.Fill
       EventData.Context.Facts.LabValue
       EventData.Context.Facts.Location
+      EventData.Context.Facts.Plan
   hs-source-dirs:
       src
   build-depends:

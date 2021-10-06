@@ -121,11 +121,11 @@ jsonDemoTest =
   "{\"domain\":\"Demographics\",\"facts\":{\"demo\":{\"field\":\"BirthYear\",\"info\":\"1987\"}}}"
 
 enl :: Domain
-enl = Enrollment (EnrollmentFacts ())
+enl = Enrollment emptyEnrollmentFact
 
 jsonEnrollTest :: B.ByteString
 jsonEnrollTest =
-  "{\"domain\":\"Enrollment\",\"facts\":{\"plan\":{\"exchange\":\"Medicare\"}}}"
+  "{\"domain\":\"Enrollment\",\"facts\":{\"plan\":{\"exchange\":\"None\"}}}"
 
 dth :: Domain
 dth = Death DeathFacts

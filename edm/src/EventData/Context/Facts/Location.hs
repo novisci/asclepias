@@ -1,5 +1,5 @@
 {-|
-Module      : Codebook fact
+Module      : Location fact
 -}
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE Trustworthy #-}

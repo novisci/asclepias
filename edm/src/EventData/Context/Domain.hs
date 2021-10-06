@@ -9,6 +9,7 @@ Module      : Event Data Model Domains
 module EventData.Context.Domain(
     Domain(..)
     , module EventData.Context.Domain.Demographics
+    , module EventData.Context.Domain.Eligibility
     , module EventData.Context.Domain.Enrollment
     , module EventData.Context.Domain.Death
     , module EventData.Context.Domain.Diagnosis
@@ -23,6 +24,7 @@ import GHC.Show                                 ( Show )
 
 import EventData.Context.Domain.Demographics
 import EventData.Context.Domain.Enrollment
+import EventData.Context.Domain.Eligibility
 import EventData.Context.Domain.Death
 import EventData.Context.Domain.Diagnosis
 import EventData.Context.Domain.Labs
@@ -34,6 +36,7 @@ data Domain =
       Death DeathFacts
     | Demographics DemographicsFacts
     | Diagnosis DiagnosisFacts
+    | Eligibility EligibilityFacts
     | Enrollment EnrollmentFacts
     | Labs LabsFacts
     | Medication MedicationFacts

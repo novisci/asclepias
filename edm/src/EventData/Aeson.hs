@@ -82,7 +82,8 @@ instance FromJSON Domain where
       "Death"        -> pure $ Death DeathFacts
       "Demographics" -> Demographics <$> o .: "facts"
       "Diagnosis"    -> Diagnosis <$> o .: "facts"
-      "Enrollment"   -> pure $ Enrollment (EnrollmentFacts ())
+      "Eligibility"  -> Eligibility <$> o .: "facts"
+      "Enrollment"   -> Enrollment <$> o .: "facts" 
       "Labs"         -> Labs <$> o .: "facts"
       "Medication"   -> Medication <$> o .: "facts"
       "Procedure"    -> Procedure <$> o .: "facts"

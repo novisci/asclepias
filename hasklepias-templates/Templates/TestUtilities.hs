@@ -46,13 +46,13 @@ readIntervalSafe (b, e) = beginerval (diff e b) b
 makeEnrollmentEvent :: (Integral b, IntervalSizeable a b) => (a, a) -> Event a
 makeEnrollmentEvent intrvl = event
   (readIntervalSafe intrvl)
-  (context (Enrollment (EnrollmentFacts ())) mempty Nothing)
+  (context (Enrollment emptyEnrollmentFact) mempty Nothing)
 
 makeEventWithConcepts
   :: (Integral b, IntervalSizeable a b) => [Text] -> (a, a) -> Event a
 makeEventWithConcepts cpts intrvl = event
   (readIntervalSafe intrvl)
-  (context (Enrollment (EnrollmentFacts ())) (packConcepts cpts) Nothing)
+  (context (Enrollment emptyEnrollmentFact) (packConcepts cpts) Nothing)
 
 {-
   types/functions for creating test cases and evaluating them

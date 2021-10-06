@@ -16,10 +16,10 @@ import Test.Hspec ( it, shouldBe, Spec )
 -- | Toy events for unit tests
 evnt1 :: Event Int
 evnt1 = event ( beginerval (4 :: Int) (1 :: Int) ) 
-        ( HC.context (UnimplementedDomain ()) (packConcepts ["c1", "c2"] ))
+        ( HC.context (UnimplementedDomain ()) (packConcepts ["c1", "c2"] ) Nothing)
 evnt2 :: Event Int
 evnt2 = event ( beginerval (4 :: Int) (2 :: Int) )
-         ( HC.context (UnimplementedDomain ())  (packConcepts ["c3", "c4"] ))
+         ( HC.context (UnimplementedDomain ())  (packConcepts ["c3", "c4"] ) Nothing)
 evnts :: [Event Int]
 evnts = [evnt1, evnt2]
 

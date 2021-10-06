@@ -64,11 +64,35 @@ rwt = RW $ MkRowWiseJSON
   , Array $ fromList [String "d", Array $ fromList [ Number 8, Bool True]]
   ]
 
+
+attr :: B.ByteString 
+attr = "{\"getDerivation\":\"\",\
+        \\"getShortLabel\":\"\",\
+        \\"getPurpose\":{\"getRole\":[],\"getTags\":[]},\
+        \\"getLongLabel\":\"\"}" 
+
+v1 :: B.ByteString 
+v1 = "{\"name\":\"dummy\",\"type\":\"Count\",\"attrs\":" <> attr <> "}"
+
+v2 :: B.ByteString 
+v2 =   "{\"name\":\"another\",\"type\":\"Bool\",\"attrs\":" <> attr <> "}"
+
 cw1p2 :: B.ByteString 
-cw1p2 = "{\"contents\":{\"ids\":[\"a\",\"b\",\"c\",\"d\"],\"cohortData\":[[5,5,6,8],[true,true,false,true]],\"attributes\":[{\"name\":\"dummy\",\"attrs\":{\"getPurpose\":{\"getTags\":[],\"getRole\":[]},\"getDerivation\":\"\",\"getLongLabel\":\"\",\"getShortLabel\":\"\"},\"type\":\"Count\"},{\"name\":\"another\",\"attrs\":{\"getPurpose\":{\"getTags\":[],\"getRole\":[]},\"getDerivation\":\"\",\"getLongLabel\":\"\",\"getShortLabel\":\"\"},\"type\":\"Bool\"}]},\"tag\":\"CW\"}"
+cw1p2 = "{\"contents\":{\
+          \\"cohortData\":[[5,5,6,8],[true,true,false,true]],\
+          \\"attributes\":["
+          <> v1 <> "," <> v2 <>
+          "],\
+          \\"ids\":[\"a\",\"b\",\"c\",\"d\"]},\
+          \\"tag\":\"CW\"}"
 
 rw1p2 :: B.ByteString
-rw1p2 = "{\"contents\":{\"cohortData\":[[\"a\",[5,true]],[\"b\",[5,true]],[\"c\",[6,false]],[\"d\",[8,true]]],\"attributes\":[{\"name\":\"dummy\",\"attrs\":{\"getPurpose\":{\"getTags\":[],\"getRole\":[]},\"getDerivation\":\"\",\"getLongLabel\":\"\",\"getShortLabel\":\"\"},\"type\":\"Count\"},{\"name\":\"another\",\"attrs\":{\"getPurpose\":{\"getTags\":[],\"getRole\":[]},\"getDerivation\":\"\",\"getLongLabel\":\"\",\"getShortLabel\":\"\"},\"type\":\"Bool\"}]},\"tag\":\"RW\"}"
+rw1p2 = "{\"contents\":{\
+          \\"cohortData\":[[\"a\",[5,true]],[\"b\",[5,true]],[\"c\",[6,false]],[\"d\",[8,true]]],\
+          \\"attributes\":["
+          <> v1 <> "," <> v2 <>
+          "]},\
+          \\"tag\":\"RW\"}"
  
 
 spec :: Spec

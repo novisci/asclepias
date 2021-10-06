@@ -1,32 +1,29 @@
 {-|
-Module      : Event Data Model facts 
-Description : Defines the Context type and its component types, constructors, 
-              and class instances
-Copyright   : (c) NoviSci, Inc 2020
-License     : BSD3
-Maintainer  : bsaul@novisci.com
+Module      : Event Data Enrollment Domain 
 -}
--- {-# OPTIONS_HADDOCK hide #-}
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE Trustworthy #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DuplicateRecordFields #-}
 
 module EventData.Context.Domain.Enrollment(
-  EnrollmentFacts(..)
+    EnrollmentFacts(..)
+  , emptyEnrollmentFact
 ) where
 
 import Data.Aeson               ( FromJSON(..) )
-import Data.List                ( drop )
 import Data.Eq                  ( Eq )
 import GHC.Generics             ( Generic )
 import GHC.Show                 ( Show )
+import EventData.Context.Facts.Plan ( Plan, emptyPlan )
 
--- data Plan = Plan 
-
--- | An enrollment fact
+-- | Enrollment
 newtype EnrollmentFacts = EnrollmentFacts {
-     plan :: () -- TODO add plan fact
+     plan :: Plan 
   } 
   deriving( Eq, Show, Generic )
+
+emptyEnrollmentFact :: EnrollmentFacts
+emptyEnrollmentFact = EnrollmentFacts emptyPlan
 
 instance FromJSON EnrollmentFacts where

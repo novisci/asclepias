@@ -19,7 +19,7 @@ import EventData.Context.Domain
 
 
 ex1 :: Events Int
-ex1 = [event (beginerval 10 0) (context (UnimplementedDomain ()) (packConcepts ["enrollment"]))]
+ex1 = [event (beginerval 10 0) (context (UnimplementedDomain ()) (packConcepts ["enrollment"]) Nothing)]
 
 index:: (Ord a) =>
      Events a
@@ -50,18 +50,27 @@ spec = do
     --       
     it "dummy encodes correctly" $
         encode dummy `shouldBe` 
-        "{\"data\":true,\"name\":\"dummy\",\
-        \\"attrs\":{\"getPurpose\":{\"getTags\":[],\"getRole\":[]},\
-        \\"getDerivation\":\"a description\",\
-        \\"getLongLabel\":\"longer label...\",\
-        \\"getShortLabel\":\"some Label\"},\
-        \\"type\":\"Bool\"}"
+        "{\
+        \\"name\":\"dummy\",\
+        \\"type\":\"Bool\",\
+        \\"attrs\":{\
+            \\"getDerivation\":\"a description\",\
+            \\"getShortLabel\":\"some Label\",\
+            \\"getPurpose\":{\"getRole\":[],\"getTags\":[]},\
+            \\"getLongLabel\":\"longer label...\"},\
+        \\"data\":true\
+        \}"
 
     it "dummy2 encodes correctly" $
         encode dummy2 `shouldBe` 
-        "{\"data\":true,\"name\":\"dummy2\",\
-        \\"attrs\":{\"getPurpose\":{\"getTags\":[],\"getRole\":[]},\
-        \\"getDerivation\":\"\",\
-        \\"getLongLabel\":\"\",\
-        \\"getShortLabel\":\"\"},\
-        \\"type\":\"Bool\"}"
+        "{\
+        \\"name\":\"dummy2\",\
+        \\"type\":\"Bool\",\
+        \\"attrs\":{\
+            \\"getDerivation\":\"\",\
+            \\"getShortLabel\":\"\",\
+            \\"getPurpose\":{\"getRole\":[],\"getTags\":[]},\
+            \\"getLongLabel\":\"\"\
+            \},\
+        \\"data\":true\
+        \}"

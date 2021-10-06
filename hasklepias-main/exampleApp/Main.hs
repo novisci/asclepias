@@ -17,4 +17,4 @@ import           Hasklepias
 import           Hasklepias.ExampleApp
 
 main :: IO ()
-main = runApp exampleAppRW
+main = runApp exampleAppCW

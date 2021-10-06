@@ -317,7 +317,7 @@ evalCohorts = evalCohortSet cohortSpecs
 -------------------------------------------------------------------------------}
 m :: Year -> MonthOfYear -> Int -> Integer -> [Text] -> Domain -> Event Day
 m y m d dur c dmn =
-  event (beginerval dur (fromGregorian y m d)) (context dmn (packConcepts c))
+  event (beginerval dur (fromGregorian y m d)) (context dmn (packConcepts c) Nothing)
 
 testData1 :: Events Day
 testData1 = sort
@@ -336,9 +336,9 @@ testData1 = sort
     ["is_birth_year"]
     (Demographics (DemographicsFacts (DemographicsInfo BirthYear (Just "1960")))
     )
-  , m 2016 1 1 699 ["enrollment"]            (Enrollment (EnrollmentFacts ()))
-  , m 2018 1 1 30  ["enrollment"]            (Enrollment (EnrollmentFacts ()))
-  , m 2018 2 1 30  ["enrollment"]            (Enrollment (EnrollmentFacts ()))
+  , m 2016 1 1 699 ["enrollment"]            (Enrollment emptyEnrollmentFact)
+  , m 2018 1 1 30  ["enrollment"]            (Enrollment emptyEnrollmentFact)
+  , m 2018 2 1 30  ["enrollment"]            (Enrollment emptyEnrollmentFact)
   , m 2017 6 5 1   ["is_diabetes_inpatient"] (UnimplementedDomain ())
   , m 2017 8 1 91  ["is_ppi"]                (UnimplementedDomain ())
   ]
@@ -363,9 +363,9 @@ testData2 = sort
     ["is_birth_year"]
     (Demographics (DemographicsFacts (DemographicsInfo BirthYear (Just "1980")))
     )
-  , m 2016 1 1 730 ["enrollment"] (Enrollment (EnrollmentFacts ()))
-  , m 2018 1 1 30  ["enrollment"] (Enrollment (EnrollmentFacts ()))
-  , m 2018 2 1 30  ["enrollment"] (Enrollment (EnrollmentFacts ()))
+  , m 2016 1 1 730 ["enrollment"] (Enrollment emptyEnrollmentFact)
+  , m 2018 1 1 30  ["enrollment"] (Enrollment emptyEnrollmentFact)
+  , m 2018 2 1 30  ["enrollment"] (Enrollment emptyEnrollmentFact)
   ]
 
 testSubject2 :: Subject (Events Day)

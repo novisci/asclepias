@@ -18,26 +18,21 @@ module EventData.Aeson
   ) where
 
 import           Control.Monad
-import           Data.Aeson                     ( (.:)
-                                                , (.:?)
-                                                , FromJSON(parseJSON)
-                                                , Value(Array)
-                                                , eitherDecode
-                                                , withObject
-                                                )
+import           Data.Aeson
 import qualified Data.ByteString.Char8         as C
 import qualified Data.ByteString.Lazy          as B
 import           Data.Either                    ( Either(..)
                                                 , either
                                                 , partitionEithers
                                                 )
-import           Data.Maybe                     ( fromMaybe )
+import           Data.Maybe                     ( fromMaybe, Maybe )
 import           Data.Text                      ( Text )
 import           Data.Time                      ( Day )
 import           Data.Vector                    ( (!) )
 import           EventData.Context              ( Concept
                                                 , Concepts
-                                                , Context
+                                                , Context(..)
+                                                , Source
                                                 , context
                                                 , packConcept
                                                 , toConcepts
@@ -84,8 +79,14 @@ instance FromJSON Domain where
   parseJSON = withObject "Domain" $ \o -> do
     domain :: Text <- o .: "domain"
     case domain of
+      "Death"        -> pure $ Death DeathFacts
       "Demographics" -> Demographics <$> o .: "facts"
-      "Enrollment"   -> pure $ Enrollment (EnrollmentFacts ())
+      "Diagnosis"    -> Diagnosis <$> o .: "facts"
+      "Eligibility"  -> Eligibility <$> o .: "facts"
+      "Enrollment"   -> Enrollment <$> o .: "facts" 
+      "Labs"         -> Labs <$> o .: "facts"
+      "Medication"   -> Medication <$> o .: "facts"
+      "Procedure"    -> Procedure <$> o .: "facts"
       _              -> pure (UnimplementedDomain ())
 
 instance FromJSON Concept where
@@ -94,8 +95,14 @@ instance FromJSON Concept where
 instance FromJSON Concepts where
   parseJSON c = toConcepts <$> parseJSON c
 
+instance FromJSON Source where 
+
 instance FromJSON Context where
-  parseJSON (Array v) = context <$> parseJSON (v ! 5) <*> parseJSON (v ! 4)
+  parseJSON = withArray "Context" $ \a -> do
+    cpts <- parseJSON (a ! 4)
+    fcts <- parseJSON (a ! 5)
+    srce <- withObject "source" (.:? "source") (a ! 5)
+    return $ Context cpts fcts srce
 
 instance  (FromJSON a, Show a, IntervalSizeable a b) => FromJSON (Event a) where
   parseJSON (Array v) = event <$> parseJSON (v ! 5) <*> parseJSON (Array v)

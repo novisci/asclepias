@@ -18,11 +18,11 @@ import           Test.Hspec                     ( Spec
 evnt1 :: Event Int
 evnt1 = event
   (beginerval 4 (1 :: Int))
-  (HC.context (UnimplementedDomain ()) (packConcepts ["c1", "c2"]))
+  (HC.context (UnimplementedDomain ()) (packConcepts ["c1", "c2"]) Nothing)
 evnt2 :: Event Int
 evnt2 = event
   (beginerval 4 (2 :: Int))
-  (HC.context (UnimplementedDomain ()) (packConcepts ["c3", "c4"]))
+  (HC.context (UnimplementedDomain ()) (packConcepts ["c3", "c4"]) Nothing)
 evnts :: [Event Int]
 evnts = [evnt1, evnt2]
 

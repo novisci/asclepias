@@ -34,7 +34,7 @@ instance Arbitrary Concept where
     arbitrary = elements conceptChoices
 
 instance Arbitrary Context where
-    arbitrary = fmap (context (UnimplementedDomain ()) . (toConcepts . fromList))
+    arbitrary = fmap (\x -> context  (UnimplementedDomain ())  ((toConcepts . fromList) x) Nothing)
                 (sublistOf conceptChoices)
 
 -- instance Arbitrary Concepts where

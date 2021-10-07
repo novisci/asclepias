@@ -73,6 +73,7 @@ and instead perhaps use 'IntervalAlgebra.enclosedBy'.
   , AssessmentInterval
   , makeBaselineFromIndex
   , makeBaselineBeforeIndex
+  , makeBaselineFinishedByIndex
   , makeFollowupFromIndex
   , makeFollowupMeetingIndex
   , makeFollowupAfterIndex
@@ -343,12 +344,12 @@ makeBaselineBeforeIndex shiftBy dur index =
 -- >>> makeBaselineFinishedByndex 10 x
 -- Bl (MkBaselineInterval (0, 11))
 --
-makeBaselineFinishedByndex
+makeBaselineFinishedByIndex
   :: (Baseline i a, IntervalSizeable a b)
   => b
   -> Index i a
   -> AssessmentInterval a
-makeBaselineFinishedByndex  dur index =
+makeBaselineFinishedByIndex  dur index =
   Bl (baselineFinishedBy dur index)
 
 -- | Creates an 'AssessmentInterval' using the 'followup' function. 

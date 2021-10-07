@@ -22,6 +22,12 @@ import           IntervalAlgebra
 
   {-
     BASICS
+
+    An Interval in IntervalAlgebra is a data type (like Int or String) endowed
+    with three essential pieces of information: A begin, an end and a duration. The main benefit of the Interval type is that it ensures begin, end and duration are defined in a consistent set of units, units which are again represented by types. With this, IntervalAlgebra can also define relations between two intervals of the same type. 
+
+    For example, below we will look at Intervals whose begin, end and duration are all of the Int type. 
+
     -}
 
 -- CREATING INTERVALS
@@ -29,7 +35,6 @@ import           IntervalAlgebra
 -- TODO make notes
 beginerDefault :: Interval Int
 beginerDefault = beginerval 0 0
-
 
 enderDefault :: Interval Int
 enderDefault = enderval 0 0
@@ -43,6 +48,40 @@ startFromEnd = enderval 2 2
 -- a given value. 
 unitInterval :: Int -> Interval Int
 unitInterval = beginerval 0
+
+-- begin, end, duration are utilities that return these fundamental pieces of
+-- information about an interval. 'diff' is a difference function giving the
+-- difference between the points provided. For intervals with Int endpoint
+-- types, diff y x = y - x.
+gospel :: Interval Int -> Bool
+gospel x = duration x == diff (end x) (begin x)
+
+-- This is how we'd define a generic version of gospel, using the fundamental
+-- typeclass IntervalSizeable. More on this later. Notice that we didn't have
+-- to write the definition any differently for the generic case! That's because
+-- the functions diff, end and begin are all guaranteed to exist for inputs
+-- that are instances of this typeclass.
+genericGospel :: (IntervalSizeable a b) => Interval a -> Bool
+genericGospel x = duration x == diff (end x) (begin x)
+
+-- CREATING INTERVALS WHEN ERRORS ARE POSSIBLE
+-- The Either type is useful for error handling. Either a b has two possible
+-- values: Right a (containing a type a) or Left b (containing the 'error' of
+-- type b). Associating Left with errors is just convention. This allows us to
+-- have functions that might fail. We can then handle the failures or succeses
+-- in different ways, as in the nutinRight function below.
+
+-- TODO notes on ParseInterval
+-- NOTE this is not the same as beginerval 0 0 since nutin produces an interval with zero length
+nutin :: Either ParseErrorInterval (Interval Int)
+nutin = parseInterval 0 0
+
+-- Either types often are then 'unwrapped' as a form of error-handling. If the
+-- result is Right (Interval Int) then we get the interval out. Othewise, it
+-- will be Left ParseErrorInterval and we will return the default.
+nutinRight :: Either ParseErrorInterval (Interval Int) -> Interval Int
+nutinRight (Right x) = x
+nutinRight _         = beginerDefault
 
 
 -- MODIFYING INTERVALS
@@ -72,24 +111,6 @@ longerDefault' = expandr (-1) longerDefault
 
 
 
--- CREATING INTERVALS WHEN ERRORS ARE POSSIBLE
--- The Either type is useful for error handling. Either a b has two possible
--- values: Right a (containing a type a) or Left b (containing the 'error' of
--- type b). Associating Left with errors is just convention. This allows us to
--- have functions that might fail. We can then handle the failures or succeses
--- in different ways, as in the nutinRight function below.
-
--- TODO notes on ParseInterval
--- NOTE this is not the same as beginerval 0 0 since nutin produces an interval with zero length
-nutin :: Either ParseErrorInterval (Interval Int)
-nutin = parseInterval (0 :: Int) (0 :: Int)
-
--- Either types often are then 'unwrapped' as a form of error-handling. If the
--- result is Right (Interval Int) then we get the interval out. Othewise, it
--- will be Left ParseErrorInterval and we will return the default.
-nutinRight :: Either ParseErrorInterval (Interval Int) -> Interval Int
-nutinRight (Right x) = x
-nutinRight _         = beginerDefault
 
 
 -- COMPARING INTERVALS

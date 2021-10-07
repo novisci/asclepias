@@ -266,7 +266,7 @@ instance HasAttributes  "glucocorticoids" Bool where
 -------------------------------------------------------------------------------}
 
 makeIndexRunner :: Index Interval Day -> Events Day -> IndexSet Interval Day
-makeIndexRunner i _ = MkIndexSet (Just $ setFromList [i])
+makeIndexRunner i _ = makeIndexSet [i]
 
 -- | Make a function that runs the criteria for a calendar index
 makeCriteriaRunner :: Index Interval Day -> Events Day -> Criteria

@@ -96,6 +96,7 @@ import           IntervalAlgebra                ( Interval
                                                 , duration
                                                 , end
                                                 , enderval
+                                                , extenterval
                                                 )
 
 {-| A type to contain baseline intervals. See the 'Baseline' typeclass for methods
@@ -124,6 +125,12 @@ The 'baselineBefore' function should satisfy:
 [Before]
   
   @'IntervalAlgebra.relate' ('baselineBefore' s d i) i = 'IntervalAlgebra.Before'@
+
+The 'baselineFinishedBy' function should satisfy:
+
+[FinishedBy]
+  
+  @'IntervalAlgebra.relate' ('baselineFinishedBy' s d i) i = 'IntervalAlgebra.FinishedBy'@
 
 >>> import Cohort.Index
 >>> import IntervalAlgebra
@@ -163,6 +170,16 @@ class Intervallic i a => Baseline i a where
     -> BaselineInterval a
   baselineBefore shiftBy dur index =
     MkBaselineInterval $ enderval dur (begin (enderval shiftBy (begin index)))
+
+  -- | Creates a 'BaselineInterval' of the given duration that 'IntervalAlgebra.FinishedBy'
+  -- the 'Index' interval. 
+  baselineFinishedBy ::
+    ( IntervalSizeable a b ) =>
+       b -- ^ duration of baseline - not including the duration of index
+    -> Index i a -- ^ the 'Index' event
+    -> BaselineInterval a
+  baselineFinishedBy dur index =
+    MkBaselineInterval (extenterval (enderval dur (begin index)) (getInterval index))
 
 instance (Ord a) => Baseline Interval a
 
@@ -318,6 +335,21 @@ makeBaselineBeforeIndex
   -> AssessmentInterval a
 makeBaselineBeforeIndex shiftBy dur index =
   Bl (baselineBefore shiftBy dur index)
+
+-- | Creates an 'AssessmentInterval' using the 'baselineFinishedBy' function. 
+-- 
+-- >>> import Cohort.Index
+-- >>> x = makeIndex $ beginerval 1 10
+-- >>> makeBaselineFinishedByndex 10 x
+-- Bl (MkBaselineInterval (0, 11))
+--
+makeBaselineFinishedByndex
+  :: (Baseline i a, IntervalSizeable a b)
+  => b
+  -> Index i a
+  -> AssessmentInterval a
+makeBaselineFinishedByndex  dur index =
+  Bl (baselineFinishedBy dur index)
 
 -- | Creates an 'AssessmentInterval' using the 'followup' function. 
 -- 

@@ -24,10 +24,10 @@ import           Cohort.Attrition -- imported for test case
 Index is defined as the first occurrence of an Orca bite.
 -}
 defineIndexSet :: Ord a => Events a -> IndexSet Interval a
-defineIndexSet events = 
-  makeIndexSet $ 
-    fmap ( makeIndex . getInterval) $
-    headMay $ makeConceptsFilter ["wasBitByOrca"] events
+defineIndexSet events =
+  makeIndexSet $
+     makeIndex . getInterval <$>
+     makeConceptsFilter ["wasBitByOrca"] events
 
 {-  
 The baseline interval is the interval (b - 60, b), where b is the begin of 
@@ -216,7 +216,7 @@ getUnitFeatures index x =
 
 -- just a dummy set for now
 dummyIndex :: Index Interval Int
-dummyIndex = makeIndex $ beginerval 1 0 
+dummyIndex = makeIndex $ beginerval 1 0
 
 includeAll :: Index Interval Int -> Events Int -> Criteria
 includeAll _ _ = criteria $ pure
@@ -243,7 +243,7 @@ exampleFeatures1Spec :: Spec
 exampleFeatures1Spec = do
 
   it "getUnitFeatures from exampleEvents1"
-    $          getUnitFeatures (makeIndex (beginerval 1 60)) exampleEvents1 
+    $          getUnitFeatures (makeIndex (beginerval 1 60)) exampleEvents1
     `shouldBe` example1results
 
   it "mapping a population to cohort"

@@ -1,5 +1,9 @@
 # Changelog for hasklepias-core
 
+## 0.22.3
+
+* Adds `makeIndexSet` function, which maps a list of indices to an `IndexSet`. In the case the list is empty, the result is `MkIndexSet Nothing`.
+
 ## 0.22.2
 
 * Adds `Index i a` as an argument to the `runCriteria` function of a `CohortSpec`, so that `Criteria` can depend on an index -- an obvious need in retrospect.

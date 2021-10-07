@@ -50,7 +50,7 @@ instance HasAttributes "myVar2" Bool where
 
 -- | 
 makeIndexRunner :: Events Day -> IndexSet Interval Day
-makeIndexRunner _ = MkIndexSet (Just $ fromList [makeIndex $ beginerval 1 (fromGregorian 2010 7 6)]) 
+makeIndexRunner _ = makeIndexSet [makeIndex $ beginerval 1 (fromGregorian 2010 7 6)]
 
 -- | Make a function that runs the criteria
 makeCriteriaRunner :: Index Interval Day -> Events Day -> Criteria

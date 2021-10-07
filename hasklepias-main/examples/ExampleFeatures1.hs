@@ -25,7 +25,8 @@ Index is defined as the first occurrence of an Orca bite.
 -}
 defineIndexSet :: Ord a => Events a -> IndexSet Interval a
 defineIndexSet events = 
-  MkIndexSet $ fmap (setFromList . pure . makeIndex . getInterval) $
+  makeIndexSet $ 
+    fmap ( makeIndex . getInterval) $
     headMay $ makeConceptsFilter ["wasBitByOrca"] events
 
 {-  

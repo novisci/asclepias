@@ -2,6 +2,23 @@
 
 ## 0.23.0
 
+* Makes fundamental changes to intervals are marshaled into Haskell from event data JSON. The short version is that a moment is added to every `end`. A reason for this change is that the event data `time` object does not necessary represent a proper interval. Consider, for example, the following time objects:
+
+```json
+{"time":{"begin":"2015-01-01","end":"2015-01-01"}}
+{"time":{"begin":"2015-01-01","end":"2015-01-02"}}
+```
+
+In speaking with our scientists, they would consider the first case to be 1 day and the second to be 2 days. If the begin and end we directly parsed into an interval, however, the first case should fail and the second would be an interval of 1 day. A solution is simply to add a moment to the ends, which is what I did. In doing so, I created a new type `EDMInterval a` that simply wraps an `Interval a`. And in the `FromJSON (EDMInterval a)` instance, I do the adding of the moment. The `FromJSON (Interval a)` instance is removed altogether, thus allowing developers who want to marshal a different JSON data structure that represents valid intervals to do so.
+
+The behavior when the `end` is missing is unchanged: an interval of a moment's duration is created from the `begin`. For example, `decode`ing
+
+```json
+{"time":{"begin":"2015-01-01","end":null}}
+```
+
+yields `Just (EDMInterval {getEDMInterval = (2015-01-01, 2015-01-02)})`. Also, if after adding a moment to `end`, `end <= begin` results in a parse error.
+
 * Updates `interval-algebra` dependency to version 1.1.0.
 
 ## 0.22.0

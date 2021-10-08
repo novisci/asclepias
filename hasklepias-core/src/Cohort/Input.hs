@@ -5,10 +5,14 @@ Copyright   : (c) NoviSci, Inc 2020
 License     : BSD3
 Maintainer  : bsaul@novisci.com
 -}
--- {-# OPTIONS_HADDOCK hide #-}
+
 {-# LANGUAGE NoImplicitPrelude #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE UndecidableInstances #-}
-{-# LANGUAGE TupleSections #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE OverloadedStrings #-}
+
 
 module Cohort.Input
   ( parsePopulationLines
@@ -22,14 +26,18 @@ import           Cohort.Core                    ( SubjectID
                                                 , Subject(MkSubject)
                                                 )
 import           Control.Applicative            ( (<$>)
-                                                , Applicative((<*>))
+                                                , Applicative(..)
                                                 )
+import           Control.Monad
 import           Data.Aeson                     ( FromJSON(..)
                                                 , ToJSON(..)
                                                 , Value(Array)
+                                                , withArray
                                                 , eitherDecode
                                                 )
-import           Data.Bifunctor                 ( Bifunctor(first) )
+import           Data.Aeson.Types
+
+import           Data.Bifunctor                 ( Bifunctor(..) )
 import qualified Data.ByteString.Char8         as C
                                                 ( lines )
 import qualified Data.ByteString.Lazy          as B
@@ -63,13 +71,13 @@ import           EventData                      ( Event
                                                 , Events
                                                 , event
                                                 )
-import           EventData.Aeson                ( )
+import           EventData.Aeson
 import           GHC.Int                        ( Int )
 import           GHC.Num                        ( Natural )
 import           GHC.Show                       ( Show )
-import           IntervalAlgebra                ( IntervalSizeable )
+import           IntervalAlgebra
 import           Prelude                        ( String )
-
+import           GHC.Generics
 
 newtype SubjectEvent a = MkSubjectEvent (SubjectID, Event a)
 
@@ -77,10 +85,11 @@ subjectEvent :: SubjectID -> Event a -> SubjectEvent a
 subjectEvent x y = MkSubjectEvent (x, y)
 
 instance (FromJSON a, Show a, IntervalSizeable a b) => FromJSON (SubjectEvent a) where
-  parseJSON (Array v) =
-    subjectEvent
-      <$> parseJSON (v ! 0)
-      <*> (event <$> parseJSON (v ! 5) <*> parseJSON (Array v))
+  parseJSON = withArray "Event" $ \a -> do
+    id <- parseJSON (a ! 0)
+    ev <- parseJSON (Array a)
+    return $ MkSubjectEvent (id,  ev)
+
 
 mapIntoPop :: (Ord a) => [SubjectEvent a] -> Population (Events a)
 mapIntoPop l = MkPopulation $ fmap
@@ -93,7 +102,7 @@ decodeIntoSubj
   :: (FromJSON a, Show a, IntervalSizeable a b)
   => B.ByteString
   -> Either Text (SubjectEvent a)
-decodeIntoSubj x = first pack $ eitherDecode x
+decodeIntoSubj x = first pack (eitherDecode x)
 
 -- | Contains the line number and error message.
 newtype SubjectParseError = MkSubjectParseError (Natural, Text) deriving (Eq, Show)

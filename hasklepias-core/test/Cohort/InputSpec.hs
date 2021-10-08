@@ -23,7 +23,7 @@ testInputsDay1 =
       \[\"someThing\"],\
       \{\"domain\":\"Diagnosis\",\
       \ \"facts\":{\"code\":{\"code\":\"abc\"}},\
-      \ \"time\":{\"begin\":\"2020-01-01\",\"end\":\"2020-01-02\"}}]\n\
+      \ \"time\":{\"begin\":\"2020-01-01\",\"end\":\"2020-01-01\"}}]\n\
       \[\"abc\", \"2020-01-05\", \"2020-01-06\", \"Diagnosis\",\
       \[\"someThing\"],\
       \{\"domain\":\"Diagnosis\",\
@@ -37,7 +37,7 @@ testInputsDay2 =
       \[\"someThing\"],\
       \{\"domain\":\"Diagnosis\",\
       \ \"facts\":{\"code\":{\"code\":\"abc\"}},\
-      \ \"time\":{\"begin\":\"2020-01-01\",\"end\":\"2020-01-02\"}}]\n\
+      \ \"time\":{\"begin\":\"2020-01-01\",\"end\":\"2020-01-01\"}}]\n\
       \[\"def\", \"2020-01-05\", null, \"Diagnosis\",\
       \[\"someThing\"],\
       \{\"domain\":\"Diagnosis\",\
@@ -49,7 +49,7 @@ testInputsDayBad =
       "[\"ghi\", \"2020-01-01\", null, \"Diagnosis\",\
       \[\"someThing\"],\
       \{\"facts\":{\"code\":{\"code\":\"abc\"}},\
-      \ \"time\":{\"begin\":\"2020-01-01\",\"end\":\"2020-01-02\"}}]\n\
+      \ \"time\":{\"begin\":\"2020-01-01\",\"end\":\"2020-01-01\"}}]\n\
       \[\"ghi\", \"2020-01-05\", null, \"Diagnosis\",\
       \[\"someThing\"],\
       \{\"domain\":\"Diagnosis\",\
@@ -68,7 +68,7 @@ dx = Diagnosis
 
 testOutDay1 = event (beginerval 1 (fromGregorian 2020 1 1))
                (HC.context  dx  (packConcepts ["someThing"]) Nothing)
-testOutDay2 = event (beginerval 1 (fromGregorian 2020 1 5))
+testOutDay2 = event (beginerval 2 (fromGregorian 2020 1 5))
                (HC.context dx (packConcepts [ "someThing"]) Nothing)
 
 
@@ -85,4 +85,4 @@ spec = do
     it "a population is parsed" $
        parsePopulationDayLines (testInput <> "\n" <> testInputsDayBad)`shouldBe`
         ([MkSubjectParseError  (5, "Error in $: key \"domain\" not found")
-        , MkSubjectParseError (6, "Error in $: ParseErrorInterval \"2020-01-04<2020-01-05\"")], testOutPop)
+        , MkSubjectParseError (6, "Error in $: ParseErrorInterval \"2020-01-05<=2020-01-05\"")], testOutPop)

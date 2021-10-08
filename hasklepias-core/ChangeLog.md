@@ -1,5 +1,9 @@
 # Changelog for hasklepias-core
 
+## 0.22.4
+
+* Updates `interval-algebra` dependency to 1.1.0.
+
 ## 0.22.3
 
 * Adds the `baselineFinishedBy` method to the `Baseline` class. This function creates a `BaselineInterval` of the given duration that is `FinishedBy` the `Index` interval. In other words, the baseline _includes_ the index. Adds the `makeBaselineFinishedByndex` function to create an `AssessmentmentInterval` constructed from `baselineFinishedBy`.

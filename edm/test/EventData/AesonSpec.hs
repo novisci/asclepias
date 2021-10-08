@@ -39,12 +39,12 @@ testInputsInt =
 
 testInDay :: B.ByteString
 testInDay =
-  "[\"abc\", \"2020-01-01\", \"2020-01-02\", \"Diagnosis\",\
+  "[\"abc\", \"2020-01-01\", \"2020-01-01\", \"Diagnosis\",\
           \[\"someThing\"],\
           \{\"domain\":\"Diagnosis\",\
           \ \"facts\":{\"code\":{\"code\":\"abc\"}},\
           \ \"source\":{\"table\":\"someTable\"},\
-          \ \"time\":{\"begin\":\"2020-01-01\",\"end\":\"2020-01-02\"}}]"
+          \ \"time\":{\"begin\":\"2020-01-01\",\"end\":\"2020-01-01\"}}]"
 
 testInDay2 :: B.ByteString
 testInDay2 =
@@ -63,7 +63,7 @@ testInputsDay =
       \{\"domain\":\"Diagnosis\",\
       \ \"facts\":{\"code\":{\"code\":\"abc\"}},\
       \ \"source\":{\"table\":\"someTable\"},\
-      \ \"time\":{\"begin\":\"2020-01-01\",\"end\":\"2020-01-02\"}}]\n\
+      \ \"time\":{\"begin\":\"2020-01-01\",\"end\":\"2020-01-01\"}}]\n\
       \[\"abc\", \"2020-01-05\", \"2020-01-06\", \"Diagnosis\",\
       \[\"someThing\"],\
       \{\"domain\":\"Diagnosis\",\
@@ -76,7 +76,7 @@ testInputsDay2 =
       \[\"someThing\"],\
       \{\"domain\":\"Diagnosis\",\
       \ \"facts\":{\"code\":{\"code\":\"abc\"}},\
-      \ \"time\":{\"begin\":\"2020-01-01\",\"end\":\"2020-01-02\"}}]\n\
+      \ \"time\":{\"begin\":\"2020-01-01\",\"end\":\"2020-01-01\"}}]\n\
       \[\"abc\", \"2020-01-05\", null, \"Diagnosis\",\
       \[\"someThing\"],\
       \{\"domain\":\"Diagnosis\",\
@@ -91,9 +91,9 @@ dx = Diagnosis
                   }
   )
 
-testOutInt1 = event (beginerval 1 (0 :: Int))
+testOutInt1 = event (beginerval 2 (0 :: Int))
                     (HC.context dx (packConcepts ["someThing"]) Nothing)
-testOutInt2 = event (beginerval 1 (5 :: Int))
+testOutInt2 = event (beginerval 2 (5 :: Int))
                     (HC.context dx (packConcepts ["someThing"]) Nothing)
 
 testOutDay1 = event
@@ -108,7 +108,7 @@ testOutDay1 = event
                    }
     )
   )
-testOutDay2 = event (beginerval 1 (fromGregorian 2020 1 5))
+testOutDay2 = event (beginerval 2 (fromGregorian 2020 1 5))
                     (HC.context dx (packConcepts ["someThing"]) Nothing)
 
 
@@ -180,3 +180,16 @@ spec = do
   it "jsonSrc1Test is parsed correctly"
     $          decode jsonSrc1Test
     `shouldBe` Just src1
+
+  it "time is parsed correctly"
+    $          (decode "{\"time\":{\"begin\":\"2020-01-01\",\"end\":\"2020-01-01\"}}" :: Maybe (EDMInterval Day))
+    `shouldBe` Just (EDMInterval (beginerval 1 (fromGregorian 2020 1 1)))
+  it "time is parsed correctly"
+    $          (decode "{\"time\":{\"begin\":\"2020-01-01\",\"end\":\"2020-01-02\"}}" :: Maybe (EDMInterval Day))
+    `shouldBe` Just (EDMInterval (beginerval 2 (fromGregorian 2020 1 1)))
+  it "time is parsed correctly"
+    $          (decode "{\"time\":{\"begin\":\"2020-01-01\",\"end\":\"2019-12-30\"}}" :: Maybe (EDMInterval Day))
+    `shouldBe` Nothing
+  it "time is parsed correctly"
+    $          (decode "{\"time\":{\"begin\":\"2020-01-01\",\"end\":\"2019-12-31\"}}" :: Maybe (EDMInterval Day))
+    `shouldBe` Nothing

@@ -1,6 +1,6 @@
 cabal-version:  2.2
 name:           hasklepias-core
-version:        0.22.3
+version:        0.22.4
 description:    Please see the README on GitHub at <https://github.com/novisci/asclepias#readme>
 homepage:       https://github.com/novisci/asclepias/#readme
 bug-reports:    https://github.com/novisci/asclepias/issues
@@ -61,7 +61,7 @@ library
     , conduit-extra
     , flow == 1.0.22
     , ghc-prim == 0.6.1
-    , interval-algebra == 1.0.0
+    , interval-algebra == 1.1.0
     , microlens == 0.4.12.0
     , nonempty-containers == 0.3.4.1
     , optparse-applicative
@@ -108,7 +108,7 @@ test-suite hasklepias-core-test
     , edm
     , flow == 1.0.22
     , hspec
-    , interval-algebra == 1.0.0
+    , interval-algebra == 1.1.0
     , text >=1.2.3
     , time >=1.11
     , unordered-containers >=0.2.10

@@ -15,9 +15,12 @@ Maintainer  : bsaul@novisci.com
 module EventData.Aeson
   ( parseEventIntLines
   , parseEventDayLines
+  , EDMInterval(..)
+  , EDMEvent(..)
   ) where
 
 import           Control.Monad
+import           Data.Bifunctor
 import           Data.Aeson
 import qualified Data.ByteString.Char8         as C
 import qualified Data.ByteString.Lazy          as B
@@ -25,8 +28,9 @@ import           Data.Either                    ( Either(..)
                                                 , either
                                                 , partitionEithers
                                                 )
-import           Data.Maybe                     ( fromMaybe, Maybe )
-import           Data.Text                      ( Text )
+import           Data.Eq                        ( Eq )
+import           Data.Maybe                     ( fromMaybe, Maybe, maybe )
+import           Data.Text                      ( Text, pack )
 import           Data.Time                      ( Day )
 import           Data.Vector                    ( (!) )
 import           EventData.Context              ( Concept
@@ -63,17 +67,27 @@ import           Prelude                        ( ($)
                                                 , show
                                                 )
 
-instance (FromJSON a, Show a, IntervalSizeable a b) => FromJSON (Interval a) where
+-- a wrapper type by which to marshal EDM "time" object into an Interval
+newtype EDMInterval a = EDMInterval { getEDMInterval :: Interval a }
+  deriving (Eq, Show)
+
+-- a wrapper type which simply notifies that the 'Event' was marshaled via the 
+-- event data model
+newtype EDMEvent a = EDMEvent { getEDMevent :: Event a } 
+  deriving (Eq, Show)
+
+
+instance (FromJSON a, Show a, IntervalSizeable a b) => FromJSON (EDMInterval a) where
   parseJSON = withObject "Time" $ \o -> do
-    t <- o .: "time"
-    b <- t .: "begin"
+    t <- o .:  "time"
+    b <- t .:  "begin"
     e <- t .:? "end"
     -- In the case that the end is missing, create a moment
-    let e2 = fromMaybe (add (moment @a) b) e
+    let e2 = maybe (add (moment @a) b) (add (moment @a)) e
     let ei = parseInterval b e2
     case ei of
       Left  e -> fail (show e)
-      Right i -> return i
+      Right i -> return (EDMInterval i)
 
 instance FromJSON Domain where
   parseJSON = withObject "Domain" $ \o -> do
@@ -104,8 +118,17 @@ instance FromJSON Context where
     srce <- withObject "source" (.:? "source") (a ! 5)
     return $ Context cpts fcts srce
 
-instance  (FromJSON a, Show a, IntervalSizeable a b) => FromJSON (Event a) where
-  parseJSON (Array v) = event <$> parseJSON (v ! 5) <*> parseJSON (Array v)
+instance (FromJSON a, Show a, IntervalSizeable a b) => FromJSON (Event a) where
+  parseJSON = withArray "Event" $ \a -> do
+    intrvl <- parseJSON (a ! 5)  
+    let i = getEDMInterval intrvl
+    c <- parseJSON (Array a)
+    return $ event i c
+
+instance (FromJSON a, Show a, IntervalSizeable a b) => FromJSON (EDMEvent a) where
+  parseJSON = withArray "EDMEvent" $ \a -> do
+     ev <- parseJSON (Array a)
+     return $ EDMEvent ev
 
 -- |  Parse @Event Int@ from json lines.
 parseEventLines
@@ -132,3 +155,5 @@ parseEventDayLines
   => B.ByteString
   -> ([String], [Event a])
 parseEventDayLines = parseEventLines
+
+

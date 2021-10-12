@@ -35,6 +35,7 @@ import safe GHC.TypeLits    ( KnownSymbol )
 -- | A type to identify a feature's role in a research study.
 data Role =
     Outcome
+  | Censoring
   | Covariate
   | Exposure
   | Competing

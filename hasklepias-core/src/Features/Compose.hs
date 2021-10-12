@@ -60,6 +60,7 @@ import safe      Control.Monad                  ( (=<<)
                                                 , liftM2
                                                 , liftM3
                                                 , liftM4
+                                                , liftM5
                                                 )
 import safe      Data.Either                    ( Either(..) )
 import safe      Data.Eq                        ( Eq(..) )
@@ -307,6 +308,15 @@ data Definition d  where
           -> Definition (F n4 e -> F n3 d -> F n2 c -> F n1 b -> F n02 a2)
           -> Definition (F n4 e -> F n3 d -> F n2 c -> F n1 b -> F n01 a1)
           -> Definition (F n4 e -> F n3 d -> F n2 c -> F n1 b -> F n0 a )    
+  D5  :: (f -> e -> d -> c -> b -> a) 
+         -> Definition (F n5 f -> F n4 e -> F n3 d -> F n2 c -> F n1 b -> F n0 a)
+  D5A :: (f -> e -> d -> c -> b -> F n0 a) 
+           -> Definition (F n5 f -> F n4 e -> F n3 d -> F n2 c -> F n1 b -> F n0 a)
+  D5C  :: (a2 -> a1 -> a) 
+          -> Definition (F n5 f -> F n4 e -> F n3 d -> F n2 c -> F n1 b -> F n02 a2)
+          -> Definition (F n5 f -> F n4 e -> F n3 d -> F n2 c -> F n1 b -> F n01 a1)
+          -> Definition (F n5 f -> F n4 e -> F n3 d -> F n2 c -> F n1 b -> F n0 a )  
+
 
 {- | Define (and @'DefineA@) provide a means to create new @'Definition'@s via 
 @'define'@ (@'defineA'@). The @'define'@ function takes a single function input 
@@ -351,6 +361,8 @@ instance Define (d -> c -> b -> a) (Feature n3 d -> Feature n2 c -> Feature n1 b
   define = D3
 instance Define (e -> d -> c -> b -> a) (Feature n4 e -> Feature n3 d -> Feature n2 c -> Feature n1 b -> Feature n0 a) where
   define = D4
+instance Define (f -> e -> d -> c -> b -> a) (Feature n5 f -> Feature n4 e -> Feature n3 d -> Feature n2 c -> Feature n1 b -> Feature n0 a) where
+  define = D5
 
 -- | See @'Define'@.
 class DefineA inputs def | def -> inputs where
@@ -364,6 +376,8 @@ instance DefineA (d -> c -> b -> Feature n0 a) (Feature n3 d -> Feature n2 c -> 
   defineA = D3A
 instance DefineA (e -> d -> c -> b -> Feature n0 a) (Feature n4 e -> Feature n3 d -> Feature n2 c -> Feature n1 b -> Feature n0 a) where
   defineA = D4A
+instance DefineA (f -> e -> d -> c -> b -> Feature n0 a) (Feature n5 f -> Feature n4 e -> Feature n3 d -> Feature n2 c -> Feature n1 b -> Feature n0 a) where
+  defineA = D5A
 
 {- | Evaluate a @Definition@. Note that (currently), the second argument of 'eval'
 is a *tuple* of inputs. For example,
@@ -417,3 +431,10 @@ eval d = case d of
               MkFeatureData (Left  l) -> MkFeature $ MkFeatureData (Left l)
               MkFeatureData (Right r) -> r
   D4C f d1 d2 -> \v x y z -> MkFeature $ liftA2 f (getFData $ eval d1 v x y z) (getFData $ eval d2 v x y z)
+  D5 f -> \(MkFeature u) (MkFeature v) (MkFeature x) (MkFeature y) (MkFeature z) ->
+    MkFeature $ liftM5 f u v x y z
+  D5A f -> \(MkFeature u) (MkFeature v) (MkFeature x) (MkFeature y) (MkFeature z) ->
+            case liftM5 f u v x y z of
+              MkFeatureData (Left  l) -> MkFeature $ MkFeatureData (Left l)
+              MkFeatureData (Right r) -> r
+  D5C f d1 d2 -> \u v x y z -> MkFeature $ liftA2 f (getFData $ eval d1 u v x y z) (getFData $ eval d2 u v x y z)

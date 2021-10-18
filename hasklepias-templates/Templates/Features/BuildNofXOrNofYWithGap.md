@@ -11,6 +11,7 @@ Is either `buildNofX` or `buildNofXWithGap` satisfied?
 module Templates.Features.BuildNofXOrNofYWithGap
   ( buildNofXOrNofYWithGap
   , buildNofXOrNofYWithGapBool
+  , buildNofXOrNofYWithGapBinary
   , buildNofXOrNofYWithGapTests
   ) where
 

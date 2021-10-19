@@ -1,5 +1,10 @@
 # Changelog for edm
 
+## 0.23.1
+
+* Makes the `Enrollment` domain's plan fact optional, in accordance with EDM v1.2.
+* Adds `previewDaysSupply` function for accessing (maybe) from a medication domain.
+
 ## 0.23.0
 
 * Makes fundamental changes to intervals are marshaled into Haskell from event data JSON. The short version is that a moment is added to every `end`. A reason for this change is that the event data `time` object does not necessary represent a proper interval. Consider, for example, the following time objects:

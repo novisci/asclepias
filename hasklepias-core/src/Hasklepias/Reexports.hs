@@ -62,6 +62,8 @@ import safe      Control.Monad                  ( (=<<)
                                                 , Functor(..)
                                                 , Monad(..)
                                                 , join
+                                                , mfilter
+                                                , filterM
                                                 )
 import safe      Data.Bifunctor                 ( Bifunctor(..) )
 import safe      Data.Bool                      ( (&&)
@@ -78,6 +80,7 @@ import safe      Data.Eq                        ( (==)
 import safe      Data.Foldable                  ( Foldable(..)
                                                 , maximum
                                                 , minimum
+                                                , asum
                                                 )
 import safe      Data.Function                  ( ($)
                                                 , (.)

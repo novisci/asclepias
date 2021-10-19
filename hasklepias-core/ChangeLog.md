@@ -1,5 +1,9 @@
 # Changelog for hasklepias-core
 
+## 0.22.5
+
+* Adds `asum` to reexports module.
+
 ## 0.22.4
 
 * Updates `interval-algebra` dependency to 1.1.0.

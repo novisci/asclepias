@@ -3,6 +3,7 @@
 ## 0.23.1
 
 * Makes the `Enrollment` domain's plan fact optional, in accordance with EDM v1.2.
+* Adds `previewDaysSupply` function for accessing (maybe) from a medication domain.
 
 ## 0.23.0
 

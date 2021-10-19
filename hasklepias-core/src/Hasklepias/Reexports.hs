@@ -45,6 +45,7 @@ module Hasklepias.Reexports
   , module IntervalAlgebra
   , module IntervalAlgebra.IntervalUtilities
   , module IntervalAlgebra.PairedInterval
+  , module Lens.Micro
   , module Safe
   , module Flow
   , module Witherable
@@ -201,6 +202,8 @@ import safe      Witherable                     ( Filterable(filter)
 import safe      IntervalAlgebra
 import safe      IntervalAlgebra.IntervalUtilities
 import safe      IntervalAlgebra.PairedInterval
+import safe      Lens.Micro                     ( (^?) )
+
 
 setFromList :: (Ord a) => [a] -> Set.Set a
 setFromList = Set.fromList

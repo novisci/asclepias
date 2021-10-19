@@ -107,8 +107,8 @@ test:
     - cabal test all --test-show-details=always 
 
 docs: 
-  # only: 
-  #   - master
+  only: 
+    - master
   image: registry.novisci.com/nsstat/asclepias/$PKG-build:latest
   needs: ["docker-build"]
   stage: docs
@@ -125,8 +125,8 @@ docs:
 upload: 
   image: registry.novisci.com/nsstat/statocker/aws:latest
   needs: ["docs"]
-  # only: 
-  #   - master
+  only: 
+    - master
   stage: upload-docs
   script:
     - cat haddock-output.txt | ./scripts/upload-docs-to-s3.sh

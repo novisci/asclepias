@@ -4,6 +4,7 @@ Module      : Event Data Demographics Domain
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE Trustworthy #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DuplicateRecordFields #-}
 
 module EventData.Context.Domain.Demographics(
       DemographicsFacts(..)

@@ -20,6 +20,7 @@ module EventData.Accessors
 
 import           Lens.Micro                     ( (^?) )
 import           Control.Monad                  ( (=<<)
+                                                , (>>=)
                                                 , Functor(fmap)
                                                 )
 import           Data.Either                    ( either )
@@ -79,6 +80,11 @@ intMayMap :: Text -> Maybe Integer -- TODO: this is ridiculous
 intMayMap x =
   fmap floor (either (const Nothing) (Just . fst) (Data.Text.Read.rational x))
 
+-- | Preview demographics information from a domain
+previewDaysSupply :: Domain -> Maybe Integer 
+previewDaysSupply dmn =
+  (dmn ^? _As @"Medication") >>= (^. field @"fill") >>= (^. field @"days_supply")
+
 -- | Preview birth year from a domain
 previewBirthYear :: Domain -> Maybe Year
 previewBirthYear dmn = intMayMap =<< previewDemoInfo dmn
@@ -87,8 +93,6 @@ previewBirthYear dmn = intMayMap =<< previewDemoInfo dmn
 viewBirthYears :: (Witherable f) => f (Event a) -> [Year]
 viewBirthYears x = mapMaybe
   (\e -> previewBirthYear (facts $ ctxt e))
-  -- (\e -> previewBirthYear =<< Just (ctxt e ^. (field @"facts")))
-  -- (\e -> previewBirthYear =<< Just (ctxt e ^. facts))
   (toList $ filter (getPredicate isBirthYearEvent) x)
 
 -- | Returns a (possibly empty) list of Gender values from a set of events

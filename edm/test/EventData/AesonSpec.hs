@@ -125,7 +125,8 @@ enl = Enrollment emptyEnrollmentFact
 
 jsonEnrollTest :: B.ByteString
 jsonEnrollTest =
-  "{\"domain\":\"Enrollment\",\"facts\":{\"plan\":{\"exchange\":\"None\"}}}"
+    "{\"domain\":\"Enrollment\",\"facts\":{}}"
+-- "{\"domain\":\"Enrollment\",\"facts\":{\"plan\":{\"exchange\":\"None\"}}}"
 
 dth :: Domain
 dth = Death DeathFacts

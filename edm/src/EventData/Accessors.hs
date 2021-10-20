@@ -16,6 +16,7 @@ module EventData.Accessors
   , viewStates
   , previewDemoInfo
   , previewBirthYear
+  , previewDaysSupply
   ) where
 
 import           Lens.Micro                     ( (^?) )
@@ -80,7 +81,7 @@ intMayMap :: Text -> Maybe Integer -- TODO: this is ridiculous
 intMayMap x =
   fmap floor (either (const Nothing) (Just . fst) (Data.Text.Read.rational x))
 
--- | Preview demographics information from a domain
+-- | Preview days supply field information from a medication domain
 previewDaysSupply :: Domain -> Maybe Integer 
 previewDaysSupply dmn =
   (dmn ^? _As @"Medication") >>= (^. field @"fill") >>= (^. field @"days_supply")

@@ -29,9 +29,6 @@ import           Data.Aeson                     ( FromJSON
                                                 , encode
                                                 )
 import           Data.Bifunctor                 ( Bifunctor(second) )
-import qualified Data.ByteString.Lazy          as B
-import           Data.ByteString.Lazy.Char8    as C
-                                                ( putStrLn )
 import           Data.Function                  ( ($)
                                                 , (.)
                                                 )

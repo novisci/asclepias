@@ -39,7 +39,7 @@ library
       Hasklepias.AppUtilities
       Hasklepias.FeatureEvents
       Hasklepias.MakeApp
-      Hasklepias.MakePrefilterApp
+      Hasklepias.MakeFilterApp
       Hasklepias.Misc
       Hasklepias.Reexports
       Hasklepias.ReexportsUnsafe

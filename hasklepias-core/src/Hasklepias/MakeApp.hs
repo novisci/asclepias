@@ -145,8 +145,7 @@ makeCohortApp
   -> (Cohort d0 -> CohortJSON) -- ^ a function which specifies the output shape
   -> CohortSetSpec (Events a) d0 i a  -- ^ a list of cohort specifications
   -> CohortApp IO
-makeCohortApp name version shape spec = MkCohortApp $
-  \l -> do
+makeCohortApp name version shape spec = MkCohortApp $ \l -> do
   options <- execParser (makeAppArgs name version)
   let errLog = logStringStderr
 
@@ -155,11 +154,11 @@ makeCohortApp name version shape spec = MkCohortApp $
 
   errLog <& "Reading data from stdin..."
   -- TODO: give error if no contents within some amount of time
-  
+
   -- let loc = inputToLocation $ input options
   let loc = case l of
-            Nothing -> inputToLocation $ input options
-            Just x  -> x
+        Nothing -> inputToLocation $ input options
+        Just x  -> x
 
   dat <- readData loc
 

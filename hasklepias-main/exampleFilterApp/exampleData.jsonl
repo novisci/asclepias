@@ -7,4 +7,3 @@
 ["b", "2018-02-01", "2018-03-03", "Enrollment", ["enrollment"], {"domain" : "Enrollment","facts":{"plan":{"exchange":"None"}},"time":{"begin":"2018-02-01","end":"2018-03-03"}}]
 ["c", "2010-01-01", null, null, ["is_female"], {"domain":null,"time":{"begin":"2010-01-01","end":null},"facts" : {"demo" : {"field" : "Gender", "info" : "Female"} } }]
 ["c", "2010-01-01", "2009-12-21", "Demographics", ["is_birth_year"], {"domain" : "Demographics", "time": {"begin" : "2010-01-01", "end" : "2009-12-21"}, "facts" : {"demo" : {"field" : "BirthYear", "info" : "1960"} } }]
-["c", "2018-02-01", "2018-03-03", "Enrollment", ["enrollment"], {"domain" : "Enrollment","facts":{"plan":{"exchange":"None"}},"time":{"begin":"2018-02-01","end":"2018-03-03"}}]

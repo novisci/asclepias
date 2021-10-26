@@ -14,12 +14,12 @@ These functions may be moved to more appropriate modules in future versions.
 
 module Hasklepias.Misc
   ( Occurrence(..)
-  , makeOccurrence
-  , getOccurrenceReason
-  , getOccurrenceTime
   , CensoringReason(..)
   , OccurrenceReason(..)
   , CensoredOccurrence(..)
+  , makeOccurrence
+  , getOccurrenceReason
+  , getOccurrenceTime
   , adminCensor
   ) where
 
@@ -42,22 +42,6 @@ import           GHC.Generics                   ( Generic )
 import           GHC.Show                       ( Show(..) )
 import           Stype.Numeric.Censored         ( MaybeCensored(..) )
 import           Stype.Numeric.Continuous       ( EventTime )
-
-import           Control.Applicative
-import           Control.Monad
-import           Data.Aeson
-import qualified Data.ByteString.Lazy          as B
-import qualified Data.ByteString.Char8         as C
-import           Data.Conduit.Binary            ( sinkLbs )
-import           GHC.IO
-import           Lens.Micro                     ( (<&>)
-                                                , (^.)
-                                                , set
-                                                )
-import           Network.AWS
-import           Network.AWS.S3
-import           System.IO                      ( stderr )
-import           Options.Applicative
 
 -- | A simple typeclass for making a type a "reason" for an event.
 class (Ord a, Show a) => OccurrenceReason a where

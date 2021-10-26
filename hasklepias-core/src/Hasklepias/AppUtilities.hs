@@ -24,23 +24,25 @@ module Hasklepias.AppUtilities
   , s3Input
   ) where
 
+import           Data.Either                    ( fromRight )
 import           Data.Eq                        ( Eq(..) )
 import           Data.Function                  ( ($)
                                                 , (.)
                                                 )
-import           Data.Either                    ( fromRight )
-import           Data.Maybe                     ( Maybe(..), fromMaybe )
+import           Data.Maybe                     ( Maybe(..)
+                                                , fromMaybe
+                                                )
 import           Data.Semigroup                 ( Semigroup((<>)) )
 import           GHC.Generics                   ( Generic )
 import           GHC.Show                       ( Show(..) )
 
 import           Control.Applicative
 import           Control.Monad
-import qualified Data.ByteString.Lazy          as B
 import qualified Data.ByteString.Char8         as C
+import qualified Data.ByteString.Lazy          as B
 import           Data.Conduit.Binary            ( sinkLbs )
-import Data.String
-import Data.Text
+import           Data.String
+import           Data.Text
 import           GHC.IO
 import           Lens.Micro                     ( (<&>)
                                                 , (^.)
@@ -49,8 +51,8 @@ import           Lens.Micro                     ( (<&>)
 import           Network.AWS
 import           Network.AWS.Data
 import           Network.AWS.S3
-import           System.IO                      ( stderr )
 import           Options.Applicative
+import           System.IO                      ( stderr )
 
 -- | Type representing locations that data can be read from
 data Location where
@@ -122,8 +124,13 @@ s3Input :: Parser Input
 s3Input =
   S3Input
     <$> strOption
-          (long "region" <> short 'r' <> metavar "REGION" <> value "us-east-1" <> help "AWS Region") 
-    <*>   strOption
+          (  long "region"
+          <> short 'r'
+          <> metavar "REGION"
+          <> value "us-east-1"
+          <> help "AWS Region"
+          )
+    <*> strOption
           (long "bucket" <> short 'b' <> metavar "Bucket" <> help "S3 bucket")
     <*> strOption
           (long "key" <> short 'k' <> metavar "KEY" <> help "S3 location")

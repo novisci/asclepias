@@ -23,13 +23,11 @@ testDir = "exampleFilterApp-test/test/"
 
 runTest :: String -> IO ()
 runTest x = do
-    hFlush stdout -- flush stdout as test info sometimes being sent to file if running
-                  -- tests with --test-show-details=always
+    hFlush stdout -- flush stdout as test info sometimes being sent to file if running test
     r <- capture $ runFilterAppWithLocation (Local (testDir <> "test-" <> x <> ".jsonl"))
                             exampleFilterApp
 
-    hFlush stdout -- flush stdout as test info sometimes being sent to file if running
-                  -- tests with --test-show-details=always      
+    hFlush stdout -- flush stdout as test info sometimes being sent to file if running tests
     B.writeFile (testDir <> "test-" <> x <> ".result") ( snd r <> B.pack (fst r))
 
 

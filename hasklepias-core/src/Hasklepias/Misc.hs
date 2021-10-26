@@ -21,15 +21,6 @@ module Hasklepias.Misc
   , OccurrenceReason(..)
   , CensoredOccurrence(..)
   , adminCensor
-  , Location(..)
-  , readData
-  , readDataStrict
-  , getS3Object
-  , Input(..)
-  , inputToLocation
-  , stdInput
-  , fileInput
-  , s3Input
   ) where
 
 import           Data.Bool                      ( (&&)
@@ -115,73 +106,3 @@ instance (OccurrenceReason c, OccurrenceReason o, Show b) =>
 -- | Creates an administratively censored occurrence.
 adminCensor :: EventTime b -> CensoredOccurrence c o b
 adminCensor t = MkCensoredOccurrence AdminCensor (RightCensored t)
-
-
-{--}
-
--- | Type representing locations that data can be read from
-data Location where
-  StdIn ::Location
-  Local ::FilePath -> Location
-  S3    ::Region -> BucketName -> ObjectKey -> Location
-  deriving (Show)
-
--- | Read data from a @Location@. 
-readData :: Location -> IO B.ByteString
-readData StdIn      = B.getContents
-readData (Local x ) = B.readFile x
-readData (S3 r b k) = getS3Object r b k
-
--- | Read data from a @Location@. 
-readDataStrict :: Location -> IO C.ByteString
-readDataStrict StdIn      = C.getContents
-readDataStrict (Local x ) = C.readFile x
-readDataStrict (S3 r b k) = fmap B.toStrict (getS3Object r b k)
-
--- | Get an object from S3. 
-getS3Object :: Region -> BucketName -> ObjectKey -> IO B.ByteString
-getS3Object r b k = do
-  lgr <- newLogger Debug stderr
-  env <- newEnv Discover <&> set envLogger lgr . set envRegion r
-  runResourceT . runAWS env $ do
-    result <- send $ getObject b k
-    (result ^. gorsBody) `sinkBody` sinkLbs
-
-
--- | Type to hold input information. Either from file or from S3. 
-data Input =
-     StdInput
-   | FileInput (Maybe FilePath) FilePath
-   | S3Input BucketName ObjectKey
-   deriving (Show)
-
--- | TODO
-inputToLocation :: Input -> Location
-inputToLocation StdInput        = StdIn
-inputToLocation (FileInput d f) = Local (pre f)
- where
-  pre = case d of
-    Nothing -> (<>) ""
-    Just s  -> (<>) (s <> "/")
-inputToLocation (S3Input b k) = S3 NorthVirginia b k
-
-stdInput :: Parser Input
-stdInput = pure StdInput
-
-fileInput :: Parser Input
-fileInput =
-  FileInput
-    <$> optional
-          (strOption $ long "dir" <> short 'd' <> metavar "DIRECTORY" <> help
-            "optional directory"
-          )
-    <*> strOption
-          (long "file" <> short 'f' <> metavar "INPUT" <> help "Input file")
-
-s3Input :: Parser Input
-s3Input =
-  S3Input
-    <$> strOption
-          (long "bucket" <> short 'b' <> metavar "Bucket" <> help "S3 bucket")
-    <*> strOption
-          (long "key" <> short 'k' <> metavar "KEY" <> help "S3 location")

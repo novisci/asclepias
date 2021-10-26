@@ -80,14 +80,7 @@ import qualified Data.ByteString.Lazy.Char8    as C
                                                 )
 import           Data.Semigroup                 ( Semigroup((<>)) )
 import qualified Data.Text                     as T
-import           Hasklepias.Misc                ( Location(..)
-                                                , readData
-                                                , Input
-                                                , fileInput
-                                                , stdInput
-                                                , s3Input
-                                                , inputToLocation
-                                                )
+import           Hasklepias.AppUtilities
 import           Options.Applicative
 
 

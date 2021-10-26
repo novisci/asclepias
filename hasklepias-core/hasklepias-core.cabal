@@ -36,6 +36,7 @@ library
       Cohort.Output
       Cohort.Criteria
       Cohort.Index
+      Hasklepias.AppUtilities
       Hasklepias.FeatureEvents
       Hasklepias.MakeApp
       Hasklepias.MakePrefilterApp

@@ -13,117 +13,120 @@ Maintainer  : bsaul@novisci.com
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TupleSections #-}
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE UndecidableInstances #-}
 
 module Hasklepias.MakePrefilterApp
   (
   ) where
 
+import EventData.Core
+import EventData.Predicates
+import IntervalAlgebra ( IntervalSizeable )
+import Cohort.Input
+import Cohort
 import Control.Applicative
 import Data.Text
 import GHC.Int
 import GHC.Generics
+import Data.Maybe
+import Data.Functor.Contravariant
 import Data.Aeson as A
 import Data.Bifunctor
 import Data.Monoid
 import Conduit
 import qualified Data.Conduit.Combinators as CC
-import Control.Monad.State
-import qualified Data.ByteString.Lazy          as B
-import qualified Data.ByteString.Builder as B
+import Control.Monad
+-- import qualified Data.ByteString.Lazy          as B
+-- import qualified Data.ByteString.Builder as B
 import qualified Data.ByteString.Char8         as C
+-- import qualified Data.ByteString as C
 import           Colog                          ( (<&)
-                                                , (>$)
-                                                , HasLog(..)
-                                                , LogAction(..)
-                                                , Message
-                                                , WithLog
-                                                , log
-                                                , logError
-                                                , logInfo
-                                                , logPrint
-                                                , logPrintStderr
                                                 , logStringStderr
-                                                , logStringStdout
-                                                , logText
-                                                , richMessageAction
-                                                , withLog
                                                 )
-data Silly = Silly Text Int
-  deriving (Eq, Show, Generic)
 
-instance ToJSON Silly
-instance FromJSON Silly
-
-type Status = Bool
-type PrefilterState = (Bool, [B.ByteString])
-
-
-someSilliness :: [B.ByteString]
-someSilliness =
-  ["[\"a\", 5]"
-  ,"[\"a\", 6]"
-  ,"[\"a\", 2]"
-  ,"[\"b\", 2]"
-  ,"[\"c\", 8]"
-  ,"[\"c\", 8]"
-  ,"[\"c\", 10]"
-  ,"[\"d\", 4]"
-  ,"[\"d\", 8]"
-  ,"[\"e\", 1]"
-  ]
-
-someSilliness2 :: B.ByteString
-someSilliness2 = B.intercalate "\n" someSilliness
-
-parseSillyLine :: B.ByteString -> Either String Silly
-parseSillyLine = eitherDecode
+import           Hasklepias.Misc                ( Location(..)
+                                                , readData
+                                                , readDataStrict
+                                                , Input
+                                                , fileInput
+                                                , stdInput
+                                                , s3Input
+                                                , inputToLocation
+                                                )
+import           Options.Applicative
+import Data.Time
+import System.IO
+import           Data.Vector                    ( (!) )
 
 
-p :: Either String Silly -> Bool
-p (Left _ ) = False
-p (Right (Silly _ x)) = x < 6
+--- App Setup
+data MakePrefilterApp = MakePrefilterApp
+  { input  :: Input
+  -- , output :: FilePath
+  }
+
+mainOptions :: Parser MakePrefilterApp
+mainOptions = MakePrefilterApp <$> (fileInput <|> s3Input <|> stdInput)
+--  <*> strOption
+--   (long "output" <> short 'o' <> metavar "FILE" <> value "output.jsonl" <> help
+--     "Output location"
+--   )
+
+makeAppArgs :: ParserInfo MakePrefilterApp
+makeAppArgs  = Options.Applicative.info
+  (mainOptions <**> helper)
+  (fullDesc <> header "Prefilter app")
 
 
-newtype MyState = MyState (Maybe Text, Bool, B.ByteString, B.ByteString)
-  deriving (Show)
+-- newtype AppSubjectEvent a = MkSE (SubjectID, Maybe (Event a))
+--   deriving (Eq, Show, Generic)
 
-instance Semigroup MyState where
-  (<>) (MyState (id0, b0, x0, acc0)) (MyState (id1, b1, x1, acc1)) =
-    if id0 == id1 then
-        MyState (id1, getAny $ Any b0 <> Any b1, x0 <> "\n" <> x1, acc0)
-    else
-        MyState (id1, getAny $ Any b1, x1,
-                if b0 then acc0 <> "\n" <> x0 else acc0)
+-- instance (FromJSON a, Show a, IntervalSizeable a b) => FromJSON (AppSubjectEvent a) where
+--     parseJSON = withArray "Event" $ \a -> do
+--       id <- parseJSON (a ! 0)
+--       let ev = decode $ pars(Array a)
+--       ev <- decode =<< (Array a)
+--       return $ MkSE (id,  ev)
 
--- instance Monoid MyState where
---   mempty = MyState (mempty, getAny mempty, mempty, mempty)
 
-initMyState :: B.ByteString -> MyState
-initMyState x = MyState ( i , p l , x , "")
-        where l = parseSillyLine x
-              i = case l of
-                Left s -> Nothing
-                Right (Silly id int) -> Just id
 
-finalState :: MyState -> B.ByteString
-finalState (MyState (_ , b, x, acc)) = if b then acc <> "\n" <> x else acc
+-- data Silly = Silly Text Int
+--   deriving (Eq, Show, Generic)
 
-myConduitD =
-       yield someSilliness2
-    .| CC.linesUnboundedAscii
-    .| mapC initMyState
-    .| CC.foldl1 (<>)
+-- instance ToJSON Silly
+-- instance FromJSON Silly
 
-main :: IO ()
-main = do
-    res <- runConduit myConduitD
-    let out = fmap (B.toStrict . finalState) res
-    case out of
-      Nothing -> C.putStr ""
-      Just x  -> C.putStrLn x
-    -- C.putStrLn out
+-- type Status = Bool
+-- type PrefilterState = (Bool, [C.ByteString])
 
-newtype MyState2 = MyState2 (Text, Bool, B.ByteString)
+
+-- someSilliness :: [C.ByteString]
+-- someSilliness =
+--   ["[\"a\", 5]"
+--   ,"[\"a\", 6]"
+--   ,"[\"a\", 2]"
+--   ,"[\"b\", 2]"
+--   ,"[\"c\", 8]"
+--   ,"[\"c\", 8]"
+--   ,"[\"c\", 10]"
+--   ,"[\"d\", 4]"
+--   ,"[\"d\", 8]"
+--   ,"[\"e\", 1]"
+--   ]
+
+-- someSilliness2 :: C.ByteString
+-- someSilliness2 = C.intercalate "\n" someSilliness
+
+-- parseSillyLine :: C.ByteString -> Either String Silly
+-- parseSillyLine = eitherDecodeStrict'
+
+
+-- p :: Either String Silly -> Bool
+-- p (Left _ ) = False
+-- p (Right (Silly _ x)) = x < 6
+
+newtype MyState2 = MyState2 (HoldID, Bool, C.ByteString)
   deriving (Show)
 
 instance Semigroup MyState2 where
@@ -133,42 +136,135 @@ instance Semigroup MyState2 where
     else
         MyState2 (id1, getAny $ Any b1, x1)
 
-initMyState2 :: B.ByteString -> MyState2
-initMyState2 x = MyState2 ( i , p l , x)
-        where l = parseSillyLine x
-              i = case l of
-                Left s -> ""
-                Right (Silly id int) -> id
+-- initMyState2 :: C.ByteString -> MyState2
+-- initMyState2 x = MyState2 ( MkID i , p l , x)
+--         where l = parseSillyLine x
+--               i = case l of
+--                 Left s -> ""
+--                 Right (Silly id int) -> id
 
-getId :: MyState2 -> Text
+newtype HoldID = MkID SubjectID deriving (Eq, Show)
+instance FromJSON HoldID where 
+    parseJSON = withArray "Event" $ \a -> do
+      id <- parseJSON (a ! 0)
+      return $ MkID id 
+
+makeMyState2 :: (Show a, FromJSON a, IntervalSizeable a b) =>
+     (C.ByteString -> Maybe (Event a))
+  -> (Event a -> Bool) -- ^ 
+  -> C.ByteString -> MyState2
+makeMyState2 f p x = MyState2 ( id , b , x )
+        where
+            id = fromMaybe (MkID "") (decodeStrict' x :: Maybe HoldID)
+            b  = maybe False p (f x)
+
+getId :: MyState2 -> HoldID
 getId (MyState2 (x, _, _)) = x
 
 getBool :: MyState2 -> Bool
 getBool (MyState2 (_, x, _)) = x
 
-getAcc :: MyState2 -> B.ByteString
+getAcc :: MyState2 -> C.ByteString
 getAcc (MyState2 (_, _, x)) = x
 
 ff :: MyState2 -> MyState2 -> IO MyState2
 ff x y = do
         -- let errLog = logStringStderr
-        z <- case (getId x /= getId y, getBool x) of
-               (True, True)  -> C.putStrLn (B.toStrict $ getAcc x)
-              --  (True, False) -> do errLog <& unpack (getId x)
-               _             -> C.putStr ""
+        case (getId x /= getId y, getBool x) of
+              (True, True)  -> C.putStrLn (getAcc x)
+            --  (True, False) -> do errLog <& show x
+              -- (True, False) -> do errLog <& (unpack . (\(MkID z) -> z)) (getId x)
+            --  _             -> do errLog <& show x
+              _             -> C.putStr ""
         return (x <> y)
 
 fff :: IO MyState2 -> IO MyState2 -> IO MyState2
 fff x y = do join (liftA2 ff x y)
 
+-- myConduitE x =
+--        yield x
+--     .| CC.linesUnboundedAscii
+--     .| mapC (return . initMyState2)
+--     .| CC.foldl1 fff
 
-myConduitE =
-       yield someSilliness2
+
+-- main2 :: IO ()
+-- main2 = do
+--     res <- runConduit (myConduitE someSilliness2)
+--     forM_ res ((C.putStrLn . getAcc) =<<)
+
+myConduitG p x =
+       yield x
     .| CC.linesUnboundedAscii
-    .| mapC (return . initMyState2)
+    .| mapC (return . makeMyState2 decodeStrict' p)
     .| CC.foldl1 fff
 
-main2 :: IO ()
-main2 = do
-    res <- runConduit myConduitE
-    forM_ res ((C.putStrLn . (B.toStrict . getAcc)) =<<)
+
+main3 :: IO ()
+main3 = do
+    dat <- readDataStrict (Local "testMe.jsonl")
+    res <- runConduit (myConduitG (getPredicate isEnrollmentEvent :: Event Day -> Bool) dat)
+    case res of 
+      Nothing    -> pure ()
+      Just final -> final >>= (\x -> if getBool x then (C.putStrLn . getAcc) x
+                                     else pure ())
+
+-- | Type containing the cohort app
+newtype PrefilterApp m = MkPrefilterApp { runPrefilterApp :: Maybe Location -> m C.ByteString }
+
+prefilterC :: (IntervalSizeable a b, FromJSON a, Show a, Monad m) =>
+    (Event a -> Bool)
+  -> C.ByteString
+  -> ConduitM i c m (Maybe (IO MyState2))
+prefilterC p x =
+       yield x
+    .| CC.linesUnboundedAscii
+    .| mapC (return . makeMyState2 decodeStrict' p)
+    .| CC.foldl1 fff
+
+makePrefilterApp :: (Show a, FromJSON a, IntervalSizeable a b) =>
+       (Event a -> Bool)
+    -> PrefilterApp IO
+makePrefilterApp predicate  = MkPrefilterApp $
+    \l -> do
+      options <- execParser makeAppArgs
+      let loc = case l of
+            Nothing -> inputToLocation $ input options
+            Just x  -> x
+        
+      dat <- readDataStrict loc
+      res <- runConduit $ prefilterC predicate dat
+
+      case res of 
+        Nothing    -> pure ""
+        Just final -> final >>= (\x -> if getBool x then pure (getAcc x <> "\n")
+                                      else pure "")
+
+-- | Just run the thing.
+runPreApp :: PrefilterApp IO -> IO ()
+runPreApp x = C.putStr =<< runPrefilterApp x Nothing
+
+testEnrollment :: PrefilterApp IO
+testEnrollment = makePrefilterApp (getPredicate isEnrollmentEvent :: Event Day -> Bool)
+
+-- | Just run the thing with a set location (e.g for testing).
+runPreAppWithLocation :: Location -> PrefilterApp IO -> IO C.ByteString
+runPreAppWithLocation l x = runPrefilterApp x (Just l)
+
+testInputsDay1 :: C.ByteString
+testInputsDay1 =
+      "[\"abc\", \"2020-01-01\", \"2020-01-02\", \"Diagnosis\",\
+      \[\"someThing\"],\
+      \{\"domain\":\"Diagnosis\",\
+      \ \"facts\":{\"code\":{\"code\":\"abc\"}},\
+      \ \"time\":{\"begin\":\"2020-01-01\",\"end\":\"2020-01-01\"}}]\n\
+      \[\"abc\", \"2020-01-05\", \"2020-01-06\", \"Diagnosis\",\
+      \[\"someThing\"],\
+      \{\"domain\":\"Diagnosis\",\
+      \ \"facts\":{\"code\":{\"code\":\"abc\"}},\
+      \ \"time\":{\"begin\":\"2020-01-05\",\"end\":\"2020-01-06\"}}]\n\
+      \[\"abc\", \"2020-01-05\", \"2020-01-06\", \"Enrollment\",\
+      \[\"someThing\"],\
+      \{\"domain\":\"Enrollment\",\
+      \ \"facts\":{},\
+      \ \"time\":{\"begin\":\"2020-01-05\",\"end\":\"2020-01-06\"}}]"

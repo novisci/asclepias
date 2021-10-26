@@ -23,7 +23,13 @@ module Hasklepias.Misc
   , adminCensor
   , Location(..)
   , readData
+  , readDataStrict
   , getS3Object
+  , Input(..)
+  , inputToLocation
+  , stdInput
+  , fileInput
+  , s3Input
   ) where
 
 import           Data.Bool                      ( (&&)
@@ -33,7 +39,7 @@ import           Data.Eq                        ( Eq(..) )
 import           Data.Function                  ( ($)
                                                 , (.)
                                                 )
-import           Data.Maybe                     ( Maybe )
+import           Data.Maybe                     ( Maybe(..) )
 import           Data.Ord                       ( Ord(..)
                                                 , Ordering(..)
                                                 )
@@ -47,8 +53,10 @@ import           Stype.Numeric.Censored         ( MaybeCensored(..) )
 import           Stype.Numeric.Continuous       ( EventTime )
 
 import           Control.Applicative
+import           Control.Monad
 import           Data.Aeson
 import qualified Data.ByteString.Lazy          as B
+import qualified Data.ByteString.Char8         as C
 import           Data.Conduit.Binary            ( sinkLbs )
 import           GHC.IO
 import           Lens.Micro                     ( (<&>)
@@ -58,7 +66,7 @@ import           Lens.Micro                     ( (<&>)
 import           Network.AWS
 import           Network.AWS.S3
 import           System.IO                      ( stderr )
-
+import           Options.Applicative
 
 -- | A simple typeclass for making a type a "reason" for an event.
 class (Ord a, Show a) => OccurrenceReason a where
@@ -116,12 +124,19 @@ data Location where
   StdIn ::Location
   Local ::FilePath -> Location
   S3    ::Region -> BucketName -> ObjectKey -> Location
+  deriving (Show)
 
 -- | Read data from a @Location@. 
 readData :: Location -> IO B.ByteString
 readData StdIn      = B.getContents
 readData (Local x ) = B.readFile x
 readData (S3 r b k) = getS3Object r b k
+
+-- | Read data from a @Location@. 
+readDataStrict :: Location -> IO C.ByteString
+readDataStrict StdIn      = C.getContents
+readDataStrict (Local x ) = C.readFile x
+readDataStrict (S3 r b k) = fmap B.toStrict (getS3Object r b k)
 
 -- | Get an object from S3. 
 getS3Object :: Region -> BucketName -> ObjectKey -> IO B.ByteString
@@ -131,3 +146,42 @@ getS3Object r b k = do
   runResourceT . runAWS env $ do
     result <- send $ getObject b k
     (result ^. gorsBody) `sinkBody` sinkLbs
+
+
+-- | Type to hold input information. Either from file or from S3. 
+data Input =
+     StdInput
+   | FileInput (Maybe FilePath) FilePath
+   | S3Input BucketName ObjectKey
+   deriving (Show)
+
+-- | TODO
+inputToLocation :: Input -> Location
+inputToLocation StdInput        = StdIn
+inputToLocation (FileInput d f) = Local (pre f)
+ where
+  pre = case d of
+    Nothing -> (<>) ""
+    Just s  -> (<>) (s <> "/")
+inputToLocation (S3Input b k) = S3 NorthVirginia b k
+
+stdInput :: Parser Input
+stdInput = pure StdInput
+
+fileInput :: Parser Input
+fileInput =
+  FileInput
+    <$> optional
+          (strOption $ long "dir" <> short 'd' <> metavar "DIRECTORY" <> help
+            "optional directory"
+          )
+    <*> strOption
+          (long "file" <> short 'f' <> metavar "INPUT" <> help "Input file")
+
+s3Input :: Parser Input
+s3Input =
+  S3Input
+    <$> strOption
+          (long "bucket" <> short 'b' <> metavar "Bucket" <> help "S3 bucket")
+    <*> strOption
+          (long "key" <> short 'k' <> metavar "KEY" <> help "S3 location")

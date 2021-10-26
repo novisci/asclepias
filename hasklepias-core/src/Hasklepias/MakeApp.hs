@@ -82,46 +82,15 @@ import           Data.Semigroup                 ( Semigroup((<>)) )
 import qualified Data.Text                     as T
 import           Hasklepias.Misc                ( Location(..)
                                                 , readData
+                                                , Input
+                                                , fileInput
+                                                , stdInput
+                                                , s3Input
+                                                , inputToLocation
                                                 )
-import           Network.AWS.S3
 import           Options.Applicative
 
--- | Type to hold input information. Either from file or from S3. 
-data Input =
-     StdInput
-   | FileInput (Maybe FilePath) FilePath
-   | S3Input BucketName ObjectKey
-   deriving (Show)
 
-inputToLocation :: Input -> Location
-inputToLocation StdInput        = StdIn
-inputToLocation (FileInput d f) = Local (pre f)
- where
-  pre = case d of
-    Nothing -> (<>) ""
-    Just s  -> (<>) (s <> "/")
-inputToLocation (S3Input b k) = S3 NorthVirginia b k
-
-stdInput :: Parser Input
-stdInput = pure StdInput
-
-fileInput :: Parser Input
-fileInput =
-  FileInput
-    <$> optional
-          (strOption $ long "dir" <> short 'd' <> metavar "DIRECTORY" <> help
-            "optional directory"
-          )
-    <*> strOption
-          (long "file" <> short 'f' <> metavar "INPUT" <> help "Input file")
-
-s3input :: Parser Input
-s3input =
-  S3Input
-    <$> strOption
-          (long "bucket" <> short 'b' <> metavar "Bucket" <> help "S3 bucket")
-    <*> strOption
-          (long "key" <> short 'k' <> metavar "KEY" <> help "S3 location")
 
 data MakeCohort = MakeCohort
   { input :: Input
@@ -129,7 +98,7 @@ data MakeCohort = MakeCohort
   }
 
 mainOptions :: Parser MakeCohort
-mainOptions = MakeCohort <$> (fileInput <|> s3input <|> stdInput) <*> strOption
+mainOptions = MakeCohort <$> (fileInput <|> s3Input <|> stdInput) <*> strOption
   (long "output" <> short 'o' <> metavar "FILE" <> value "output.json" <> help
     "Output location"
   )

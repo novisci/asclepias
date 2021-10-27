@@ -49,6 +49,7 @@ library
       EventData.Context.Facts.LabValue
       EventData.Context.Facts.Location
       EventData.Context.Facts.Plan
+      EventData.Context.Facts.Provider
   hs-source-dirs:
       src
   build-depends:

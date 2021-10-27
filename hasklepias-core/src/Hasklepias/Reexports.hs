@@ -100,6 +100,7 @@ import safe      Data.List                      ( (++)
                                                 , map
                                                 , null
                                                 , replicate
+                                                , partition
                                                 , scanl'
                                                 , scanl1
                                                 , sort
@@ -193,6 +194,10 @@ import safe      Flow                           ( (!>)
                                                 )
 import           Safe                           ( headMay
                                                 , lastMay
+                                                , tailMay
+                                                , initMay
+                                                , maximumMay
+                                                , minimumMay
                                                 )
 import safe      Witherable                     ( Filterable(filter)
                                                 , Witherable(..)

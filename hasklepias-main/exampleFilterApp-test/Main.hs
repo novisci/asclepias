@@ -36,7 +36,7 @@ testDir = "exampleFilterApp-test/test/"
 runTest :: String -> IO ()
 runTest x = do
     hFlush stdout -- flush stdout as test info sometimes being sent to file if running test
-    threadDelay 10 -- pause 10 microseconds
+    threadDelay 50 -- pause 10 microseconds
     r <- capture $ runFilterAppWithLocation (Local (testDir <> "test-" <> x <> ".jsonl"))
                             exampleFilterApp
 

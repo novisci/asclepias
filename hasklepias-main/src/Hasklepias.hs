@@ -48,6 +48,7 @@ module Hasklepias
 
     -- ** Create a cohort application
   , module Hasklepias.MakeApp
+  , module Hasklepias.AppUtilities
     -- ** Create an application for filtering subjects
   , module Hasklepias.MakeFilterApp
 
@@ -69,6 +70,7 @@ import           Features
 import           Cohort
 
 import           Hasklepias.FeatureEvents
+import           Hasklepias.AppUtilities
 import           Hasklepias.MakeApp
 import           Hasklepias.MakeFilterApp
 import           Hasklepias.Misc

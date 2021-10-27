@@ -1,0 +1,4 @@
+["a", "2019-01-01", null, "Demographics", [], {"domain" : "Demographics", "time": {"begin" : "2019-01-01", "end" : null}, "facts" : {"demo" : {"field" : "BirthYear", "info" : "1960"} } }]
+["b", "2017-01-01", null, "Demographics", [], {"domain" : "Demographics", "time": {"begin" : "2017-01-01", "end" : null}, "facts" : {"demo" : {"field" : "BirthYear", "info" : "1959"} } }]
+["b", "2018-01-01", null, "Demographics", [], {"domain" : "Demographics", "time": {"begin" : "2018-01-01", "end" : null}, "facts" : {"demo" : {"field" : "BirthYear", "info" : "1959"} } }]
+["c", "2016-01-01", null, "Demographics", [], {"domain" : "Demographics", "time": {"begin" : "2016-01-01", "end" : null}, "facts" : {"demo" : {"field" : "BirthYear", "info" : "1884"} } }]

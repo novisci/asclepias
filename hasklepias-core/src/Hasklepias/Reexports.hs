@@ -62,9 +62,9 @@ import safe      Control.Monad                  ( (=<<)
                                                 , (>>=)
                                                 , Functor(..)
                                                 , Monad(..)
+                                                , filterM
                                                 , join
                                                 , mfilter
-                                                , filterM
                                                 )
 import safe      Data.Bifunctor                 ( Bifunctor(..) )
 import safe      Data.Bool                      ( (&&)
@@ -79,9 +79,9 @@ import safe      Data.Eq                        ( (==)
                                                 , Eq
                                                 )
 import safe      Data.Foldable                  ( Foldable(..)
+                                                , asum
                                                 , maximum
                                                 , minimum
-                                                , asum
                                                 )
 import safe      Data.Function                  ( ($)
                                                 , (.)
@@ -166,9 +166,9 @@ import safe      Data.Tuple                     ( curry
                                                 , snd
                                                 , uncurry
                                                 )
-import safe      Data.Tuple.Curry               ( curryN
+import safe      Data.Tuple.Curry               ( Curry(..)
+                                                , curryN
                                                 , uncurryN
-                                                , Curry(..)
                                                 )
 import safe      GHC.Generics                   ( Generic )
 import safe      GHC.Num                        ( Integer(..)

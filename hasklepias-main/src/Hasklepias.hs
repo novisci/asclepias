@@ -46,8 +46,11 @@ module Hasklepias
     -- * Specifying and building cohorts
   , module Cohort
 
-    -- ** Creating an executable cohort application
+    -- ** Create a cohort application
   , module Hasklepias.MakeApp
+  , module Hasklepias.AppUtilities
+    -- ** Create an application for filtering subjects
+  , module Hasklepias.MakeFilterApp
 
     -- * Statistical Types
   , module Stype
@@ -67,7 +70,9 @@ import           Features
 import           Cohort
 
 import           Hasklepias.FeatureEvents
+import           Hasklepias.AppUtilities
 import           Hasklepias.MakeApp
+import           Hasklepias.MakeFilterApp
 import           Hasklepias.Misc
 import           Hasklepias.Reexports
 import           Hasklepias.ReexportsUnsafe

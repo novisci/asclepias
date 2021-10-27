@@ -14,16 +14,13 @@ These functions may be moved to more appropriate modules in future versions.
 
 module Hasklepias.Misc
   ( Occurrence(..)
-  , makeOccurrence
-  , getOccurrenceReason
-  , getOccurrenceTime
   , CensoringReason(..)
   , OccurrenceReason(..)
   , CensoredOccurrence(..)
+  , makeOccurrence
+  , getOccurrenceReason
+  , getOccurrenceTime
   , adminCensor
-  , Location(..)
-  , readData
-  , getS3Object
   ) where
 
 import           Data.Bool                      ( (&&)
@@ -33,7 +30,7 @@ import           Data.Eq                        ( Eq(..) )
 import           Data.Function                  ( ($)
                                                 , (.)
                                                 )
-import           Data.Maybe                     ( Maybe )
+import           Data.Maybe                     ( Maybe(..) )
 import           Data.Ord                       ( Ord(..)
                                                 , Ordering(..)
                                                 )
@@ -45,20 +42,6 @@ import           GHC.Generics                   ( Generic )
 import           GHC.Show                       ( Show(..) )
 import           Stype.Numeric.Censored         ( MaybeCensored(..) )
 import           Stype.Numeric.Continuous       ( EventTime )
-
-import           Control.Applicative
-import           Data.Aeson
-import qualified Data.ByteString.Lazy          as B
-import           Data.Conduit.Binary            ( sinkLbs )
-import           GHC.IO
-import           Lens.Micro                     ( (<&>)
-                                                , (^.)
-                                                , set
-                                                )
-import           Network.AWS
-import           Network.AWS.S3
-import           System.IO                      ( stderr )
-
 
 -- | A simple typeclass for making a type a "reason" for an event.
 class (Ord a, Show a) => OccurrenceReason a where
@@ -107,27 +90,3 @@ instance (OccurrenceReason c, OccurrenceReason o, Show b) =>
 -- | Creates an administratively censored occurrence.
 adminCensor :: EventTime b -> CensoredOccurrence c o b
 adminCensor t = MkCensoredOccurrence AdminCensor (RightCensored t)
-
-
-{--}
-
--- | Type representing locations that data can be read from
-data Location where
-  StdIn ::Location
-  Local ::FilePath -> Location
-  S3    ::Region -> BucketName -> ObjectKey -> Location
-
--- | Read data from a @Location@. 
-readData :: Location -> IO B.ByteString
-readData StdIn      = B.getContents
-readData (Local x ) = B.readFile x
-readData (S3 r b k) = getS3Object r b k
-
--- | Get an object from S3. 
-getS3Object :: Region -> BucketName -> ObjectKey -> IO B.ByteString
-getS3Object r b k = do
-  lgr <- newLogger Debug stderr
-  env <- newEnv Discover <&> set envLogger lgr . set envRegion r
-  runResourceT . runAWS env $ do
-    result <- send $ getObject b k
-    (result ^. gorsBody) `sinkBody` sinkLbs

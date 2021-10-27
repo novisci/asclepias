@@ -8,6 +8,7 @@ Module      : Plan fact
 module EventData.Context.Facts.Plan(
     Plan(..)
   , emptyPlan
+  , singleOrArrayToList
 ) where
 import Data.Aeson               ( FromJSON )
 import Data.Eq                  ( Eq )
@@ -22,6 +23,10 @@ data SingleOrArray a =
     S a
   | A [a]
    deriving (Eq, Show, Generic)
+
+singleOrArrayToList :: SingleOrArray a -> [a]
+singleOrArrayToList (S x) = [x]
+singleOrArrayToList (A x) = x
 
 instance FromJSON a => FromJSON (SingleOrArray a) where
 

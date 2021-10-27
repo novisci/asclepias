@@ -63,6 +63,7 @@ dx = Diagnosis
   (DiagnosisFacts { code     = F.Code { F.code = "abc", F.codebook = Nothing }
                   , claim    = Nothing
                   , location = Nothing
+                  , provider = Nothing
                   }
   )
 

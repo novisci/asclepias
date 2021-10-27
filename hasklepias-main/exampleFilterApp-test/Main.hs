@@ -35,8 +35,16 @@ testDir = "exampleFilterApp-test/test/"
 
 runTest :: String -> IO ()
 runTest x = do
+    -- The filter application writes to stdout as it goes, hence I use the 
+    -- capture function to collect that output. Unfortunately, this has the 
+    -- effect of adding some non-determinism to the test suite because it can 
+    -- happen that the output of the test module itself is also captured.
+    -- Hence, I'm adding some stdout flushing and delays to try to prevent that.
+    -- FWIW, the filter app could probably be architected such that capture is
+    -- not needed, but that requires more willpower and knowledge than I have 
+    -- at the moment. -- bsaul 2021-10-27
     hFlush stdout -- flush stdout as test info sometimes being sent to file if running test
-    threadDelay 50 -- pause 10 microseconds
+    threadDelay 500 -- pause 500 microseconds
     r <- capture $ runFilterAppWithLocation (Local (testDir <> "test-" <> x <> ".jsonl"))
                             exampleFilterApp
 

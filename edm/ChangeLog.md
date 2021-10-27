@@ -3,7 +3,8 @@
 ## 0.23.2
 
 * Adds `previewBenefit`, `previewBenefitE`, `previewExchange`, and `previewExchangeE` for accessing the `benefit` or `exchange` field from a `Plan` within the `Enrollment` or `Eligibility` `Domain`s. Functions ending in `E` take an `Event` as input.
-* Add the `Provider` fact to align with EDM v1.2. Adds corresponding field to the facts of the `Diagnosis`, `Medication`, and `Procedure` domains.
+* Adds the `Provider` fact to align with EDM v1.2. Adds corresponding field to the facts of the `Diagnosis`, `Medication`, and `Procedure` domains.
+* Adds `previewCode` and `previewCodeE` for accessing the `Text` part of a `Code` (i.e. the code without the codebook).
 
 ## 0.23.1
 

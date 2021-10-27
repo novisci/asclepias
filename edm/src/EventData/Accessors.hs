@@ -14,6 +14,8 @@ module EventData.Accessors
   ( viewBirthYears
   , viewGenders
   , viewStates
+  , previewCode
+  , previewCodeE
   , previewBenefit
   , previewBenefitE
   , previewExchange
@@ -26,7 +28,7 @@ module EventData.Accessors
   ) where
 
 import           Lens.Micro                     ( (^?) )
-import           Control.Applicative
+import           Control.Applicative            ( Alternative((<|>)) )
 import           Control.Monad                  ( (=<<)
                                                 , (>>=)
                                                 , Functor(fmap)
@@ -37,6 +39,7 @@ import           Data.Function                  ( ($)
                                                 , (.)
                                                 , const
                                                 )
+import           Data.Functor                   ((<&>))
 import           Data.Functor.Contravariant     ( Predicate(..) )
 import           Data.Generics.Internal.VL.Lens ( (^.) )
 import           Data.Generics.Product          ( HasField(field) )
@@ -95,6 +98,19 @@ previewDaysSupply :: Domain -> Maybe Integer
 previewDaysSupply dmn =
   (dmn ^? _As @"Medication") >>= (^. field @"fill") >>= (^. field @"days_supply")
 
+-- | Preview the text part of a 'Code' from a 'Diagnosis', 'Labs', 
+--  'Medication', or 'Procedure' Domain.
+previewCode :: Domain -> Maybe Text 
+previewCode dmn =
+      ((dmn ^? (_As @"Diagnosis")) <&> (^. field @"code" . field @"code" ))
+  <|> ((dmn ^? (_As @"Labs")) <&> (^. field @"code" . field @"code"))
+  <|> ((dmn ^? (_As @"Medication")) <&> (^. field @"code" . field @"code"))
+  <|> ((dmn ^? (_As @"Procedure")) <&> (^. field @"code" . field @"code"))
+
+-- | Preview the text part of a 'Code' from an event, using `previewCode'.
+previewCodeE :: Event a -> Maybe Text
+previewCodeE = previewCode . facts . ctxt 
+
 -- | Preview @Provider@ from 'Diagnosis', 'Medication', or 'Procedure' Domain
 previewProvider :: Domain -> Maybe Provider 
 previewProvider dmn =
@@ -114,7 +130,7 @@ previewBenefit x = previewPlan x >>= (^? field @"benefit") >>= fmap singleOrArra
 
 -- | View the @exchange@ field of a @Event@
 previewBenefitE :: Event a -> Maybe [Text]  
-previewBenefitE x = previewBenefit (ctxt x ^. field @"facts")
+previewBenefitE = previewBenefit . facts . ctxt
 
 -- | View the @exchange@ field of a @Plan@
 previewExchange :: Domain -> Maybe Exchange 
@@ -122,7 +138,7 @@ previewExchange x = previewPlan x >>= (^? field @"exchange")
 
 -- | View the @exchange@ field of a @Event@
 previewExchangeE :: Event a -> Maybe Exchange  
-previewExchangeE x = previewExchange (ctxt x ^. field @"facts")
+previewExchangeE = previewExchange . facts . ctxt 
 
 -- | Preview birth year from a domain
 previewBirthYear :: Domain -> Maybe Year

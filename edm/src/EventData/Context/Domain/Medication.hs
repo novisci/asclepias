@@ -23,6 +23,7 @@ data MedicationFacts = MedicationFacts {
      , claim :: Maybe Claim
      , location :: Maybe Location
      , fill :: Maybe Fill
+     , provider :: Maybe Provider
   } 
   deriving( Eq, Show, Generic )
 

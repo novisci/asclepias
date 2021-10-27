@@ -14,12 +14,19 @@ module EventData.Accessors
   ( viewBirthYears
   , viewGenders
   , viewStates
+  , previewBenefit
+  , previewBenefitE
+  , previewExchange
+  , previewExchangeE
   , previewDemoInfo
   , previewBirthYear
   , previewDaysSupply
+  , previewPlan
+  , previewProvider
   ) where
 
 import           Lens.Micro                     ( (^?) )
+import           Control.Applicative
 import           Control.Monad                  ( (=<<)
                                                 , (>>=)
                                                 , Functor(fmap)
@@ -36,6 +43,7 @@ import           Data.Generics.Product          ( HasField(field) )
 import           Data.Generics.Sum              ( AsAny(_As) )
 import           Data.Maybe                     ( Maybe(..) )
 import           Data.Ord                       ( Ord )
+import           Data.Semigroup                 ( (<>) )
 import           Data.Text                      ( Text )
 import           Data.Text.Read                 ( rational )
 import           Data.Time.Calendar             ( Day
@@ -56,6 +64,7 @@ import           EventData.Context.Domain       ( Domain(..)
                                                 , demo
                                                 , info
                                                 )
+import           EventData.Context.Facts
 import           EventData.Core                 ( Event
                                                 , ctxt
                                                 )
@@ -85,6 +94,35 @@ intMayMap x =
 previewDaysSupply :: Domain -> Maybe Integer 
 previewDaysSupply dmn =
   (dmn ^? _As @"Medication") >>= (^. field @"fill") >>= (^. field @"days_supply")
+
+-- | Preview @Provider@ from 'Diagnosis', 'Medication', or 'Procedure' Domain
+previewProvider :: Domain -> Maybe Provider 
+previewProvider dmn =
+      ((dmn ^? (_As @"Diagnosis")) >>= (^. field @"provider"))
+  <|> ((dmn ^? (_As @"Medication")) >>= (^. field @"provider"))
+  <|> ((dmn ^? (_As @"Procedure")) >>= (^. field @"provider"))
+
+-- | Preview @Plan@ from 'Eligibility' or 'Enrollment' Domain
+previewPlan :: Domain -> Maybe Plan 
+previewPlan dmn =
+      ((dmn ^? (_As @"Eligibility")) >>= (^. field @"plan"))
+  <|> ((dmn ^? (_As @"Enrollment")) >>= (^. field @"plan"))
+
+-- | View the @benefit@ field of a @Plan@
+previewBenefit :: Domain -> Maybe [Text]
+previewBenefit x = previewPlan x >>= (^? field @"benefit") >>= fmap singleOrArrayToList
+
+-- | View the @exchange@ field of a @Event@
+previewBenefitE :: Event a -> Maybe [Text]  
+previewBenefitE x = previewBenefit (ctxt x ^. field @"facts")
+
+-- | View the @exchange@ field of a @Plan@
+previewExchange :: Domain -> Maybe Exchange 
+previewExchange x = previewPlan x >>= (^? field @"exchange")
+
+-- | View the @exchange@ field of a @Event@
+previewExchangeE :: Event a -> Maybe Exchange  
+previewExchangeE x = previewExchange (ctxt x ^. field @"facts")
 
 -- | Preview birth year from a domain
 previewBirthYear :: Domain -> Maybe Year

@@ -24,10 +24,14 @@ module Hasklepias.ReexportsUnsafe
 import           Data.Aeson                     ( ToJSON(..)
                                                 , encode
                                                 )
+import           Data.Generics.Internal.VL.Lens
+                                               as Lens
+                                                ( (^.) )
+import           Data.Generics.Product         as Lens
+                                                ( HasField(field) )
+import           Data.Generics.Sum             as Lens
+                                                ( AsAny(_As) )
 import           GHC.Exts                       ( IsList(fromList) )
 import           GHC.IO                         ( IO(..) )
-import           Data.Generics.Internal.VL.Lens as Lens ( (^.) ) 
-import           Data.Generics.Product as Lens         ( HasField(field) ) 
-import           Data.Generics.Sum   as Lens           ( AsAny(_As) ) 
 import           Test.Tasty              hiding ( after )
 import           Test.Tasty.HUnit

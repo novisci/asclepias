@@ -29,9 +29,6 @@ import           Data.Aeson                     ( FromJSON
                                                 , encode
                                                 )
 import           Data.Bifunctor                 ( Bifunctor(second) )
-import qualified Data.ByteString.Lazy          as B
-import           Data.ByteString.Lazy.Char8    as C
-                                                ( putStrLn )
 import           Data.Function                  ( ($)
                                                 , (.)
                                                 )
@@ -83,48 +80,10 @@ import qualified Data.ByteString.Lazy.Char8    as C
                                                 )
 import           Data.Semigroup                 ( Semigroup((<>)) )
 import qualified Data.Text                     as T
-import           Hasklepias.Misc                ( Location(..)
-                                                , readData
-                                                )
-import           Network.AWS.S3
+import           Hasklepias.AppUtilities
 import           Options.Applicative
 
--- | Type to hold input information. Either from file or from S3. 
-data Input =
-     StdInput
-   | FileInput (Maybe FilePath) FilePath
-   | S3Input BucketName ObjectKey
-   deriving (Show)
 
-inputToLocation :: Input -> Location
-inputToLocation StdInput        = StdIn
-inputToLocation (FileInput d f) = Local (pre f)
- where
-  pre = case d of
-    Nothing -> (<>) ""
-    Just s  -> (<>) (s <> "/")
-inputToLocation (S3Input b k) = S3 NorthVirginia b k
-
-stdInput :: Parser Input
-stdInput = pure StdInput
-
-fileInput :: Parser Input
-fileInput =
-  FileInput
-    <$> optional
-          (strOption $ long "dir" <> short 'd' <> metavar "DIRECTORY" <> help
-            "optional directory"
-          )
-    <*> strOption
-          (long "file" <> short 'f' <> metavar "INPUT" <> help "Input file")
-
-s3input :: Parser Input
-s3input =
-  S3Input
-    <$> strOption
-          (long "bucket" <> short 'b' <> metavar "Bucket" <> help "S3 bucket")
-    <*> strOption
-          (long "key" <> short 'k' <> metavar "KEY" <> help "S3 location")
 
 data MakeCohort = MakeCohort
   { input :: Input
@@ -132,7 +91,7 @@ data MakeCohort = MakeCohort
   }
 
 mainOptions :: Parser MakeCohort
-mainOptions = MakeCohort <$> (fileInput <|> s3input <|> stdInput) <*> strOption
+mainOptions = MakeCohort <$> (fileInput <|> s3Input <|> stdInput) <*> strOption
   (long "output" <> short 'o' <> metavar "FILE" <> value "output.json" <> help
     "Output location"
   )
@@ -186,8 +145,7 @@ makeCohortApp
   -> (Cohort d0 -> CohortJSON) -- ^ a function which specifies the output shape
   -> CohortSetSpec (Events a) d0 i a  -- ^ a list of cohort specifications
   -> CohortApp IO
-makeCohortApp name version shape spec = MkCohortApp $
-  \l -> do
+makeCohortApp name version shape spec = MkCohortApp $ \l -> do
   options <- execParser (makeAppArgs name version)
   let errLog = logStringStderr
 
@@ -196,11 +154,11 @@ makeCohortApp name version shape spec = MkCohortApp $
 
   errLog <& "Reading data from stdin..."
   -- TODO: give error if no contents within some amount of time
-  
+
   -- let loc = inputToLocation $ input options
   let loc = case l of
-            Nothing -> inputToLocation $ input options
-            Just x  -> x
+        Nothing -> inputToLocation $ input options
+        Just x  -> x
 
   dat <- readData loc
 

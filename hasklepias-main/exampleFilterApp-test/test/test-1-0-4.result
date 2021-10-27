@@ -1,0 +1,3 @@
+["a", "2015-01-01", null, "Demographics", [], {"domain" : "Demographics", "time": {"begin" : "2010-01-01", "end" : null}, "facts" : {"demo" : {"field" : "BirthYear", "info" : "1960"} } }]
+["a", "2016-01-01", "2017-12-31", "Enrollment", [], {"domain" : "Enrollment","facts":{"plan":{"exchange":"None"}},"time":{"begin":"2016-01-01","end":"2017-12-31"}}]
+["a", "2018-01-01", "2019-12-31", "Enrollment", [], {"domain" : "Enrollment","facts":{"plan":{"exchange":"None"}},"time":{"begin":"2016-01-01","end":"2017-12-31"}}]

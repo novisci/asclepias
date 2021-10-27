@@ -18,6 +18,7 @@ module Cohort.Input
   ( parsePopulationLines
   , parsePopulationIntLines
   , parsePopulationDayLines
+  , SubjectEvent(..)
   , SubjectParseError(..)
   ) where
 

@@ -34,7 +34,7 @@ import           Cohort.Output                  ( CohortSetJSON )
 import           Network.AWS
 import           Network.AWS.S3
 import           System.IO                      ( stderr )
-import           Hasklepias.Misc
+import           Hasklepias.AppUtilities hiding (Input(..))
 
 
 getCohortData :: Location -> IO (Maybe CohortSetJSON)

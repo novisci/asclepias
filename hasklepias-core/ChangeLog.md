@@ -1,5 +1,10 @@
 # Changelog for hasklepias-core
 
+## 0.22.6
+
+* Moves application IO related functions and types from `Hasklepias.Misc` to `Hasklepias.AppUtilities`.
+* Creates the `Hasklepias.MakeFilterApp` module, which exposes the `makeFilterApp` function, which like `makeCohortApp` returns an application that can be executed in a `main` function. The `makeFilterApp` takes two arguments: 1) a string for the name of the application (e.g. the project ID) and 2) a predicate function of type `Event a -> Bool`. The application takes event data formatted as [`ndjson`](http://ndjson.org/) (i.e. one event per line). The application returns the event data filtered to all those subjects who have at least one event satisfying the given predicate. Each subject's data must be grouped in contiguous chunks of lines; otherwise, the application may not behave as expected and will not warn or raise an error. Lines that fail to parse as an `Event` do not satisfy the predicate, but are not dropped from the output. In other words, all of a subject's data is returned in the same order as the input, provided that at least one line successfully parses into an `Event` and satisfies the predicate.
+
 ## 0.22.5
 
 * Adds `asum` to reexports module.

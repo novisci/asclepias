@@ -128,6 +128,7 @@ import safe      Data.Maybe                     ( Maybe(..)
                                                 , maybeToList
                                                 )
 import safe      Data.Monoid                    ( (<>)
+                                                , mconcat
                                                 , Monoid(..)
                                                 )
 import safe      Data.Ord                       ( Ord(..)

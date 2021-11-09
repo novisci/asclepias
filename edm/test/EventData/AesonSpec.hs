@@ -89,6 +89,7 @@ dx = Diagnosis
                   , claim    = Nothing
                   , location = Nothing
                   , provider = Nothing
+                  , hospitalization = Nothing
                   }
   )
 

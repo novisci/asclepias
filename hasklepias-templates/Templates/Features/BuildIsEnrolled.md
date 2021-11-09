@@ -45,11 +45,11 @@ buildIsEnrolled predicate = define
 
 ```haskell
 type IsEnrolledArgs
-  = ( OneTuple (Predicate (Event Int ) )) 
-  -- use of OneTuple is because buildIsEnrolled takes a single argument and the
-  -- OneTuple is needed to match the Curry constraints in the makeBuilderAssertion
-  -- (via makeTestGroup). In the buildIsEnrolledTestCases, the OneTuple by its
-  -- Applicative instance using `pure`. 
+  = ( Solo (Predicate (Event Int ) )) 
+  -- use of Solo is because buildIsEnrolled takes a single argument and the
+  -- Solo is needed to match the Curry constraints in the makeBuilderAssertion
+  -- (via makeTestGroup). In the buildIsEnrolledTestCases, the Solo is created 
+  -- by its Applicative instance using `pure`. 
 
 type IsEnrolledTestCase = 
   TestCase

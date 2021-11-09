@@ -43,7 +43,7 @@ testInDay =
           \[\"someThing\"],\
           \{\"domain\":\"Diagnosis\",\
           \ \"facts\":{\"code\":{\"code\":\"abc\"}},\
-          \ \"source\":{\"table\":\"someTable\"},\
+          \ \"source\":{\"table\":\"someTable\",\"database\":\"someDb\"},\
           \ \"time\":{\"begin\":\"2020-01-01\",\"end\":\"2020-01-01\"}}]"
 
 testInDay2 :: B.ByteString
@@ -52,7 +52,7 @@ testInDay2 =
           \[\"someThing\"],\
           \{\"domain\":\"Diagnosis\",\
           \ \"facts\":{\"code\":{\"code\":\"abc\"}},\
-          \ \"source\":{\"table\":\"someTable\"},\
+          \ \"source\":{\"table\":\"someTable\",\"database\":\"someDb\"},\
           \ \"time\":{\"begin\":\"2020-01-01\",\"end\":null}}]"
 
 
@@ -62,7 +62,7 @@ testInputsDay =
       \[\"someThing\"],\
       \{\"domain\":\"Diagnosis\",\
       \ \"facts\":{\"code\":{\"code\":\"abc\"}},\
-      \ \"source\":{\"table\":\"someTable\"},\
+      \ \"source\":{\"table\":\"someTable\",\"database\":\"someDb\"},\
       \ \"time\":{\"begin\":\"2020-01-01\",\"end\":\"2020-01-01\"}}]\n\
       \[\"abc\", \"2020-01-05\", \"2020-01-06\", \"Diagnosis\",\
       \[\"someThing\"],\
@@ -103,7 +103,8 @@ testOutDay1 = event
   (HC.context
     dx
     (packConcepts ["someThing"])
-    (Just $ Source { table  = "someTable"
+    (Just $ Source { database = "someDb"
+                   , table  = "someTable"
                    , file   = Nothing
                    , row    = Nothing
                    , column = Nothing
@@ -137,7 +138,8 @@ jsonDeathTest :: B.ByteString
 jsonDeathTest = "{\"domain\":\"Death\",\"facts\":{}}"
 
 src1 :: HC.Source
-src1 = HC.Source { table  = "someTable"
+src1 = HC.Source { database = "someDb"
+                 , table  = "someTable"
                  , row    = Just 1
                  , column = Just "someColumn"
                  , file   = Just "someFile"
@@ -145,7 +147,7 @@ src1 = HC.Source { table  = "someTable"
 
 jsonSrc1Test :: B.ByteString
 jsonSrc1Test =
-  "{\"table\":\"someTable\",\"row\":1,\"file\":\"someFile\",\"column\":\"someColumn\"}"
+  "{\"table\":\"someTable\",\"row\":1,\"file\":\"someFile\",\"column\":\"someColumn\",\"database\":\"someDb\"}"
 
 jsonOtherTest :: B.ByteString
 jsonOtherTest = "{\"domain\":\"NotANothing\",\"facts\":{\"code\":{\"code\":\"XYZ\"}}}"

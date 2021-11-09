@@ -71,6 +71,7 @@ data Source = Source
     , file   :: Maybe Text
     , row    :: Maybe Integer
     , table  :: Text
+    , database :: Text
     }
   deriving (Eq, Show, Generic)
 

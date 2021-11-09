@@ -46,6 +46,7 @@ library
       EventData.Context.Facts.Codebook
       EventData.Context.Facts.Exchange
       EventData.Context.Facts.Fill
+      EventData.Context.Facts.Hospitalization    
       EventData.Context.Facts.LabValue
       EventData.Context.Facts.Location
       EventData.Context.Facts.Plan

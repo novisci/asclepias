@@ -14,7 +14,8 @@ module Hasklepias.Reexports
   (
 
     -- ** Re-exports
-    module GHC.Num
+    module GHC.Enum
+  , module GHC.Num
   , module GHC.Real
   , module GHC.Generics
   , module GHC.Show
@@ -36,6 +37,7 @@ module Hasklepias.Reexports
   , module M
   , module Data.Ord
   , module Data.Proxy
+  , module Data.Semigroup
   , module Set
   , module Data.Time.Calendar
   , module Data.Text
@@ -82,6 +84,8 @@ import safe      Data.Foldable                  ( Foldable(..)
                                                 , asum
                                                 , maximum
                                                 , minimum
+                                                , or
+                                                , and
                                                 )
 import safe      Data.Function                  ( ($)
                                                 , (.)
@@ -137,6 +141,7 @@ import safe      Data.Ord                       ( Ord(..)
                                                 , min
                                                 )
 import safe      Data.Proxy                     ( Proxy(..) )
+import safe      Data.Semigroup                 ( Semigroup(..) )
 import safe qualified Data.Set                 as Set
                                                 ( Set(..)
                                                 , empty
@@ -172,6 +177,7 @@ import safe      Data.Tuple.Curry               ( Curry(..)
                                                 , curryN
                                                 , uncurryN
                                                 )
+import safe      GHC.Enum                       ( Enum(fromEnum) )
 import safe      GHC.Generics                   ( Generic )
 import safe      GHC.Num                        ( Integer(..)
                                                 , Natural(..)

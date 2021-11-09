@@ -4,6 +4,7 @@ Module      : Event Data Diagnosis Domain
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE Trustworthy #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DuplicateRecordFields #-}
 
 module EventData.Context.Domain.Diagnosis(
   DiagnosisFacts(..)
@@ -16,12 +17,13 @@ import GHC.Generics             ( Generic )
 import GHC.Show                 ( Show )
 import EventData.Context.Facts
 
--- | An enrollment fact
+-- | A Diagnosis domain
 data DiagnosisFacts = DiagnosisFacts {
        code :: Code
      , claim :: Maybe Claim
      , location :: Maybe Location
      , provider :: Maybe Provider
+     , hospitalization :: Maybe Hospitalization
   } 
   deriving( Eq, Show, Generic )
 

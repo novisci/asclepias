@@ -25,10 +25,12 @@ module EventData.Accessors
   , previewDaysSupply
   , previewPlan
   , previewProvider
+  , previewDischargeStatus
+  , previewLengthOfStay
   ) where
 
 import           Lens.Micro                     ( (^?) )
-import           Control.Applicative            ( Alternative((<|>)) )
+import           Control.Applicative            ( Alternative((<|>)), (<*>) )
 import           Control.Monad                  ( (=<<)
                                                 , (>>=)
                                                 , Functor(fmap)
@@ -75,6 +77,7 @@ import           EventData.Predicates           ( isBirthYearEvent
                                                 , isGenderFactEvent
                                                 , isStateFactEvent
                                                 )
+import           GHC.Float                      ( Double )
 import           GHC.Num                        ( Integer
                                                 , fromInteger
                                                 )
@@ -123,6 +126,19 @@ previewPlan :: Domain -> Maybe Plan
 previewPlan dmn =
       ((dmn ^? (_As @"Eligibility")) >>= (^. field @"plan"))
   <|> ((dmn ^? (_As @"Enrollment")) >>= (^. field @"plan"))
+
+-- | Preview @discharge_status@ f rom the 'Hospitalization' fact of'Diagnosis' or 'Procedure' Domain
+previewDischargeStatus :: Domain -> Maybe Text 
+previewDischargeStatus dmn =
+      ((dmn ^? (_As @"Diagnosis")) >>= (^. field @"hospitalization") >>= (^. field @"discharge_status"))
+  <|> ((dmn ^? (_As @"Procedure")) >>= (^. field @"hospitalization") >>= (^. field @"discharge_status"))
+
+-- | Preview @length_of_stay@ from the 'Hospitalization' fact of 'Diagnosis' or 'Procedure' Domain
+previewLengthOfStay :: Domain -> Maybe Double 
+previewLengthOfStay dmn =
+      ((dmn ^? (_As @"Diagnosis")) >>= (^. field @"hospitalization") >>= (^. field @"length_of_stay"))
+  <|> ((dmn ^? (_As @"Procedure")) >>= (^. field @"hospitalization") >>= (^. field @"length_of_stay"))
+
 
 -- | View the @benefit@ field of a @Plan@
 previewBenefit :: Domain -> Maybe [Text]

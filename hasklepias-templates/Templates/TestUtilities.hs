@@ -20,12 +20,12 @@ module Templates.TestUtilities
   , makeTestCase
   , makeTestCaseOfIndexAndEvents
   , makeTestGroup
-  , OneTuple
+  , Solo
   ) where
 
 
 import           Cohort.Index
-import           Data.Tuple.OneTuple
+import           Data.Tuple.Solo
 import           EventData
 import           Features.Compose               ( Define(..)
                                                 , Definition(..)

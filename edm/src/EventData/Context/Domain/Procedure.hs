@@ -22,6 +22,7 @@ data ProcedureFacts = ProcedureFacts {
      , claim :: Maybe Claim
      , location :: Maybe Location
      , provider :: Maybe Provider
+     , hospitalization :: Maybe Hospitalization
   } 
   deriving( Eq, Show, Generic )
 

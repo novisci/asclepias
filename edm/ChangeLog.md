@@ -1,5 +1,10 @@
 # Changelog for edm
 
+## 0.23.3
+
+* Adds `Hospitalization` fact type and adds slots to `Diagnosis` and `Procedure` domains.
+* Adds `previewDischargeStatus` and `previewLengthOfStay` functions for accessing `discharge_status` and `length_of_stay` from `Diagnosis` or `Procedure` events.
+
 ## 0.23.2
 
 * Adds `previewBenefit`, `previewBenefitE`, `previewExchange`, and `previewExchangeE` for accessing the `benefit` or `exchange` field from a `Plan` within the `Enrollment` or `Eligibility` `Domain`s. Functions ending in `E` take an `Event` as input.

@@ -87,6 +87,8 @@ install:
   #     - dist-newstyle/
   #     - install/
   script:
+    - export COLLECTORVERSION=$(./scripts/get-version-from-cabal.sh cohort-collector/cohort-collector.cabalcohort-collector/cohort-collector.cabal)
+    - export COLLECTOR_BUNDLE=cohort-collector-$COLLECTORVERSION-linux-$(uname -m).tar.gz
     - aws s3 cp $CI_PROJECT_DIR/$COLLECTOR_BUNDLE s3://download.novisci.com/hasklepias/$COLLECTOR_BUNDLE --acl public-read
 
 

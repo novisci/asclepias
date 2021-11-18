@@ -1,5 +1,9 @@
 # Changelog for hasklepias-core
 
+## 0.22.7
+
+* Adds ability to output from a cohort application to `stdout`, a file, or a S3 location. Note that this ability is not yet in place for a prefilter application.
+
 ## 0.22.6
 
 * Moves application IO related functions and types from `Hasklepias.Misc` to `Hasklepias.AppUtilities`.

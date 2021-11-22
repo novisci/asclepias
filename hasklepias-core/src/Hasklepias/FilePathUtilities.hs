@@ -5,7 +5,8 @@ Copyright   : (c) NoviSci, Inc 2020
 License     : BSD3
 Maintainer  : bsaul@novisci.com
 
-These functions may be moved to more appropriate modules in future versions.
+NOTE: this module is currently unused in Hasklepias
+
 -}
 -- {-# OPTIONS_HADDOCK hide #-}
 {-# LANGUAGE NoImplicitPrelude #-}

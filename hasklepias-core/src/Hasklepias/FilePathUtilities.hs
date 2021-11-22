@@ -5,7 +5,7 @@ Copyright   : (c) NoviSci, Inc 2020
 License     : BSD3
 Maintainer  : bsaul@novisci.com
 
-NOTE: this module is currently unused in Hasklepias
+NOTE: this module is currently unused in Hasklepias.
 
 -}
 -- {-# OPTIONS_HADDOCK hide #-}

@@ -1,6 +1,6 @@
 cabal-version:  2.2
-name:           cohort-collector
-version:        0.20.2
+name:           hasklepias-appBuilder
+version:        0.1.0
 description:    Please see the README on GitHub at <https://github.com/novisci/asclepias#readme>
 homepage:       https://github.com/novisci/asclepias/#readme
 bug-reports:    https://github.com/novisci/asclepias/issues
@@ -14,7 +14,7 @@ license-file:   LICENSE
 build-type:     Simple
 extra-source-files:
     README.md
-    -- ChangeLog.md
+    ChangeLog.md
 
 source-repository head
   type: git
@@ -22,48 +22,31 @@ source-repository head
 
 library
   exposed-modules:
-      CohortCollection
+      Hasklepias.AppUtilities
+      Hasklepias.MakeApp
+      Hasklepias.MakeFilterApp
   hs-source-dirs:
       src
   build-depends:
-    -- Internal
-      hasklepias-core
-    , hasklepias-appBuilder
-    
-    -- External
-    -- , aeson >=1.4.0.0 && <2
-    -- , amazonka == 1.6.1
-    -- , amazonka-s3 == 1.6.1
+    -- Internal packages
+      edm
+    , hasklepias-core
+
+    -- External packages
     , aeson
     , amazonka >= 2.0
+    , amazonka-core >= 2.0
+    , amazonka-sts >= 2.0
     , amazonka-s3 >= 2.0
     , base >=4.14 && <4.15
     , bytestring == 0.10.12.0
-    -- , cmdargs == 0.10.21
+    , containers == 0.6.5.1
+    , co-log == 0.4.0.1
     , conduit == 1.3.4.2
-    , text == 1.2.4.1
-  default-language: Haskell2010
-
-executable cohort-collector
-  main-is: Main.hs
-  hs-source-dirs:
-      app
-  build-depends:
-       base >=4.14 && <4.15
-     , cohort-collector
-     , bytestring
-     , optparse-applicative
-  default-language: Haskell2010
-
-test-suite collector-test
-  type: exitcode-stdio-1.0
-  main-is: Main.hs
-  hs-source-dirs:
-      test
-  build-depends:
-      cohort-collector
-    , base >=4.14 && <4.15
-    , tasty  == 1.4.1
-    , tasty-silver == 3.3.1
-    , bytestring
+    , conduit-extra
+    , generic-lens == 2.2.0.0
+    , interval-algebra == 1.1.0
+    , microlens == 0.4.12.0
+    , optparse-applicative == 0.16.1.0
+    , vector == 0.12.2.0
   default-language: Haskell2010

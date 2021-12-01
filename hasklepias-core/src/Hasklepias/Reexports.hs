@@ -81,11 +81,11 @@ import safe      Data.Eq                        ( (==)
                                                 , Eq
                                                 )
 import safe      Data.Foldable                  ( Foldable(..)
+                                                , and
                                                 , asum
                                                 , maximum
                                                 , minimum
                                                 , or
-                                                , and
                                                 )
 import safe      Data.Function                  ( ($)
                                                 , (.)
@@ -103,8 +103,8 @@ import safe      Data.List                      ( (++)
                                                 , length
                                                 , map
                                                 , null
-                                                , replicate
                                                 , partition
+                                                , replicate
                                                 , scanl'
                                                 , scanl1
                                                 , sort
@@ -132,8 +132,8 @@ import safe      Data.Maybe                     ( Maybe(..)
                                                 , maybeToList
                                                 )
 import safe      Data.Monoid                    ( (<>)
-                                                , mconcat
                                                 , Monoid(..)
+                                                , mconcat
                                                 )
 import safe      Data.Ord                       ( Ord(..)
                                                 , Ordering(..)
@@ -200,11 +200,11 @@ import safe      Flow                           ( (!>)
                                                 , (|>)
                                                 )
 import           Safe                           ( headMay
-                                                , lastMay
-                                                , tailMay
                                                 , initMay
+                                                , lastMay
                                                 , maximumMay
                                                 , minimumMay
+                                                , tailMay
                                                 )
 import safe      Witherable                     ( Filterable(filter)
                                                 , Witherable(..)

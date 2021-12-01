@@ -11,6 +11,8 @@ These functions may be moved to more appropriate modules in future versions.
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE GADTs #-}
+{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE DataKinds #-}
 
 module Hasklepias.AppUtilities
   ( Location(..)
@@ -24,8 +26,6 @@ module Hasklepias.AppUtilities
   , s3Input
   ) where
 
-import           Data.Either                    ( fromRight )
-import           Data.Eq                        ( Eq(..) )
 import           Data.Function                  ( ($)
                                                 , (.)
                                                 )
@@ -36,21 +36,31 @@ import           Data.Semigroup                 ( Semigroup((<>)) )
 import           GHC.Generics                   ( Generic )
 import           GHC.Show                       ( Show(..) )
 
-import           Control.Applicative
+import           Amazonka
+import           Amazonka.Core                  ( LogLevel(Debug)
+                                                , Region
+                                                , sinkBody
+                                                )
+import           Amazonka.S3                    ( BucketName
+                                                , ObjectKey
+                                                , newGetObject
+                                                )
+import           Control.Applicative            ( (<$>)
+                                                , Applicative((<*>), pure)
+                                                , optional
+                                                )
 import           Control.Monad
 import qualified Data.ByteString.Char8         as C
 import qualified Data.ByteString.Lazy          as B
 import           Data.Conduit.Binary            ( sinkLbs )
+import           Data.Generics.Product
 import           Data.String
-import           Data.Text
 import           GHC.IO
 import           Lens.Micro                     ( (<&>)
                                                 , (^.)
                                                 , set
                                                 )
-import           Network.AWS
-import           Network.AWS.Data
-import           Network.AWS.S3
+import           Lens.Micro.Extras              ( view )
 import           Options.Applicative
 import           System.IO                      ( stderr )
 
@@ -68,11 +78,6 @@ data Input =
    | S3Input  String BucketName ObjectKey
    deriving (Show)
 
--- | Defines @IsString@ instance for @Region@. Sets the default to @NorthVirginia@ 
---   (us-east-1) if the region can't be parsed
-instance IsString Region where
-  fromString x = fromRight NorthVirginia (fromText (pack x))
-
 -- | Read data from a @Location@ to lazy @ByteString@
 readData :: Location -> IO B.ByteString
 readData StdIn      = B.getContents
@@ -89,10 +94,13 @@ readDataStrict (S3 r b k) = fmap B.toStrict (getS3Object r b k)
 getS3Object :: Region -> BucketName -> ObjectKey -> IO B.ByteString
 getS3Object r b k = do
   lgr <- newLogger Debug stderr
-  env <- newEnv Discover <&> set envLogger lgr . set envRegion r
-  runResourceT . runAWS env $ do
-    result <- send $ getObject b k
-    (result ^. gorsBody) `sinkBody` sinkLbs
+  env <-
+    newEnv Discover
+    <&> set (field @"_envLogger") lgr
+    .   set (field @"_envRegion") r
+  runResourceT $ do
+    result <- send env (newGetObject b k)
+    view (field @"body") result `sinkBody` sinkLbs
 
 -- | Maps an @Input@ to a @Location@.
 inputToLocation :: Input -> Location

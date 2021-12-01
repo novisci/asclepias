@@ -141,7 +141,7 @@ prefilterC p x =
 -- | Type containing the filter app
 newtype FilterApp m = MkFilterApp { runPreApp :: Maybe Location -> m C.ByteString }
 
-desc = 
+desc =
   "The application takes event data formatted as ndjson (http://ndjson.org/) \
   \(i.e. one event per line). The application returns the event data filtered to \
   \all those subjects who have at least one event satisfying the given predicate. \
@@ -150,7 +150,7 @@ desc =
   \Lines that fail to parse as an `Event` do not satisfy the predicate, but are not \
   \dropped from the output. In other words, all of a subject's data is returned in \
   \the same order as the input, provided that at least one line successfully parses \
-  \into an Event and satisfies the predicate." 
+  \into an Event and satisfies the predicate."
 
 {- | 
 Create a application that filters event data with two arguments: 

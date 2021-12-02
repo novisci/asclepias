@@ -2,7 +2,7 @@
 
 ## 0.22.7
 
-* Updates `amazonka` dependency to >= 2.0: currently pointing to git repo in `cabal.project`.
+* Moves app building modules into `hasklepias-appBuilder` and out of `hasklepias-core`.
 
 ## 0.22.6
 

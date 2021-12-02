@@ -81,15 +81,15 @@ import           Options.Applicative
 
 
 data MakeCohort = MakeCohort
-  { input :: Input
-  , ouput :: FilePath
+  { input  :: Input
+  , output :: Output
   }
 
 mainOptions :: Parser MakeCohort
-mainOptions = MakeCohort <$> (fileInput <|> s3Input <|> stdInput) <*> strOption
-  (long "output" <> short 'o' <> metavar "FILE" <> value "output.json" <> help
-    "Output location"
-  )
+mainOptions =
+  MakeCohort
+    <$> (fileInput <|> s3Input <|> stdInput)
+    <*> (fileOutput <|> s3Output <|> stdOutput)
 
 makeAppArgs :: String -> String -> ParserInfo MakeCohort
 makeAppArgs name version = Options.Applicative.info
@@ -168,7 +168,9 @@ makeCohortApp name version shape spec = MkCohortApp $ \l -> do
 
 -- | Just run the thing.
 runApp :: CohortApp IO -> IO ()
-runApp x = C.putStrLn =<< runCohortApp x Nothing
+runApp x = do
+  options <- execParser (makeAppArgs "" "")
+  writeData (outputToLocation (output options)) =<< runCohortApp x Nothing
 
 -- | Just run the thing with a set location (e.g for testing).
 runAppWithLocation :: Location -> CohortApp IO -> IO B.ByteString

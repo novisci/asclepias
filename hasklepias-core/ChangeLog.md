@@ -3,6 +3,7 @@
 ## 0.22.7
 
 * Moves app building modules into `hasklepias-appBuilder` and out of `hasklepias-core`.
+* Adds ability to output from a cohort application to `stdout`, a file, or a S3 location. Note that this ability is not yet in place for a prefilter application.
 
 ## 0.22.6
 

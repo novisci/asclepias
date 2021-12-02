@@ -56,12 +56,21 @@ import           Options.Applicative
 -- Container for app options
 newtype FilterAppOpts = FilterAppOpts
   { input  :: Input
+  -- TODO: sending output to a location will require a touch of reworking the 
+  --       fsc function in prefilterC. Currently, this function spits to stdout
+  --       as it goes, which won't work for S3 and a local file would need to be
+  --       appended to.
+  -- , output :: Output
   }
 
 -- Create the ParserInfo for a MakePrefilterApp 
 makeAppArgs :: String -> ParserInfo FilterAppOpts
 makeAppArgs name = Options.Applicative.info
-  (FilterAppOpts <$> (fileInput <|> s3Input <|> stdInput) <**> helper)
+  (    FilterAppOpts
+  <$>  (fileInput <|> s3Input <|> stdInput)
+    -- <*> (fileOutput <|> s3Output <|> stdOutput)
+  <**> helper
+  )
   (fullDesc <> progDesc desc <> header ("Filter events for " <> name))
 
 -- A type to hold a subject ID

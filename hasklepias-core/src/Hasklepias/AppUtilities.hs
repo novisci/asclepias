@@ -10,20 +10,29 @@ These functions may be moved to more appropriate modules in future versions.
 -- {-# OPTIONS_HADDOCK hide #-}
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE GADTs #-}
 
 module Hasklepias.AppUtilities
   ( Location(..)
   , Input(..)
+  , Output(..)
   , readData
   , readDataStrict
+  , writeData
+  , writeDataStrict
   , getS3Object
   , inputToLocation
+  , outputToLocation
   , stdInput
   , fileInput
   , s3Input
+  , stdOutput
+  , fileOutput
+  , s3Output
   ) where
 
+import           Control.Monad.IO.Class         ( MonadIO(liftIO) )
 import           Data.Either                    ( fromRight )
 import           Data.Eq                        ( Eq(..) )
 import           Data.Function                  ( ($)
@@ -38,12 +47,21 @@ import           GHC.Show                       ( Show(..) )
 
 import           Control.Applicative
 import           Control.Monad
+import qualified Control.Monad.Trans.AWS       as AWS
 import qualified Data.ByteString.Char8         as C
 import qualified Data.ByteString.Lazy          as B
+                                         hiding ( putStrLn )
+import qualified Data.ByteString.Lazy.Char8    as B
 import           Data.Conduit.Binary            ( sinkLbs )
-import           Data.String
-import           Data.Text
-import           GHC.IO
+import           Data.String                    ( IsString(..)
+                                                , String
+                                                )
+import           Data.Text                      ( Text
+                                                , pack
+                                                )
+import           GHC.IO                         ( FilePath
+                                                , IO
+                                                )
 import           Lens.Micro                     ( (<&>)
                                                 , (^.)
                                                 , set
@@ -51,12 +69,17 @@ import           Lens.Micro                     ( (<&>)
 import           Network.AWS
 import           Network.AWS.Data
 import           Network.AWS.S3
+
 import           Options.Applicative
-import           System.IO                      ( stderr )
+import           System.IO                      ( putStrLn
+                                                , stderr
+                                                )
+
+
 
 -- | Type representing locations that data can be read from
 data Location where
-  StdIn ::Location
+  Std   ::Location
   Local ::FilePath -> Location
   S3    ::Region -> BucketName -> ObjectKey -> Location
   deriving (Show)
@@ -68,6 +91,13 @@ data Input =
    | S3Input  String BucketName ObjectKey
    deriving (Show)
 
+-- | Type to hold input information. Either from file or from S3. 
+data Output =
+     StdOutput
+   | FileOutput (Maybe FilePath) FilePath
+   | S3Output  String BucketName ObjectKey
+   deriving (Show)
+
 -- | Defines @IsString@ instance for @Region@. Sets the default to @NorthVirginia@ 
 --   (us-east-1) if the region can't be parsed
 instance IsString Region where
@@ -75,28 +105,62 @@ instance IsString Region where
 
 -- | Read data from a @Location@ to lazy @ByteString@
 readData :: Location -> IO B.ByteString
-readData StdIn      = B.getContents
+readData Std        = B.getContents
 readData (Local x ) = B.readFile x
 readData (S3 r b k) = getS3Object r b k
 
+-- | Write data from a @Location@ to lazy @ByteString@
+writeData :: Location -> B.ByteString -> IO ()
+writeData Std        x = B.putStrLn x
+writeData (Local f ) x = B.writeFile f x
+writeData (S3 r b k) x = putS3Object r b k x
+
 -- | Read data from a @Location@ to strict @ByteString@. 
 readDataStrict :: Location -> IO C.ByteString
-readDataStrict StdIn      = C.getContents
+readDataStrict Std        = C.getContents
 readDataStrict (Local x ) = C.readFile x
 readDataStrict (S3 r b k) = fmap B.toStrict (getS3Object r b k)
+
+-- | Write data from a @Location@ to strict @ByteString@. 
+writeDataStrict :: Location -> C.ByteString -> IO ()
+writeDataStrict Std        x = C.putStrLn x
+writeDataStrict (Local f ) x = C.writeFile f x
+writeDataStrict (S3 r b k) x = putS3Object r b k x
 
 -- | Get an object from S3. 
 getS3Object :: Region -> BucketName -> ObjectKey -> IO B.ByteString
 getS3Object r b k = do
-  lgr <- newLogger Debug stderr
+  lgr <- newLogger Error stderr
   env <- newEnv Discover <&> set envLogger lgr . set envRegion r
   runResourceT . runAWS env $ do
     result <- send $ getObject b k
     (result ^. gorsBody) `sinkBody` sinkLbs
 
+-- | Put an object on S3. 
+--
+-- NOTE: the put request uses the bucket-owner-full-control 
+-- <https://docs.aws.amazon.com/AmazonS3/latest/userguide/about-object-ownership.html canned ACL>.
+-- 
+class (ToBody a) => PutS3 a where
+  putS3Object :: Region -> BucketName -> ObjectKey -> a -> IO () 
+  putS3Object r b k o = do
+    lgr <- newLogger Error stderr
+    env <- newEnv Discover <&> set envLogger lgr . set envRegion r
+    AWS.runResourceT . AWS.runAWST env $ do
+      void . send $ set poACL (Just OBucketOwnerFullControl) (putObject b k (toBody o)) 
+      liftIO
+        .  putStrLn
+        $  "Successfully Uploaded contents to "
+        <> show b
+        <> " - "
+        <> show k
+
+instance PutS3 B.ByteString 
+instance PutS3 C.ByteString 
+
 -- | Maps an @Input@ to a @Location@.
 inputToLocation :: Input -> Location
-inputToLocation StdInput        = StdIn
+inputToLocation StdInput        = Std
 inputToLocation (FileInput d f) = Local (pre f)
  where
   pre = case d of
@@ -104,9 +168,23 @@ inputToLocation (FileInput d f) = Local (pre f)
     Just s  -> (<>) (s <> "/")
 inputToLocation (S3Input r b k) = S3 (fromString r) b k
 
+-- | Maps an @Input@ to a @Location@.
+outputToLocation :: Output -> Location
+outputToLocation StdOutput        = Std
+outputToLocation (FileOutput d f) = Local (pre f)
+ where
+  pre = case d of
+    Nothing -> (<>) ""
+    Just s  -> (<>) (s <> "/")
+outputToLocation (S3Output r b k) = S3 (fromString r) b k
+
 -- | Parser @StdInput@.
 stdInput :: Parser Input
 stdInput = pure StdInput
+
+-- | Parser @StdOutput@.
+stdOutput :: Parser Output
+stdOutput = pure StdOutput
 
 -- | Parser for @FileInput@.
 fileInput :: Parser Input
@@ -118,6 +196,17 @@ fileInput =
           )
     <*> strOption
           (long "file" <> short 'f' <> metavar "INPUT" <> help "Input file")
+
+-- | Parser for @FileInput@.
+fileOutput :: Parser Output
+fileOutput =
+  FileOutput
+    <$> optional
+          (strOption $ long "outdir" <> metavar "DIRECTORY" <> help
+            "optional output directory"
+          )
+    <*> strOption
+          (long "output" <> short 'o' <> metavar "OUTPUT" <> help "Output file")
 
 -- | Parser for @S3Input@.
 s3Input :: Parser Input
@@ -131,6 +220,21 @@ s3Input =
           <> help "AWS Region"
           )
     <*> strOption
-          (long "bucket" <> short 'b' <> metavar "Bucket" <> help "S3 bucket")
+          (long "bucket" <> short 'b' <> metavar "BUCKET" <> help "S3 bucket")
     <*> strOption
           (long "key" <> short 'k' <> metavar "KEY" <> help "S3 location")
+
+-- | Parser for @S3Output@.
+s3Output :: Parser Output
+s3Output =
+  S3Output
+    <$> strOption
+          (long "outregion" <> metavar "OUTREGION" <> value "us-east-1" <> help
+            "output AWS Region"
+          )
+    <*> strOption
+          (long "outbucket" <> metavar "OUTBUCKET" <> help "output S3 bucket")
+    <*> strOption
+          (long "outkey" <> metavar "OUTPUTKEY" <> help "output S3 location")
+
+

@@ -12,6 +12,7 @@ import qualified Data.ByteString.Lazy.Char8    as C
                                                 )
 import           CohortCollection
 import           Options.Applicative
+import qualified Hasklepias.AppUtilities as H
 
 
 fileInput :: Parser Input
@@ -35,15 +36,14 @@ s3input =
           )
 
 data CollectorApp = CollectorApp
-  { input :: Input
-  , ouput :: FilePath
+  { input  :: Input
+  , output :: H.Output
   }
 
 collector :: Parser CollectorApp
-collector = CollectorApp <$> (fileInput <|> s3input) <*> strOption
-  (long "output" <> short 'o' <> metavar "FILE" <> value "output.json" <> help
-    "Output location"
-  )
+collector = CollectorApp <$> 
+    (fileInput <|> s3input) <*>
+    (H.fileOutput <|> H.s3Output <|> H.stdOutput)
 
 desc = 
   "Collects cohorts run on different input data. The cohorts must be derived \
@@ -53,7 +53,11 @@ desc =
   \= one file.\
   \\n\n\
   \S3 capabilities are currently limited (e.g. AWS region is set \
-  \to N. Virginia)."
+  \to N. Virginia).\
+  \\
+  \Data can be output to stdout (default), to a file (using the -o option), or \
+  \to S3 (using the --outbucket and --outkey options).\
+  \"
 
 
 opts :: ParserInfo CollectorApp
@@ -69,4 +73,4 @@ main = do
   fs <- getLocations files
 
   r  <- runCollectionApp fs
-  C.putStrLn r
+  H.writeData (H.outputToLocation $ output options) r

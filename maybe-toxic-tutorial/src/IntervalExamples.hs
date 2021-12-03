@@ -43,7 +43,6 @@ enderDefault = enderval 0 0
 startFromEnd :: Interval Int
 startFromEnd = enderval 2 2
 
--- TODO
 -- a function that builds an interval of smallest possible length starting from
 -- a given value. 
 unitInterval :: Int -> Interval Int
@@ -64,6 +63,7 @@ gospel x = duration x == diff (end x) (begin x)
 genericGospel :: (IntervalSizeable a b) => Interval a -> Bool
 genericGospel x = duration x == diff (end x) (begin x)
 
+
 -- CREATING INTERVALS WHEN ERRORS ARE POSSIBLE
 -- The Either type is useful for error handling. Either a b has two possible
 -- values: Right a (containing a type a) or Left b (containing the 'error' of
@@ -71,10 +71,13 @@ genericGospel x = duration x == diff (end x) (begin x)
 -- have functions that might fail. We can then handle the failures or succeses
 -- in different ways, as in the nutinRight function below.
 
--- TODO notes on ParseInterval
--- NOTE this is not the same as beginerval 0 0 since nutin produces an interval with zero length
+-- parseInterval tries to create an interval from given begin and end values.
+-- will fail with type Left ParseErrorInterval if begin >= end
 nutin :: Either ParseErrorInterval (Interval Int)
 nutin = parseInterval 0 0
+
+alotOfInterval :: Either ParseErrorInterval (Interval Int)
+alotOfInterval = parseInterval 0 100
 
 -- Either types often are then 'unwrapped' as a form of error-handling. If the
 -- result is Right (Interval Int) then we get the interval out. Othewise, it

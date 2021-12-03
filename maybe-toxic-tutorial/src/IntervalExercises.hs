@@ -110,6 +110,13 @@ makeSchedule = undefined
 
 
 
+-- EXERCISE: TODO
+-- Write a function that checks whether a provided meeting conflicts (i.e. has
+-- shared support with) any meeting in Schedule
+isConflict :: MeetingData Hour -> Schedule -> Bool
+isConflict = undefined
+
+
   {-
      EXTRA CHALLENGE
 

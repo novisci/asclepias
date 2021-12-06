@@ -32,16 +32,12 @@ import           Data.Bifunctor                 ( Bifunctor(second) )
 import           Data.Function                  ( ($)
                                                 , (.)
                                                 )
-import           Data.List                      ( (++) )
 import           Data.Map.Strict                ( fromList
                                                 , toList
                                                 )
 import           Data.Maybe                     ( Maybe(..) )
 import           Data.Monoid                    ( Monoid(mconcat) )
 import           Data.String                    ( String )
-import           Data.Text                      ( Text
-                                                , pack
-                                                )
 import           Data.Tuple                     ( fst
                                                 , snd
                                                 )
@@ -54,22 +50,13 @@ import           Cohort
 import           EventData                      ( Events )
 import           IntervalAlgebra                ( IntervalSizeable )
 
-import           Colog                          ( (<&)
-                                                , (>$)
+import           Colog.Core                     ( (<&)
                                                 , HasLog(..)
                                                 , LogAction(..)
-                                                , Message
-                                                , WithLog
-                                                , log
-                                                , logError
-                                                , logInfo
                                                 , logPrint
                                                 , logPrintStderr
                                                 , logStringStderr
                                                 , logStringStdout
-                                                , logText
-                                                , richMessageAction
-                                                , withLog
                                                 )
 import qualified Data.ByteString.Char8         as CH
 import qualified Data.ByteString.Lazy          as B
@@ -79,7 +66,6 @@ import qualified Data.ByteString.Lazy.Char8    as C
                                                 , toStrict
                                                 )
 import           Data.Semigroup                 ( Semigroup((<>)) )
-import qualified Data.Text                     as T
 import           Hasklepias.AppUtilities
 import           Options.Applicative
 
@@ -99,7 +85,7 @@ mainOptions =
 makeAppArgs :: String -> String -> ParserInfo MakeCohort
 makeAppArgs name version = Options.Applicative.info
   (mainOptions <**> helper)
-  (fullDesc <> header (name ++ " " ++ version))
+  (fullDesc <> header (name <> " " <> version))
 
 -- | Creates a cohort builder function
 makeCohortBuilder

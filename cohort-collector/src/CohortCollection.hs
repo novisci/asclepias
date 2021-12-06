@@ -1,8 +1,6 @@
 {-|
 -}
 
-{-# LANGUAGE GADTs #-}
-
 module CohortCollection 
   ( runCollectionApp
   , getLocations
@@ -31,8 +29,8 @@ import           Data.Maybe                     ( fromMaybe )
 import qualified Data.Text                     as T
                                                 ( pack )
 import           Cohort.Output                  ( CohortSetJSON )
-import           Network.AWS
-import           Network.AWS.S3
+import           Amazonka.Auth
+import           Amazonka.S3
 import           System.IO                      ( stderr )
 import           Hasklepias.AppUtilities hiding (Input(..))
 

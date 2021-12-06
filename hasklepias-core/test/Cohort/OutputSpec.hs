@@ -67,31 +67,33 @@ rwt = RW $ MkRowWiseJSON
 
 attr :: B.ByteString 
 attr = "{\"getDerivation\":\"\",\
-        \\"getShortLabel\":\"\",\
+        \\"getLongLabel\":\"\",\
         \\"getPurpose\":{\"getRole\":[],\"getTags\":[]},\
-        \\"getLongLabel\":\"\"}" 
+        \\"getShortLabel\":\"\"\
+        \}" 
 
 v1 :: B.ByteString 
-v1 = "{\"name\":\"dummy\",\"type\":\"Count\",\"attrs\":" <> attr <> "}"
+v1 = "{\"attrs\":" <> attr <> ",\"name\":\"dummy\",\"type\":\"Count\"" <> "}"
 
 v2 :: B.ByteString 
-v2 =   "{\"name\":\"another\",\"type\":\"Bool\",\"attrs\":" <> attr <> "}"
+v2 =   "{\"attrs\":" <> attr <> ",\"name\":\"another\",\"type\":\"Bool\"" <> "}"
 
 cw1p2 :: B.ByteString 
 cw1p2 = "{\"contents\":{\
-          \\"cohortData\":[[5,5,6,8],[true,true,false,true]],\
           \\"attributes\":["
           <> v1 <> "," <> v2 <>
           "],\
+          \\"cohortData\":[[5,5,6,8],[true,true,false,true]],\
           \\"ids\":[\"a\",\"b\",\"c\",\"d\"]},\
           \\"tag\":\"CW\"}"
 
 rw1p2 :: B.ByteString
 rw1p2 = "{\"contents\":{\
-          \\"cohortData\":[[\"a\",[5,true]],[\"b\",[5,true]],[\"c\",[6,false]],[\"d\",[8,true]]],\
           \\"attributes\":["
-          <> v1 <> "," <> v2 <>
-          "]},\
+          <> v1 <> "," <> v2 <> 
+         "],\
+          \\"cohortData\":[[\"a\",[5,true]],[\"b\",[5,true]],[\"c\",[6,false]],[\"d\",[8,true]]]\
+          \},\
           \\"tag\":\"RW\"}"
  
 

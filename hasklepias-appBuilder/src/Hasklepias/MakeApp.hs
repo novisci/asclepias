@@ -50,22 +50,13 @@ import           Cohort
 import           EventData                      ( Events )
 import           IntervalAlgebra                ( IntervalSizeable )
 
-import           Colog                          ( (<&)
-                                                , (>$)
+import           Colog.Core                     ( (<&)
                                                 , HasLog(..)
                                                 , LogAction(..)
-                                                , Message
-                                                , WithLog
-                                                , log
-                                                , logError
-                                                , logInfo
                                                 , logPrint
                                                 , logPrintStderr
                                                 , logStringStderr
                                                 , logStringStdout
-                                                , logText
-                                                , richMessageAction
-                                                , withLog
                                                 )
 import qualified Data.ByteString.Char8         as CH
 import qualified Data.ByteString.Lazy          as B

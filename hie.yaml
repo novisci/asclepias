@@ -4,6 +4,8 @@ cradle:
       component: "hasklepias-core"
     - path: "./hasklepias-main/"
       component: "hasklepias-main"
+    - path: "./hasklepias-appBuilder/"
+      component: "hasklepias-appBuilder"
     - path: "./hasklepias-templates/"
       component: "hasklepias-templates"  
     - path: "./edm/"

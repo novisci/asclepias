@@ -13,9 +13,11 @@ NOTE: this module is currently unused in Hasklepias.
 {-# LANGUAGE OverloadedStrings #-}
 
 module Hasklepias.FilePathUtilities
-  ( updatePartitionPath ) 
-  where
+  ( updatePartitionPath
+  ) where
 
+import           Control.Arrow                  ( (&&&) )
+import           Control.Monad                  ( Monad((>>=)) )
 import           Data.Bool                      ( (&&)
                                                 , (||)
                                                 )
@@ -28,20 +30,18 @@ import           Data.Maybe                     ( Maybe(..) )
 import           Data.Ord                       ( Ord(..) )
 import           Data.Semigroup                 ( Semigroup((<>)) )
 import           Data.String                    ( String )
-import           GHC.IO                         ( FilePath
-                                                , IO
-                                                )
-import           GHC.Show                       ( Show(..) )
-import           Control.Arrow                  ( (&&&) )
-import           Control.Monad                  ( Monad((>>=)) )
 import           Formatting                     ( Buildable
                                                 , Format
                                                 , formatToString
                                                 , left
                                                 )
+import           GHC.IO                         ( FilePath
+                                                , IO
+                                                )
 import           GHC.Int                        ( Int )
 import           GHC.Num                        ( Num((-)) )
 import           GHC.Real                       ( (^) )
+import           GHC.Show                       ( Show(..) )
 import           Safe                           ( atMay
                                                 , headMay
                                                 )

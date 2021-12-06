@@ -12,6 +12,8 @@ These functions may be moved to more appropriate modules in future versions.
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE GADTs #-}
+{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE DataKinds #-}
 
 module Hasklepias.AppUtilities
   ( Location(..)
@@ -32,9 +34,6 @@ module Hasklepias.AppUtilities
   , s3Output
   ) where
 
-import           Control.Monad.IO.Class         ( MonadIO(liftIO) )
-import           Data.Either                    ( fromRight )
-import           Data.Eq                        ( Eq(..) )
 import           Data.Function                  ( ($)
                                                 , (.)
                                                 )
@@ -45,19 +44,39 @@ import           Data.Semigroup                 ( Semigroup((<>)) )
 import           GHC.Generics                   ( Generic )
 import           GHC.Show                       ( Show(..) )
 
-import           Control.Applicative
+import           Amazonka                       ( Credentials(Discover)
+                                                , LogLevel(Debug, Error)
+                                                , Region
+                                                , ToBody(..)
+                                                , newEnv
+                                                , newLogger
+                                                , runResourceT
+                                                , send
+                                                , sinkBody
+                                                )
+import           Amazonka.S3                    ( BucketName
+                                                , ObjectCannedACL
+                                                  ( ObjectCannedACL_Bucket_owner_full_control
+                                                  )
+                                                , ObjectKey
+                                                , newGetObject
+                                                , newPutObject
+                                                )
+
+import           Control.Applicative            ( (<$>)
+                                                , Applicative((<*>), pure)
+                                                , optional
+                                                )
 import           Control.Monad
-import qualified Control.Monad.Trans.AWS       as AWS
+import           Control.Monad.IO.Class
 import qualified Data.ByteString.Char8         as C
 import qualified Data.ByteString.Lazy          as B
                                          hiding ( putStrLn )
 import qualified Data.ByteString.Lazy.Char8    as B
 import           Data.Conduit.Binary            ( sinkLbs )
-import           Data.String                    ( IsString(..)
+import           Data.Generics.Product          ( HasField(field) )
+import           Data.String                    ( IsString(fromString)
                                                 , String
-                                                )
-import           Data.Text                      ( Text
-                                                , pack
                                                 )
 import           GHC.IO                         ( FilePath
                                                 , IO
@@ -66,10 +85,7 @@ import           Lens.Micro                     ( (<&>)
                                                 , (^.)
                                                 , set
                                                 )
-import           Network.AWS
-import           Network.AWS.Data
-import           Network.AWS.S3
-
+import           Lens.Micro.Extras              ( view )
 import           Options.Applicative
 import           System.IO                      ( putStrLn
                                                 , stderr
@@ -91,17 +107,13 @@ data Input =
    | S3Input  String BucketName ObjectKey
    deriving (Show)
 
+
 -- | Type to hold input information. Either from file or from S3. 
 data Output =
      StdOutput
    | FileOutput (Maybe FilePath) FilePath
    | S3Output  String BucketName ObjectKey
    deriving (Show)
-
--- | Defines @IsString@ instance for @Region@. Sets the default to @NorthVirginia@ 
---   (us-east-1) if the region can't be parsed
-instance IsString Region where
-  fromString x = fromRight NorthVirginia (fromText (pack x))
 
 -- | Read data from a @Location@ to lazy @ByteString@
 readData :: Location -> IO B.ByteString
@@ -130,11 +142,14 @@ writeDataStrict (S3 r b k) x = putS3Object r b k x
 -- | Get an object from S3. 
 getS3Object :: Region -> BucketName -> ObjectKey -> IO B.ByteString
 getS3Object r b k = do
-  lgr <- newLogger Error stderr
-  env <- newEnv Discover <&> set envLogger lgr . set envRegion r
-  runResourceT . runAWS env $ do
-    result <- send $ getObject b k
-    (result ^. gorsBody) `sinkBody` sinkLbs
+  lgr <- newLogger Debug stderr
+  env <-
+    newEnv Discover
+    <&> set (field @"_envLogger") lgr
+    .   set (field @"_envRegion") r
+  runResourceT $ do
+    result <- send env (newGetObject b k)
+    view (field @"body") result `sinkBody` sinkLbs
 
 -- | Put an object on S3. 
 --
@@ -142,21 +157,25 @@ getS3Object r b k = do
 -- <https://docs.aws.amazon.com/AmazonS3/latest/userguide/about-object-ownership.html canned ACL>.
 -- 
 class (ToBody a) => PutS3 a where
-  putS3Object :: Region -> BucketName -> ObjectKey -> a -> IO () 
+  putS3Object :: Region -> BucketName -> ObjectKey -> a -> IO ()
   putS3Object r b k o = do
     lgr <- newLogger Error stderr
-    env <- newEnv Discover <&> set envLogger lgr . set envRegion r
-    AWS.runResourceT . AWS.runAWST env $ do
-      void . send $ set poACL (Just OBucketOwnerFullControl) (putObject b k (toBody o)) 
-      liftIO
-        .  putStrLn
-        $  "Successfully Uploaded contents to "
+    env <-
+      newEnv Discover
+      <&> set (field @"_envLogger") lgr
+      .   set (field @"_envRegion") r
+    let obj = set (field @"acl") (Just ObjectCannedACL_Bucket_owner_full_control)
+              (newPutObject b k (toBody o))
+    runResourceT $ do
+      void . send env $ obj
+      liftIO . putStrLn $
+          "Successfully Uploaded contents to "
         <> show b
         <> " - "
         <> show k
 
-instance PutS3 B.ByteString 
-instance PutS3 C.ByteString 
+instance PutS3 B.ByteString
+instance PutS3 C.ByteString
 
 -- | Maps an @Input@ to a @Location@.
 inputToLocation :: Input -> Location

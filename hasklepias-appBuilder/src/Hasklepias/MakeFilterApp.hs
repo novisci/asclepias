@@ -44,7 +44,7 @@ import           Data.Maybe                     ( fromMaybe )
 import           Data.Monoid                    ( Any(Any, getAny) )
 import           Data.Vector                    ( (!) )
 
-import           Colog                          ( (<&)
+import           Colog.Core                     ( (<&)
                                                 , logStringStderr
                                                 )
 

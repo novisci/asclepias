@@ -44,33 +44,34 @@ instance HasAttributes "dummy2" Bool where
 spec :: Spec
 spec = do
     it "an Int event is parsed correctly" $
-       encode (index ex1)  `shouldBe` "{\"end\":10,\"begin\":0}"
+       encode (index ex1)  `shouldBe` "{\"begin\":0,\"end\":10}"
 
     -- TODO: these are failing in CI because the `type' field is sorting to after
     --       
     it "dummy encodes correctly" $
         encode dummy `shouldBe` 
         "{\
-        \\"name\":\"dummy\",\
-        \\"type\":\"Bool\",\
         \\"attrs\":{\
             \\"getDerivation\":\"a description\",\
-            \\"getShortLabel\":\"some Label\",\
+            \\"getLongLabel\":\"longer label...\",\
             \\"getPurpose\":{\"getRole\":[],\"getTags\":[]},\
-            \\"getLongLabel\":\"longer label...\"},\
-        \\"data\":true\
+            \\"getShortLabel\":\"some Label\"\
+            \},\
+        \\"data\":true,\
+        \\"name\":\"dummy\",\
+        \\"type\":\"Bool\"\
         \}"
 
     it "dummy2 encodes correctly" $
         encode dummy2 `shouldBe` 
         "{\
-        \\"name\":\"dummy2\",\
-        \\"type\":\"Bool\",\
         \\"attrs\":{\
             \\"getDerivation\":\"\",\
-            \\"getShortLabel\":\"\",\
+            \\"getLongLabel\":\"\",\
             \\"getPurpose\":{\"getRole\":[],\"getTags\":[]},\
-            \\"getLongLabel\":\"\"\
+            \\"getShortLabel\":\"\"\
             \},\
-        \\"data\":true\
+        \\"data\":true,\
+        \\"name\":\"dummy2\",\
+        \\"type\":\"Bool\"\
         \}"

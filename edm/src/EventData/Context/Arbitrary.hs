@@ -10,32 +10,39 @@ Maintainer  : bsaul@novisci.com
 {-# LANGUAGE OverloadedStrings #-}
 -- {-# LANGUAGE Safe #-}
 
-module EventData.Context.Arbitrary() where
+module EventData.Context.Arbitrary
+  () where
 
-import Test.QuickCheck              ( Arbitrary(arbitrary), elements, sublistOf )
-import Data.Function                ( (.) )
-import Data.Functor                 ( Functor(fmap) )
-import Data.List                    ( map )
-import Data.Maybe                   ( Maybe(Nothing) )
-import Data.Set                     ( fromList )
-import EventData.Context            ( Concept
-                                    , Concepts
-                                    , Context
-                                    , context
-                                    , toConcepts
-                                    , packConcepts
-                                    , packConcept)
-import EventData.Context.Domain     ( Domain(UnimplementedDomain) )
+import           Data.Function                  ( (.) )
+import           Data.Functor                   ( Functor(fmap) )
+import           Data.List                      ( map )
+import           Data.Maybe                     ( Maybe(Nothing) )
+import           Data.Set                       ( fromList )
+import           EventData.Context              ( Concept
+                                                , Concepts
+                                                , Context
+                                                , context
+                                                , packConcept
+                                                , packConcepts
+                                                , toConcepts
+                                                )
+import           EventData.Context.Domain       ( Domain(UnimplementedDomain) )
+import           Test.QuickCheck                ( Arbitrary(arbitrary)
+                                                , elements
+                                                , sublistOf
+                                                )
 
 conceptChoices :: [Concept]
-conceptChoices = map packConcept ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"]
+conceptChoices =
+  map packConcept ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"]
 
 instance Arbitrary Concept where
-    arbitrary = elements conceptChoices
+  arbitrary = elements conceptChoices
 
 instance Arbitrary Context where
-    arbitrary = fmap (\x -> context  (UnimplementedDomain ())  ((toConcepts . fromList) x) Nothing)
-                (sublistOf conceptChoices)
+  arbitrary = fmap
+    (\x -> context (UnimplementedDomain ()) ((toConcepts . fromList) x) Nothing)
+    (sublistOf conceptChoices)
 
 -- instance Arbitrary Concepts where
 --     arbitrary = fmap fromList (sublistOf conceptChoices)

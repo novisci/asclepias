@@ -16,8 +16,8 @@ Maintainer  : bsaul@novisci.com
 module ExampleCohort1
   ( exampleCohort1tests
   ) where
-import           Hasklepias
-import           Cohort.Attrition -- imported for test cases
+import           Cohort.Attrition
+import           Hasklepias -- imported for test cases
 {-------------------------------------------------------------------------------
   Constants
 -------------------------------------------------------------------------------}
@@ -302,9 +302,11 @@ makeFeatureRunner index events = featureset
 
 -- | Make a cohort specification for each calendar time
 cohortSpecs :: CohortSetSpec (Events Day) Featureset Interval Day
-cohortSpecs =
-  makeCohortSpecs $
-    map (\x -> (pack $ show x, makeIndexRunner x, makeCriteriaRunner, makeFeatureRunner)) indices
+cohortSpecs = makeCohortSpecs $ map
+  (\x ->
+    (pack $ show x, makeIndexRunner x, makeCriteriaRunner, makeFeatureRunner)
+  )
+  indices
 
 
 -- | A function that evaluates all the calendar cohorts for a population
@@ -316,8 +318,8 @@ evalCohorts = evalCohortSet cohortSpecs
   This would generally be in a separate file
 -------------------------------------------------------------------------------}
 m :: Year -> MonthOfYear -> Int -> Integer -> [Text] -> Domain -> Event Day
-m y m d dur c dmn =
-  event (beginerval dur (fromGregorian y m d)) (context dmn (packConcepts c) Nothing)
+m y m d dur c dmn = event (beginerval dur (fromGregorian y m d))
+                          (context dmn (packConcepts c) Nothing)
 
 testData1 :: Events Day
 testData1 = sort
@@ -409,7 +411,8 @@ expectedFeatures1 = map
   ]
 
 expectedObsUnita :: [ObsUnit Featureset]
-expectedObsUnita = zipWith MkObsUnit (replicate 5 (makeObsID 1 "a")) expectedFeatures1
+expectedObsUnita =
+  zipWith MkObsUnit (replicate 5 (makeObsID 1 "a")) expectedFeatures1
 
 makeExpectedCohort
   :: AttritionInfo -> [ObsUnit Featureset] -> Cohort Featureset
@@ -497,7 +500,8 @@ expectedCohorts = zipWith
   (fmap MkCohortData ([[]] ++ transpose [expectedObsUnita] ++ [[], [], [], []]))
 
 expectedCohortSet :: CohortSet Featureset
-expectedCohortSet = MkCohortSet $ mapFromList $ zip (fmap (pack.show) indices) expectedCohorts
+expectedCohortSet =
+  MkCohortSet $ mapFromList $ zip (fmap (pack . show) indices) expectedCohorts
 
 exampleCohort1tests :: TestTree
 exampleCohort1tests = testGroup

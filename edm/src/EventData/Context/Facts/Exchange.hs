@@ -5,15 +5,15 @@ Module      : Exchange fact
 {-# LANGUAGE Trustworthy #-}
 {-# LANGUAGE DeriveGeneric #-}
 
-module EventData.Context.Facts.Exchange(
-  Exchange(..)
-) where
-import Data.Aeson               ( FromJSON )
-import Data.Eq                  ( Eq )
-import GHC.Generics             ( Generic )
-import GHC.Show                 ( Show )
+module EventData.Context.Facts.Exchange
+  ( Exchange(..)
+  ) where
+import           Data.Aeson                     ( FromJSON )
+import           Data.Eq                        ( Eq )
+import           GHC.Generics                   ( Generic )
+import           GHC.Show                       ( Show )
 
-data Exchange = 
+data Exchange =
       UnknownExchange -- TODO: Different from EDM to avoid conflicting exports; deal with this later
     | None
     | Group

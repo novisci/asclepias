@@ -36,7 +36,7 @@ import           EventData.Context              ( Concept
                                                 , packConcept
                                                 , toConcepts
                                                 )
-import           GHC.Generics                   ( Generic )                               
+import           GHC.Generics                   ( Generic )
 import           GHC.Show                       ( Show(show) )
 import           IntervalAlgebra                ( Interval
                                                 , Intervallic(getInterval)

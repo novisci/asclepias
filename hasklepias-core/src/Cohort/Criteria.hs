@@ -78,7 +78,7 @@ import           GHC.TypeLits                   ( KnownSymbol
                                                 , symbolVal
                                                 )
 
-import Cohort.Index
+import           Cohort.Index
 -- | Defines the return type for @'Criterion'@ indicating whether to include or 
 -- exclude a subject.
 data Status = Include | Exclude deriving (Eq, Show, Generic)
@@ -98,11 +98,11 @@ instance Ord CohortStatus where
   compare Included            Included            = EQ
   compare SubjectHasNoIndex   SubjectHasNoIndex   = EQ
   compare Included            (ExcludedBy _)      = GT
-  compare (ExcludedBy _ )     Included            = LT
+  compare (ExcludedBy _)      Included            = LT
   compare Included            SubjectHasNoIndex   = GT
   compare SubjectHasNoIndex   Included            = LT
-  compare (ExcludedBy _  )    SubjectHasNoIndex   = GT
-  compare SubjectHasNoIndex   (ExcludedBy _  )    = LT
+  compare (ExcludedBy _)      SubjectHasNoIndex   = GT
+  compare SubjectHasNoIndex   (ExcludedBy _     ) = LT
   compare (ExcludedBy (i, _)) (ExcludedBy (j, _)) = compare i j
 
 -- | Helper to convert a @Bool@ to a @'Status'@
@@ -147,12 +147,12 @@ criteria l = MkCriteria $ NE.zip (NE.fromList [1 ..]) l
 -- @'Criterion'@. In the case, that the value of the @'Features.Compose.FeatureData'@ 
 -- within the @'Criterion'@ is @Left@, the status is set to @'Exclude'@. 
 getStatus :: Criterion -> (Text, Status)
-getStatus (MkCriterion x) = 
+getStatus (MkCriterion x) =
   (\case
-    Left _  -> (nm, Exclude)
-    Right v -> (nm, v)
-  )
-  ((getFeatureData . getDataN) x)
+      Left  _ -> (nm, Exclude)
+      Right v -> (nm, v)
+    )
+    ((getFeatureData . getDataN) x)
   where nm = getNameN x
 
 -- | Converts a subject's @'Criteria'@ into a @'NE.NonEmpty'@ triple of 
@@ -169,7 +169,7 @@ findExclude x = find (\(_, _, z) -> z == Exclude) (getStatuses x)
 -- | Converts a subject's @'Criteria'@ to a @'CohortStatus'@. The status is set
 -- to @'Included'@ if none of the @'Criterion'@ have a status of @'Exclude'@.
 checkCohortStatus :: Maybe (Index i a) -> Criteria -> CohortStatus
-checkCohortStatus Nothing _  = SubjectHasNoIndex 
+checkCohortStatus Nothing _ = SubjectHasNoIndex
 checkCohortStatus (Just index) x =
   maybe Included (\(i, n, _) -> ExcludedBy (i, n)) (findExclude x)
 

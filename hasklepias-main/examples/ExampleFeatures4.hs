@@ -42,8 +42,9 @@ t3 (_, _, x) = x
 
 toEvent
   :: (IntervalSizeable a b, Show a, Integral b) => EventData a b -> Event a
-toEvent x = event (beginerval (t1 x) (t2 x))
-                  (context (UnimplementedDomain ()) (packConcepts [t3 x]) Nothing)
+toEvent x = event
+  (beginerval (t1 x) (t2 x))
+  (context (UnimplementedDomain ()) (packConcepts [t3 x]) Nothing)
 
 toEvents
   :: (Show a, IntervalSizeable a b, Integral b) => [EventData a b] -> Events a
@@ -368,12 +369,11 @@ censorTime
        -> F "censortime" (Occurrence CensorReason b)
        )
 censorTime = define
-  (\dth disrl -> 
-    fromMaybe
-    (makeOccurrence DeathCensor   dth) 
+  (\dth disrl -> fromMaybe
+    (makeOccurrence DeathCensor dth)
     -- TODO: the default should be something else just putting this value as an
     --       example
-    ( minimumMay
+    (minimumMay
       [ makeOccurrence DeathCensor   dth
       , makeOccurrence Disenrollment disrl
               -- etc

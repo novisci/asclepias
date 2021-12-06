@@ -61,8 +61,8 @@ import           Data.List                      ( zipWith )
 import           Data.Map.Strict               as Map
                                                 ( Map )
 import           Data.Maybe                     ( Maybe(..)
-                                                , mapMaybe
                                                 , catMaybes
+                                                , mapMaybe
                                                 )
 import           Data.Monoid                    ( mempty )
 import           Data.Ord                       ( Ord(..) )
@@ -191,8 +191,7 @@ data Step1 d i a = MkStep1 (ObsUnit d) (Index i a)
 doStep1 :: (IndexSet i a, Subject d1) -> [Maybe (Step1 d1 i a)]
 doStep1 (MkIndexSet indices, MkSubject (id, d)) = case indices of
   Nothing  -> pure Nothing
-  Just set ->
-    zipWith
+  Just set -> zipWith
     (\x y -> Just $ MkStep1 (MkObsUnit (makeObsID y id) d) x)
     (Set.toList set)
     [1 ..]
@@ -212,20 +211,23 @@ newtype Step2 d i a = MkStep2 (Criteria, Step1 d i a)
 
 -- | Evaluates the @'runCriteria'@ of a @'CohortSpec'@ on a @'Population'@ to 
 -- return a list of @(Criteria, Index i a, ObsUnit d1)@. 
-evalCriteria :: CohortSpec d1 d0 i a -> [Maybe (Step1 d1 i a)] -> [Maybe (Step2 d1 i a)]
-evalCriteria spec = fmap (fmap
-  (\(MkStep1 ou i) -> MkStep2 (runCriteria spec i (obsData ou), MkStep1 ou i)))
+evalCriteria
+  :: CohortSpec d1 d0 i a -> [Maybe (Step1 d1 i a)] -> [Maybe (Step2 d1 i a)]
+evalCriteria spec = fmap
+  (fmap
+    (\(MkStep1 ou i) -> MkStep2 (runCriteria spec i (obsData ou), MkStep1 ou i))
+  )
 
 data Step3 d i a =
     I1 CohortStatus
   | I2 CohortStatus (ObsUnit d) (Index i a)
 
 doStep3 :: Maybe (Step2 d i a) -> Step3 d i a
-doStep3 (Just (MkStep2 (c, MkStep1 ou i)))= case (status, i) of
+doStep3 (Just (MkStep2 (c, MkStep1 ou i))) = case (status, i) of
   (Included, index) -> I2 status ou index
   _                 -> I1 status
   where status = checkCohortStatus (Just i) c
-doStep3 Nothing = I1 SubjectHasNoIndex 
+doStep3 Nothing = I1 SubjectHasNoIndex
 
 step3toStatus :: Step3 d i a -> CohortStatus
 step3toStatus (I1 x    ) = x
@@ -238,10 +240,7 @@ evalCohortStatus = fmap doStep3
 
 -- | Internal function for mapping an @ObsUnit d1@ along with its corresponding 
 --   @CohortStatus@ and @Index@ into @Maybe (ObsUnit d0)@. 
-evalFeatures
-  :: (Index i a -> d1 -> d0)
-  -> Step3 d1 i a
-  -> Maybe (ObsUnit d0)
+evalFeatures :: (Index i a -> d1 -> d0) -> Step3 d1 i a -> Maybe (ObsUnit d0)
 evalFeatures f x = case x of
   I2 status obsUnit index -> Just $ fmap (f index) obsUnit
   _                       -> Nothing
@@ -256,7 +255,7 @@ evalCohort spec pop = MkCohort
   indices         = evalIndices spec pop
   unitsWithCrits  = evalCriteria spec indices
   unitsWithStatus = evalCohortStatus unitsWithCrits
-  firstCrit       = (\(MkStep2 (c, _)) -> c) <$> headMay (catMaybes unitsWithCrits)
+  firstCrit = (\(MkStep2 (c, _)) -> c) <$> headMay (catMaybes unitsWithCrits)
   statuses        = step3toStatus <$> unitsWithStatus
 
 {-| A container hold multiple cohorts of the same type. The key is the name of 
@@ -274,7 +273,12 @@ newtype CohortSetSpec d1 d0 i a = MkCohortSetSpec (Map Text (CohortSpec d1 d0 i 
 
 -- | Make a set of 'CohortSpec's from list input.
 makeCohortSpecs
-  :: [(Text, d1 -> IndexSet i a, Index i a -> d1 -> Criteria, Index i a -> d1 -> d0)]
+  :: [ ( Text
+       , d1 -> IndexSet i a
+       , Index i a -> d1 -> Criteria
+       , Index i a -> d1 -> d0
+       )
+     ]
   -> CohortSetSpec d1 d0 i a
 makeCohortSpecs l = MkCohortSetSpec
   $ fromList (fmap (\(n, i, c, f) -> (n, specifyCohort i c f)) l)

@@ -16,18 +16,19 @@ module ExampleFeatures1
   ( exampleFeatures1Spec
   ) where
 
+import           Cohort.Attrition
 import           ExampleEvents
 import           Hasklepias
-import           Test.Hspec
-import           Cohort.Attrition -- imported for test case
+import           Test.Hspec -- imported for test case
 {-
 Index is defined as the first occurrence of an Orca bite.
 -}
 defineIndexSet :: Ord a => Events a -> IndexSet Interval a
 defineIndexSet events =
-  makeIndexSet $
-     makeIndex . getInterval <$>
-     makeConceptsFilter ["wasBitByOrca"] events
+  makeIndexSet
+    $   makeIndex
+    .   getInterval
+    <$> makeConceptsFilter ["wasBitByOrca"] events
 
 {-  
 The baseline interval is the interval (b - 60, b), where b is the begin of 
@@ -251,12 +252,10 @@ exampleFeatures1Spec = do
                           (MkPopulation [exampleSubject1, exampleSubject2])
     `shouldBe` MkCohort
                  ( MkAttritionInfo 2 $ setFromList
-                   [ MkAttritionLevel SubjectHasNoIndex 1
+                   [ MkAttritionLevel SubjectHasNoIndex              1
                    , MkAttritionLevel (ExcludedBy (1, "includeAll")) 0
-                   , MkAttritionLevel Included 1
+                   , MkAttritionLevel Included                       1
                    ]
-                 , MkCohortData
-                   [ MkObsUnit (makeObsID 1 "a") example1results
-                   ]
+                 , MkCohortData [MkObsUnit (makeObsID 1 "a") example1results]
                  )
 

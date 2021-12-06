@@ -45,7 +45,6 @@ module Features.Compose
 
   --- *** Evalution of Definitions
   , eval
-
   ) where
 
 import safe      Control.Applicative            ( (<$>)
@@ -281,41 +280,41 @@ See @'eval'@ for evaluating @Defintions@.
 -}
 
 data Definition d  where
-  Pure :: a -> Definition (F n0 a )
-  D1  :: (b -> a) -> Definition (F n1 b -> F n0 a)
-  D1A :: (b -> F n0 a) -> Definition (F n1 b -> F n0 a)
-  D1C  :: (a2 -> a1 -> a) 
+  Pure ::a -> Definition (F n0 a )
+  D1  ::(b -> a) -> Definition (F n1 b -> F n0 a)
+  D1A ::(b -> F n0 a) -> Definition (F n1 b -> F n0 a)
+  D1C  ::(a2 -> a1 -> a)
           -> Definition (F n1 b -> F n02 a2)
           -> Definition (F n1 b -> F n01 a1)
           -> Definition (F n1 b -> F n0 a )
-  D2  :: (c -> b -> a) -> Definition (F n2 c -> F n1 b -> F n0 a)
-  D2A :: (c -> b -> F n0 a) -> Definition (F n2 c -> F n1 b -> F n0 a)
-  D2C  :: (a2 -> a1 -> a) 
+  D2  ::(c -> b -> a) -> Definition (F n2 c -> F n1 b -> F n0 a)
+  D2A ::(c -> b -> F n0 a) -> Definition (F n2 c -> F n1 b -> F n0 a)
+  D2C  ::(a2 -> a1 -> a)
           -> Definition (F n2 c -> F n1 b -> F n02 a2)
           -> Definition (F n2 c -> F n1 b -> F n01 a1)
-          -> Definition (F n2 c -> F n1 b -> F n0 a )       
-  D3  :: (d -> c -> b -> a) -> Definition (F n3 d -> F n2 c -> F n1 b -> F n0 a)
-  D3A :: (d -> c -> b -> F n0 a) -> Definition (F n3 d -> F n2 c -> F n1 b -> F n0 a) 
-  D3C  :: (a2 -> a1 -> a) 
+          -> Definition (F n2 c -> F n1 b -> F n0 a )
+  D3  ::(d -> c -> b -> a) -> Definition (F n3 d -> F n2 c -> F n1 b -> F n0 a)
+  D3A ::(d -> c -> b -> F n0 a) -> Definition (F n3 d -> F n2 c -> F n1 b -> F n0 a)
+  D3C  ::(a2 -> a1 -> a)
           -> Definition (F n3 d -> F n2 c -> F n1 b -> F n02 a2)
           -> Definition (F n3 d -> F n2 c -> F n1 b -> F n01 a1)
-          -> Definition (F n3 d -> F n2 c -> F n1 b -> F n0 a )    
-  D4  :: (e -> d -> c -> b -> a) 
+          -> Definition (F n3 d -> F n2 c -> F n1 b -> F n0 a )
+  D4  ::(e -> d -> c -> b -> a)
          -> Definition (F n4 e -> F n3 d -> F n2 c -> F n1 b -> F n0 a)
-  D4A :: (e -> d -> c -> b -> F n0 a) 
+  D4A ::(e -> d -> c -> b -> F n0 a)
            -> Definition (F n4 e -> F n3 d -> F n2 c -> F n1 b -> F n0 a)
-  D4C  :: (a2 -> a1 -> a) 
+  D4C  ::(a2 -> a1 -> a)
           -> Definition (F n4 e -> F n3 d -> F n2 c -> F n1 b -> F n02 a2)
           -> Definition (F n4 e -> F n3 d -> F n2 c -> F n1 b -> F n01 a1)
-          -> Definition (F n4 e -> F n3 d -> F n2 c -> F n1 b -> F n0 a )    
-  D5  :: (f -> e -> d -> c -> b -> a) 
+          -> Definition (F n4 e -> F n3 d -> F n2 c -> F n1 b -> F n0 a )
+  D5  ::(f -> e -> d -> c -> b -> a)
          -> Definition (F n5 f -> F n4 e -> F n3 d -> F n2 c -> F n1 b -> F n0 a)
-  D5A :: (f -> e -> d -> c -> b -> F n0 a) 
+  D5A ::(f -> e -> d -> c -> b -> F n0 a)
            -> Definition (F n5 f -> F n4 e -> F n3 d -> F n2 c -> F n1 b -> F n0 a)
-  D5C  :: (a2 -> a1 -> a) 
+  D5C  ::(a2 -> a1 -> a)
           -> Definition (F n5 f -> F n4 e -> F n3 d -> F n2 c -> F n1 b -> F n02 a2)
           -> Definition (F n5 f -> F n4 e -> F n3 d -> F n2 c -> F n1 b -> F n01 a1)
-          -> Definition (F n5 f -> F n4 e -> F n3 d -> F n2 c -> F n1 b -> F n0 a )  
+          -> Definition (F n5 f -> F n4 e -> F n3 d -> F n2 c -> F n1 b -> F n0 a )
 
 
 {- | Define (and @'DefineA@) provide a means to create new @'Definition'@s via 
@@ -405,36 +404,40 @@ c = eval myFeature a b
 eval :: Definition d -> d
 eval d = case d of
   Pure x -> pure x
-  D1 f  -> \(MkFeature x) -> MkFeature $ fmap f x
-  D1A f -> \(MkFeature x) -> 
-            case fmap f x of
-                MkFeatureData (Left  l) -> MkFeature $ MkFeatureData (Left l)
-                MkFeatureData (Right r) -> r
-  D1C f d1 d2 -> \x -> MkFeature $ liftA2 f (getFData (eval d1 x)) (getFData (eval d2 x))
+  D1   f -> \(MkFeature x) -> MkFeature $ fmap f x
+  D1A  f -> \(MkFeature x) -> case fmap f x of
+    MkFeatureData (Left  l) -> MkFeature $ MkFeatureData (Left l)
+    MkFeatureData (Right r) -> r
+  D1C f d1 d2 ->
+    \x -> MkFeature $ liftA2 f (getFData (eval d1 x)) (getFData (eval d2 x))
   D2  f -> \(MkFeature x) (MkFeature y) -> MkFeature $ liftA2 f x y
-  D2A f -> \(MkFeature x) (MkFeature y) -> 
-            case liftA2 f x y of
-                MkFeatureData (Left  l) -> MkFeature $ MkFeatureData (Left l)
-                MkFeatureData (Right r) -> r
-  D2C f d1 d2 -> \x y -> MkFeature $ liftA2 f (getFData (eval d1 x y)) (getFData (eval d2 x y))
-  D3 f -> \(MkFeature x) (MkFeature y) (MkFeature z) -> 
-    MkFeature $ liftA3 f x y z
-  D3A f -> \(MkFeature x) (MkFeature y) (MkFeature z) -> 
-            case liftA3 f x y z of
-                MkFeatureData (Left  l) -> MkFeature $ MkFeatureData (Left l)
-                MkFeatureData (Right r) -> r
-  D3C f d1 d2 -> \x y z -> MkFeature $ liftA2 f (getFData $ eval d1 x y z) (getFData $ eval d2 x y z)
+  D2A f -> \(MkFeature x) (MkFeature y) -> case liftA2 f x y of
+    MkFeatureData (Left  l) -> MkFeature $ MkFeatureData (Left l)
+    MkFeatureData (Right r) -> r
+  D2C f d1 d2 -> \x y ->
+    MkFeature $ liftA2 f (getFData (eval d1 x y)) (getFData (eval d2 x y))
+  D3 f ->
+    \(MkFeature x) (MkFeature y) (MkFeature z) -> MkFeature $ liftA3 f x y z
+  D3A f -> \(MkFeature x) (MkFeature y) (MkFeature z) -> case liftA3 f x y z of
+    MkFeatureData (Left  l) -> MkFeature $ MkFeatureData (Left l)
+    MkFeatureData (Right r) -> r
+  D3C f d1 d2 -> \x y z ->
+    MkFeature $ liftA2 f (getFData $ eval d1 x y z) (getFData $ eval d2 x y z)
   D4 f -> \(MkFeature v) (MkFeature x) (MkFeature y) (MkFeature z) ->
     MkFeature $ liftM4 f v x y z
   D4A f -> \(MkFeature v) (MkFeature x) (MkFeature y) (MkFeature z) ->
-            case liftM4 f v x y z of
-              MkFeatureData (Left  l) -> MkFeature $ MkFeatureData (Left l)
-              MkFeatureData (Right r) -> r
-  D4C f d1 d2 -> \v x y z -> MkFeature $ liftA2 f (getFData $ eval d1 v x y z) (getFData $ eval d2 v x y z)
-  D5 f -> \(MkFeature u) (MkFeature v) (MkFeature x) (MkFeature y) (MkFeature z) ->
-    MkFeature $ liftM5 f u v x y z
-  D5A f -> \(MkFeature u) (MkFeature v) (MkFeature x) (MkFeature y) (MkFeature z) ->
-            case liftM5 f u v x y z of
-              MkFeatureData (Left  l) -> MkFeature $ MkFeatureData (Left l)
-              MkFeatureData (Right r) -> r
-  D5C f d1 d2 -> \u v x y z -> MkFeature $ liftA2 f (getFData $ eval d1 u v x y z) (getFData $ eval d2 u v x y z)
+    case liftM4 f v x y z of
+      MkFeatureData (Left  l) -> MkFeature $ MkFeatureData (Left l)
+      MkFeatureData (Right r) -> r
+  D4C f d1 d2 -> \v x y z -> MkFeature
+    $ liftA2 f (getFData $ eval d1 v x y z) (getFData $ eval d2 v x y z)
+  D5 f ->
+    \(MkFeature u) (MkFeature v) (MkFeature x) (MkFeature y) (MkFeature z) ->
+      MkFeature $ liftM5 f u v x y z
+  D5A f ->
+    \(MkFeature u) (MkFeature v) (MkFeature x) (MkFeature y) (MkFeature z) ->
+      case liftM5 f u v x y z of
+        MkFeatureData (Left  l) -> MkFeature $ MkFeatureData (Left l)
+        MkFeatureData (Right r) -> r
+  D5C f d1 d2 -> \u v x y z -> MkFeature
+    $ liftA2 f (getFData $ eval d1 u v x y z) (getFData $ eval d2 u v x y z)

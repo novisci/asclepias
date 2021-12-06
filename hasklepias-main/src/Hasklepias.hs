@@ -30,7 +30,6 @@ module Hasklepias
     A collection of pre-defined functions which build common feature definitions
     used in epidemiologic cohorts.
     -}
-
   , module Templates.Features
     -- * Utilities for defining Features from Events
     {- |
@@ -69,8 +68,8 @@ import           Features
 
 import           Cohort
 
-import           Hasklepias.FeatureEvents
 import           Hasklepias.AppUtilities
+import           Hasklepias.FeatureEvents
 import           Hasklepias.MakeApp
 import           Hasklepias.MakeFilterApp
 import           Hasklepias.Misc

@@ -10,13 +10,13 @@ Maintainer  : bsaul@novisci.com
 {-# LANGUAGE Safe #-}
 {-# LANGUAGE DeriveGeneric #-}
 
-module Stype.Numeric.Count (
-  Count(..)
-) where
+module Stype.Numeric.Count
+  ( Count(..)
+  ) where
 
-import safe GHC.Generics                 ( Generic )
-import safe GHC.Num                      ( Natural )
-import safe Data.Semiring                ( Semiring(..) )
+import safe      Data.Semiring                  ( Semiring(..) )
+import safe      GHC.Generics                   ( Generic )
+import safe      GHC.Num                        ( Natural )
 
 {- | Just a type holding a 'GHC.Num.Natural' value.
 -}
@@ -25,7 +25,7 @@ newtype Count = Count Natural
 
 instance Num Count where
   (+) (Count x) (Count y) = Count (x + y)
-  (*) (Count x) (Count y) = Count (x * y) 
+  (*) (Count x) (Count y) = Count (x * y)
   fromInteger x = Count $ fromInteger x
   abs = id -- useless
   signum x = Count 1 -- useless
@@ -38,7 +38,7 @@ instance Monoid Natural where
   mempty = 0
 
 instance Semiring Natural where
-  one = 1
+  one   = 1
   (<.>) = (*)
 
 instance Semigroup Count where
@@ -48,6 +48,6 @@ instance Monoid Count where
   mempty = Count 0
 
 instance Semiring Count where
-  one = Count 1
+  one   = Count 1
   (<.>) = (*)
 

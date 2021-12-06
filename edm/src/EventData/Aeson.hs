@@ -20,16 +20,21 @@ module EventData.Aeson
   ) where
 
 import           Control.Monad
-import           Data.Bifunctor
 import           Data.Aeson
+import           Data.Bifunctor
 import qualified Data.ByteString.Char8         as C
 import qualified Data.ByteString.Lazy          as B
 import           Data.Either                    ( Either(..)
                                                 , partitionEithers
                                                 )
 import           Data.Eq                        ( Eq )
-import           Data.Maybe                     ( fromMaybe, Maybe, maybe )
-import           Data.Text                      ( Text, pack )
+import           Data.Maybe                     ( Maybe
+                                                , fromMaybe
+                                                , maybe
+                                                )
+import           Data.Text                      ( Text
+                                                , pack
+                                                )
 import           Data.Time                      ( Day )
 import           Data.Vector                    ( (!) )
 import           EventData.Context              ( Concept
@@ -72,14 +77,14 @@ newtype EDMInterval a = EDMInterval { getEDMInterval :: Interval a }
 
 -- a wrapper type which simply notifies that the 'Event' was marshaled via the 
 -- event data model
-newtype EDMEvent a = EDMEvent { getEDMevent :: Event a } 
+newtype EDMEvent a = EDMEvent { getEDMevent :: Event a }
   deriving (Eq, Show)
 
 
 instance (FromJSON a, Show a, IntervalSizeable a b) => FromJSON (EDMInterval a) where
   parseJSON = withObject "Time" $ \o -> do
-    t <- o .:  "time"
-    b <- t .:  "begin"
+    t <- o .: "time"
+    b <- t .: "begin"
     e <- t .:? "end"
     -- In the case that the end is missing, create a moment
     let e2 = maybe (add (moment @a) b) (add (moment @a)) e
@@ -96,7 +101,7 @@ instance FromJSON Domain where
       "Demographics" -> Demographics <$> o .: "facts"
       "Diagnosis"    -> Diagnosis <$> o .: "facts"
       "Eligibility"  -> Eligibility <$> o .: "facts"
-      "Enrollment"   -> Enrollment <$> o .: "facts" 
+      "Enrollment"   -> Enrollment <$> o .: "facts"
       "Labs"         -> Labs <$> o .: "facts"
       "Medication"   -> Medication <$> o .: "facts"
       "Procedure"    -> Procedure <$> o .: "facts"
@@ -108,7 +113,7 @@ instance FromJSON Concept where
 instance FromJSON Concepts where
   parseJSON c = toConcepts <$> parseJSON c
 
-instance FromJSON Source where 
+instance FromJSON Source where
 
 instance FromJSON Context where
   parseJSON = withArray "Context" $ \a -> do
@@ -119,15 +124,15 @@ instance FromJSON Context where
 
 instance (FromJSON a, Show a, IntervalSizeable a b) => FromJSON (Event a) where
   parseJSON = withArray "Event" $ \a -> do
-    intrvl <- parseJSON (a ! 5)  
+    intrvl <- parseJSON (a ! 5)
     let i = getEDMInterval intrvl
     c <- parseJSON (Array a)
     pure $ event i c
 
 instance (FromJSON a, Show a, IntervalSizeable a b) => FromJSON (EDMEvent a) where
   parseJSON = withArray "EDMEvent" $ \a -> do
-     ev <- parseJSON (Array a)
-     pure $ EDMEvent ev
+    ev <- parseJSON (Array a)
+    pure $ EDMEvent ev
 
 -- |  Parse @Event Int@ from json lines.
 parseEventLines

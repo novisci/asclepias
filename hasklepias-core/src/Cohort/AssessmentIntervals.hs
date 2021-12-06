@@ -349,8 +349,7 @@ makeBaselineFinishedByIndex
   => b
   -> Index i a
   -> AssessmentInterval a
-makeBaselineFinishedByIndex  dur index =
-  Bl (baselineFinishedBy dur index)
+makeBaselineFinishedByIndex dur index = Bl (baselineFinishedBy dur index)
 
 -- | Creates an 'AssessmentInterval' using the 'followup' function. 
 -- 

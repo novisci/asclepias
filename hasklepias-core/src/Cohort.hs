@@ -31,7 +31,7 @@ module Cohort
   ) where
 
 import           Cohort.AssessmentIntervals
-import           Cohort.Attrition 
+import           Cohort.Attrition
 import           Cohort.Core
 import           Cohort.Criteria
 import           Cohort.Index

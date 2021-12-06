@@ -40,8 +40,10 @@ import           Data.Maybe                     ( Maybe(..)
                                                 , fromMaybe
                                                 )
 import           Data.Semigroup                 ( Semigroup((<>)) )
-import qualified Data.Text                      as T ( pack )
-import qualified Data.Text.IO                   as T ( putStrLn ) 
+import qualified Data.Text                     as T
+                                                ( pack )
+import qualified Data.Text.IO                  as T
+                                                ( putStrLn )
 import           GHC.Generics                   ( Generic )
 import           GHC.Show                       ( Show(..) )
 
@@ -88,8 +90,7 @@ import           Lens.Micro                     ( (<&>)
                                                 )
 import           Lens.Micro.Extras              ( view )
 import           Options.Applicative
-import           System.IO                      (stderr
-                                                )
+import           System.IO                      ( stderr )
 
 
 

@@ -1,13 +1,16 @@
 {-|
 -}
 
-module CohortCollection 
+module CohortCollection
   ( runCollectionApp
   , getLocations
   , Location(..)
   , Input(..)
   ) where
 
+import           Amazonka.Auth
+import           Amazonka.S3
+import           Cohort.Output                  ( CohortSetJSON )
 import           Conduit                        ( (.|)
                                                 , foldMapMC
                                                 , runConduit
@@ -28,11 +31,8 @@ import qualified Data.Conduit.List             as CL
 import           Data.Maybe                     ( fromMaybe )
 import qualified Data.Text                     as T
                                                 ( pack )
-import           Cohort.Output                  ( CohortSetJSON )
-import           Amazonka.Auth
-import           Amazonka.S3
+import           Hasklepias.AppUtilities hiding ( Input(..) )
 import           System.IO                      ( stderr )
-import           Hasklepias.AppUtilities hiding (Input(..))
 
 
 getCohortData :: Location -> IO (Maybe CohortSetJSON)
@@ -46,7 +46,8 @@ getLocations (FileInput d f) = fmap (fmap Local)
     Nothing -> (<>) ""
     Just s  -> (<>) (s <> "/")
 getLocations (S3Input b k) =
-  fmap (\x -> S3 NorthVirginia b (ObjectKey $ T.pack $ CH.unpack $ C.toStrict x))
+  fmap
+      (\x -> S3 NorthVirginia b (ObjectKey $ T.pack $ CH.unpack $ C.toStrict x))
     .   C.lines
     <$> getS3Object NorthVirginia b k
 

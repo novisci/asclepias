@@ -6,26 +6,26 @@ Module      : Event Data Diagnosis Domain
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DuplicateRecordFields #-}
 
-module EventData.Context.Domain.Medication(
-  MedicationFacts(..)
-) where
+module EventData.Context.Domain.Medication
+  ( MedicationFacts(..)
+  ) where
 
-import Data.Aeson               ( FromJSON )
-import Data.Eq                  ( Eq )
-import Data.Maybe               ( Maybe )
-import GHC.Generics             ( Generic )
-import GHC.Show                 ( Show )
-import EventData.Context.Facts
+import           Data.Aeson                     ( FromJSON )
+import           Data.Eq                        ( Eq )
+import           Data.Maybe                     ( Maybe )
+import           EventData.Context.Facts
+import           GHC.Generics                   ( Generic )
+import           GHC.Show                       ( Show )
 
 -- | An enrollment fact
-data MedicationFacts = MedicationFacts {
-       code :: Code
-     , claim :: Maybe Claim
-     , location :: Maybe Location
-     , fill :: Maybe Fill
-     , provider :: Maybe Provider
-  } 
-  deriving( Eq, Show, Generic )
+data MedicationFacts = MedicationFacts
+  { code     :: Code
+  , claim    :: Maybe Claim
+  , location :: Maybe Location
+  , fill     :: Maybe Fill
+  , provider :: Maybe Provider
+  }
+  deriving (Eq, Show, Generic)
 
 
 instance FromJSON MedicationFacts where

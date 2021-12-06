@@ -36,13 +36,16 @@ import           Data.Functor                   ( Functor(fmap) )
 import           Data.List                      ( null )
 import           Data.Maybe                     ( Maybe(..) )
 import           Data.Ord                       ( Ord(..) )
-import qualified Data.Set as Set                ( Set, fromList )
+import qualified Data.Set                      as Set
+                                                ( Set
+                                                , fromList
+                                                )
+import           Features
 import           GHC.Generics                   ( Generic )
 import           GHC.Show                       ( Show )
 import           IntervalAlgebra                ( Interval
                                                 , Intervallic(..)
                                                 )
-import Features
 {-|
 An @Index@ is a wrapper for an @Intervallic@ used to indicate that a particular
 interval is considered an index interval to which other intervals will be compared.
@@ -58,7 +61,7 @@ instance (Functor i) => Functor (Index i) where
   fmap f (MkIndex x) = MkIndex (fmap f x)
 
 instance (Intervallic i a) => Intervallic (Index i) a where
-  getInterval (MkIndex x)   = getInterval x
+  getInterval (MkIndex x) = getInterval x
   setInterval (MkIndex x) y = MkIndex (setInterval x y)
 
 instance (Ord (i a)) => Ord (Index i a) where
@@ -71,7 +74,8 @@ newtype IndexSet i a = MkIndexSet ( Maybe (Set.Set (Index i a)))
   deriving (Eq, Show, Generic)
 
 makeIndexSet :: (Ord (i a), Intervallic i a) => [Index i a] -> IndexSet i a
-makeIndexSet x = if null x then MkIndexSet Nothing else MkIndexSet (Just (Set.fromList x))
+makeIndexSet x =
+  if null x then MkIndexSet Nothing else MkIndexSet (Just (Set.fromList x))
 
 -- | Simply a @'Feature'@ of an @'Index'@ named @"index"@.
 type FIndex n i a = Feature n (Index i a)

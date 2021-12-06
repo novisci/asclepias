@@ -5,14 +5,14 @@ module Main
   ( main
   ) where
 
+import           CohortCollection
 import qualified Data.ByteString.Lazy.Char8    as C
                                                 ( lines
                                                 , putStrLn
                                                 , toStrict
                                                 )
-import           CohortCollection
+import qualified Hasklepias.AppUtilities       as H
 import           Options.Applicative
-import qualified Hasklepias.AppUtilities as H
 
 
 fileInput :: Parser Input
@@ -41,11 +41,12 @@ data CollectorApp = CollectorApp
   }
 
 collector :: Parser CollectorApp
-collector = CollectorApp <$> 
-    (fileInput <|> s3input) <*>
-    (H.fileOutput <|> H.s3Output <|> H.stdOutput)
+collector =
+  CollectorApp
+    <$> (fileInput <|> s3input)
+    <*> (H.fileOutput <|> H.s3Output <|> H.stdOutput)
 
-desc = 
+desc =
   "Collects cohorts run on different input data. The cohorts must be derived \
   \from the same cohort specification or results my be weird. Supports reading \
   \data from a local directory or from S3. In either case the input is a path \

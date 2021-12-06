@@ -52,8 +52,8 @@ import           Data.Set                       ( Set
 import           Data.Text                      ( Text )
 import           EventData.Context.Domain       ( Domain )
 import           GHC.Generics                   ( Generic )
-import           GHC.Show                       ( Show(show) )
 import           GHC.Num                        ( Integer )
+import           GHC.Show                       ( Show(show) )
 
 -- | A @Context@ consists of three parts: @concepts@, @facts@, and @source@. 
 -- 
@@ -66,13 +66,13 @@ data Context = Context
   }
   deriving (Eq, Show, Generic)
 
-data Source = Source 
-    { column :: Maybe Text
-    , file   :: Maybe Text
-    , row    :: Maybe Integer
-    , table  :: Text
-    , database :: Text
-    }
+data Source = Source
+  { column   :: Maybe Text
+  , file     :: Maybe Text
+  , row      :: Maybe Integer
+  , table    :: Text
+  , database :: Text
+  }
   deriving (Eq, Show, Generic)
 
 instance HasConcept Context where
@@ -83,7 +83,7 @@ instance HasConcept Context where
 --
 -- Creates 'Context' from a list of 'Concept's. 
 context :: Domain -> Concepts -> Maybe Source -> Context
-context d x  = Context x d
+context d x = Context x d
 
 -- | A @Concept@ is textual "tag" for a context.
 newtype Concept = Concept Text deriving (Eq, Ord)

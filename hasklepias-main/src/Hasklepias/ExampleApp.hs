@@ -33,12 +33,12 @@ critTrue
 critTrue = define $ pure Include
 
 instance HasAttributes "myVar1" Count where
-  getAttributes _ = 
-    MkAttributes {
-      getShortLabel = "somelabel"
+  getAttributes _ = MkAttributes
+    { getShortLabel = "somelabel"
     , getLongLabel  = "another label"
     , getDerivation = ""
-    , getPurpose = MkPurpose (setFromList [Outcome]) (setFromList [])}
+    , getPurpose    = MkPurpose (setFromList [Outcome]) (setFromList [])
+    }
 
 instance HasAttributes "myVar2" Bool where
   getAttributes _ = emptyAttributes
@@ -48,7 +48,8 @@ instance HasAttributes "myVar2" Bool where
 
 -- | 
 makeIndexRunner :: Events Day -> IndexSet Interval Day
-makeIndexRunner _ = makeIndexSet [makeIndex $ beginerval 1 (fromGregorian 2010 7 6)]
+makeIndexRunner _ =
+  makeIndexSet [makeIndex $ beginerval 1 (fromGregorian 2010 7 6)]
 
 -- | Make a function that runs the criteria
 makeCriteriaRunner :: Index Interval Day -> Events Day -> Criteria
@@ -67,11 +68,11 @@ makeFeatureRunner _ events = featureset
 
 -- | Make a cohort specification set
 cohortSpecs :: CohortSetSpec (Events Day) Featureset Interval Day
-cohortSpecs = 
-  makeCohortSpecs [("example", makeIndexRunner, makeCriteriaRunner, makeFeatureRunner)]
+cohortSpecs = makeCohortSpecs
+  [("example", makeIndexRunner, makeCriteriaRunner, makeFeatureRunner)]
 
 exampleAppRW :: CohortApp IO
 exampleAppRW = makeCohortApp "testCohort" "v0.1.0" rowWise cohortSpecs
 
 exampleAppCW :: CohortApp IO
-exampleAppCW = makeCohortApp "testCohort" "v0.1.0" colWise cohortSpecs 
+exampleAppCW = makeCohortApp "testCohort" "v0.1.0" colWise cohortSpecs

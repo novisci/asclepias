@@ -6,31 +6,32 @@ Module      : Event Data Demographics Domain
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DuplicateRecordFields #-}
 
-module EventData.Context.Domain.Demographics(
-      DemographicsFacts(..)
-    , DemographicsInfo(..)
-    , DemographicsField(..)
-) where
+module EventData.Context.Domain.Demographics
+  ( DemographicsFacts(..)
+  , DemographicsInfo(..)
+  , DemographicsField(..)
+  ) where
 
 
-import Data.Aeson               ( FromJSON(..) )
-import Data.Eq                  ( Eq )
-import Data.Maybe               ( Maybe )
-import Data.Text                ( Text )
-import GHC.Generics             ( Generic )
-import GHC.Show                 ( Show )
+import           Data.Aeson                     ( FromJSON(..) )
+import           Data.Eq                        ( Eq )
+import           Data.Maybe                     ( Maybe )
+import           Data.Text                      ( Text )
+import           GHC.Generics                   ( Generic )
+import           GHC.Show                       ( Show )
 
 
 -- | a demographic fact
-newtype DemographicsFacts = 
+newtype DemographicsFacts =
     DemographicsFacts { demo :: DemographicsInfo
                       } deriving( Eq, Show, Generic )
 
 -- | information of a demographic fact
-data DemographicsInfo = 
-    DemographicsInfo { field :: DemographicsField
-                     , info :: Maybe Text
-                     } deriving ( Eq, Show, Generic )
+data DemographicsInfo = DemographicsInfo
+  { field :: DemographicsField
+  , info  :: Maybe Text
+  }
+  deriving (Eq, Show, Generic)
 
 -- | fields available in a demographic fact
 data DemographicsField =

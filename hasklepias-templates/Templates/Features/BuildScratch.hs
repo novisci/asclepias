@@ -6,7 +6,7 @@ support before moving to a markdown file.
 
 {-# LANGUAGE FlexibleContexts #-}
 
-module Templates.Features.BuildScratch(
-) where
+module Templates.Features.BuildScratch
+  () where
 
-import Templates.FeatureReqs
+import           Templates.FeatureReqs

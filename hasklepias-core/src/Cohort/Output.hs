@@ -23,7 +23,6 @@ module Cohort.Output
   , toJSONCohortDataShape
   ) where
 
-import           Control.Applicative            ( (<$>) )
 import           Cohort.Attrition
 import           Cohort.Core                    ( Cohort(..)
                                                 , CohortData
@@ -36,6 +35,7 @@ import           Cohort.Core                    ( Cohort(..)
                                                 , getCohortIDs
                                                 )
 import           Cohort.Criteria                ( CohortStatus )
+import           Control.Applicative            ( (<$>) )
 import           Data.Aeson                     ( (.=)
                                                 , FromJSON
                                                 , ToJSON(..)
@@ -48,19 +48,25 @@ import           Data.Function                  ( ($)
                                                 , (.)
                                                 )
 import           Data.Functor                   ( Functor(fmap) )
-import           Data.List                      ( zip, zipWith, head )
+import           Data.List                      ( head
+                                                , zip
+                                                , zipWith
+                                                )
 import           Data.List.NonEmpty            as NE
                                                 ( NonEmpty(..)
-                                                , nonEmpty
                                                 , head
+                                                , nonEmpty
                                                 , toList
                                                 )
 import           Data.Map.Strict               as Data.Map
                                                 ( Map
-                                                , unionWith )
-import           Data.Maybe                     ( maybe, maybeToList
+                                                , unionWith
+                                                )
+import           Data.Maybe                     ( Maybe(..)
                                                 , fromMaybe
-                                                , Maybe(..) )
+                                                , maybe
+                                                , maybeToList
+                                                )
 import           Data.Semigroup                 ( Semigroup(..) )
 import           Data.Text                      ( Text )
 import           Data.Tuple                     ( uncurry )
@@ -83,7 +89,7 @@ import           GHC.Show                       ( Show )
 import           GHC.Types                      ( Type )
 import           Safe                           ( headMay )
 
-instance ToJSON ObsID where 
+instance ToJSON ObsID where
 instance (ToJSON d) => ToJSON (ObsUnit d) where
 instance (ToJSON d) => ToJSON (CohortData d) where
 instance (ToJSON d) => ToJSON (Cohort d) where
@@ -101,8 +107,8 @@ instance FromJSON AttritionInfo where
 
 -- | A type used to determine the output shape of a Cohort.
 data CohortDataShape d where
-  ColumnWise :: (Show a, ToJSON a) => a -> CohortDataShape ColumnWise
-  RowWise :: (Show a, ToJSON a) => a -> CohortDataShape RowWise
+  ColumnWise ::(Show a, ToJSON a) => a -> CohortDataShape ColumnWise
+  RowWise ::(Show a, ToJSON a) => a -> CohortDataShape RowWise
 
 deriving instance Show d => Show (CohortDataShape d)
 
@@ -135,7 +141,7 @@ instance ToJSON CohortSetJSON
 instance FromJSON CohortSetJSON
 
 instance Semigroup CohortSetJSON where
-  (<>) (MkCohortSetJSON x) (MkCohortSetJSON y) = 
+  (<>) (MkCohortSetJSON x) (MkCohortSetJSON y) =
     MkCohortSetJSON (unionWith (<>) x y)
 
 -- | A type used to represent JSON formats for each shape
@@ -158,14 +164,16 @@ class ShapeCohort d where
   rowWise :: Cohort d -> CohortJSON
 
 instance ShapeCohort Featureset  where
-  colWise (MkCohort (a, d)) = MkCohortJSON (a, CW $ colWiseJson (shapeColumnWise d))
-  rowWise (MkCohort (a, d)) = MkCohortJSON (a, RW $ rowWiseJson (shapeRowWise d))
+  colWise (MkCohort (a, d)) =
+    MkCohortJSON (a, CW $ colWiseJson (shapeColumnWise d))
+  rowWise (MkCohort (a, d)) =
+    MkCohortJSON (a, RW $ rowWiseJson (shapeRowWise d))
 
 ---- ColumnWise ---- 
 
 data ColumnWise = MkColumnWise [OutputShape Type] -- attributes
                                                   [ObsID] -- ids
-                                                       [[OutputShape Type]] -- data
+                                                          [[OutputShape Type]] -- data
   deriving (Show, Generic)
 
 instance ToJSON ColumnWise where
@@ -190,12 +198,12 @@ colWiseJson (MkColumnWise a ids cd) =
   MkColumnWiseJSON (fmap toJSON a) (fmap toJSON ids) (fmap (fmap toJSON) cd)
 
 shapeColumnWise :: CohortData Featureset -> ColumnWise
-shapeColumnWise x = MkColumnWise
-  (fromMaybe [] attr)
-  (getCohortDataIDs x)
-  (fromMaybe [[]] dat)
+shapeColumnWise x = MkColumnWise (fromMaybe [] attr)
+                                 (getCohortDataIDs x)
+                                 (fromMaybe [[]] dat)
  where
-  feat = fmap (getFeaturesetList . (tpose . MkFeaturesetList)) (nonEmpty (getCohortDataData x))
+  feat = fmap (getFeaturesetList . (tpose . MkFeaturesetList))
+              (nonEmpty (getCohortDataData x))
   attr = fmap (toList . fmap (nameAttr . NE.head . getFeatureset)) feat
   dat  = fmap (toList . fmap (toList . (fmap dataOnly . getFeatureset))) feat
 
@@ -223,15 +231,14 @@ data RowWiseJSON = MkRowWiseJSON
 instance ToJSON   RowWiseJSON
 instance FromJSON RowWiseJSON
 instance Semigroup RowWiseJSON where
-  (<>) (MkRowWiseJSON a1 d1) (MkRowWiseJSON _ d2) =
-    MkRowWiseJSON a1 (d1 <> d2)
+  (<>) (MkRowWiseJSON a1 d1) (MkRowWiseJSON _ d2) = MkRowWiseJSON a1 (d1 <> d2)
 
 rowWiseJson :: RowWise -> RowWiseJSON
 rowWiseJson (MkRowWise a rd) = MkRowWiseJSON (fmap toJSON a) (fmap toJSON rd)
 
 shapeRowWise :: CohortData Featureset -> RowWise
 shapeRowWise x = MkRowWise
-  ( maybe [] (fmap nameAttr . toList . getFeatureset) ( headMay cd ) )
+  (maybe [] (fmap nameAttr . toList . getFeatureset) (headMay cd))
   (fmap MkIDRow (zip ids (fmap (toList . (fmap dataOnly . getFeatureset)) cd)))
  where
   cd  = getCohortDataData x

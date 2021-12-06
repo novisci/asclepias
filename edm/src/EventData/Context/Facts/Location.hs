@@ -5,15 +5,15 @@ Module      : Location fact
 {-# LANGUAGE Trustworthy #-}
 {-# LANGUAGE DeriveGeneric #-}
 
-module EventData.Context.Facts.Location(
-  Location(..)
-) where
-import Data.Aeson               ( FromJSON )
-import Data.Eq                  ( Eq )
-import GHC.Generics             ( Generic )
-import GHC.Show                 ( Show )
+module EventData.Context.Facts.Location
+  ( Location(..)
+  ) where
+import           Data.Aeson                     ( FromJSON )
+import           Data.Eq                        ( Eq )
+import           GHC.Generics                   ( Generic )
+import           GHC.Show                       ( Show )
 
-data Location = 
+data Location =
     Inpatient
   | Outpatient
   | Unknown

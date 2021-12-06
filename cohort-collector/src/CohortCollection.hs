@@ -1,6 +1,5 @@
 {-|
 -}
-
 module CohortCollection
   ( runCollectionApp
   , getLocations
@@ -32,6 +31,9 @@ import           Data.Maybe                     ( fromMaybe )
 import qualified Data.Text                     as T
                                                 ( pack )
 import           Hasklepias.AppUtilities hiding ( Input(..) )
+import           Cohort.Output                  ( CohortSetJSON )
+import           Amazonka.Auth
+import           Amazonka.S3
 import           System.IO                      ( stderr )
 
 

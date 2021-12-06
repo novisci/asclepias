@@ -6,7 +6,6 @@ License     : BSD3
 Maintainer  : bsaul@novisci.com
 -}
 {-# LANGUAGE NoImplicitPrelude #-}
-{-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE BlockArguments #-}
 
@@ -99,7 +98,7 @@ makeCohortBuilder
   => CohortSetSpec (Events a) d0 i a
   -> m (B.ByteString -> m ([SubjectParseError], CohortSet d0))
 makeCohortBuilder specs =
-  return (return . second (evalCohortSet specs) . parsePopulationLines)
+  pure (pure . second (evalCohortSet specs) . parsePopulationLines)
 
 reshapeCohortSet :: (Cohort d0 -> CohortJSON) -> CohortSet d0 -> CohortSetJSON
 reshapeCohortSet g x =
@@ -155,7 +154,7 @@ makeCohortApp name version shape spec = MkCohortApp $ \l -> do
 
   errLog <& "Encoding cohort(s) output and writing to stdout..."
 
-  return (encode (toJSON (snd res)))
+  pure (encode (toJSON (snd res)))
 
 -- | Just run the thing.
 runApp :: CohortApp IO -> IO ()

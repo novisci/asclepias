@@ -37,16 +37,16 @@ anotherInt = beginerval 5 (15 :: Int)
 
 spec :: Spec
 spec = do
-  it "hasConcept returns True when concept is in context"
+  it "hasConcept pures True when concept is in context"
     $          (evnt1 `hasConcept` "c1")
     `shouldBe` True
-  it "hasConcept returns False when concept is not in context"
+  it "hasConcept pures False when concept is not in context"
     $          (evnt1 `hasConcept` "c3")
     `shouldBe` False
-  it "hasConcepts returns True when at at least one concept is in context"
+  it "hasConcepts pures True when at at least one concept is in context"
     $          (evnt1 `hasConcepts` ["c3", "c1"])
     `shouldBe` True
-  it "hasConcepts returns False when no concept is in context"
+  it "hasConcepts pures False when no concept is in context"
     $          (evnt1 `hasConcepts` ["c3", "c4"])
     `shouldBe` False
 

@@ -68,8 +68,8 @@ data TestCase a b builderArgs = MkTestCase
 
 evalTestCase
   :: TestCase defArgs b builderArgs
-  -> (defArgs -> return)
-  -> (return, Feature "result" b)
+  -> (defArgs -> returnType)
+  -> (returnType, Feature "result" b)
 evalTestCase (MkTestCase buildArgs _ inputs truth) def = (def inputs, truth)
 
 makeAssertion

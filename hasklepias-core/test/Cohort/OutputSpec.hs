@@ -17,8 +17,8 @@ import Features (emptyAttributes)
 attr1 :: Maybe AttritionInfo
 attr1 = 
   Just $ MkAttritionInfo 2 $
-    fromList [ uncurry MkAttritionLevel (ExcludedBy (1, "feat2"), 1)
-             , uncurry MkAttritionLevel (Included, 1)]
+    fromList [ MkAttritionLevel (ExcludedBy (1, "feat2")) 1
+             , MkAttritionLevel Included 1]
 
 cw1 :: B.ByteString
 cw1 = "{\"contents\":{\"ids\":[\"a\",\"b\"],\"cohortData\":[[5,5],[true,true]],\"attributes\":[{\"name\":\"dummy\",\"attrs\":{\"getPurpose\":{\"getTags\":[],\"getRole\":[]},\"getDerivation\":\"\",\"getLongLabel\":\"\",\"getShortLabel\":\"\"},\"type\":\"Count\"},{\"name\":\"another\",\"attrs\":{\"getPurpose\":{\"getTags\":[],\"getRole\":[]},\"getDerivation\":\"\",\"getLongLabel\":\"\",\"getShortLabel\":\"\"},\"type\":\"Bool\"}]},\"tag\":\"CW\"}"

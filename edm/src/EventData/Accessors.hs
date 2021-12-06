@@ -8,6 +8,7 @@ Maintainer  : bsaul@novisci.com
 -- {-# OPTIONS_HADDOCK hide #-}
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE DataKinds #-}
 
 module EventData.Accessors
@@ -35,7 +36,7 @@ import           Control.Monad                  ( (=<<)
                                                 , (>>=)
                                                 , Functor(fmap)
                                                 )
-import           Data.Either                    ( either )
+import           Data.Either                    ( Either(..) )
 import           Data.Foldable                  ( toList )
 import           Data.Function                  ( ($)
                                                 , (.)
@@ -94,7 +95,11 @@ previewDemoInfo dmn =
 -- | Utility for reading text into a maybe integer
 intMayMap :: Text -> Maybe Integer -- TODO: this is ridiculous
 intMayMap x =
-  fmap floor (either (const Nothing) (Just . fst) (Data.Text.Read.rational x))
+  fmap floor 
+    ((\case
+       Left _  -> Nothing
+       Right v -> Just (fst v))
+    (Data.Text.Read.rational x))
 
 -- | Preview days supply field information from a medication domain
 previewDaysSupply :: Domain -> Maybe Integer 

@@ -20,18 +20,18 @@ ctxt2 = HC.context (UnimplementedDomain ()) (packConcepts ["c2", "c3"]) Nothing
 
 spec :: Spec
 spec = do
-  it "getConcepts returns correct values"
+  it "getConcepts pures correct values"
     $          concepts ctxt1
     `shouldBe` packConcepts ["c1", "c2"]
-  it "hasConcept returns True when concept is in context"
+  it "hasConcept pures True when concept is in context"
     $          (ctxt1 `hasConcept` "c1")
     `shouldBe` True
-  it "hasConcept returns False when concept is not in context"
+  it "hasConcept pures False when concept is not in context"
     $          (ctxt1 `hasConcept` "c3")
     `shouldBe` False
-  it "hasConcepts returns True when at at least one concept is in context"
+  it "hasConcepts pures True when at at least one concept is in context"
     $          (ctxt1 `hasConcepts` ["c3", "c1"])
     `shouldBe` True
-  it "hasConcepts returns False when no concept is in context"
+  it "hasConcepts pures False when no concept is in context"
     $          (ctxt1 `hasConcepts` ["c3", "c4"])
     `shouldBe` False

@@ -9,8 +9,7 @@ Maintainer  : bsaul@novisci.com
 -- {-# LANGUAGE Safe #-}
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE TupleSections #-}
-
+{-# LANGUAGE LambdaCase #-}
 
 module Cohort.Criteria
   ( Criterion
@@ -37,7 +36,7 @@ import           Data.Bool                      ( (&&)
                                                 , not
                                                 , otherwise
                                                 )
-import           Data.Either                    ( either )
+import           Data.Either                    ( Either(..) )
 import           Data.Eq                        ( Eq(..) )
 import           Data.Function                  ( ($)
                                                 , (.)
@@ -148,9 +147,12 @@ criteria l = MkCriteria $ NE.zip (NE.fromList [1 ..]) l
 -- @'Criterion'@. In the case, that the value of the @'Features.Compose.FeatureData'@ 
 -- within the @'Criterion'@ is @Left@, the status is set to @'Exclude'@. 
 getStatus :: Criterion -> (Text, Status)
-getStatus (MkCriterion x) = either (const (nm, Exclude))
-                                   (nm, )
-                                   ((getFeatureData . getDataN) x)
+getStatus (MkCriterion x) = 
+  (\case
+    Left _  -> (nm, Exclude)
+    Right v -> (nm, v)
+  )
+  ((getFeatureData . getDataN) x)
   where nm = getNameN x
 
 -- | Converts a subject's @'Criteria'@ into a @'NE.NonEmpty'@ triple of 

@@ -53,7 +53,7 @@ makeHx
   -> (Bool, Maybe (Interval a))
 makeHx cnpts i events =
   (isNotEmpty (f i events), lastMay $ intervals (f i events))
-  where f i x = makePairedFilter enclose i (`hasConcepts` cnpts) x
+  where f i = makePairedFilter enclose i (`hasConcepts` cnpts)
 
 duckHx
   :: (Ord a) => AssessmentInterval a -> Events a -> (Bool, Maybe (Interval a))
@@ -251,9 +251,9 @@ exampleFeatures1Spec = do
                           (MkPopulation [exampleSubject1, exampleSubject2])
     `shouldBe` MkCohort
                  ( MkAttritionInfo 2 $ setFromList
-                   [ uncurry MkAttritionLevel (SubjectHasNoIndex           , 1)
-                   , uncurry MkAttritionLevel (ExcludedBy (1, "includeAll"), 0)
-                   , uncurry MkAttritionLevel (Included                    , 1)
+                   [ MkAttritionLevel SubjectHasNoIndex 1
+                   , MkAttritionLevel (ExcludedBy (1, "includeAll")) 0
+                   , MkAttritionLevel Included 1
                    ]
                  , MkCohortData
                    [ MkObsUnit (makeObsID 1 "a") example1results

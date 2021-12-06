@@ -1,0 +1,1 @@
+hlint . --ext=hs

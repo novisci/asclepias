@@ -35,10 +35,10 @@ instance HasAttributes "b" (Maybe Text) where
     getAttributes x = emptyAttributes
 
 s1 :: Featureset 
-s1 = featureset ((packFeature s1f1) :| [packFeature s1f2])
+s1 = featureset (packFeature s1f1 :| [packFeature s1f2])
 
 s2 :: Featureset 
-s2 = featureset ((packFeature s2f1) :| [packFeature s2f2])
+s2 = featureset (packFeature s2f1 :| [packFeature s2f2])
 
 dt :: FeaturesetList
 dt = MkFeaturesetList (s1 :| [s2])
@@ -50,7 +50,7 @@ dt = MkFeaturesetList (s1 :| [s2])
 spec :: Spec
 spec = do 
 
-    it "tdt encodes correctly" $ pending 
+    it "tdt encodes correctly" pending 
         -- encode tdt `shouldBe`
         --     "{\"data\":[[true,false],[null,\"bye\"]],\
         --     \\"attributes\":[{\"name\":\"a\",\

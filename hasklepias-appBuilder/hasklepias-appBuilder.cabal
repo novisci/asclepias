@@ -48,5 +48,6 @@ library
     , interval-algebra == 1.1.0
     , microlens == 0.4.12.0
     , optparse-applicative == 0.16.1.0
+    , text == 1.2.4.1
     , vector == 0.12.2.0
   default-language: Haskell2010

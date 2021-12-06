@@ -12,7 +12,6 @@ Maintainer  : bsaul@novisci.com
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE LambdaCase #-}
-{-# LANGUAGE TypeApplications #-}
 
 module ExampleFeatures4
   ( exampleFeatures4Spec
@@ -369,11 +368,17 @@ censorTime
        -> F "censortime" (Occurrence CensorReason b)
        )
 censorTime = define
-  (\dth disrl -> minimum
-    [ makeOccurrence DeathCensor   dth
-    , makeOccurrence Disenrollment disrl
+  (\dth disrl -> 
+    fromMaybe
+    (makeOccurrence DeathCensor   dth) 
+    -- TODO: the default should be something else just putting this value as an
+    --       example
+    ( minimumMay
+      [ makeOccurrence DeathCensor   dth
+      , makeOccurrence Disenrollment disrl
               -- etc
-    ]
+      ]
+    )
   )
 
 {- 

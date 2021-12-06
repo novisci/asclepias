@@ -8,7 +8,6 @@ Maintainer  : bsaul@novisci.com
 
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE OverloadedStrings #-}
@@ -89,7 +88,7 @@ instance (FromJSON a, Show a, IntervalSizeable a b) => FromJSON (SubjectEvent a)
   parseJSON = withArray "Event" $ \a -> do
     id <- parseJSON (a ! 0)
     ev <- parseJSON (Array a)
-    return $ MkSubjectEvent (id,  ev)
+    pure $ MkSubjectEvent (id,  ev)
 
 
 mapIntoPop :: (Ord a) => [SubjectEvent a] -> Population (Events a)

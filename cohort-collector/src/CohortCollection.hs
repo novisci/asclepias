@@ -62,4 +62,4 @@ runCollectionApp fs = do
   r <- runConduit $ yieldMany fs .| foldMapMC getCohortData
   let x = fmap encode r
   let z = fromMaybe B.empty x
-  return z
+  pure z

@@ -25,7 +25,6 @@ import           Data.Aeson
 import qualified Data.ByteString.Char8         as C
 import qualified Data.ByteString.Lazy          as B
 import           Data.Either                    ( Either(..)
-                                                , either
                                                 , partitionEithers
                                                 )
 import           Data.Eq                        ( Eq )
@@ -87,7 +86,7 @@ instance (FromJSON a, Show a, IntervalSizeable a b) => FromJSON (EDMInterval a) 
     let ei = parseInterval b e2
     case ei of
       Left  e -> fail (show e)
-      Right i -> return (EDMInterval i)
+      Right i -> pure (EDMInterval i)
 
 instance FromJSON Domain where
   parseJSON = withObject "Domain" $ \o -> do
@@ -116,19 +115,19 @@ instance FromJSON Context where
     cpts <- parseJSON (a ! 4)
     fcts <- parseJSON (a ! 5)
     srce <- withObject "source" (.:? "source") (a ! 5)
-    return $ Context cpts fcts srce
+    pure $ Context cpts fcts srce
 
 instance (FromJSON a, Show a, IntervalSizeable a b) => FromJSON (Event a) where
   parseJSON = withArray "Event" $ \a -> do
     intrvl <- parseJSON (a ! 5)  
     let i = getEDMInterval intrvl
     c <- parseJSON (Array a)
-    return $ event i c
+    pure $ event i c
 
 instance (FromJSON a, Show a, IntervalSizeable a b) => FromJSON (EDMEvent a) where
   parseJSON = withArray "EDMEvent" $ \a -> do
      ev <- parseJSON (Array a)
-     return $ EDMEvent ev
+     pure $ EDMEvent ev
 
 -- |  Parse @Event Int@ from json lines.
 parseEventLines

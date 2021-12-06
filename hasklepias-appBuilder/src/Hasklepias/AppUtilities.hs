@@ -9,7 +9,6 @@ These functions may be moved to more appropriate modules in future versions.
 -}
 -- {-# OPTIONS_HADDOCK hide #-}
 {-# LANGUAGE NoImplicitPrelude #-}
-{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE TypeApplications #-}
@@ -41,6 +40,8 @@ import           Data.Maybe                     ( Maybe(..)
                                                 , fromMaybe
                                                 )
 import           Data.Semigroup                 ( Semigroup((<>)) )
+import qualified Data.Text                      as T ( pack )
+import qualified Data.Text.IO                   as T ( putStrLn ) 
 import           GHC.Generics                   ( Generic )
 import           GHC.Show                       ( Show(..) )
 
@@ -87,8 +88,7 @@ import           Lens.Micro                     ( (<&>)
                                                 )
 import           Lens.Micro.Extras              ( view )
 import           Options.Applicative
-import           System.IO                      ( putStrLn
-                                                , stderr
+import           System.IO                      (stderr
                                                 )
 
 
@@ -168,11 +168,11 @@ class (ToBody a) => PutS3 a where
               (newPutObject b k (toBody o))
     runResourceT $ do
       void . send env $ obj
-      liftIO . putStrLn $
+      liftIO . T.putStrLn $
           "Successfully Uploaded contents to "
-        <> show b
+        <> T.pack (show b)
         <> " - "
-        <> show k
+        <> T.pack (show k)
 
 instance PutS3 B.ByteString
 instance PutS3 C.ByteString

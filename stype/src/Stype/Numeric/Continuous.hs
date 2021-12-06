@@ -30,7 +30,7 @@ instance Functor Continuous where
   fmap f ContInf = ContInf
 
 instance Applicative Continuous where
-  pure x = Cont x
+  pure = Cont
   (<*>) (Cont f) (Cont x) =  Cont (f x)
   (<*>) NegContInf (Cont x) =  NegContInf
   (<*>) ContInf (Cont x) =  ContInf

@@ -83,8 +83,6 @@ import safe      Data.Eq                        ( (==)
 import safe      Data.Foldable                  ( Foldable(..)
                                                 , and
                                                 , asum
-                                                , maximum
-                                                , minimum
                                                 , or
                                                 )
 import safe      Data.Function                  ( ($)

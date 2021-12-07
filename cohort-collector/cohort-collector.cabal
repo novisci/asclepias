@@ -35,7 +35,7 @@ library
     , amazonka >= 2.0
     , amazonka-s3 >= 2.0
     , base >=4.14 && <5
-    , bytestring == 0.10.12.0
+    , bytestring == 0.11.1.0
     , conduit == 1.3.4.2
     , text == 1.2.4.1
   default-language: Haskell2010

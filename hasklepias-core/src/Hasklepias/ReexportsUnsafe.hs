@@ -19,6 +19,7 @@ module Hasklepias.ReexportsUnsafe
   , module Lens
   , module Test.Tasty
   , module Test.Tasty.HUnit
+  , naturalToInt
   ) where
 
 import           Data.Aeson                     ( ToJSON(..)
@@ -33,5 +34,13 @@ import           Data.Generics.Sum             as Lens
                                                 ( AsAny(_As) )
 import           GHC.Exts                       ( IsList(fromList) )
 import           GHC.IO                         ( IO(..) )
+import           GHC.Natural                    ( Natural
+                                                , naturalToInteger
+                                                )
+import           GHC.Num                        ( fromInteger )
 import           Test.Tasty              hiding ( after )
 import           Test.Tasty.HUnit
+
+
+naturalToInt :: Natural -> Int
+naturalToInt = fromInteger . naturalToInteger

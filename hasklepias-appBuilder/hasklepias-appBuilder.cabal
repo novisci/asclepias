@@ -38,7 +38,7 @@ library
     , amazonka-core >= 2.0
     , amazonka-sts >= 2.0
     , amazonka-s3 >= 2.0
-    , base >=4.14 && <4.15
+    , base >=4.14 && <5
     , bytestring == 0.11.1.0
     , containers == 0.6.5.1
     , co-log-core == 0.3.0.0

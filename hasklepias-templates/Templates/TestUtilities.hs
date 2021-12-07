@@ -1,4 +1,4 @@
-{-|
+{-| 
 Module      : Functions and types for creating tests for templates 
 Description : Misc types and functions useful in Hasklepias.
 Copyright   : (c) NoviSci, Inc 2020
@@ -8,7 +8,6 @@ Maintainer  : bsaul@novisci.com
 These functions may be moved to more appropriate modules in future versions.
 -}
 -- {-# OPTIONS_HADDOCK hide #-}
-
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 
@@ -25,7 +24,18 @@ module Templates.TestUtilities
 
 
 import           Cohort.Index
+
+-- #endif
+-- TODO: find a better way to handle this import and/or figure out how use
+--       gcc on a mac on the haskell c-preprocessor without phutzing with a lot
+--       different settings.
+-- #if MIN_VERSION_base(4,16,0)
+-- import          GHC.Tuple (Solo (Solo), getSolo)
+-- #elif MIN_VERSION_base(4,15,0)
+--   import           GHC.Tuple (Solo (Solo))
+-- #else
 import           Data.Tuple.Solo
+
 import           EventData
 import           Features.Compose               ( Define(..)
                                                 , Definition(..)

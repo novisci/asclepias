@@ -180,7 +180,7 @@ import safe      GHC.Generics                   ( Generic )
 import safe      GHC.Num                        ( Integer(..)
                                                 , Natural(..)
                                                 , Num(..)
-                                                , naturalToInt
+                                                , fromInteger
                                                 )
 import safe      GHC.Real                       ( Integral(..)
                                                 , toInteger
@@ -226,3 +226,5 @@ mapToList = M.toList
 
 emptySet :: Set.Set a
 emptySet = Set.empty
+
+

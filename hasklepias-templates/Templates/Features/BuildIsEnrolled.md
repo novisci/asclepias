@@ -14,6 +14,7 @@ module Templates.Features.BuildIsEnrolled
   ) where
 
 import           Templates.FeatureReqs
+import           Data.Tuple.Solo -- TODO: remove this import; it's necessary (for some reason for GHC 9.0.1)
 ```
 
 ## Definition

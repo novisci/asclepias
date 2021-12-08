@@ -6,7 +6,7 @@ Usage: cohort-collector ([-d|--dir DIRECTORY] (-f|--file INPUT) |
                           [--outregion OUTREGION] --outbucket OUTBUCKET
                           --outkey OUTPUTKEY]
   Collects cohorts run on different input data. The cohorts must be derived from
-  the same cohort specification or results my be weird. Supports reading data
+  the same cohort specification or results may be weird. Supports reading data
   from a local directory or from S3. In either case the input is a path to a
   file containing paths (or S3 keys) to each cohort part, where One line = one
   file. S3 capabilities are currently limited (e.g. AWS region is set to N.

@@ -25,17 +25,17 @@ module Templates.TestUtilities
 
 import           Cohort.Index
 
--- #endif
+
 -- TODO: find a better way to handle this import and/or figure out how use
 --       gcc on a mac on the haskell c-preprocessor without phutzing with a lot
 --       different settings.
 -- #if MIN_VERSION_base(4,16,0)
 -- import          GHC.Tuple (Solo (Solo), getSolo)
 -- #elif MIN_VERSION_base(4,15,0)
---   import           GHC.Tuple (Solo (Solo))
+-- import           GHC.Tuple (Solo (Solo))
 -- #else
 import           Data.Tuple.Solo
-
+-- #endif
 import           EventData
 import           Features.Compose               ( Define(..)
                                                 , Definition(..)

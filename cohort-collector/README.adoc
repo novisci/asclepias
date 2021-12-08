@@ -1,0 +1,45 @@
+:testdir: test/tests
+
+= Cohort Collector
+
+The `cohort-collector` application provides a utility for combining cohorts *built from the same cohort specification*. A common use case is combining cohort data created on different partitions of event data.
+
+The application takes a single text file containing a one filepath per line as input. The file can be located either on the local file system or on S3. 
+
+== Usage
+
+[source]
+----
+include::help.txt[]
+----
+
+== Example usage
+
+Suppose we have 3 cohort json files we want to combine.
+
+.testcw1.json
+[source]
+include::{testdir}/testcw1.json[]
+
+.testcw2.json
+[source]
+include::{testdir}/testcw2.json[]
+
+.testcw3.json
+[source]
+include::{testdir}/testcw3.json[]
+
+To combine these files, we provide a manifest file:
+
+.manifest.txt
+[source]
+include::{testdir}/manifestcw.txt[]
+
+Then the `cohort-collector` app can be run from the same directory as the location of the manifest file: 
+
+[source,shell]
+----
+$ cohort-collector -f manifestcw.txt
+{"example":[{"attritionInfo":[{"attritionCount":2,"attritionLevel":{"contents":[1,"dummy"],"tag":"ExcludedBy"}},{"attritionCount":5,"attritionLevel":{"tag":"Included"}}],"totalProcessed":7},{"contents":{"attributes":[{"attrs":{"getDerivation":"","getLongLabel":"another label","getPurpose":{"getRole":["Outcome"],"getTags":[]},"getShortLabel":"somelabel"},"name":"myVar1","type":"Count"},{"attrs":{"getDerivation":"","getLongLabel":"","getPurpose":{"getRole":[],"getTags":[]},"getShortLabel":""},"name":"myVar2","type":"Bool"}],"cohortData":[[5,5,10,99,86],[true,true,false,true,true]],"ids":["a","b","c","d","f"]},"tag":"CW"}]}
+----
+

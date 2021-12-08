@@ -1,0 +1,26 @@
+cohort collector
+
+Usage: cohort-collector ([-d|--dir DIRECTORY] (-f|--file INPUT) | 
+                          (-b|--bucket Bucket) (-m|--manifest KEY)) 
+                        [[--outdir DIRECTORY] (-o|--output OUTPUT) | 
+                          [--outregion OUTREGION] --outbucket OUTBUCKET
+                          --outkey OUTPUTKEY]
+  Collects cohorts run on different input data. The cohorts must be derived from
+  the same cohort specification or results my be weird. Supports reading data
+  from a local directory or from S3. In either case the input is a path to a
+  file containing paths (or S3 keys) to each cohort part, where One line = one
+  file. S3 capabilities are currently limited (e.g. AWS region is set to N.
+  Virginia).Data can be output to stdout (default), to a file (using the -o
+  option), or to S3 (using the --outbucket and --outkey options).
+
+Available options:
+  -d,--dir DIRECTORY       optional directory
+  -f,--file INPUT          Input file
+  -b,--bucket Bucket       S3 bucket
+  -m,--manifest KEY        S3 manifest file
+  --outdir DIRECTORY       optional output directory
+  -o,--output OUTPUT       Output file
+  --outregion OUTREGION    output AWS Region
+  --outbucket OUTBUCKET    output S3 bucket
+  --outkey OUTPUTKEY       output S3 location
+  -h,--help                Show this help text

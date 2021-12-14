@@ -11,3 +11,7 @@ _Asclepias (n)_:
 == Tools
 
 include::cohort-collector/README.adoc[leveloffset=+2]
+
+== Development
+
+include::ci/README.adoc[leveloffset=+2]

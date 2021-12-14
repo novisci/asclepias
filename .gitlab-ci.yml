@@ -36,7 +36,7 @@ check-source:
   image: registry.novisci.com/nsstat/statocker/haskell:$GHC
   script:
     - ./scripts/lint.sh
-    - ./scripts/check_format.sh
+    - ./scripts/check-format.sh
 
 # Build stage jobs #### 
 build-test-hasklepias:
@@ -50,15 +50,12 @@ build-cohort-collector-static:
   stage: build
   needs: ["docker-build-musl"]
   image: registry.novisci.com/nsstat/asclepias/hasklepias-build-musl:latest
-  cache:
-    key: "$CI_JOB_NAME"
+  artifacts :
+    name: "${CI_PROJECT_NAME}-${SAFE_REF_NAME}"
     paths:
       - install/
-  # artifacts :
-  #   name: "${CI_PROJECT_NAME}-${SAFE_REF_NAME}"
-  #   paths:
-  #     - "cohort-collector*.tar.gz"
-  #   expire_in: 1 week
+      # - "cohort-collector.txt"
+    expire_in: 1 week
   script:
      - ./ci/ci-cabal-build-exe-static.sh cohort-collector cohort-collector install
 
@@ -66,10 +63,6 @@ build-cohort-collector-static:
 deploy-cohort-collector-static:
   stage: deploy
   needs: ["build-cohort-collector-static"]
-  cache:
-    key: "$CI_JOB_NAME"
-    paths:
-      - install/
   image: registry.novisci.com/nsstat/statocker/aws
   script:
     - export BUNDLE=$(cat install/cohort-collector.txt)

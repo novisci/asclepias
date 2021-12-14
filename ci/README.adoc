@@ -1,0 +1,3 @@
+= Continuous Integration 
+
+This section describes the setup for the Hasklepias repository's https://en.wikipedia.org/wiki/Continuous_integration[CI] process. The CI steps are defined in `.gitlab-ci.yml` in the project root. The `ci` directory contains scripts, Dockerfiles, and other configurations used by CI processes only (other developer scripts may be found in the `scripts` directory).

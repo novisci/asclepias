@@ -7,11 +7,13 @@
 #         
 
 before_script:
-  - export MAINVERSION=$(grep -e '^version:' hasklepias-main/hasklepias-main.cabal | sed 's/version:[[:space:]]*//g')
+  # - export MAINVERSION=$(grep -e '^version:' hasklepias-main/hasklepias-main.cabal | sed 's/version:[[:space:]]*//g')
+  - export MAINVERSION=$(./scripts/get-version-from-cabal.sh hasklepias-main/hasklepias-main.cabal)
 
 variables:
   PKG: hasklepias
   GHC: 8.10.7
+  DOCKER: 20.10.11 
 
 stages:
   - pre-build
@@ -21,13 +23,13 @@ stages:
 # Pre-build stage jobs #### 
 docker-build:
  stage : pre-build
- image: docker:20.10.11
+ image: docker:$DOCKER
  script:
     - ./ci/ci-build-docker.sh $MAINVERSION hasklepias-build haskell $GHC
 
 docker-build-musl:
  stage : pre-build
- image: docker:20.10.11
+ image: docker:$DOCKER
  script:
     - ./ci/ci-build-docker.sh $MAINVERSION hasklepias-build-musl musl-haskell $GHC
 
@@ -60,14 +62,19 @@ build-cohort-collector-static:
      - ./ci/ci-cabal-build-exe-static.sh cohort-collector cohort-collector install
 
 # Deploy jobs
-deploy-cohort-collector-static:
+deploy-aws-cohort-collector-static:
   stage: deploy
   needs: ["build-cohort-collector-static"]
   image: registry.novisci.com/nsstat/statocker/aws
   script:
-    - export BUNDLE=$(cat install/cohort-collector.txt)
+    - export BUNDLE=$(cat install/cohort-collector.bundle)
     - echo "$BUNDLE"
-# aws s3 cp \
-#    $INSTALLDIR/${BUNDLE} \
-#    s3://download.novisci.com/hasklepias/${BUNDLE} \
-#    --acl public-read
+    - aws s3 cp install/${BUNDLE} s3://download.novisci.com/hasklepias/${BUNDLE} --acl public-read
+
+# deploy-docker-cohort-collector-static:
+#   stage: deploy
+#   needs: ["build-cohort-collector-static"]
+#   image: docker:$DOCKER
+#   script:
+#     - export NAME=$(cat install/cohort-collector.name)
+#     - echo "$NAME"

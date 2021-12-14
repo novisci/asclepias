@@ -36,4 +36,5 @@ cp $EXE ${INSTALLDIR}/${NAME}
 
 tar -czvf $BUNDLE ${INSTALLDIR}/${NAME}
 
-echo $BUNDLE > ${INSTALLDIR}/${COMPONENT}.txt
+echo $BUNDLE > ${INSTALLDIR}/${COMPONENT}.name
+echo $BUNDLE > ${INSTALLDIR}/${COMPONENT}.bundle

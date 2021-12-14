@@ -11,3 +11,5 @@ FROM registry.novisci.com/nsstat/statocker/musl-haskell:8.10.7
 WORKDIR /project
 COPY .. .
 
+RUN cabal build all --only-dependencies --constraint='text +integer-simple' --constraint='cryptonite -integer-gmp' --enable-executable-static --enable-static 
+

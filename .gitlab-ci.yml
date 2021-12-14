@@ -1,3 +1,11 @@
+# 
+# NOTES
+#
+# * TODO: images in build steps use latest tag rather than the MAINVERSION variable
+#   I believe this issue (https://gitlab.com/gitlab-org/gitlab-runner/-/issues/2793)
+#   needs to be resolved in gitlab first.
+#         
+
 before_script:
   - export MAINVERSION=$(grep -e '^version:' hasklepias-main/hasklepias-main.cabal | sed 's/version:[[:space:]]*//g')
 
@@ -34,32 +42,27 @@ check-source:
 build-test-hasklepias:
   stage: build
   needs: ["docker-build", "check-source"]
-  # This image is built in docker-build
   image: registry.novisci.com/nsstat/asclepias/hasklepias-build:latest
-  cache:
-    key: "$CI_JOB_NAME"
-    paths:
-      - dist-newstyle/
   script:
     - cabal build all && cabal test all
 
 # Install stage jobs ####
 
 install-cohort-collector:
-  stage: install
+  stage: build
   needs: ["docker-build-musl", "build-test-hasklepias"]
   image: registry.novisci.com/nsstat/asclepias/hasklepias-build-musl:latest
-  cache:
-    key: "$CI_JOB_NAME"
-    paths:
-      - dist-newstyle/
-      - install/
-      - cohort-collector*
-  artifacts :
-    name: "${CI_PROJECT_NAME}-${SAFE_REF_NAME}"
-    paths:
-      - "cohort-collector*.tar.gz"
-    expire_in: 1 week
+  # cache:
+  #   key: "$CI_JOB_NAME"
+  #   paths:
+  #     # - dist-newstyle/
+  #     - install/
+  #     # - cohort-collector*
+  # artifacts :
+  #   name: "${CI_PROJECT_NAME}-${SAFE_REF_NAME}"
+  #   paths:
+  #     - "cohort-collector*.tar.gz"
+  #   expire_in: 1 week
   script:
      - ./ci/ci-build-install-exe-static.sh cohort-collector cohort-collector install/
 #   # release:

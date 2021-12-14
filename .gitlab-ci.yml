@@ -22,9 +22,9 @@ docker-build-musl:
  script:
     - ./ci/ci-build-docker.sh $MAINVERSION ci/Dockerfile musl-haskell $GHC
 
-check_source:
+check-source:
   stage: pre-build
-  image: registry.novisci.com/nsstat/statocker/haskell:8.10.7
+  image: registry.novisci.com/nsstat/statocker/haskell:$GHC
   script:
     - ./scripts/lint.sh
     - ./scripts/check_format.sh

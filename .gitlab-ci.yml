@@ -49,8 +49,8 @@ build-test-hasklepias:
 # Install stage jobs ####
 
 install-cohort-collector:
-  stage: build
-  needs: ["docker-build-musl", "build-test-hasklepias"]
+  stage: install
+  needs: ["docker-build-musl"]
   image: registry.novisci.com/nsstat/asclepias/hasklepias-build-musl:latest
   # cache:
   #   key: "$CI_JOB_NAME"

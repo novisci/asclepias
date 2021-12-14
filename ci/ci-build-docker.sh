@@ -16,13 +16,15 @@ echo $CI_REGISTRY_PASSWORD | \
   --username $CI_REGISTRY_USER \
   --password-stdin $CI_REGISTRY
 
-NAME=$CI_REGISTRY_IMAGE/${5:-hasklepias}-build
+NAME=$CI_REGISTRY_IMAGE/hasklepias-build
+
+echo "Building the ${NAME} docker image"
 
 docker build \
   --tag $NAME:$1 \
   --tag $NAME:latest \
-  --build-arg statocker_image=${3:-haskell} \
-  --build-arg ghc_version=${4:-8.10.7} \
+  --build-arg statocker_image=${3} \
+  --build-arg ghc_version=${4} \
   --file $2 .
 
 docker push $NAME:$1

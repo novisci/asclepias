@@ -2,7 +2,8 @@ before_script:
   - export MAINVERSION=$(grep -e '^version:' hasklepias-main/hasklepias-main.cabal | sed 's/version:[[:space:]]*//g')
 
 variables:
-  PKG: hasklepias 
+  PKG: hasklepias
+  GHC: 8.10.7
 
 stages:
   - pre-build
@@ -12,10 +13,10 @@ docker-build:
  stage : pre-build
  image: docker:20.10.11
  script:
-    - ./ci/ci-build-docker.sh $MAINVERSION ci/Dockerfile
+    - ./ci/ci-build-docker.sh $MAINVERSION ci/Dockerfile haskell $GHC
 
 docker-build-musl:
  stage : pre-build
  image: docker:20.10.11
  script:
-    - ./ci/ci-build-docker.sh $MAINVERSION ci/Dockerfile musl-haskell
+    - ./ci/ci-build-docker.sh $MAINVERSION ci/Dockerfile musl-haskell $GHC

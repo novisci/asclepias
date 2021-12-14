@@ -38,5 +38,6 @@ tar -czvf $BUNDLE ${INSTALLDIR}/${NAME}
 
 mv $BUNDLE $INSTALLDIR/${BUNDLE}
 
-echo $BUNDLE > ${INSTALLDIR}/${COMPONENT}.name
-echo $BUNDLE > ${INSTALLDIR}/${COMPONENT}.bundle
+echo $VERSION > ${INSTALLDIR}/${COMPONENT}.version
+echo $NAME    > ${INSTALLDIR}/${COMPONENT}.name
+echo $BUNDLE  > ${INSTALLDIR}/${COMPONENT}.bundle

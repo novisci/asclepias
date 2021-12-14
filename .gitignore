@@ -1,13 +1,23 @@
+# system stuff
+*.DS_Store
+*~
+
+# R stuff
 .Rproj.user
 .Rhistory
 .RData
 .Ruserdata
 *.Rproj
-*.DS_Store
+
+# IDE stuff
 *.sublime*
-.stack-work/
-*~
-dist-newstyle*
 *code-workspace
+
+# User stuff
 cabal.project.local
+
+# build artifacts
 doc/manual.html
+.stack-work/
+dist-newstyle*
+install*

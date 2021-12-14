@@ -66,14 +66,15 @@ deploy-aws-cohort-collector-static:
   needs: ["build-cohort-collector-static"]
   image: registry.novisci.com/nsstat/statocker/aws
   script:
-    - export BUNDLE=$(cat install/cohort-collector.bundle)
+    - export BUNDLE=$(< install/cohort-collector.bundle)
     - echo "$BUNDLE"
     - aws s3 cp install/${BUNDLE} s3://download.novisci.com/hasklepias/${BUNDLE} --acl public-read
 
-# deploy-docker-cohort-collector-static:
-#   stage: deploy
-#   needs: ["build-cohort-collector-static"]
-#   image: docker:$DOCKER
-#   script:
-#     - export NAME=$(cat install/cohort-collector.name)
-#     - echo "$NAME"
+deploy-docker-cohort-collector-static:
+  stage: deploy
+  needs: ["build-cohort-collector-static"]
+  image: docker:$DOCKER
+  script:
+    - export NAME=$(< install/cohort-collector.name)
+    - export VERSION=$(< install/cohort-collector.version)
+    - ./ci/ci-build-docker-cohort-collector.sh $VERSION install/$NAME

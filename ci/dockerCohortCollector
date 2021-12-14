@@ -1,0 +1,7 @@
+FROM scratch
+ARG file
+
+COPY ${file} cohort-collector
+
+ENTRYPOINT ["/cohort-collector"]
+

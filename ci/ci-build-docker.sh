@@ -3,7 +3,7 @@
 #
 # USAGE #
 #
-# The script takes 2 arguments:
+# The script takes 4 arguments:
 # 1. the version with which to tag the image
 # 2. name to give the resulting image
 # 3. name of the statocker image used in the FROM directive of ci/Dockerfile

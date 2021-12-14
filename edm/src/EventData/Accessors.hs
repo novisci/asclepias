@@ -14,7 +14,7 @@ module EventData.Accessors
   ( viewBirthYears
   , viewGenders
   , viewStates
-  , viewRegion
+  , viewRegions
   , viewPlans
   , previewCode
   , previewCodeE

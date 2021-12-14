@@ -6,6 +6,8 @@
 # The script takes 2 arguments:
 # 1. the version with which to tag the image
 # 2. name of the dockerfile
+# 3. name of the statocker image
+# 4. tag of the statocker image
 
 set -e
 

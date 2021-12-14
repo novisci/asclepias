@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 # Build a docker image in the CI.
 #
 # USAGE #

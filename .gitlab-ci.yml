@@ -18,4 +18,4 @@ docker-build-musl:
  stage : pre-build
  image: docker:20.10.11
  script:
-    - ./ci/ci-build-docker.sh $MAINVERSION ci/Dockerfile musl-haskell
+    - ./ci/ci-build-docker.sh $MAINVERSION ci/Dockerfile "musl-haskell"

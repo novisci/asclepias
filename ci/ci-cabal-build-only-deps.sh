@@ -15,4 +15,5 @@ FLAGS+=(--constraint='text +integer-simple' \
 fi
 
 echo "Running cabal build with following configuration: ${FLAGS[@]}"
+
 cabal build all "${FLAGS[@]}"

@@ -1,7 +1,7 @@
 ARG STATOCKER 
 ARG GHC
 
-FROM registry.novisci.com/nsstat/statocker/${STATOCKER}:${GHC}
+FROM registry.novisci.com/nsstat/statocker/$STATOCKER:$GHC
 
 # TODO: surely there's a clean way to copy in necessary files
 COPY cabal.project .

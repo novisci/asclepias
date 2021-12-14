@@ -3,7 +3,7 @@ ARG ghc_version
 
 FROM registry.novisci.com/nsstat/statocker/${statocker_image}:${ghc_version}
 
-COPY ci/ci-cabal-build-only-deps.sh ci/ci-cabal-build-only-deps.sh
+# TODO: surely there's a clean way to copy in necessary files
 COPY cabal.project .
 COPY hasklepias-core/hasklepias-core.cabal hasklepias-core/hasklepias-core.cabal
 COPY hasklepias-templates/hasklepias-templates.cabal hasklepias-templates/hasklepias-templates.cabal
@@ -14,5 +14,7 @@ COPY edm/edm.cabal edm/edm.cabal
 COPY stype/stype.cabal stype/stype.cabal
 
 RUN cabal update
+
+COPY ci/ci-cabal-build-only-deps.sh ci/ci-cabal-build-only-deps.sh
 RUN ./ci/ci-cabal-build-only-deps.sh ${statocker_image} 
 # RUN cabal build all --only-dependencies

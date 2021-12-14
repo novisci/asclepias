@@ -1,7 +1,7 @@
-ARG statocker_image 
-ARG ghc_version
+ARG STATOCKER 
+ARG GHC
 
-FROM registry.novisci.com/nsstat/statocker/${statocker_image}:${ghc_version}
+FROM registry.novisci.com/nsstat/statocker/${STATOCKER}:${GHC}
 
 # TODO: surely there's a clean way to copy in necessary files
 COPY cabal.project .
@@ -16,6 +16,6 @@ COPY stype/stype.cabal stype/stype.cabal
 RUN cabal update
 
 COPY ci/ci-cabal-build-only-deps.sh ci/ci-cabal-build-only-deps.sh
-RUN echo "${statocker_image}:${ghc_version}"
-RUN ./ci/ci-cabal-build-only-deps.sh "${statocker_image}"
+RUN echo "$STATOCKER:$GHC"
+RUN ./ci/ci-cabal-build-only-deps.sh "$STATOCKER"
 # RUN cabal build all --only-dependencies

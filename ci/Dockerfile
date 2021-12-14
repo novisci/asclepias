@@ -6,6 +6,8 @@ FROM registry.novisci.com/nsstat/statocker/$STATOCKER:$GHC
 ARG STATOCKER 
 ARG GHC
 
+WORKDIR /project
+
 # TODO: surely there's a clean way to copy in necessary files
 COPY cabal.project .
 COPY hasklepias-core/hasklepias-core.cabal hasklepias-core/hasklepias-core.cabal
@@ -19,6 +21,4 @@ COPY stype/stype.cabal stype/stype.cabal
 RUN cabal update
 
 COPY ci/ci-cabal-build-only-deps.sh ci/ci-cabal-build-only-deps.sh
-RUN echo $STATOCKER:$GHC
 RUN ./ci/ci-cabal-build-only-deps.sh $STATOCKER
-# RUN cabal build all --only-dependencies

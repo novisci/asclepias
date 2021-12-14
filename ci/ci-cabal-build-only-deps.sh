@@ -1,6 +1,6 @@
 #!/bin/bash
-# Build haskell:tag with only dependencies
-# set -e
+# Build hasklepias project with --only-dependencies to speed later builds.
+set -e
 
 FLAGS=(--only-dependencies)
 

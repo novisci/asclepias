@@ -7,8 +7,9 @@ variables:
 
 stages:
   - pre-build
-  # - build
+  - build
 
+# Pre-build stage jobs #### 
 docker-build:
  stage : pre-build
  image: docker:20.10.11
@@ -20,3 +21,25 @@ docker-build-musl:
  image: docker:20.10.11
  script:
     - ./ci/ci-build-docker.sh $MAINVERSION ci/Dockerfile musl-haskell $GHC
+
+check_source:
+  stage: pre-build
+  image: registry.novisci.com/nsstat/statocker/haskell:8.10.7
+  script:
+    - ./scripts/lint.sh
+    - ./scripts/check_format.sh
+
+# Build stage jobs #### 
+build-asclepias:
+  stage: build
+  needs: ["docker-build", "check_source"]
+  # NOTE: I couldn't get the $VERSION variable to work as in:
+  #  image : registry.novisci.com/nsstat/asclepias/$PKG-build:$VERSION
+  # hence, using latest tag, but this may not be ideal
+  image: registry.novisci.com/nsstat/asclepias/$PKG-build:$GHC
+  cache:
+    key: "$CI_JOB_NAME"
+    paths:
+      - dist-newstyle/
+  script:
+    - cabal build all

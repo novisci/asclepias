@@ -16,6 +16,6 @@ COPY stype/stype.cabal stype/stype.cabal
 RUN cabal update
 
 COPY ci/ci-cabal-build-only-deps.sh ci/ci-cabal-build-only-deps.sh
-RUN echo "$STATOCKER:$GHC"
-RUN ./ci/ci-cabal-build-only-deps.sh "$STATOCKER"
+RUN echo $STATOCKER:$GHC
+RUN ./ci/ci-cabal-build-only-deps.sh $STATOCKER
 # RUN cabal build all --only-dependencies

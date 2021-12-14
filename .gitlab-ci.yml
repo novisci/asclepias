@@ -12,14 +12,10 @@ docker-build:
  stage : pre-build
  image: docker:20.10.11
  script:
-    - ./scripts/ci-build-docker.sh $MAINVERSION Dockerfile
-    # echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin  $CI_REGISTRY
-    # - docker build --tag $CI_REGISTRY_IMAGE/$PKG-build:$MAINVERSION --tag $CI_REGISTRY_IMAGE/$PKG-build:latest .
-    # - docker push $CI_REGISTRY_IMAGE/$PKG-build:$MAINVERSION
-    # - docker push $CI_REGISTRY_IMAGE/$PKG-build:latest
+    - ./ci/ci-build-docker.sh $MAINVERSION Dockerfile
 
 docker-build-musl:
  stage : pre-build
  image: docker:20.10.11
  script:
-    - ./scripts/ci-build-docker.sh $MAINVERSION nix/Dockerfile-static
+    - ./ci/ci-build-docker.sh $MAINVERSION nix/Dockerfile-static musl-haskell

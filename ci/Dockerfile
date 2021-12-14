@@ -1,5 +1,5 @@
-ARG STATOCKER 
-ARG GHC
+ARG STATOCKER=haskell
+ARG GHC=8.10.7
 
 FROM registry.novisci.com/nsstat/statocker/$STATOCKER:$GHC
 

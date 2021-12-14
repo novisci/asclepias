@@ -25,8 +25,8 @@ echo "using statocker image: ${3}:${4}"
 docker build \
   --tag $NAME:$1 \
   --tag $NAME:latest \
-  --build-arg statocker_image=${3} \
-  --build-arg ghc_version=${4} \
+  --build-arg STATOCKER=${3} \
+  --build-arg GHC=${4} \
   --file $2 .
 
 docker push $NAME:$1

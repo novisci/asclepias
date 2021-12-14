@@ -3,6 +3,9 @@ ARG GHC
 
 FROM registry.novisci.com/nsstat/statocker/$STATOCKER:$GHC
 
+ARG STATOCKER 
+ARG GHC
+
 # TODO: surely there's a clean way to copy in necessary files
 COPY cabal.project .
 COPY hasklepias-core/hasklepias-core.cabal hasklepias-core/hasklepias-core.cabal

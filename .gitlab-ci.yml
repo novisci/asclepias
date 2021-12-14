@@ -35,7 +35,7 @@ build-test-hasklepias:
   stage: build
   needs: ["docker-build", "check-source"]
   # This image is built in docker-build
-  image: registry.novisci.com/nsstat/asclepias/hasklepias-build:$MAINVERSION
+  image: registry.novisci.com/nsstat/asclepias/hasklepias-build:latest
   cache:
     key: "$CI_JOB_NAME"
     paths:
@@ -45,30 +45,23 @@ build-test-hasklepias:
 
 # Install stage jobs ####
 
-# install-cohort-collector:
-#   stage: install
-#   needs: ["docker-build-musl", "build-test-hasklepias"]
-#   image: registry.novisci.com/nsstat/asclepias/musl-haskell:$GHC
-#   cache:
-#     key: "$CI_JOB_NAME"
-#     paths:
-#       - dist-newstyle/
-#       - install/
-#       - cohort-collector*
-#   artifacts :
-#     name: "${CI_PROJECT_NAME}-${SAFE_REF_NAME}"
-#     paths:
-#       - "cohort-collector*.tar.gz"
-#     expire_in: 1 week
-#   script:
-#     - export COLLECTORVERSION=$(./scripts/get-version-from-cabal.sh cohort-collector/cohort-collector.cabalcohort-collector/cohort-collector.cabal)
-#     # - export COLLECTOR_BUNDLE=cohort-collector-$COLLECTORVERSION-linux-$(uname -m).tar.gz
-#     # - ghc --version
-#     # - cabal --version
-#     # - cabal update
-#     # - mkdir install -p
-#     # - cabal install cohort-collector --install-method=copy --installdir=install --overwrite-policy=always
-#     # - tar -czvf $COLLECTOR_BUNDLE install/cohort-collector
+install-cohort-collector:
+  stage: install
+  needs: ["docker-build-musl", "build-test-hasklepias"]
+  image: registry.novisci.com/nsstat/asclepias/hasklepias-build-musl:latest
+  cache:
+    key: "$CI_JOB_NAME"
+    paths:
+      - dist-newstyle/
+      - install/
+      - cohort-collector*
+  artifacts :
+    name: "${CI_PROJECT_NAME}-${SAFE_REF_NAME}"
+    paths:
+      - "cohort-collector*.tar.gz"
+    expire_in: 1 week
+  script:
+     - ./ci/ci-build-install-exe-static.sh cohort-collector cohort-collector install/
 #   # release:
 #   #   name: 'Release $TAG'
 #   #   description: 'Created using the release-cli $EXTRA_DESCRIPTION'  # $EXTRA_DESCRIPTION and the $TAG

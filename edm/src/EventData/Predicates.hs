@@ -17,6 +17,7 @@ module EventData.Predicates
   , isStateFactEvent
   , isGenderFactEvent
   , isBirthYearEvent
+  , isRegionFactEvent
   , containsConcepts
   , Predicatable(..)
   ) where
@@ -86,7 +87,7 @@ instance (Ord a) => EventPredicate (Interval a) a where
 
 {----------- Predicates  -----------------}
 
--- | Predicate for State facts
+-- | Predicate for Enrollment facts
 isEnrollmentDomain :: Domain -> Bool
 isEnrollmentDomain (Enrollment _) = True
 isEnrollmentDomain _              = False
@@ -124,6 +125,16 @@ isStateFact _ = False
 -- | Predicate for events containing  State facts
 isStateFactEvent :: Predicate (Event a)
 isStateFactEvent = liftToEventPredicate (Predicate isStateFact)
+
+-- | Predicate for Region facts
+isRegionFact :: Domain -> Bool
+isRegionFact (Demographics (DemographicsFacts (DemographicsInfo Region _))) =
+  True
+isRegionFact _ = False
+
+-- | Predicate for events containing Region facts
+isRegionFactEvent :: Predicate (Event a)
+isRegionFactEvent = liftToEventPredicate (Predicate isRegionFact)
 
 -- | Creates a predicate to check that an 'Event' contains a set of 'EventData.Context.Concept's. 
 containsConcepts :: [Text] -> Predicate (Event a)

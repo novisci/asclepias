@@ -12,10 +12,10 @@ docker-build:
  stage : pre-build
  image: docker:20.10.11
  script:
-    - ./ci/ci-build-docker.sh $MAINVERSION Dockerfile
+    - ./ci/ci-build-docker.sh $MAINVERSION ci/Dockerfile
 
 docker-build-musl:
  stage : pre-build
  image: docker:20.10.11
  script:
-    - ./ci/ci-build-docker.sh $MAINVERSION nix/Dockerfile-static musl-haskell
+    - ./ci/ci-build-docker.sh $MAINVERSION ci/Dockerfile musl-haskell

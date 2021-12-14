@@ -56,7 +56,6 @@ build-cohort-collector-static:
     name: "${CI_PROJECT_NAME}-${SAFE_REF_NAME}"
     paths:
       - install/
-      # - "cohort-collector.txt"
     expire_in: 1 week
   script:
      - ./ci/ci-cabal-build-exe-static.sh cohort-collector cohort-collector install

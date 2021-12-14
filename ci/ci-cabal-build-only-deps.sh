@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # Build haskell:tag with only dependencies
 # set -e
 

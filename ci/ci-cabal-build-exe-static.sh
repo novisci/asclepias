@@ -36,7 +36,4 @@ cp $EXE ${INSTALLDIR}/${NAME}
 
 tar -czvf $BUNDLE ${INSTALLDIR}/${NAME}
 
-aws s3 cp \
-   $INSTALLDIR/${BUNDLE} \
-   s3://download.novisci.com/hasklepias/${BUNDLE} \
-   --acl public-read
+echo $BUNDLE > ${INSTALLDIR}/${COMPONENT}.txt

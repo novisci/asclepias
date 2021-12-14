@@ -50,10 +50,31 @@ build-cohort-collector-static:
   stage: build
   needs: ["docker-build-musl"]
   image: registry.novisci.com/nsstat/asclepias/hasklepias-build-musl:latest
-  artifacts :
-    name: "${CI_PROJECT_NAME}-${SAFE_REF_NAME}"
+  cache:
+    key: "$CI_JOB_NAME"
     paths:
-      - "cohort-collector*.tar.gz"
-    expire_in: 1 week
+      - install/
+  # artifacts :
+  #   name: "${CI_PROJECT_NAME}-${SAFE_REF_NAME}"
+  #   paths:
+  #     - "cohort-collector*.tar.gz"
+  #   expire_in: 1 week
   script:
      - ./ci/ci-cabal-build-exe-static.sh cohort-collector cohort-collector install
+
+# Deploy jobs
+deploy-cohort-collector-static:
+  stage: deploy
+  needs: ["build-cohort-collector-static"]
+  cache:
+    key: "$CI_JOB_NAME"
+    paths:
+      - install/
+  image: registry.novisci.com/nsstat/statocker/aws
+  script:
+    - export BUNDLE=$(cat install/cohort-collector.txt)
+    - echo "$BUNDLE"
+# aws s3 cp \
+#    $INSTALLDIR/${BUNDLE} \
+#    s3://download.novisci.com/hasklepias/${BUNDLE} \
+#    --acl public-read

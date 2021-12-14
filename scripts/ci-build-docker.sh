@@ -12,8 +12,7 @@ NAME=$CI_REGISTRY_IMAGE/${3:-hasklepias}-build
 docker build \
   --tag $NAME:$1 \
   --tag $NAME:latest 
-  --file $2 \ 
-  .
+  --file $2 .
 
 docker push $NAME:$1
 docker push $NAME:latest

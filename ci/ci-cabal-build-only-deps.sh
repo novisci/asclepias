@@ -4,7 +4,7 @@
 
 FLAGS=(--only-dependencies)
 
-if [ $1 == "musl-haskell" ]
+if [[ $1 == "musl-haskell" ]]
 then
 FLAGS+=(--constraint='text +integer-simple' \
         --constraint='cryptonite -integer-gmp' \

@@ -4,7 +4,8 @@
 
 FLAGS=(--only-dependencies)
 
-echo "$1"
+echo "Hey: $1"
+
 if [[ $1 == "musl-haskell" ]]
 then
 FLAGS+=(--constraint='text +integer-simple' \

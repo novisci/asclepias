@@ -78,7 +78,7 @@ import           EventData.Core                 ( Event
 import           EventData.Predicates           ( isBirthYearEvent
                                                 , isGenderFactEvent
                                                 , isStateFactEvent
-                                                , isGenderFactEvent
+                                                , isRegionFactEvent
                                                 , isEnrollmentEvent
                                                 )
 import           GHC.Float                      ( Double )
@@ -189,7 +189,7 @@ viewRegions x = mapMaybe
   (toList $ filter (getPredicate isRegionFactEvent) x)
 
 -- | Returns a (possibly empty) list of Insurance plan values from a set of events
-viewPlans :: (Witherable f) => f (Event a) -> [Text]
+viewPlans :: (Witherable f) => f (Event a) -> [[Text]]
 viewPlans x = mapMaybe
   (\e -> previewBenefit =<< Just (ctxt e ^. field @"facts"))
   (toList $ filter (getPredicate isEnrollmentEvent) x)

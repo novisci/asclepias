@@ -1,8 +1,25 @@
-stages:
-  - build
+before_script:
+  - export MAINVERSION=$(grep -e '^version:' hasklepias-main/hasklepias-main.cabal | sed 's/version:[[:space:]]*//g')
 
-doNix:
-  stage: build
-  image: docker:19.03.8
-  script: 
-      - docker build -t trynix -f nix/Dockerfile .
+variables:
+  PKG: hasklepias 
+
+stages:
+  - pre-build
+  # - build
+
+docker-build:
+ stage : pre-build-docker
+ image: docker:20.10.11
+ script:
+    - ./scripts/ci-build-docker.sh $MAINVERSION Dockerfile
+    # echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin  $CI_REGISTRY
+    # - docker build --tag $CI_REGISTRY_IMAGE/$PKG-build:$MAINVERSION --tag $CI_REGISTRY_IMAGE/$PKG-build:latest .
+    # - docker push $CI_REGISTRY_IMAGE/$PKG-build:$MAINVERSION
+    # - docker push $CI_REGISTRY_IMAGE/$PKG-build:latest
+
+docker-build-musl:
+ stage : pre-build-docker
+ image: docker:20.10.11
+ script:
+    - ./scripts/ci-build-docker.sh $MAINVERSION nix/Dockerfile-static

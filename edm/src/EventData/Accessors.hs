@@ -78,6 +78,8 @@ import           EventData.Core                 ( Event
 import           EventData.Predicates           ( isBirthYearEvent
                                                 , isGenderFactEvent
                                                 , isStateFactEvent
+                                                , isGenderFactEvent
+                                                , isEnrollmentEvent
                                                 )
 import           GHC.Float                      ( Double )
 import           GHC.Num                        ( Integer

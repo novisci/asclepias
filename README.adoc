@@ -1,5 +1,6 @@
 :toc: left
 :doctype: book
+:downloads_path: downloads.novisci.com/hasklepias/
 
 = Project Asclepias
 

@@ -27,7 +27,7 @@ docker build \
   --tag $NAME:latest \
   --build-arg STATOCKER=${3} \
   --build-arg GHC=${4} \
-  --file ci/Dockerfile .
+  --file ci/dockerHasklepias .
 
 docker push $NAME:$1
 docker push $NAME:latest

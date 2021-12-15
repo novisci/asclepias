@@ -1,3 +1,7 @@
+# Defines docker images in which all the hasklepias components can be built.
+# These images are built as a first step in the CI pipelines and then used
+# by dependent jobs.
+
 ARG STATOCKER=haskell
 ARG GHC=8.10.7
 

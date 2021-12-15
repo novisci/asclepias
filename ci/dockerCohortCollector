@@ -1,3 +1,4 @@
+# Defines a minimal docker image for running the cohort collector application
 FROM scratch
 ARG file
 

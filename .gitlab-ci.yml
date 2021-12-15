@@ -18,20 +18,21 @@ variables:
 stages:
   - pre-build
   - build
-  - deploy 
+  - docs
+  - deploy
 
 # Pre-build stage jobs #### 
 docker-build:
  stage : pre-build
  image: docker:$DOCKER
  script:
-    - ./ci/ci-build-docker.sh $MAINVERSION hasklepias-build haskell $GHC
+    - ./ci/ci-docker-build.sh $MAINVERSION hasklepias-build haskell $GHC
 
 docker-build-musl:
  stage : pre-build
  image: docker:$DOCKER
  script:
-    - ./ci/ci-build-docker.sh $MAINVERSION hasklepias-build-musl musl-haskell $GHC
+    - ./ci/ci-docker-build.sh $MAINVERSION hasklepias-build-musl musl-haskell $GHC
 
 check-source:
   stage: pre-build
@@ -60,6 +61,14 @@ build-cohort-collector-static:
   script:
      - ./ci/ci-cabal-build-exe-static.sh cohort-collector cohort-collector install
 
+# Docs jobs
+check-docs:
+  stage: docs
+  needs: ["docker-build-musl"]
+  image: registry.novisci.com/nsstat/asclepias/hasklepias-build:latest
+  script: 
+    - ./ci/ci-docs-check.sh
+
 # Deploy jobs
 deploy-aws-cohort-collector-static:
   stage: deploy
@@ -78,8 +87,8 @@ deploy-docker-cohort-collector-static:
   needs: ["build-cohort-collector-static"]
   image: docker:$DOCKER
   script:
-    - export NAME=$(< install/cohort-collector.name)
-    - export VERSION=$(< install/cohort-collector.version)
+    - export NAME=$(cat install/cohort-collector.name)
+    - export VERSION=$(cat install/cohort-collector.version)
     - echo "$NAME"
     - echo "$VERSION"
-    - ./ci/ci-build-docker-cohort-collector.sh $VERSION install/$NAME
+    - ./ci/ci-docker-build-cohort-collector.sh $VERSION install/$NAME

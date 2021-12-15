@@ -1,7 +1,7 @@
 # Changelog for edm
 
 ## 0.23.4
-* Adds `viewRegions` and `viewPlans` for accessing the region and insurance plans from `Demographics` and `Enrollment` Domains.
+* Adds `viewRegions` and `viewBenefits` for accessing the region and insurance plans benefits from `Demographics` and `Enrollment` or `Eligibility` Domains.
 
 ## 0.23.3
 

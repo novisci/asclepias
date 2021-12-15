@@ -97,12 +97,12 @@ isEnrollmentDomain _              = False
 isEnrollmentEvent :: Predicate (Event a)
 isEnrollmentEvent = liftToEventPredicate (Predicate isEnrollmentDomain)
 
--- | Predicate for Enrollment facts
+-- | Predicate for Eligibility facts
 isEligibilityDomain :: Domain -> Bool
 isEligibilityDomain (Enrollment _) = True
 isEligibilityDomain _              = False
 
--- | Predicate for enrollment events
+-- | Predicate for Eligibility events
 isEligibilityEvent :: Predicate (Event a)
 isEligibilityEvent = liftToEventPredicate (Predicate isEligibilityDomain)
 

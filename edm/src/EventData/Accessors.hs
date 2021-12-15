@@ -191,7 +191,7 @@ viewRegions x = mapMaybe
   (\e -> previewDemoInfo =<< Just (ctxt e ^. field @"facts"))
   (toList $ filter (getPredicate isRegionFactEvent) x)
 
--- | Returns a (possibly empty) list of Insurance plan values from a set of events
+-- | Returns a (possibly empty) list of Insurance plan benefit values from a set of events
 viewBenefits :: (Witherable f) => f (Event a) -> [Text]
 viewBenefits x = concat $ mapMaybe
   (\e -> previewBenefit =<< Just (ctxt e ^. field @"facts"))

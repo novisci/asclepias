@@ -14,6 +14,8 @@ module EventData.Accessors
   ( viewBirthYears
   , viewGenders
   , viewStates
+  , viewRegions
+  , viewBenefits
   , previewCode
   , previewCodeE
   , previewBenefit
@@ -46,6 +48,7 @@ import           Data.Functor.Contravariant     ( Predicate(..) )
 import           Data.Generics.Internal.VL.Lens ( (^.) )
 import           Data.Generics.Product          ( HasField(field) )
 import           Data.Generics.Sum              ( AsAny(_As) )
+import           Data.List                      (concat)
 import           Data.Maybe                     ( Maybe(..) )
 import           Data.Ord                       ( Ord )
 import           Data.Semigroup                 ( (<>) )
@@ -76,6 +79,10 @@ import           EventData.Core                 ( Event
 import           EventData.Predicates           ( isBirthYearEvent
                                                 , isGenderFactEvent
                                                 , isStateFactEvent
+                                                , isRegionFactEvent
+                                                , isEnrollmentEvent
+                                                , isEligibilityEvent
+                                                , (|||)
                                                 )
 import           GHC.Float                      ( Double )
 import           GHC.Num                        ( Integer
@@ -172,8 +179,21 @@ viewGenders x = mapMaybe
   (\e -> previewDemoInfo =<< Just (ctxt e ^. field @"facts"))
   (toList $ filter (getPredicate isGenderFactEvent) x)
 
--- | Returns a (possibly empty) list of Gender values from a set of events
+-- | Returns a (possibly empty) list of State values from a set of events
 viewStates :: (Witherable f) => f (Event a) -> [Text]
 viewStates x = mapMaybe
   (\e -> previewDemoInfo =<< Just (ctxt e ^. field @"facts"))
   (toList $ filter (getPredicate isStateFactEvent) x)
+
+-- | Returns a (possibly empty) list of Region values from a set of events
+viewRegions :: (Witherable f) => f (Event a) -> [Text]
+viewRegions x = mapMaybe
+  (\e -> previewDemoInfo =<< Just (ctxt e ^. field @"facts"))
+  (toList $ filter (getPredicate isRegionFactEvent) x)
+
+-- | Returns a (possibly empty) list of Insurance plan benefit values from a set of events
+viewBenefits :: (Witherable f) => f (Event a) -> [Text]
+viewBenefits x = concat $ mapMaybe
+  (\e -> previewBenefit =<< Just (ctxt e ^. field @"facts"))
+  (toList $ filter (getPredicate (isEnrollmentEvent ||| isEligibilityEvent)) x)
+

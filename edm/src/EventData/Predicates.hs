@@ -18,6 +18,7 @@ module EventData.Predicates
   , isGenderFactEvent
   , isBirthYearEvent
   , isRegionFactEvent
+  , isEligibilityEvent
   , containsConcepts
   , Predicatable(..)
   ) where
@@ -95,6 +96,15 @@ isEnrollmentDomain _              = False
 -- | Predicate for enrollment events
 isEnrollmentEvent :: Predicate (Event a)
 isEnrollmentEvent = liftToEventPredicate (Predicate isEnrollmentDomain)
+
+-- | Predicate for Enrollment facts
+isEligibilityDomain :: Domain -> Bool
+isEligibilityDomain (Enrollment _) = True
+isEligibilityDomain _              = False
+
+-- | Predicate for enrollment events
+isEligibilityEvent :: Predicate (Event a)
+isEligibilityEvent = liftToEventPredicate (Predicate isEligibilityDomain)
 
 -- | Predicate for Birth Year facts
 isBirthYear :: Domain -> Bool

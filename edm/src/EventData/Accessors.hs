@@ -15,7 +15,7 @@ module EventData.Accessors
   , viewGenders
   , viewStates
   , viewRegions
-  , viewPlans
+  , viewBenefits
   , previewCode
   , previewCodeE
   , previewBenefit
@@ -80,6 +80,7 @@ import           EventData.Predicates           ( isBirthYearEvent
                                                 , isStateFactEvent
                                                 , isRegionFactEvent
                                                 , isEnrollmentEvent
+                                                , isEligibilityEvent
                                                 )
 import           GHC.Float                      ( Double )
 import           GHC.Num                        ( Integer
@@ -189,8 +190,8 @@ viewRegions x = mapMaybe
   (toList $ filter (getPredicate isRegionFactEvent) x)
 
 -- | Returns a (possibly empty) list of Insurance plan values from a set of events
-viewPlans :: (Witherable f) => f (Event a) -> [[Text]]
-viewPlans x = mapMaybe
+viewBenefits :: (Witherable f) => f (Event a) -> [Text]
+viewBenefits x = mapMaybe
   (\e -> previewBenefit =<< Just (ctxt e ^. field @"facts"))
-  (toList $ filter (getPredicate isEnrollmentEvent) x)
+  (toList $ filter (getPredicate isEnrollmentEvent ||| isEligibilityEvent) x) |> concat
 

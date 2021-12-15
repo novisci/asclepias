@@ -1,5 +1,9 @@
 # Changelog for hasklepias-main
 
+## 0.22.5
+
+* Bumping version for updates to the CI and internal packages.
+
 ## 0.22.4
 
 * Adds `Hasklepias.ExampleFilterApp` module as an example application that filters subjects have at least one event that satisfies a given predicate function. 

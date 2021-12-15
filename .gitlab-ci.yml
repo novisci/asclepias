@@ -45,7 +45,7 @@ check-source:
 build-test-hasklepias:
   stage: build
   needs: ["docker-build", "check-source"]
-  image: registry.novisci.com/nsstat/asclepias/hasklepias-build:latest
+  image: registry.novisci.com/nsstat/asclepias/hasklepias-build:${MAINVERSIOM}
   script:
     - cabal build all && cabal test all --test-show-details=always
 

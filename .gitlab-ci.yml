@@ -1,9 +1,7 @@
 # 
 # NOTES
 #
-# * TODO: images in build steps use latest tag rather than the MAINVERSION variable
-#   I believe this issue (https://gitlab.com/gitlab-org/gitlab-runner/-/issues/2793)
-#   needs to be resolved in gitlab first.
+# * TODO: https://gitlab.novisci.com/nsStat/asclepias/-/issues/139 
 #         
 
 before_script:

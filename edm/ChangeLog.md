@@ -1,5 +1,8 @@
 # Changelog for edm
 
+## 0.23.4
+* Adds `viewRegions` and `viewPlans` for accessing the region and insurance plans from `Demographics` and `Enrollment` Domains.
+
 ## 0.23.3
 
 * Adds `Hospitalization` fact type and adds slots to `Diagnosis` and `Procedure` domains.

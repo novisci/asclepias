@@ -6,7 +6,7 @@ set -e
 TEMP=$( mktemp -d )
 
 ## Compare the help text for the cohort collector application
-COLLECTORAPP=$(< install/collector.name)
+COLLECTORAPP=$(< install/cohort-collector.name)
 ./install/${COLLECTORAPP} --help > ${TEMP}help.txt
 diff ${TEMP}help.txt cohort-collector/help.txt
 

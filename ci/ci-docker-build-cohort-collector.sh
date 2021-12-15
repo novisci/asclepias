@@ -14,7 +14,7 @@ echo $CI_REGISTRY_PASSWORD | \
   --username $CI_REGISTRY_USER \
   --password-stdin $CI_REGISTRY
 
-NAME=cohort-collector
+NAME=$CI_REGISTRY_IMAGE/cohort-collector
 
 echo "Building the ${NAME} docker image"
 

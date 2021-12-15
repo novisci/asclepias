@@ -48,6 +48,7 @@ import           Data.Functor.Contravariant     ( Predicate(..) )
 import           Data.Generics.Internal.VL.Lens ( (^.) )
 import           Data.Generics.Product          ( HasField(field) )
 import           Data.Generics.Sum              ( AsAny(_As) )
+import           Data.List                      (concat)
 import           Data.Maybe                     ( Maybe(..) )
 import           Data.Ord                       ( Ord )
 import           Data.Semigroup                 ( (<>) )
@@ -81,6 +82,7 @@ import           EventData.Predicates           ( isBirthYearEvent
                                                 , isRegionFactEvent
                                                 , isEnrollmentEvent
                                                 , isEligibilityEvent
+                                                , (|||)
                                                 )
 import           GHC.Float                      ( Double )
 import           GHC.Num                        ( Integer
@@ -191,7 +193,7 @@ viewRegions x = mapMaybe
 
 -- | Returns a (possibly empty) list of Insurance plan values from a set of events
 viewBenefits :: (Witherable f) => f (Event a) -> [Text]
-viewBenefits x = mapMaybe
+viewBenefits x = concat $ mapMaybe
   (\e -> previewBenefit =<< Just (ctxt e ^. field @"facts"))
-  (toList $ filter (getPredicate isEnrollmentEvent ||| isEligibilityEvent) x) |> concat
+  (toList $ filter (getPredicate (isEnrollmentEvent ||| isEligibilityEvent)) x)
 

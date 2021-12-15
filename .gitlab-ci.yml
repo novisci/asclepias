@@ -7,10 +7,10 @@
 #         
 
 before_script:
-  # - export MAINVERSION=$(grep -e '^version:' hasklepias-main/hasklepias-main.cabal | sed 's/version:[[:space:]]*//g')
   - export MAINVERSION=$(./scripts/get-version-from-cabal.sh hasklepias-main/hasklepias-main.cabal)
 
 variables:
+  MAINVERSION: $MAINVERSION
   PKG: hasklepias
   GHC: 8.10.7
   DOCKER: 20.10.11 
@@ -67,8 +67,11 @@ deploy-aws-cohort-collector-static:
   image: registry.novisci.com/nsstat/statocker/aws
   script:
     - export BUNDLE=$(< install/cohort-collector.bundle)
-    - echo "$BUNDLE"
-    - aws s3 cp install/${BUNDLE} s3://download.novisci.com/hasklepias/${BUNDLE} --acl public-read
+    - | 
+      aws s3 cp \
+        install/${BUNDLE} \
+        s3://$(< ci/downloads_path)${BUNDLE} \
+        --acl public-read
 
 deploy-docker-cohort-collector-static:
   stage: deploy
@@ -77,4 +80,6 @@ deploy-docker-cohort-collector-static:
   script:
     - export NAME=$(< install/cohort-collector.name)
     - export VERSION=$(< install/cohort-collector.version)
+    - echo "$NAME"
+    - echo "$VERSION"
     - ./ci/ci-build-docker-cohort-collector.sh $VERSION install/$NAME

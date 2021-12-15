@@ -28,9 +28,9 @@ pkgs.haskell-nix.project {
 
   # see: https://github.com/input-output-hk/haskell.nix/issues/1314
   modules = [{
-    reinstallableLibGhc = true;
-    # options.nonReinstallablePkgs =
-    #   pkgs.lib.mkOption { apply = pkgs.lib.remove "time"; };
+    # reinstallableLibGhc = true;
+    options.nonReinstallablePkgs =
+      pkgs.lib.mkOption { apply = pkgs.lib.remove "time"; };
   }];
   # modules = pkgs.lib.optional withCoverage [{
   #   packages..pkg.components.library.doCoverage = true;

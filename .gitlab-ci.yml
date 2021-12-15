@@ -36,7 +36,7 @@ check-source:
   image: registry.novisci.com/nsstat/statocker/haskell:$GHC
   script:
     - ./scripts/lint.sh
-    - ./scripts/check-format.sh
+    - ./ci/ci-check-format.sh
 
 # Build stage jobs #### 
 build-test-hasklepias:

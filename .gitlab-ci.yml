@@ -61,7 +61,7 @@ build-cohort-collector-static:
 trigger-static:
   stage: pre-build
   variables:
-    - MAINVERSION: $MAINVERSION
+    MAINVERSION: $MAINVERSION
   trigger: ci/ci-static-build.yml
 
 

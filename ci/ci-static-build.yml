@@ -1,9 +1,3 @@
-# 
-# variables:
-  # PKG: hasklepias
-  # GHC: 8.10.7
-  # DOCKER: 20.10.11
-  # MAINVERSION:
 
 stages:
   - test 

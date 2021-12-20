@@ -21,7 +21,8 @@ stages:
 trigger-static:
   stage: pre-build
   variables:
-    MAINVERSION: $MAINVERSION
+    # MAINVERSION: $MAINVERSION
+    MAINVERSION: 0.1
   trigger: 
     include: ci/ci-static-build.yml
     strategy: depend

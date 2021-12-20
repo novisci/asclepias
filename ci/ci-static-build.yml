@@ -1,8 +1,8 @@
 # 
 variables:
-  PKG: hasklepias
-  GHC: 8.10.7
-  DOCKER: 20.10.11 
+  # PKG: hasklepias
+  # GHC: 8.10.7
+  # DOCKER: 20.10.11 
 
 stages:
   - test 
@@ -12,4 +12,4 @@ test:
  stage : test
  image: docker:$DOCKER
  script:
-    - echo "I made it. $MAINVERSION"
+    - echo 'I made it. "$MAINVERSION"''

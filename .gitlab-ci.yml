@@ -44,7 +44,7 @@ build-test-hasklepias:
   needs: ["docker-build", "check-source"]
   image: registry.novisci.com/nsstat/asclepias/hasklepias-build:latest
   script:
-    - cabal build all && cabal test all --test-show-details=always
+    - ./ci/ci-cabal-build-all.sh
 
 build-cohort-collector-static:
   stage: build
@@ -57,6 +57,13 @@ build-cohort-collector-static:
     expire_in: 1 week
   script:
      - ./ci/ci-cabal-build-exe-static.sh cohort-collector cohort-collector install
+
+trigger-static:
+  stage: pre-build
+  variables:
+    - MAINVERSION: $MAINVERSION
+  trigger: ci/ci-static-build.yml
+
 
 # Docs jobs
 check-docs:

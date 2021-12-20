@@ -11,10 +11,10 @@
 
 set -e
 
-echo $CI_REGISTRY_PASSWORD | \
+echo "$CI_REGISTRY_PASSWORD" |
   docker login \
-  --username $CI_REGISTRY_USER \
-  --password-stdin $CI_REGISTRY
+    --username "$CI_REGISTRY_USER" \
+    --password-stdin "$CI_REGISTRY"
 
 NAME=$CI_REGISTRY_IMAGE/${2}
 
@@ -23,11 +23,11 @@ echo "tagging image with ${1} and latest"
 echo "using statocker image: ${3}:${4}"
 
 docker build \
-  --tag $NAME:$1 \
-  --tag $NAME:latest \
-  --build-arg STATOCKER=${3} \
-  --build-arg GHC=${4} \
+  --tag "$NAME":"$1" \
+  --tag "$NAME":latest \
+  --build-arg STATOCKER="${3}" \
+  --build-arg GHC="${4}" \
   --file ci/dockerHasklepias .
 
-docker push $NAME:$1
-docker push $NAME:latest
+docker push "$NAME":"$1"
+docker push "$NAME":latest

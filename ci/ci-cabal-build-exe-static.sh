@@ -5,39 +5,41 @@
 # 2. strips the executable.
 # 3. copies, tars, and gzips the result to an installation directory
 # 4. copies the result to S3
-# 
-# USAGE 
-# 
+#
+# USAGE
+#
 # Takes 3 arguments:
 # 1. name of the project package
-# 2. name of the executable component within the package to build 
+# 2. name of the executable component within the package to build
 # 3. directory in which to place the result
 
 PKG=$1
 COMPONENT=$2
-VERSION=$(./scripts/get-version-from-cabal.sh ${PKG}/${PKG}.cabal)
-EXE="$(./scripts/create-executable-build-path.sh $PKG $VERSION $PKG)"
+VERSION=$(./scripts/get-version-from-cabal.sh "${PKG}"/"${PKG}".cabal)
+EXE="$(./scripts/create-executable-build-path.sh "$PKG" "$VERSION" "$PKG")"
 INSTALLDIR=$3
 ARCH=$(uname -m)
 SYS=$(uname -s | tr '[:upper:]' '[:lower:]')
 NAME=${COMPONENT}-${VERSION}-${ARCH}-${SYS}
 BUNDLE=${NAME}.tar.gz
 
-mkdir -p $INSTALLDIR
+mkdir -p "$INSTALLDIR"
 
-cabal build ${PKG}:exe:${COMPONENT} \
+cabal build "${PKG}":exe:"${COMPONENT}" \
+   -j \
+   -O2 \
    --constraint='text +integer-simple' \
    --constraint='cryptonite -integer-gmp' \
    --enable-executable-static \
 
-strip $EXE 
+strip "$EXE"
 
-cp $EXE ${INSTALLDIR}/${NAME}
+cp "$EXE" "${INSTALLDIR}"/"${NAME}"
 
-tar -czvf $BUNDLE ${INSTALLDIR}/${NAME}
+tar -czvf "$BUNDLE" "${INSTALLDIR}"/"${NAME}"
 
-mv $BUNDLE $INSTALLDIR/${BUNDLE}
+mv "$BUNDLE" "$INSTALLDIR"/"${BUNDLE}"
 
-echo $VERSION > ${INSTALLDIR}/${COMPONENT}.version
-echo $NAME    > ${INSTALLDIR}/${COMPONENT}.name
-echo $BUNDLE  > ${INSTALLDIR}/${COMPONENT}.bundle
+echo "$VERSION" >"${INSTALLDIR}"/"${COMPONENT}".version
+echo "$NAME" >"${INSTALLDIR}"/"${COMPONENT}".name
+echo "$BUNDLE" >"${INSTALLDIR}"/"${COMPONENT}".bundle

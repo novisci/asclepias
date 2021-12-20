@@ -1,0 +1,17 @@
+# 
+
+
+variables:
+  PKG: hasklepias
+  GHC: 8.10.7
+  DOCKER: 20.10.11 
+
+stages:
+  - test 
+
+# Pre-build stage jobs #### 
+test:
+ stage : test
+ image: docker:$DOCKER
+ script:
+    - echo "I made it. $MAINVERSION"

@@ -15,3 +15,6 @@ source-repository-package
     tag: 19e6dca8485b7b8f74c564b7e38389b1d5b59e22
     subdir: lib/amazonka lib/amazonka-core lib/services/amazonka-sts lib/services/amazonka-s3
     --sha256: 08khbprvqi10by7hwy8vgvxzcj996n4izk7j7pjxq7mdpbp5vbf0
+
+optional-packages:
+        utils

@@ -14,49 +14,9 @@ variables:
 
 stages:
   - pre-build
-  - build
-  - docs
-  - deploy
-
-# Pre-build stage jobs #### 
-docker-build:
- stage : pre-build
- image: docker:$DOCKER
- script:
-    - ./ci/ci-docker-build.sh $MAINVERSION hasklepias-build haskell $GHC
-
-docker-build-musl:
- stage : pre-build
- image: docker:$DOCKER
- script:
-    - ./ci/ci-docker-build.sh $MAINVERSION hasklepias-build-musl musl-haskell $GHC
-
-check-source:
-  stage: pre-build
-  image: registry.novisci.com/nsstat/statocker/haskell:$GHC
-  script:
-    - ./scripts/lint.sh
-    - ./ci/ci-check-format.sh
-
-# Build stage jobs #### 
-build-test-hasklepias:
-  stage: build
-  needs: ["docker-build", "check-source"]
-  image: registry.novisci.com/nsstat/asclepias/hasklepias-build:latest
-  script:
-    - ./ci/ci-cabal-build-all.sh
-
-build-cohort-collector-static:
-  stage: build
-  needs: ["docker-build-musl"]
-  image: registry.novisci.com/nsstat/asclepias/hasklepias-build-musl:latest
-  artifacts :
-    name: "${CI_JOB_NAME}-${CI_COMMIT_SHORT_SHA}"
-    paths:
-      - install/
-    expire_in: 1 week
-  script:
-     - ./ci/ci-cabal-build-exe-static.sh cohort-collector cohort-collector install
+  # - build
+  # - docs
+  # - deploy
 
 trigger-static:
   stage: pre-build
@@ -64,37 +24,79 @@ trigger-static:
     MAINVERSION: $MAINVERSION
   trigger: ci/ci-static-build.yml
 
+# # Pre-build stage jobs #### 
+# docker-build:
+#  stage : pre-build
+#  image: docker:$DOCKER
+#  script:
+#     - ./ci/ci-docker-build.sh $MAINVERSION hasklepias-build haskell $GHC
 
-# Docs jobs
-check-docs:
-  # The ci-docs-check script depends on the cohort-collector app being in the
-  # install directory
-  stage: docs
-  needs: ["build-cohort-collector-static"]
-  image: registry.novisci.com/nsstat/asclepias/hasklepias-build:latest
-  script: 
-    - ./ci/ci-docs-check.sh
+# docker-build-musl:
+#  stage : pre-build
+#  image: docker:$DOCKER
+#  script:
+#     - ./ci/ci-docker-build.sh $MAINVERSION hasklepias-build-musl musl-haskell $GHC
 
-# Deploy jobs
-deploy-aws-cohort-collector-static:
-  stage: deploy
-  needs: ["build-cohort-collector-static"]
-  image: registry.novisci.com/nsstat/statocker/aws
-  script:
-    - export BUNDLE=$(< install/cohort-collector.bundle)
-    - | 
-      aws s3 cp \
-        install/${BUNDLE} \
-        s3://$(< ci/downloads_path)${BUNDLE} \
-        --acl public-read
+# check-source:
+#   stage: pre-build
+#   image: registry.novisci.com/nsstat/statocker/haskell:$GHC
+#   script:
+#     - ./scripts/lint.sh
+#     - ./ci/ci-check-format.sh
 
-deploy-docker-cohort-collector-static:
-  stage: deploy
-  needs: ["build-cohort-collector-static"]
-  image: docker:$DOCKER
-  script:
-    - export NAME=$(cat install/cohort-collector.name)
-    - export VERSION=$(cat install/cohort-collector.version)
-    - echo "$NAME"
-    - echo "$VERSION"
-    - ./ci/ci-docker-build-cohort-collector.sh $VERSION install/$NAME
+# # Build stage jobs #### 
+# build-test-hasklepias:
+#   stage: build
+#   needs: ["docker-build", "check-source"]
+#   image: registry.novisci.com/nsstat/asclepias/hasklepias-build:latest
+#   script:
+#     - ./ci/ci-cabal-build-all.sh
+
+# build-cohort-collector-static:
+#   stage: build
+#   needs: ["docker-build-musl"]
+#   image: registry.novisci.com/nsstat/asclepias/hasklepias-build-musl:latest
+#   artifacts :
+#     name: "${CI_JOB_NAME}-${CI_COMMIT_SHORT_SHA}"
+#     paths:
+#       - install/
+#     expire_in: 1 week
+#   script:
+#      - ./ci/ci-cabal-build-exe-static.sh cohort-collector cohort-collector install
+
+
+
+
+# # Docs jobs
+# check-docs:
+#   # The ci-docs-check script depends on the cohort-collector app being in the
+#   # install directory
+#   stage: docs
+#   needs: ["build-cohort-collector-static"]
+#   image: registry.novisci.com/nsstat/asclepias/hasklepias-build:latest
+#   script: 
+#     - ./ci/ci-docs-check.sh
+
+# # Deploy jobs
+# deploy-aws-cohort-collector-static:
+#   stage: deploy
+#   needs: ["build-cohort-collector-static"]
+#   image: registry.novisci.com/nsstat/statocker/aws
+#   script:
+#     - export BUNDLE=$(< install/cohort-collector.bundle)
+#     - | 
+#       aws s3 cp \
+#         install/${BUNDLE} \
+#         s3://$(< ci/downloads_path)${BUNDLE} \
+#         --acl public-read
+
+# deploy-docker-cohort-collector-static:
+#   stage: deploy
+#   needs: ["build-cohort-collector-static"]
+#   image: docker:$DOCKER
+#   script:
+#     - export NAME=$(cat install/cohort-collector.name)
+#     - export VERSION=$(cat install/cohort-collector.version)
+#     - echo "$NAME"
+#     - echo "$VERSION"
+#     - ./ci/ci-docker-build-cohort-collector.sh $VERSION install/$NAME

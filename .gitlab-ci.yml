@@ -22,7 +22,9 @@ trigger-static:
   stage: pre-build
   variables:
     MAINVERSION: $MAINVERSION
-  trigger: ci/ci-static-build.yml
+  trigger: 
+    include: ci/ci-static-build.yml
+    strategy: depend
 
 # # Pre-build stage jobs #### 
 # docker-build:

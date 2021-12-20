@@ -12,4 +12,5 @@ test:
  stage : test
  image: docker:$DOCKER
  script:
-    - echo 'I made it. "$MAINVERSION"''
+    - echo "I made it."
+    - echo "$MAINVERSION" 

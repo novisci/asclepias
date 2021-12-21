@@ -7,7 +7,8 @@ test:
  stage : test
  image: docker:$DOCKER
  needs:
-  - job: build_vars
+  - project: asclepias
+    job: build_vars
     artifacts: true
  script:
     - echo "I made it."

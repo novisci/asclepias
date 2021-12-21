@@ -12,18 +12,29 @@ variables:
   GHC: 8.10.7
   DOCKER: 20.10.11 
 
+
+
 stages:
   - pre-build
   # - build
   # - docs
   # - deploy
 
+build_vars:
+  stage: prebuild
+  script:
+    - echo "MAINVERSION=$(./scripts/get-version-from-cabal.sh hasklepias-main/hasklepias-main.cabal)" >> build.env
+  artifacts:
+    reports:
+      dotenv: build.env
+
 trigger-static:
   stage: pre-build
-  variables:
-    MAINVERSION: test 
+  # variables:
+  #   MAINVERSION: test 
   trigger: 
     include: ci/ci-static-build.yml
+    artifacts: true
     strategy: depend
 
 # # Pre-build stage jobs #### 

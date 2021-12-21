@@ -9,7 +9,7 @@ test:
  needs:
   - pipeline: $PARENT_PIPELINE_ID
     job: build_vars
-    artifacts: true
+    # artifacts: true
  script:
     - echo "I made it."
     - echo "$MAINVERSION" 

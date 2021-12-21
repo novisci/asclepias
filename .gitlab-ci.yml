@@ -3,16 +3,49 @@
 #
 # * TODO: https://gitlab.novisci.com/nsStat/asclepias/-/issues/139 
 #         
-create-artifact:
-  stage: build
-  script: echo "sample artifact" > artifact.txt
-  artifacts:
-    paths: [artifact.txt]
 
-child-pipeline:
-  stage: test
-  trigger:
-    include: ci/ci-static-build.yml
-    strategy: depend
+before_script:
+  - export MAINVERSION=$(./scripts/get-version-from-cabal.sh hasklepias-main/hasklepias-main.cabal)
+
+variables:
+  PKG: hasklepias
+  GHC: 8.10.7
+  DOCKER: 20.10.11 
+
+stages:
+  - pre-build
+  # - build
+  # - docs
+  # - deploy
+
+build_vars:
+  stage: pre-build
+  script:
+    - echo "MAINVERSION=$(./scripts/get-version-from-cabal.sh hasklepias-main/hasklepias-main.cabal)" >> build.env
+  artifacts:
+    expire-in: 1 hour
+    reports:
+      dotenv: build.env
+
+# https://docs.gitlab.com/ee/ci/yaml/#needspipelinejob
+trigger-static:
+  stage: pre-build
   variables:
     PARENT_PIPELINE_ID: $CI_PIPELINE_ID
+  trigger: 
+    include: ci/ci-static-build.yml
+    strategy: depend
+
+# create-artifact:
+#   stage: build
+#   script: echo "sample artifact" > artifact.txt
+#   artifacts:
+#     paths: [artifact.txt]
+
+# child-pipeline:
+#   stage: test
+#   trigger:
+#     include: ci/ci-static-build.yml
+#     strategy: depend
+#   variables:
+#     PARENT_PIPELINE_ID: $CI_PIPELINE_ID

@@ -4,10 +4,12 @@ stages:
 
 use-artifact:
   stage: test
-  script: cat artifact.txt
+  script:
+  #  cat artifact.txt 
+    - echo "$MAINVERSION" 
   needs:
     - pipeline: $PARENT_PIPELINE_ID
-      job: create-artifact
+      job: build_vars
 # Pre-build stage jobs #### 
 # test:
 #  stage : test

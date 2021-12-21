@@ -1,23 +1,22 @@
 stages:
+  - pre-build
   - build 
 
-use-artifact:
+docker-build-musl:
+ stage : pre-build
+ image: docker:$DOCKER
+ script:
+    - ./ci/ci-docker-build.sh $MAINVERSION hasklepias-build-musl musl-haskell $GHC
+
+build-cohort-collector-static:
   stage: build
-  script:
-    - echo "$MAINVERSION" 
+  # needs: ["docker-build-musl"]
   # https://docs.gitlab.com/ee/ci/yaml/#needspipelinejob
   needs:
     - pipeline: $PARENT_PIPELINE_ID
       job: build_vars
       artifacts: true
-
-build-cohort-collector-static:
-  stage: build
-  # needs: ["docker-build-musl"]
-  needs:
-    - pipeline: $PARENT_PIPELINE_ID
-      job: build_vars
-      artifacts: true
+    - "docker-build-musl"
   image: registry.novisci.com/nsstat/asclepias/hasklepias-build-musl:${MAINVERSION}
   artifacts :
     name: "${CI_JOB_NAME}-${CI_COMMIT_SHORT_SHA}"

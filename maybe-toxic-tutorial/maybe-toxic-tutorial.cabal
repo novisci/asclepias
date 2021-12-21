@@ -38,7 +38,7 @@ library
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:
     build-depends:    
-        base >=4.14 && <4.15
+        base >=4.14
         , interval-algebra >=1.0.0
         -- following interval algebra
         , time (>=1.8 && <2)
@@ -46,6 +46,7 @@ library
         -- included for convenience with hls in writing tests. else it doesn't
         -- properly find the module.
         , hspec >= 2.8
+        , containers -any
     hs-source-dirs:   src
     default-language: Haskell2010
 

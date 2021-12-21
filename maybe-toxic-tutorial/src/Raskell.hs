@@ -66,6 +66,8 @@
 import Data.List
 import qualified Control.Applicative as A
 import qualified GHC.Arr as Arr
+-- from collections package
+import qualified Data.Map as M
 
 
    {-- B. FUNCTIONS AND ARGUMENTS
@@ -224,3 +226,162 @@ xs' :: Arr.Array Int Int
 xs' = Arr.listArray (1, 4) xs
 
 good' = traverseCompose reciprocal shiftOne xs'
+
+
+-- B.5 
+-- case handling and pattern matching
+
+-- trying to match the R function closely
+-- to demonstrate if/else etc.
+-- instead of a list we use a Map from the containers
+-- library
+
+-- using case of and if/else, the most directly comparable
+-- this has all of the flaws of the R version, except argument type checking
+-- you don't want to do this
+whatisit :: String -> Bool -> String
+whatisit x cat = 
+   let 
+     catList = ["bobcat", "highland tiger"]
+     marsList = ["tazmanian devil", "possum", "monito del monte"]
+     checkCat x' = if x' `elem` catList 
+                   then "This is a cat"
+                   else "This is not a cat"
+     -- 'guard' pattern can make for cleaner syntax. can do multiple cases
+     checkMars x'
+       | x' `elem` marsList = "This is a marsupial"
+       | otherwise = "This is not a marsupial"
+   in 
+     if cat then checkCat x else checkMars x
+
+
+-- whatisitGeneral
+-- In this case Haskell lets us do something a little better than the R implementation.
+-- So long as the programmer knows ahead of time what the anmls (named list of
+-- animal types) they need
+--
+-- we'll define a data type enumerating all of the animal types and holding a
+-- list of animals of that type
+-- | means a value of this type can either be a Mongoose with a list of mongoose animals
+-- or Bear with a list of bear animals
+
+-- now the function is very clean and simple. there is no need to handle the
+-- missing key type of error because the compiler will prevent you from passing
+-- an Anmls that is incorrect
+
+-- you'll see however that this isn't a good design for a program, really
+
+data Anmls = Mongoose [String] | Bear [String] deriving (Show, Eq)
+
+whatisitImproved :: String -> Anmls -> String
+whatisitImproved z' (Mongoose zs') = yesNo z' "mongoose" zs'
+whatisitImproved z' (Bear zs') = yesNo z' "bear" zs'
+
+yesNo :: String -> String -> [String] -> String
+yesNo z msg zs
+  | z `elem` zs = "This is a " ++ msg
+  | otherwise = "This is not a " ++ msg
+
+-- whatisitTellMe
+-- instead of a named list we'll use a list of key-value tuples of type
+-- (String, [String]), an animal class name and a list of animals in the class
+--
+-- you could instead use Map from the collections package (imported above for
+-- your convenience)
+--
+-- output will wrap errors in the Either structure: Left is for a captured
+-- error and Right for an Ok result
+
+-- lookups with return another haskell wrapper type, Maybe
+-- if a value is not found it will return Nothing, else it will return Some name
+
+-- e.g. if the program is in error because x is found in multiple locations, 
+-- this function returns Left "Bad anmls input: x found in multiple locations."
+-- if x is not found anyway, it returns Right Nothing
+-- else it returns Right "some name"
+
+-- here, there is a pattern match in the function arguments for an empty list
+whatisitTellMe :: String -> [(String, [String])]  -> Either String (Maybe String)
+whatisitTellMe _ [] = Right Nothing
+-- this pattern match is the standard one for a list with first element y and
+-- remaining list ys (which can be [])
+whatisitTellMe x (y:ys) 
+  | length chk > 1 = Left "Bad anmls input: x found in multiple locations."
+  | otherwise = Right (headMaybe chk)
+   where 
+      -- NOTE: there *is* a lookup function, but it searches by the key not the
+      -- value
+      chk = filterMap (isIn x) fst (y:ys)
+      -- is z' in the list of values zs'?
+      isIn z' (_, zs') = z' `elem` zs'
+
+-- helpers for whatisitTellMe, broken out for more general use
+filterMap :: (a -> Bool) -> (a -> b) -> [a] -> [b]
+filterMap p f = foldr (\z zs -> if p z then f z : zs else zs) []
+
+headMaybe :: [a] -> Maybe a
+headMaybe [] = Nothing
+headMaybe (y:_) = Just y
+
+-- B.5 Examples
+
+-- is a falcon a marsupial? an eagle a cat?
+notMarsupial, notCat :: String
+notMarsupial = whatisit "falcon" False
+notCat = whatisit "eagle" True
+
+-- type error caught immediately
+--badMarsupial :: String
+--badMarsupial = whatisit 011000110110000101110100 False
+
+bears :: Anmls
+bears = Bear ["grizzly bear", "panda"]
+
+isitbear :: String 
+isitbear = whatisitImproved "grizzly bear" bears
+
+-- compiler error!
+-- I can't even create something for Fox because that is not one of the
+-- variants of Anmls type, let alone try to use it in whatisitImproved
+--foxes :: Anmls
+--foxes = Fox ["red fox"]
+--isitfox = whatisitImproved "red fox" foxes
+
+-- doesn't save us from typos though
+mistypedX :: String
+mistypedX = whatisitImproved "grizzly" bears
+
+mongeese :: Anmls
+mongeese = Mongoose ["meerkat", "kusimanse", "mongoose"]
+
+-- and this is one big reason why the design here was bad.
+-- you have to manually ensure the input x makes sense to check in the Anmls
+-- list.
+mistypedName :: String
+mistypedName = whatisitImproved "grizzly bear" mongeese
+
+anmls :: [(String, [String])]
+anmls = [("bear", ["grizzly bear", "panda"]), ("mongoose", ["meerkat", "kusimanse", "mongoose"])]
+
+isitbear' :: Either String (Maybe String)
+isitbear' = whatisitTellMe "grizzly bear" anmls 
+
+-- still not immune to typos of course
+-- to improve this a little, whatisitTellMe could take a custom data type for
+-- the keys, as with whatisitImproved
+
+-- however, the use or Either and Maybe mean that any
+-- functions using the results from this one will have an
+-- easier time of identifying failures without causing
+-- unexpected problems down the line or just crashing the
+-- program
+mistypedBear :: Either String (Maybe String)
+mistypedBear = whatisitTellMe "sumkinnaburr" anmls
+
+-- at least this kind of error is better handled
+
+badAnmls :: [(String, [String])]
+badAnmls = [("bear", ["grizzly bear", "panda"]), ("mongoose", ["panda", "meerkat", "kusimanse", "mongoose"])]
+
+badPanda :: Either String (Maybe String)
+badPanda = whatisitTellMe "panda" badAnmls

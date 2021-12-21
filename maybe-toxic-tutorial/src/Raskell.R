@@ -168,7 +168,7 @@ mapCompose  <- function(f, g, xs) {
   names(check)  <- rlang::fn_fmls_syms()
 
   if (any(check)) {
-    bad  <- names(check)[which(check)]
+    bad  <- names(check)[check]
     msg  <- sprintf("Arguments %s are not of the correct type.",
                     paste(bad, collapse = ", "))
 
@@ -203,11 +203,134 @@ bad <- mapCompose(reciprocal, shiftOne, letters[0:10])
 # since we wrote one.
 bad_order  <- mapCompose(letters[1:10], reciprocal, shiftOne)
 
+# B.5 
+# Case handling and pattern matching basics
+# basic if and switch
 
-# B.5
-# Case handling
+whatisit  <- function(x, isitcat = FALSE) {
+  yes_fun  <- function(n) sprintf("This is a %s", n)
+  no_fun  <- function(n) sprintf("This is not a %s", n)
+
+  anmls  <- list("cat" = c("bobcat", "highland tiger"),
+                 "marsupial" = c("tazmanian devil", "possum", "monito del monte")
+  )
+
+  if (isitcat) {
+    ifelse(x %in% anmls$cat, yes_fun("cat"), no_fun("cat"))
+  } else {
+    ifelse(x %in% anmls$marsupial, yes_fun("marsupial"), no_fun("marsupial"))
+  }
+  
+}
+
+# ok so we want to make it more general
+whatisit_general  <- function(x, anmls, anml_type) {
+  yes_fun  <- function(n) sprintf("This is a %s", n)
+  no_fun  <- function(n) sprintf("This is not a %s", n)
+
+  nm <- names(anmls)
+
+  if (anml_type %in% nm) {
+    ifelse(x %in% anmls[[anml_type]], yes_fun(anml_type), no_fun(anml_type))
+  } else {
+    rlang::abort(c(sprintf("Invalid anml_type: %s", anml_type),
+                   "i" = sprintf("For this anmls, should be one of: %s", paste(nm, collapse = ", "))
+                   )
+    )
+  }
+}
+
+# maybe in some application a lookup table is basically what we need
+# sticking with lists here
+whatisit_tellme  <- function(x, anmls) {
+  res  <- purrr::map_lgl(anmls, ~ x %in% .x)
+  nm <- names(anmls)
+
+  if (!any(res)) {
+    NA_character_
+  } else if (sum(res) > 1) {
+    rlang::abort(sprintf("Bad anmls input: %s found in more than one element of anmls",
+                         anml_type))
+  } else {
+    nm[res]
+  }
+
+}
+
+# B.5 Example
+
+# ok
+not_marsupial  <- whatisit("falcon")
+not_cat  <- whatisit("eagle", isitcat = TRUE)
+
+# hmm, did we intend for this to run and produce an answer?
+# UTF-8 encoding for "cat"
+bad  <- whatisit(011000110110000101110100, isitcat = TRUE)
+
+# slightly better
+anmls <- list("mongoose" = c("meerkat", "kusimanse", "mongoose"),
+              "bear" = c("grizzly bear", "panda"))
+
+# ok
+isitbear  <- whatisit_general("grizzly bear", anmls, "bear")
+
+# typos mess everything up
+# no error on this first one to alert you!
+mistyped_x  <- whatisit_general("grizzly", anmls, "bear")
+mistyped_name  <- whatisit_general("grizzly bear", anmls, "ber")
+
+# our lookup function
+isitbear  <- whatisit_tellme("grizzly bear", anmls)
+mistyped_bear  <- whatisit_tellme("grizzly", anmls)
+
+bad_anmls  <- anmls
+bad_anmls$mongoose  <- c(anmls$mongoose, "panda")
+
+bad_panda  <- whatisit_tellme("panda", bad_anmls)
+
+# B.6
+# More case handling
 # Use switch to match patterns, or if-else statements.
 # switch has a very limited pattern matching functionality: only numbers or
 # strings can be matched
 
+# In this example, we do two kinds of matching. Input function f will evaluate
+# some data and return a model name. That model name will then be matched 
+# with `switch` to determine which model should be run on the data.
 
+# f will be wrapped in purrr::safely, to catch errors. if f fails with some
+# error, we'll process that error in some way based on the third input to this
+# function, a switch saying whether we want to run some default case.
+
+run_model  <- function(data_checker, xs, with_default = FALSE) {
+
+  # basic argument checking
+  stopifnot(is.list(xs) && is.function(data_checker))
+
+  safe_checker  <- purrr::safely(data_checker)
+
+  chk <- safe_checker(xs)
+
+  # dummy output for default model case
+  default_model  <- 1:10
+
+  # did the check fail with some error?
+  if (!is.null(chk$error)) {
+    if (!with_default) {
+      rlang::abort("Data check failed.", parent = chk$error)
+    }
+
+    # some dummy default output
+    default_model
+  } else {
+    switch(chk$result,
+           # dummy 'expensive' model operation with redundant calculations.
+           "expensive" = length(rev(xs)),
+           # 'check' model. notice the return types might differ
+           "cheap" = xs[1],
+           # baseline case is to run the default model
+           default_model
+    )
+  }
+
+}

@@ -1,8 +1,9 @@
 
-# stages:
-#   - test 
+stages:
+  - test 
 
 use-artifact:
+  stage: test
   script: cat artifact.txt
   needs:
     - pipeline: $PARENT_PIPELINE_ID

@@ -21,11 +21,11 @@ stages:
 build_vars:
   stage: pre-build
   script:
-    - echo "MAINVERSION=$(./scripts/get-version-from-cabal.sh hasklepias-main/hasklepias-main.cabal)" >> build.env
+    - echo "MAINVERSION=$(./scripts/get-version-from-cabal.sh hasklepias-main/hasklepias-main.cabal)" >> .env
   artifacts:
     expire_in: 1 hour
     reports:
-      dotenv: build.env
+      dotenv: .env
 
 # https://docs.gitlab.com/ee/ci/yaml/#needspipelinejob
 trigger-static:

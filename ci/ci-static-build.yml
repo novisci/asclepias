@@ -10,6 +10,7 @@ use-artifact:
   needs:
     - pipeline: $PARENT_PIPELINE_ID
       job: build_vars
+      artifacts: true
 # Pre-build stage jobs #### 
 # test:
 #  stage : test

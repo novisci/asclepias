@@ -13,39 +13,25 @@ variables:
   DOCKER: 20.10.11 
 
 stages:
+  - prep
   - pre-build
-  - build
   # - docs
   # - deploy
 
 build_vars:
-  stage: pre-build
+  stage: prep
   script:
     - echo "MAINVERSION=$(./scripts/get-version-from-cabal.sh hasklepias-main/hasklepias-main.cabal)" >> .env
   artifacts:
-    expire_in: 1 hour
     reports:
       dotenv: .env
 
-# https://docs.gitlab.com/ee/ci/yaml/#needspipelinejob
+
 trigger-static:
-  stage: build
+  stage: pre-build
   variables:
     PARENT_PIPELINE_ID: $CI_PIPELINE_ID
+  # https://docs.gitlab.com/ee/ci/yaml/#needspipelinejob
   trigger: 
     include: ci/ci-static-build.yml
     strategy: depend
-
-# create-artifact:
-#   stage: build
-#   script: echo "sample artifact" > artifact.txt
-#   artifacts:
-#     paths: [artifact.txt]
-
-# child-pipeline:
-#   stage: test
-#   trigger:
-#     include: ci/ci-static-build.yml
-#     strategy: depend
-#   variables:
-#     PARENT_PIPELINE_ID: $CI_PIPELINE_ID

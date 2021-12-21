@@ -14,7 +14,7 @@ variables:
 
 stages:
   - pre-build
-  # - build
+  - build
   # - docs
   # - deploy
 
@@ -29,7 +29,7 @@ build_vars:
 
 # https://docs.gitlab.com/ee/ci/yaml/#needspipelinejob
 trigger-static:
-  stage: pre-build
+  stage: build
   variables:
     PARENT_PIPELINE_ID: $CI_PIPELINE_ID
   trigger: 

@@ -167,6 +167,9 @@ oneToFive = myConcat [4..5] [1..3]
 -- particular, mapCompose will not work for data
 -- structures other than lists: the R version worked for
 -- lists or vectors.
+--
+-- notice that unlike the R implementation i have to do *zero* extra coding for
+-- the type checks. i get all of that for free.
 
 mapCompose :: (b -> c) -> (a -> b) -> [a] -> [c]
 mapCompose f g xs = map (f . g) xs
@@ -190,6 +193,7 @@ mapCompose' f g = map (f . g)
 
 traverseCompose :: Traversable t => (b -> c) -> (a -> b) -> t a -> t c
 traverseCompose f g = fmap (f . g)
+
 
 -- B.4 Examples
 

@@ -6,6 +6,10 @@ stages:
 test:
  stage : test
  image: docker:$DOCKER
+ needs:
+  - job: build_vars
+    artifacts: true
  script:
     - echo "I made it."
     - echo "$MAINVERSION" 
+

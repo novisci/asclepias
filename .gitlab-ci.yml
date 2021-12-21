@@ -23,7 +23,7 @@ build_vars:
   script:
     - echo "MAINVERSION=$(./scripts/get-version-from-cabal.sh hasklepias-main/hasklepias-main.cabal)" >> build.env
   artifacts:
-    expire-in: 1 hour
+    expire_in: 1 hour
     reports:
       dotenv: build.env
 

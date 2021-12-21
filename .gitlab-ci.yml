@@ -3,114 +3,16 @@
 #
 # * TODO: https://gitlab.novisci.com/nsStat/asclepias/-/issues/139 
 #         
-
-before_script:
-  - export MAINVERSION=$(./scripts/get-version-from-cabal.sh hasklepias-main/hasklepias-main.cabal)
-
-variables:
-  PKG: hasklepias
-  GHC: 8.10.7
-  DOCKER: 20.10.11 
-
-
-
-stages:
-  - pre-build
-  # - build
-  # - docs
-  # - deploy
-
-build_vars:
-  stage: pre-build
-  script:
-    - echo "MAINVERSION=$(./scripts/get-version-from-cabal.sh hasklepias-main/hasklepias-main.cabal)" >> build.env
+create-artifact:
+  stage: build
+  script: echo "sample artifact" > artifact.txt
   artifacts:
-    reports:
-      dotenv: build.env
+    paths: [artifact.txt]
 
-trigger-static:
-  stage: pre-build
-  # variables:
-  #   MAINVERSION: test
-  variables:
-    PARENT_PIPELINE_ID: $CI_PIPELINE_ID
-  trigger: 
+child-pipeline:
+  stage: test
+  trigger:
     include: ci/ci-static-build.yml
     strategy: depend
-
-# # Pre-build stage jobs #### 
-# docker-build:
-#  stage : pre-build
-#  image: docker:$DOCKER
-#  script:
-#     - ./ci/ci-docker-build.sh $MAINVERSION hasklepias-build haskell $GHC
-
-# docker-build-musl:
-#  stage : pre-build
-#  image: docker:$DOCKER
-#  script:
-#     - ./ci/ci-docker-build.sh $MAINVERSION hasklepias-build-musl musl-haskell $GHC
-
-# check-source:
-#   stage: pre-build
-#   image: registry.novisci.com/nsstat/statocker/haskell:$GHC
-#   script:
-#     - ./scripts/lint.sh
-#     - ./ci/ci-check-format.sh
-
-# # Build stage jobs #### 
-# build-test-hasklepias:
-#   stage: build
-#   needs: ["docker-build", "check-source"]
-#   image: registry.novisci.com/nsstat/asclepias/hasklepias-build:latest
-#   script:
-#     - ./ci/ci-cabal-build-all.sh
-
-# build-cohort-collector-static:
-#   stage: build
-#   needs: ["docker-build-musl"]
-#   image: registry.novisci.com/nsstat/asclepias/hasklepias-build-musl:latest
-#   artifacts :
-#     name: "${CI_JOB_NAME}-${CI_COMMIT_SHORT_SHA}"
-#     paths:
-#       - install/
-#     expire_in: 1 week
-#   script:
-#      - ./ci/ci-cabal-build-exe-static.sh cohort-collector cohort-collector install
-
-
-
-
-# # Docs jobs
-# check-docs:
-#   # The ci-docs-check script depends on the cohort-collector app being in the
-#   # install directory
-#   stage: docs
-#   needs: ["build-cohort-collector-static"]
-#   image: registry.novisci.com/nsstat/asclepias/hasklepias-build:latest
-#   script: 
-#     - ./ci/ci-docs-check.sh
-
-# # Deploy jobs
-# deploy-aws-cohort-collector-static:
-#   stage: deploy
-#   needs: ["build-cohort-collector-static"]
-#   image: registry.novisci.com/nsstat/statocker/aws
-#   script:
-#     - export BUNDLE=$(< install/cohort-collector.bundle)
-#     - | 
-#       aws s3 cp \
-#         install/${BUNDLE} \
-#         s3://$(< ci/downloads_path)${BUNDLE} \
-#         --acl public-read
-
-# deploy-docker-cohort-collector-static:
-#   stage: deploy
-#   needs: ["build-cohort-collector-static"]
-#   image: docker:$DOCKER
-#   script:
-#     - export NAME=$(cat install/cohort-collector.name)
-#     - export VERSION=$(cat install/cohort-collector.version)
-#     - echo "$NAME"
-#     - echo "$VERSION"
-#     - ./ci/ci-docker-build-cohort-collector.sh $VERSION install/$NAME
+  variables:
+    PARENT_PIPELINE_ID: $CI_PIPELINE_ID

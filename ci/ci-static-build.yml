@@ -1,16 +1,21 @@
 
-stages:
-  - test 
+# stages:
+#   - test 
 
+use-artifact:
+  script: cat artifact.txt
+  needs:
+    - pipeline: $PARENT_PIPELINE_ID
+      job: create-artifact
 # Pre-build stage jobs #### 
-test:
- stage : test
- image: docker:$DOCKER
- needs:
-  - pipeline: $PARENT_PIPELINE_ID
-    job: build_vars
-    # artifacts: true
- script:
-    - echo "I made it."
-    - echo "$MAINVERSION" 
+# test:
+#  stage : test
+#  image: docker:$DOCKER
+#  needs:
+#   - pipeline: $PARENT_PIPELINE_ID
+#     job: build_vars
+#     # artifacts: true
+#  script:
+#     - echo "I made it."
+#     - echo "$MAINVERSION" 
 

@@ -14,5 +14,3 @@ cradle:
       component: "cohort-collector"
     - path: "./stype/"
       component: "stype"
-    - path: "./utils/"
-      component: "hasklepias-build-utils"

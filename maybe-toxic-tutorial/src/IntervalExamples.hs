@@ -32,14 +32,18 @@ import           IntervalAlgebra
 
 -- CREATING INTERVALS
 
--- TODO make notes
+-- creates an interval from a duration and a starting point
+-- beginerval duration start
+-- each `Interval a` type has a smallest possible duration, called the moment
+-- beginerval takes the max of moment and the supplied duration
+-- for Interval Int, moment is 1
+-- (0, 1)
 beginerDefault :: Interval Int
 beginerDefault = beginerval 0 0
 
 enderDefault :: Interval Int
 enderDefault = enderval 0 0
 
--- TODO
 startFromEnd :: Interval Int
 startFromEnd = enderval 2 2
 

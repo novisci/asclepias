@@ -22,6 +22,10 @@ maintainer:         bbrown@targetrwe.com
 extra-source-files: CHANGELOG.md
 
 library
+    ghc-options:
+      -Wall
+      -- uncomment this to fail in case of any warnings
+      ---Werror
     exposed-modules:  
         TypeExamples
         , TypeExercises

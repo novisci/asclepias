@@ -48,7 +48,9 @@ For now this will live in asclepias.
 
 3. open an examples file, e.g. TypeExamples.hs
 
-4. side-by-side (ideally) load the module in ghci by typing `:l {path_to_module/TypeExamples.hs`. For example, if `maybe-toxic-tutorial` is my current working directory I would run the following in ghci `:l src/TypeExamples.hs`
+4. side-by-side (ideally) load the module in ghci by 
+    i. running `cabal exec -- ghci` to ensure dependencies are loaded
+		ii. in typing `:l path_to_module/TypeExamples.hs`. For example, if `maybe-toxic-tutorial` is my current working directory I would run the following in ghci `:l src/TypeExamples.hs`
 
 5. look at the examples, run the code in ghci, try the exercises.
 

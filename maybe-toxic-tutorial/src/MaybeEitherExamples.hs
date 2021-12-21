@@ -1,19 +1,19 @@
 
 module MaybeEitherExamples ( ) where
 
-import Data.Maybe
-import Control.Monad
+import           Control.Monad
+import           Data.Maybe
 
-  {-- 
+  {--
      WHAT THIS COVERS
 
      - Common wrapper types for fallible operations: Maybe and Either
      - Functor, Applicative and Monad typeclasses
      - Writing your own instances of those type classes
-     - Application: Secret Santa 
+     - Application: Secret Santa
 
      PRE-REQUISITES
-     
+
      - TypeExamples
      - FunctionalExamples
 
@@ -89,7 +89,7 @@ safeRound x
 -- quot requires i to be an instance of the Integral typeclass, of integral-like numbers.
 -- If the pattern matching here looks weird, see some of the other example files.
 quotMaybe :: Maybe Integer -> Maybe Integer
-quotMaybe Nothing = Nothing
+quotMaybe Nothing  = Nothing
 quotMaybe (Just i) = Just (i `quot` 2)
 
 -- Example Two: Haskell provides several functions for this kind of operation,
@@ -130,7 +130,7 @@ onlyOnes :: [Integer]
 onlyOnes = justRoundList [1.0, 1.5, 2.1, 10.9, 1.0]
 
 myInts :: Maybe [Integer]
-myInts = safeRoundList [1.0, 1.5, 2.1, 10.9, 1.0] 
+myInts = safeRoundList [1.0, 1.5, 2.1, 10.9, 1.0]
 
 aGoodSum :: Maybe Integer
 aGoodSum = safeRoundSum [1.0, 2.0]
@@ -143,18 +143,32 @@ aBadSum = safeRoundSum [1.0, 2.4]
 
   {-- SANTA TIME --}
 
-  {-- 
-     Try One:
+  {--
+     First Try:
 
      Institute a piety rule, in which Santas can't santa each other. Use a list of tuples as your data type.
      --}
 
--- 
 
-{-- 
-  Try Two: Two Santas walk into a Monad...
+
+{--
+  Second Try: Two Santas walk into a Monad...
 
   TODO
 
 --}
+
+
+  {--
+    Third try: something abstract
+
+TODO
+--}
+
+newtype Gift a = Gift (a, a)
+type GiftInt = Gift Int
+
+
+-- define an abstract relation
+
 

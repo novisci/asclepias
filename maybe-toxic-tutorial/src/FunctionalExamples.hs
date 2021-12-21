@@ -1,6 +1,3 @@
-module FunctionalExamples ( ) where
-
-import           Data.List (nub, permutations)
   {--
      WHAT YOU WILL LEARN
 
@@ -8,9 +5,9 @@ import           Data.List (nub, permutations)
 
      --}
 
-{-
-  TODO: intro something with resources
-  -}
+module FunctionalExamples ( ) where
+
+import           Data.List (intersect, nub, permutations)
 
 
 -- TODO function call basics
@@ -37,7 +34,7 @@ foldr' :: (a -> b -> b) -> b -> [a] -> b
 foldr' _ start []     = start
 foldr' f start (x:xs) = f x (foldr' f start xs)
 
--- making a path
+-- EXAMPLE: making a path
 
 -- GOAL: given a list of vertices (represented by any type a) in which each
 -- element represents a vertex, return a list of 'edges' given by tuples
@@ -95,4 +92,4 @@ adHocCheck = setEquals (pathPermutations x) (pathPermutations' x)
 -- or rather (because of different orderings) they are equal as sets
 -- note this is slow for lists of length n! for any reasonably sized n
 setEquals :: Eq b => [b] -> [b] -> Bool
-setEquals xts yts = all (`elem` xts) yts && all (`elem` yts) xts
+setEquals xts yts = xts `intersect` yts == yts

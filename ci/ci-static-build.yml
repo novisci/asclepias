@@ -7,7 +7,7 @@ test:
  stage : test
  image: docker:$DOCKER
  needs:
-  - project: asclepias
+  - pipeline: $PARENT_PIPELINE_ID
     job: build_vars
     artifacts: true
  script:

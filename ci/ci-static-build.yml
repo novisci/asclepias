@@ -1,8 +1,8 @@
 stages:
-  - test 
+  - build 
 
 use-artifact:
-  stage: test
+  stage: build
   script:
     - echo "$MAINVERSION" 
   # https://docs.gitlab.com/ee/ci/yaml/#needspipelinejob

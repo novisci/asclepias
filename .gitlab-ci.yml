@@ -21,7 +21,7 @@ stages:
   # - deploy
 
 build_vars:
-  stage: prebuild
+  stage: pre-build
   script:
     - echo "MAINVERSION=$(./scripts/get-version-from-cabal.sh hasklepias-main/hasklepias-main.cabal)" >> build.env
   artifacts:
@@ -34,7 +34,6 @@ trigger-static:
   #   MAINVERSION: test 
   trigger: 
     include: ci/ci-static-build.yml
-    artifacts: true
     strategy: depend
 
 # # Pre-build stage jobs #### 

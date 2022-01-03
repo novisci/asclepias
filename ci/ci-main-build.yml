@@ -31,3 +31,12 @@ build:
   image: registry.novisci.com/nsstat/asclepias/hasklepias-build:${MAINVERSION}
   script:
      - ./ci/ci-cabal-build-all.sh
+
+# The child pipeline needs at minimum one job to run - otherwise the sub-pipeline fails
+# See https://gitlab.com/gitlab-org/gitlab/-/issues/218538
+dummy:
+  stage: build
+  variables:
+    GIT_STRATEGY: none
+  script:
+    - ":"

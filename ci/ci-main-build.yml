@@ -27,7 +27,7 @@ build:
     - job: "docker-build"
       optional: true
   rules:
-    - changes: ["**/*.hs"]
+    - changes: ["**/*.cabal", "**/*.hs"]
   image: registry.novisci.com/nsstat/asclepias/hasklepias-build:${MAINVERSION}
   script:
      - ./ci/ci-cabal-build-all.sh

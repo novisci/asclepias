@@ -12,13 +12,6 @@ variables:
   GHC: "8.10.7"
   DOCKER: "20.10.11"
 
-.default_rules:
-  rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-      - changes: "**/*.hs"
-      - changes: "**/*.cabal"
-      - chnages: "cabal.project"
-
 stages:
   - prep
   - build
@@ -42,7 +35,8 @@ check-source:
 
 trigger-main-build:
   rules:
-    - !reference [.default_rules, rules]
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      changes: ["**/*.hs", "**/*.cabal", "cabal.project"]
   stage: build
   variables:
     PARENT_PIPELINE_ID: $CI_PIPELINE_ID

@@ -14,7 +14,7 @@ docker-build:
     artifacts: true
  rules:
   - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-    changes: ["**/*.hs", "**/*.cabal", "cabal.project"]
+    changes: ["**/*.cabal", "cabal.project"]
  script:
     - ./ci/ci-docker-build.sh $MAINVERSION hasklepias-build-musl haskell $GHC
 
@@ -28,7 +28,7 @@ build:
       optional: true
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-      changes: ["**/*.hs", "**/*.cabal", "cabal.project"]
+      changes: ["**/*.hs"]
   image: registry.novisci.com/nsstat/asclepias/hasklepias-build:${MAINVERSION}
   script:
      - ./ci/ci-cabal-build-all.sh

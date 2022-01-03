@@ -1,11 +1,9 @@
 {-|
 Module      : Functions for Parsing Event data model
 Description : Defines FromJSON instances for Events.
-Copyright   : (c) NoviSci, Inc 2020
 License     : BSD3
 Maintainer  : bsaul@novisci.com
 -}
--- {-# OPTIONS_HADDOCK hide #-}
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE FlexibleInstances, OverloadedStrings #-}
 {-# LANGUAGE TypeApplications #-}

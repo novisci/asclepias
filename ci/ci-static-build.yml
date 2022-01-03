@@ -1,11 +1,75 @@
+# Build and deploy statically linked executables including:
+# - cohort-collector
 
 stages:
-  - test 
+  - pre-build
+  - build 
+  - checks
+  - deploy
 
-# Pre-build stage jobs #### 
-test:
- stage : test
+# Build the docker image will all dependencies installed.
+docker-build-musl:
+ stage : pre-build
  image: docker:$DOCKER
+ needs:
+  - pipeline: $PARENT_PIPELINE_ID
+    job: build_vars
+    artifacts: true
  script:
-    - echo "I made it."
-    - echo "$MAINVERSION" 
+    - ./ci/ci-docker-build.sh $MAINVERSION hasklepias-build-musl musl-haskell $GHC
+
+# Builds the cohort collector app
+build-cohort-collector-static:
+  stage: build
+  needs:
+    - pipeline: $PARENT_PIPELINE_ID
+      job: build_vars
+      artifacts: true
+    - "docker-build-musl"
+  image: registry.novisci.com/nsstat/asclepias/hasklepias-build-musl:${MAINVERSION}
+  artifacts:
+    name: "${CI_JOB_NAME}-${CI_COMMIT_SHORT_SHA}"
+    paths:
+      - install/
+    expire_in: 1 week
+  script:
+     - ./ci/ci-cabal-build-exe-static.sh cohort-collector cohort-collector install
+
+# Checks run after building mainly to check consistency in documentation
+check-docs:
+  # The ci-docs-check script depends on the cohort-collector app being in the
+  # install directory
+  stage: checks
+  needs: ["build-cohort-collector-static"]
+  image: registry.novisci.com/nsstat/asclepias/hasklepias-build:latest
+  script: 
+    - ./ci/ci-docs-check.sh
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+# Deploy the executable bundle to an S3 location
+deploy-aws-cohort-collector-static:
+  stage: deploy
+  needs: ["build-cohort-collector-static"]
+  image: registry.novisci.com/nsstat/statocker/aws
+  script:
+    - export BUNDLE=$(< install/cohort-collector.bundle)
+    - | 
+      aws s3 cp \
+        install/${BUNDLE} \
+        s3://$(< ci/downloads_path)${BUNDLE} \
+        --acl public-read
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+# Deploy the app as a docker container
+deploy-docker-cohort-collector-static:
+  stage: deploy
+  needs: ["build-cohort-collector-static"]
+  image: docker:$DOCKER
+  script:
+    - export FILE=$(cat install/cohort-collector.bundle)
+    - export VERSION=$(cat install/cohort-collector.version)
+    - ./ci/ci-docker-build-cohort-collector.sh $VERSION install/$FILE
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH

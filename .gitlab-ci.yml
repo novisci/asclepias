@@ -28,6 +28,8 @@ check-source:
   script:
     - ./scripts/lint.sh
     - ./ci/ci-check-format.sh
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
 
 trigger-main-build:
   stage: pre-build
@@ -36,6 +38,9 @@ trigger-main-build:
   trigger: 
     include: ci/ci-main-build.yml
     strategy: depend
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
 
 trigger-static-build:
   stage: pre-build
@@ -44,13 +49,7 @@ trigger-static-build:
   trigger: 
     include: ci/ci-static-build.yml
     strategy: depend
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
 
-# # Docs jobs
-# check-docs:
-#   # The ci-docs-check script depends on the cohort-collector app being in the
-#   # install directory
-#   stage: docs
-#   needs: ["build-cohort-collector-static"]
-#   image: registry.novisci.com/nsstat/asclepias/hasklepias-build:latest
-#   script: 
-#     - ./ci/ci-docs-check.sh

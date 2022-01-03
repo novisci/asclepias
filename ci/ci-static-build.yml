@@ -4,6 +4,7 @@
 stages:
   - pre-build
   - build 
+  - checks
   - deploy
 
 # Build the docker image will all dependencies installed.
@@ -34,6 +35,18 @@ build-cohort-collector-static:
   script:
      - ./ci/ci-cabal-build-exe-static.sh cohort-collector cohort-collector install
 
+# Checks run after building mainly to check consistency in documentation
+check-docs:
+  # The ci-docs-check script depends on the cohort-collector app being in the
+  # install directory
+  stage: checks
+  needs: ["build-cohort-collector-static"]
+  image: registry.novisci.com/nsstat/asclepias/hasklepias-build:latest
+  script: 
+    - ./ci/ci-docs-check.sh
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
 # Deploy the executable bundle to an S3 location
 deploy-aws-cohort-collector-static:
   stage: deploy
@@ -46,6 +59,8 @@ deploy-aws-cohort-collector-static:
         install/${BUNDLE} \
         s3://$(< ci/downloads_path)${BUNDLE} \
         --acl public-read
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
 
 # Deploy the app as a docker container
 deploy-docker-cohort-collector-static:
@@ -56,3 +71,5 @@ deploy-docker-cohort-collector-static:
     - export FILE=$(cat install/cohort-collector.bundle)
     - export VERSION=$(cat install/cohort-collector.version)
     - ./ci/ci-docker-build-cohort-collector.sh $VERSION install/$FILE
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH

@@ -2,7 +2,7 @@
 # NOTES
 #
 # * TODO: https://gitlab.novisci.com/nsStat/asclepias/-/issues/139 
-#         
+# * https://docs.gitlab.com/ee/ci/yaml/#needspipelinejob   
 
 variables:
   PKG: hasklepias
@@ -13,7 +13,6 @@ stages:
   - prep
   - pre-build
   # - docs
-  # - deploy
 
 build_vars:
   stage: prep
@@ -24,17 +23,34 @@ build_vars:
       dotenv: .env
 
 check-source:
-  stage: pre-build
+  stage: prep
   image: registry.novisci.com/nsstat/statocker/haskell:$GHC
   script:
     - ./scripts/lint.sh
     - ./ci/ci-check-format.sh
 
+trigger-main-build:
+  stage: pre-build
+  variables:
+    PARENT_PIPELINE_ID: $CI_PIPELINE_ID
+  trigger: 
+    include: ci/ci-main-build.yml
+    strategy: depend
+
 trigger-static-build:
   stage: pre-build
   variables:
     PARENT_PIPELINE_ID: $CI_PIPELINE_ID
-  # https://docs.gitlab.com/ee/ci/yaml/#needspipelinejob
   trigger: 
     include: ci/ci-static-build.yml
     strategy: depend
+
+# # Docs jobs
+# check-docs:
+#   # The ci-docs-check script depends on the cohort-collector app being in the
+#   # install directory
+#   stage: docs
+#   needs: ["build-cohort-collector-static"]
+#   image: registry.novisci.com/nsstat/asclepias/hasklepias-build:latest
+#   script: 
+#     - ./ci/ci-docs-check.sh

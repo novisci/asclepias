@@ -30,8 +30,6 @@ check-source:
   script:
     - ./scripts/lint.sh
     - ./ci/ci-check-format.sh
-  rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
 
 trigger-main-build:
   stage: build

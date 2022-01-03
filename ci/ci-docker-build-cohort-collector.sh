@@ -22,7 +22,8 @@ docker build \
   --tag "$NAME":"$1" \
   --tag "$NAME":latest \
   --build-arg file="$2" \
-  --file ci/dockerCohortCollector .
+  --file ci/dockerCohortCollector . \
+  --no-cache
 
 docker push "$NAME":"$1"
 docker push "$NAME":latest

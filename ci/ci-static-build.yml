@@ -1,3 +1,6 @@
+# Build and deploy statically linked executables including:
+# - cohort-collector
+
 stages:
   - pre-build
   - build 
@@ -31,7 +34,7 @@ build-cohort-collector-static:
   script:
      - ./ci/ci-cabal-build-exe-static.sh cohort-collector cohort-collector install
 
-# Deploy jobs
+# Deploy the executable bundle to an S3 location
 deploy-aws-cohort-collector-static:
   stage: deploy
   needs: ["build-cohort-collector-static"]
@@ -44,11 +47,12 @@ deploy-aws-cohort-collector-static:
         s3://$(< ci/downloads_path)${BUNDLE} \
         --acl public-read
 
+# Deploy the app as a docker container
 deploy-docker-cohort-collector-static:
   stage: deploy
   needs: ["build-cohort-collector-static"]
   image: docker:$DOCKER
   script:
-    - export NAME=$(cat install/cohort-collector.name)
+    - export FILE=$(cat install/cohort-collector.bundle)
     - export VERSION=$(cat install/cohort-collector.version)
-    - ./ci/ci-docker-build-cohort-collector.sh $VERSION install/$NAME
+    - ./ci/ci-docker-build-cohort-collector.sh $VERSION install/$FILE

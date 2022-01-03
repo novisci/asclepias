@@ -4,9 +4,6 @@
 # * TODO: https://gitlab.novisci.com/nsStat/asclepias/-/issues/139 
 #         
 
-before_script:
-  - export MAINVERSION=$(./scripts/get-version-from-cabal.sh hasklepias-main/hasklepias-main.cabal)
-
 variables:
   PKG: hasklepias
   GHC: "8.10.7"
@@ -26,8 +23,14 @@ build_vars:
     reports:
       dotenv: .env
 
+check-source:
+  stage: pre-build
+  image: registry.novisci.com/nsstat/statocker/haskell:$GHC
+  script:
+    - ./scripts/lint.sh
+    - ./ci/ci-check-format.sh
 
-trigger-static:
+trigger-static-build:
   stage: pre-build
   variables:
     PARENT_PIPELINE_ID: $CI_PIPELINE_ID

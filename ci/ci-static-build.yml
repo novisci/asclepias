@@ -14,8 +14,6 @@ docker-build-musl:
 
 build-cohort-collector-static:
   stage: build
-  # needs: ["docker-build-musl"]
-  # https://docs.gitlab.com/ee/ci/yaml/#needspipelinejob
   needs:
     - pipeline: $PARENT_PIPELINE_ID
       job: build_vars

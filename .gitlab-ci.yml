@@ -34,9 +34,6 @@ check-source:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
 
 trigger-main-build:
-  rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-      changes: ["**/*.hs", "**/*.cabal", "cabal.project"]
   stage: build
   variables:
     PARENT_PIPELINE_ID: $CI_PIPELINE_ID

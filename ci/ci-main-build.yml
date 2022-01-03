@@ -25,6 +25,10 @@ build:
       job: build_vars
       artifacts: true
     - "docker-build"
+      optional: true
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      changes: ["**/*.hs", "**/*.cabal", "cabal.project"]
   image: registry.novisci.com/nsstat/asclepias/hasklepias-build:${MAINVERSION}
   script:
      - ./ci/ci-cabal-build-all.sh

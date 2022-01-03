@@ -15,6 +15,9 @@ docker-build-musl:
   - pipeline: $PARENT_PIPELINE_ID
     job: build_vars
     artifacts: true
+ rules:
+  - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    changes: ["**/*.cabal", "cabal.project"]
  script:
     - ./ci/ci-docker-build.sh $MAINVERSION hasklepias-build-musl musl-haskell $GHC
 
@@ -25,13 +28,19 @@ build-cohort-collector-static:
     - pipeline: $PARENT_PIPELINE_ID
       job: build_vars
       artifacts: true
-    - "docker-build-musl"
+    - job: "docker-build-musl"
+      optional: true
+  rules:
+    - changes: 
+      - "cohort-collector/**/*.hs"
+      - "hasklepias-appBuilder/**/*.hs"
+      - "hasklepias-core/**/*.hs"
   image: registry.novisci.com/nsstat/asclepias/hasklepias-build-musl:${MAINVERSION}
   artifacts:
     name: "${CI_JOB_NAME}-${CI_COMMIT_SHORT_SHA}"
     paths:
       - install/
-    expire_in: 1 week
+    expire_in: 1 day
   script:
      - ./ci/ci-cabal-build-exe-static.sh cohort-collector cohort-collector install
 
@@ -73,3 +82,12 @@ deploy-docker-cohort-collector-static:
     - ./ci/ci-docker-build-cohort-collector.sh $VERSION install/$FILE
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+# The child pipeline needs at minimum one job to run - otherwise the sub-pipeline fails
+# See https://gitlab.com/gitlab-org/gitlab/-/issues/218538
+dummy:
+  stage: build
+  variables:
+    GIT_STRATEGY: none
+  script:
+    - ":"

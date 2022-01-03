@@ -1,18 +1,27 @@
-# 
-# NOTES
+# .gitlab-ci.yml 
 #
-# * TODO: https://gitlab.novisci.com/nsStat/asclepias/-/issues/139 
-# * https://docs.gitlab.com/ee/ci/yaml/#needspipelinejob   
+# * The MAINVERSION variable defined in the build_vars job is the version of the 
+#   hasklepias-main package. This version number is used to tag the docker images
+#   used in the build pipeline. This variable is passed to child pipelines via 
+#   the job's dotenv artifacts. 
+# * See https://docs.gitlab.com/ee/ci/pipelines/parent_child_pipelines.html for
+#   more information.
 
 variables:
   PKG: hasklepias
   GHC: "8.10.7"
-  DOCKER: "20.10.11" 
+  DOCKER: "20.10.11"
+
+.default_rules:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      - changes: "**/*.hs"
+      - changes: "**/*.cabal"
+      - chnages: "cabal.project"
 
 stages:
   - prep
-  - pre-build
-  # - docs
+  - build
 
 build_vars:
   stage: prep
@@ -32,7 +41,9 @@ check-source:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
 
 trigger-main-build:
-  stage: pre-build
+  rules:
+    - !reference [.default_rules, rules]
+  stage: build
   variables:
     PARENT_PIPELINE_ID: $CI_PIPELINE_ID
   trigger: 
@@ -40,7 +51,7 @@ trigger-main-build:
     strategy: depend
 
 trigger-static-build:
-  stage: pre-build
+  stage: build
   variables:
     PARENT_PIPELINE_ID: $CI_PIPELINE_ID
   trigger: 

@@ -24,7 +24,7 @@ build:
     - pipeline: $PARENT_PIPELINE_ID
       job: build_vars
       artifacts: true
-    - "docker-build"
+    - job: "docker-build"
       optional: true
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'

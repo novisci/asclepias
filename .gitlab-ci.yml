@@ -38,9 +38,6 @@ trigger-main-build:
   trigger: 
     include: ci/ci-main-build.yml
     strategy: depend
-  rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
 
 trigger-static-build:
   stage: pre-build
@@ -49,7 +46,4 @@ trigger-static-build:
   trigger: 
     include: ci/ci-static-build.yml
     strategy: depend
-  rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
 

@@ -1,6 +1,7 @@
 #!/bin/bash
 #
 # Builds the asclepias documentation using cabal haddock.
+set -e
 
 # Create a location in which to copy the resulting files. This location will
 # be saved as an artifact in the CI.

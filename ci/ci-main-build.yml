@@ -47,7 +47,8 @@ main-build:
       - install
     expire_in: 1 hour
 
-upload:
+# Upload docs to S3
+upload-haddock-docs:
   image: registry.novisci.com/nsstat/statocker/aws:latest
   needs:
     - pipeline: $PARENT_PIPELINE_ID
@@ -56,6 +57,9 @@ upload:
     - job: "main-build"
       optional: false
       artifacts: true
+  rules:
+    - changes: ["**/*.cabal", "**/*.hs"]
+    - if: '$CI_COMMIT_MESSAGE =~ /-build/'
   stage: deploy
   script:
     - ./ci/ci-upload-docs-to-s3.sh

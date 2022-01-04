@@ -41,8 +41,10 @@ build:
   image: registry.novisci.com/nsstat/asclepias/hasklepias-build:${MAINVERSION}
   script:
      - ./ci/ci-cabal-build-all.sh
-  paths:
-     - install
+  artifacts:
+    paths:
+      - install/docs
+    expire_in: 1 hour
 
 # haddock-docs: 
 #   stage: build

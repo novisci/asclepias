@@ -38,7 +38,7 @@ main-build:
       optional: true
   rules:
     - changes: ["**/*.cabal", "**/*.hs"]
-    - if: $CI_COMMIT_MESSAGE =~ /-do-main-build$/
+    - if: $CI_COMMIT_MESSAGE =~ /-build$/
   image: registry.novisci.com/nsstat/asclepias/hasklepias-build:${MAINVERSION}
   script:
      - ./ci/ci-cabal-build-all.sh

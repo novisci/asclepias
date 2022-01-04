@@ -9,5 +9,5 @@ cabal build all \
 
 # If on the main branch then run haddock
 # if [[ "$CI_COMMIT_BRANCH" == "$CI_DEFAULT_BRANCH" ]]; then
-./ci/ci-cabal-haddock-docs.sh
+  ./ci/ci-cabal-haddock-docs.sh
 # fi

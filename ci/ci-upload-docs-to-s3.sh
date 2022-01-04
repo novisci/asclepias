@@ -1,24 +1,9 @@
-#!/bin/sh
-#
-# Pass the stdout result of running cabal haddock all to this script, as in:
-#
-# ```
-#    cat output.txt | ./script
-# ```
-#
+#!/bin/bash
 
-haddockoutput=$1
-paths=$(grep doc/html "$haddockoutput")
+ARTIFACT_DIR=install/docs
+doc_dirs=$(< ${ARTIFACT_DIR}/manifest.txt )
 
-for path in $paths; do
-	dir=$(dirname "$path")
-	packageName=$(basename "$dir")
-	packageVersion=$(./scripts/get-version-from-cabal.sh "$packageName"/"$packageName".cabal)
-
-	echo "$packageName"
-	echo "$packageVersion"
-
-	aws s3 sync "$dir" s3://docs.novisci.com/asclepias/"$packageName"/"$packageVersion"/ --delete --acl public-read
-	aws s3 sync "$dir" s3://docs.novisci.com/asclepias/"$packageName"/latest/ --delete --acl public-read
-	aws cloudfront create-invalidation --distribution-id E171A73GHZQS0B --paths /asclepias/"$packageName"/latest
+for dir in $doc_dirs; do
+	aws s3 sync "${ARTIFACT_DIR}/$dir" s3://docs.novisci.com/asclepias/"$dir"/ --delete --acl public-read
+	aws cloudfront create-invalidation --distribution-id E171A73GHZQS0B --paths /asclepias/"$dir"
 done

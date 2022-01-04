@@ -4,7 +4,6 @@ Description : Defines the Event type and its component types, constructors,
               and class instance
 Copyright   : (c) NoviSci, Inc 2020
 License     : BSD3
-Maintainer  : bsaul@novisci.com
 -}
 {-# LANGUAGE NoImplicitPrelude #-}
 module EventData

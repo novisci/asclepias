@@ -6,6 +6,37 @@ To develop and work with asclepias locally, clone the repository:
 git clone git@gitlab.novisci.com:nsStat/asclepias.git
 ----
 
+== Installing GHC and cabal
+
+To compile a Haskell library or application you will need a suitable compiler such as the https://www.haskell.org/ghc/[Glasgow Haskell Compiler] (GHC). Furthermore, to make the creation, distribution, and bulding of libraries and application more convenient several systems and supporting tooling for defining Haskell packages have been created. In particular the asclepias project uses the https://www.haskell.org/cabal[cabal] system for building and packaging Haskell libraries and programs so it will be helpful to have the cabal application available on your development platform.
+
+=== Installing ghcup
+
+To install GHC and cabal we recommend using the https://www.haskell.org/ghcup[ghcup utility]. Please see the linked documentation for installation instructions.
+
+=== Installing GHC and cabal using ghcup
+
+ghcup is a utility that allows for easy downloading and installation of various Haskell-related applications such as GHC and cabal, among others. You can use the command `ghcup list` to provide a table of all of the available applications versions that can be installed through ghcup. Use `ghcup --help` to see a description of all of the available commands.
+
+To install an application you can use a command such as `ghcup install ghc 8.10.7`. Supplying the version number is optional, and if not supplied then ghcup will install what it considers to be the recommended version. To see which version of a given application that ghcup considers to be recommended, you can use `ghcup list`. Use `ghcup install --help` for documentation.
+
+We recommend installing the recommended version of GHC and cabal according to ghcup. So in summary, this means that you can simply run the following commands.
+[source,shell]
+----
+ghcup install ghc
+ghcup install cabal
+----
+
+==== ghcup troubleshooting: SSL certificate problem
+
+Some users on our team (as of January 2022) have reported difficulties an issue when using ghcup where they encounter an error with a message like the following.
+[literal]
+curl: (60) SSL certificate problem: self signed certificate in certificate chain
+
+Below we list a few workarounds that we have found for this issue.
+* Update your OpenSSL certificates. If you installed OpenSSL through homebrew then you can use the command `brew postinstall openssl`.
+* Upgrade the version of curl. If you run `curl --version` and it lists a very old release date then you may want to install a newer version.
+* Use wget instead of curl when running ghcup by specifying the option `--downloader=wget`. So for example, you can use the command `ghcup --downloader=wget list`
 You will need to install a Haskell toolchain, especially the https://www.haskell.org/ghc/[Glasgow Haskell Compiler] (GHC) and the building and packaging system https://www.haskell.org/cabal[cabal]. Both of which you can install using the https://www.haskell.org/ghcup[`ghcup` utility]. You can use any development environment you choose, but for maximum coding pleasure,
 you should install the https://github.com/haskell/haskell-language-server[Haskell language server] (`hls`), also available using `ghcup`. Some integrated development
 environments, such as https://code.visualstudio.com[Visual Studio Code], have 

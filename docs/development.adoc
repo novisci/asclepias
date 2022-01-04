@@ -48,3 +48,12 @@ or linted using:
 ----
 ./scripts/lint.sh
 ----
+
+== Using Haskell Language Server
+
+If HLS ever stops working, you may need to clear the cache:
+
+[source,shell]
+----
+rm -rf ~/.cache/hie-bios/dist-asclepias*
+----

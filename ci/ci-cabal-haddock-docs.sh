@@ -9,6 +9,10 @@ mkdir -p install/docs
 # Create a location in which to place any temporary files.
 TEMP=$(mktemp -d)
 
+# Just dummy variables to avoid ShellCheck hint
+pkg= 
+version=
+
 # Build documentation
 cabal haddock all \
   --enable-documentation \

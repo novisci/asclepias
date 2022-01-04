@@ -38,7 +38,7 @@ main-build:
       optional: true
   rules:
     - changes: ["**/*.cabal", "**/*.hs"]
-    - if: $CI_COMMIT_MESSAGE =~ /-build$/
+    - if: '$CI_COMMIT_MESSAGE =~ /-build/'
   image: registry.novisci.com/nsstat/asclepias/hasklepias-build:${MAINVERSION}
   script:
      - ./ci/ci-cabal-build-all.sh
@@ -47,7 +47,7 @@ main-build:
       - install
     expire_in: 1 hour
 
-upload: 
+upload:
   image: registry.novisci.com/nsstat/statocker/aws:latest
   needs:
     - pipeline: $PARENT_PIPELINE_ID
@@ -55,6 +55,7 @@ upload:
       artifacts: true
     - job: "main-build"
       optional: false
+      artifacts: true
   stage: deploy
   script:
     - ./ci/ci-upload-docs-to-s3.sh

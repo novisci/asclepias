@@ -1,4 +1,11 @@
 #!/bin/sh
+#
+# Pass the stdout result of running cabal haddock all to this script, as in:
+#
+# ```
+#    cat output.txt | ./script
+# ```
+#
 
 haddockoutput=$1
 paths=$(grep doc/html "$haddockoutput")

@@ -3,6 +3,16 @@
 stages:
   - pre-build
   - build 
+  - deploy 
+
+# The child pipeline needs at minimum one job to run - otherwise the sub-pipeline fails
+# See https://gitlab.com/gitlab-org/gitlab/-/issues/218538
+dummy:
+  stage: build
+  variables:
+    GIT_STRATEGY: none
+  script:
+    - ":"
 
 # Build the docker image will all dependencies installed.
 docker-build:
@@ -31,12 +41,36 @@ build:
   image: registry.novisci.com/nsstat/asclepias/hasklepias-build:${MAINVERSION}
   script:
      - ./ci/ci-cabal-build-all.sh
+  paths:
+     - install
 
-# The child pipeline needs at minimum one job to run - otherwise the sub-pipeline fails
-# See https://gitlab.com/gitlab-org/gitlab/-/issues/218538
-dummy:
-  stage: build
-  variables:
-    GIT_STRATEGY: none
-  script:
-    - ":"
+# haddock-docs: 
+#   stage: build
+#   needs:
+#     - pipeline: $PARENT_PIPELINE_ID
+#       job: build_vars
+#       artifacts: true
+#     - job: "docker-build"
+#       optional: true
+#   rules:
+#     - changes: ["**/*.cabal", "**/*.hs"]
+#   image: registry.novisci.com/nsstat/asclepias/$PKG-build:${MAINVERSION}
+#   artifacts:
+#     paths:
+#       - install/docs
+#     expire_in: 1 hour
+#   script:
+#     - ./ci/cabal-haddock-docs.sh 
+
+# TODO: this (and the upload script) needs to be redone
+# upload: 
+#   image: registry.novisci.com/nsstat/statocker/aws:latest
+#   needs: ["haddock-docs"]
+#   only: 
+#     - master
+#   stage: deploy
+#   script:
+#     - cat haddock-output.txt | ./ci/ci-upload-docs-to-s3.sh
+
+
+

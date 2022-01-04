@@ -1,7 +1,7 @@
 # The main build pipeline 
 
 stages:
-  - pre-build
+  - prep
   - build 
   - deploy 
 
@@ -16,7 +16,7 @@ dummy:
 
 # Build the docker image will all dependencies installed.
 docker-build:
- stage : pre-build
+ stage : prep
  image: docker:$DOCKER
  needs:
   - pipeline: $PARENT_PIPELINE_ID

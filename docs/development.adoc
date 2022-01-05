@@ -50,10 +50,46 @@ As you find your way around the asclepias project, you may notice that in the su
 Although the Haskell language definition itself has stayed stable since the Haskell 2010 language report, the GHC compiler supports the adoption of new language features through the use of _language extensions_, which are opt-in non-standard language features. One of the effects of the specifying the Haskell 2010 language is that the language extensions listed https://downloads.haskell.org/~ghc/8.10.7/docs/html/users_guide/glasgow_exts.html#extension-Haskell2010(in this link) are enabled by GHC.
 
 Additional language extensions can be (and typically are) specified by various mechanisms in the sub-project cabal configuration files or in the modules (i.e. source code files) themselves  https://kowainik.github.io/posts/extensions(as described here).
-You will need to install a Haskell toolchain, especially the https://www.haskell.org/ghc/[Glasgow Haskell Compiler] (GHC) and the building and packaging system https://www.haskell.org/cabal[cabal]. Both of which you can install using the https://www.haskell.org/ghcup[`ghcup` utility]. You can use any development environment you choose, but for maximum coding pleasure,
-you should install the https://github.com/haskell/haskell-language-server[Haskell language server] (`hls`), also available using `ghcup`. Some integrated development
-environments, such as https://code.visualstudio.com[Visual Studio Code], have 
-https://marketplace.visualstudio.com/items?itemName=haskell.haskell[excellent `hls` integration].
+
+== Setting up a development environment
+
+=== Installing an editor
+
+Haskell development is well-supported by many popular editors such as https://code.visualstudio.com[Visual Studio Code], https://www.sublimetext.com/[Sublime Text], https://www.vim.org/[vim]/https://neovim.io/[Neovim], https://atom.io/[Atom], https://www.gnu.org/software/emacs/[Emacs], and others. If you do not have a preexisting preference of editor then we recommend using Visual Studio Code to get started.
+
+To see installation instructions for a given editor listed above, please visit the corresponding provided link. Note however that in the case of Emacs it is fairly common to use an Emacs distribution to reduce the effort required to set up Emacs (basically a collection of packages bundled with base Emacs) such as https://www.spacemacs.org/[Spacemacs], https://github.com/hlissner/doom-emacs[Doom Emacs], https://prelude.emacsredux.com/en/latest/[Emacs Prelude], and https://github.com/purcell/emacs.d[Purcell Emacs].
+
+=== Installing the Haskell Language Server
+
+The https://github.com/haskell/haskell-language-server[Haskell language server] (HLS) implements the Language Server Protocol[https://microsoft.github.io/language-server-protocol/] (LSP) for the Haskell language. It can be very useful for development when paired with an editor with support for LSP (such as one of the editors mentioned above) since it provides immediate feedback from the compiler, among other features.
+
+You can use ghcup to install whatever its current recommended version of HLS is.
+[source,shell]
+----
+ghcup upgrade
+ghcup install hls
+----
+
+=== Configuring your editor to utilize HLS
+
+Please see  https://haskell-language-server.readthedocs.io/en/latest/configuration.html#configuring-your-editor[the HLS documentation] for instructions on how to configure your editor to utilize HLS.
+
+==== A note on using HLS in multi-project repositories
+
+Since the asclepias repository has a multiple project layout, it may not be obvious how to configure HLS. For example, should you run one server that serves all of the files across the various projects, or should you run one server per project?
+
+To resolve this issue, the asclepias repository provides a file `hie.yaml` in the repository root that specifies the HLS configuration for all of the projects in the repository (see the https://github.com/haskell/hie-bios[hie-bios documentation] for details). As a result of this setup, you can run a single HLS server that will work correctly for all of the projects in the repository. If you are asked by your editor to specify what directory to start HLS in then you can use the repository root directory.
+
+Note that some editors may automatically detect the hie-bios configuration setup in the repository and just "do the right thing." If you open a Haskell file in your editor and LSP seems to be working properly then you are probably good-to-go.
+
+==== Troubleshooting HLS
+
+If HLS ever stops working, you may need to clear the cache:
+
+[source,shell]
+----
+rm -rf ~/.cache/hie-bios/dist-asclepias*
+----
 
 == Interactive Usage
 
@@ -93,11 +129,3 @@ or linted using:
 ./scripts/lint.sh
 ----
 
-== Using Haskell Language Server
-
-If HLS ever stops working, you may need to clear the cache:
-
-[source,shell]
-----
-rm -rf ~/.cache/hie-bios/dist-asclepias*
-----

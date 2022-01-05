@@ -1,0 +1,4 @@
+= Roadmap
+
+The ultimate goal of Asclepias is to provide scientists with a domain specific language (DSL) to define cohorts without the expensive translation process. To that end, the Asclepias team will design an algebra of events in terms of temporal logic that maps closely to how scientists think about defining cohorts and its algorithms. This algebra will be based upon in part upon existing research, such as Allen's Interval Algebra <<allen83>>. At the same time, the Asclepias team will implement the algebra as an embedded DSL (eDSL) in a functional programming language with the goal of creating a compilation target language for an eventual DSL. 
+

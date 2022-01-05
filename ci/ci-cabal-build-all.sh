@@ -5,7 +5,11 @@ cabal build all \
   -j \
   --enable-tests \
   --enable-benchmarks \
-  # --test-show-details=always # only seems to work using cabal test
+
+cabal test all \
+  -j \
+  --test-show-details=always
+
 
 # If on the main branch then run haddock
 if [[ "$CI_COMMIT_BRANCH" == "$CI_DEFAULT_BRANCH" ]]; then

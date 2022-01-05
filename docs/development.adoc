@@ -38,6 +38,10 @@ Below we list a few workarounds that we have found for this issue.
 * Update your OpenSSL certificates. If you installed OpenSSL on macOS through homebrew then you can use the command `brew postinstall openssl`.
 * Upgrade the version of curl. If you run `curl --version` and it lists an old release date then you may want to install a newer version.
 * Use wget instead of curl when running ghcup by specifying the option `--downloader=wget`. So for example, you can use the command `ghcup --downloader=wget list`
+
+==== A note on the cabal version
+
+As you find your way around the asclepias project, you may notice that in the sub-project cabal configuration files (i.e. the files with filenames ending in `.cabal`), that the `cabal-version` is specified as an older version of cabal (such as version 2.2) than can be downloaded through ghcup. According to https://cabal.readthedocs.io/en/3.6/cabal-package.html#pkg-field-cabal-version[the cabal documentation] cabal is mostly backwards compatible so there shouldn't be any issue with using a newer version.
 You will need to install a Haskell toolchain, especially the https://www.haskell.org/ghc/[Glasgow Haskell Compiler] (GHC) and the building and packaging system https://www.haskell.org/cabal[cabal]. Both of which you can install using the https://www.haskell.org/ghcup[`ghcup` utility]. You can use any development environment you choose, but for maximum coding pleasure,
 you should install the https://github.com/haskell/haskell-language-server[Haskell language server] (`hls`), also available using `ghcup`. Some integrated development
 environments, such as https://code.visualstudio.com[Visual Studio Code], have 

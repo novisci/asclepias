@@ -1,6 +1,6 @@
 cabal-version:  2.2
 name:           edm 
-version:        0.23.4
+version:        0.23.5
 description:    Please see the README on GitHub at <https://github.com/novisci/asclepias#readme>
 homepage:       https://github.com/novisci/asclepias/#readme
 bug-reports:    https://github.com/novisci/asclepias/issues

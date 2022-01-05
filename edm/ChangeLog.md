@@ -1,6 +1,11 @@
 # Changelog for edm
 
+## 0.23.5
+
+* Removes the `SingleOrArray` structure on a `Plan`'s `benefit`, and it is now simply `Maybe Text`. Note that this does *NOT* align with EDM v1.3, which allows for values to be either a single string or an array.
+
 ## 0.23.4
+
 * Adds `viewRegions` and `viewBenefits` for accessing the region and insurance plans benefits from `Demographics` and `Enrollment` or `Eligibility` Domains.
 
 ## 0.23.3

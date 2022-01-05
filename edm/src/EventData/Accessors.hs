@@ -148,11 +148,11 @@ previewLengthOfStay dmn =
 
 
 -- | View the @benefit@ field of a @Plan@
-previewBenefit :: Domain -> Maybe [Text]
-previewBenefit x = previewPlan x >>= (^? field @"benefit") >>= fmap singleOrArrayToList
+previewBenefit :: Domain -> Maybe Text
+previewBenefit x = previewPlan x >>= (^. field @"benefit") 
 
--- | View the @exchange@ field of a @Event@
-previewBenefitE :: Event a -> Maybe [Text]  
+-- | View the @benefit@ field of a @Event@
+previewBenefitE :: Event a -> Maybe Text
 previewBenefitE = previewBenefit . facts . ctxt
 
 -- | View the @exchange@ field of a @Plan@
@@ -193,7 +193,7 @@ viewRegions x = mapMaybe
 
 -- | Returns a (possibly empty) list of Insurance plan benefit values from a set of events
 viewBenefits :: (Witherable f) => f (Event a) -> [Text]
-viewBenefits x = concat $ mapMaybe
+viewBenefits x = mapMaybe
   (\e -> previewBenefit =<< Just (ctxt e ^. field @"facts"))
   (toList $ filter (getPredicate (isEnrollmentEvent ||| isEligibilityEvent)) x)
 

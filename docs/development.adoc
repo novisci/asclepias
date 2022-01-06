@@ -23,7 +23,7 @@ To install an application you can use a command such as `ghcup install ghc 8.10.
 We recommend installing the recommended version of cabal according to ghcup, and the version of GHC used in the `.gitlab-ci.yml` file (see the `GHC` variable defined therein). So in summary, this means that you can run the following commands.
 [source,shell]
 ----
-ghcup install ghc 8.10.7  # double-check to make sure this is current
+ghcup install ghc 8.10.7  # double-check to make sure the version is current
 ghcup install cabal
 ----
 
@@ -46,11 +46,11 @@ As you find your way around the asclepias project, you may notice that in the su
 
 ==== A note on the GHC version and language extensions
 
-As you find your way around the asclepias project, you may notice that in the sub-project cabal configuration files (i.e. the files with filenames ending in `.cabal`) that the `default-language` is specified as `Haskell2010`, which refers to the https://www.haskell.org/onlinereport/haskell2010/(Haskell 2010 language report), and is the current definition of the Haskell language (also see https://en.wikipedia.org/wiki/Haskell_(programming_language)#Haskell_2010(Wikipedia) and https://wiki.haskell.org/Language_and_library_specification#The_Haskell_2010_report(The Haskell Wiki)). GHC versions 8.0.2 and later implement the Haskell 2010 language report.
+As you find your way around the asclepias project, you may notice that in the sub-project cabal configuration files (i.e. the files with filenames ending in `.cabal`) that the `default-language` is specified as `Haskell2010`, which refers to the https://www.haskell.org/onlinereport/haskell2010/[Haskell 2010 language report], and is the current definition of the Haskell language (also see https://en.wikipedia.org/wiki/Haskell_(programming_language)#Haskell_2010[Wikipedia] and https://wiki.haskell.org/Language_and_library_specification#The_Haskell_2010_report[The Haskell Wiki]). GHC versions 8.0.2 and later implement the Haskell 2010 language report.
 
-Although the Haskell language definition itself has stayed stable since the Haskell 2010 language report, the GHC compiler supports the adoption of new language features through the use of _language extensions_, which are opt-in non-standard language features. One of the effects of the specifying the Haskell 2010 language is that the language extensions listed https://downloads.haskell.org/~ghc/8.10.7/docs/html/users_guide/glasgow_exts.html#extension-Haskell2010(in this link) are enabled by GHC.
+Although the Haskell language definition itself has stayed stable since the Haskell 2010 language report, the GHC compiler supports the adoption of new language features through the use of _language extensions_, which are opt-in non-standard language features. One of the effects of the specifying the Haskell 2010 language is that the language extensions listed https://downloads.haskell.org/~ghc/8.10.7/docs/html/users_guide/glasgow_exts.html#extension-Haskell2010[in this link] are enabled by GHC.
 
-Additional language extensions can be (and typically are) specified by various mechanisms in the sub-project cabal configuration files or in the modules (i.e. source code files) themselves  https://kowainik.github.io/posts/extensions(as described here).
+Additional language extensions can be (and typically are) specified by various mechanisms in the sub-project cabal configuration files or in the modules (i.e. source code files) themselves  https://kowainik.github.io/posts/extensions[as described here].
 
 == Compiling asclepias projects
 
@@ -83,13 +83,13 @@ cabal build hasklepias-core --enable-tests  # or `hasklepias-main` or ...
 
 === Installing an editor
 
-Haskell development is well-supported by many popular editors such as https://code.visualstudio.com[Visual Studio Code], https://www.sublimetext.com/[Sublime Text], https://www.vim.org/[vim]/https://neovim.io/[Neovim], https://atom.io/[Atom], https://www.gnu.org/software/emacs/[Emacs], and others. If you do not have a preexisting preference of editor then we recommend using Visual Studio Code to get started since it is easy to set up for Haskell development and is currently the most popular editor.
+Haskell development is well-supported by many popular editors such as https://code.visualstudio.com[Visual Studio Code], https://www.sublimetext.com/[Sublime Text], https://www.vim.org/[vim] / https://neovim.io/[Neovim], https://atom.io/[Atom], https://www.gnu.org/software/emacs/[Emacs], and others. If you do not have a preexisting preference of editor then we recommend using Visual Studio Code to get started since it is easy to set up for Haskell development and is currently the most popular editor overall.
 
-To see installation instructions for a given editor listed above, please visit the corresponding provided link. Note however that in the case of Emacs it is fairly common to use an Emacs distribution (basically a collection of packages bundled with base Emacs) to reduce the effort required to set up Emacs such as https://www.spacemacs.org/[Spacemacs], https://github.com/hlissner/doom-emacs[Doom Emacs], https://prelude.emacsredux.com/en/latest/[Emacs Prelude], and https://github.com/purcell/emacs.d[Purcell Emacs].
+To see installation instructions for a given editor listed above, please visit the corresponding provided link. Note however that in the case of Emacs it is fairly common to use an Emacs distribution (basically a collection of packages bundled with base Emacs) to reduce the effort required to set up Emacs such as https://www.spacemacs.org/[Spacemacs], https://github.com/hlissner/doom-emacs[Doom Emacs], https://prelude.emacsredux.com/en/latest/[Emacs Prelude], or https://github.com/purcell/emacs.d[Purcell Emacs], among many others.
 
 === Installing the Haskell Language Server
 
-The https://github.com/haskell/haskell-language-server[Haskell language server] (HLS) implements the Language Server Protocol[https://microsoft.github.io/language-server-protocol/] (LSP) for the Haskell language. It can be very useful for development when paired with an editor with support for LSP (such as one of the editors mentioned above) since it provides immediate feedback from the compiler, among other features.
+The https://github.com/haskell/haskell-language-server[Haskell language server] (HLS) implements the https://microsoft.github.io/language-server-protocol/[Language Server Protocol] (LSP) for the Haskell language. It can be very useful for development when paired with an editor with support for LSP (such as one of the editors mentioned above) since it provides immediate feedback from the compiler, among other features.
 
 You can use ghcup to install whatever its current recommended version of HLS is.
 [source,shell]
@@ -118,7 +118,7 @@ If HLS ever stops working, you may need to clear the cache:
 rm -rf ~/.cache/hie-bios/dist-asclepias*
 ----
 
-== Interactive Usage
+== Interactive usage of GHC
 
 To run the examples interactively, open a ghci session with:
 

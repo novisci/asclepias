@@ -124,7 +124,7 @@ To run the examples interactively, open a ghci session with:
 
 [source,shell]
 ----
-cabal repl hasklepias:examples 
+cabal repl hasklepias-main:examples
 ----
 
 In ghci you have access to all exposed functions in hasklepias, interval-algebra, and those in the examples folder.

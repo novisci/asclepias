@@ -3,5 +3,4 @@
 * https://www.aetion.com/platform[aetion]
 * https://github.com/outcomesinsights/conceptql[ConceptQL]
 * http://www.ohdsi.org/web/atlas/#/home[ATLAS] which uses the https://www.ohdsi.org/data-standardization/the-common-data-model/[OMOP] data model
-
-Tools such as ConceptQL and the OMOP Common Data Model offer language abstractions targeted for describing cohort algorithms. However, these abstractions are still tightly bound to the general programming language, SQL in these cases, in which the abstraction has been implemented. Asclepias takes a different, more formative approach. Asclepias defines a cohort in terms of https://en.wikipedia.org/wiki/Algebraic_data_type[algebraic data types] and functions that operate on these data types. From this algebra and its supporting DSL, Asclepias provides a rigorous framework for reasoning about, composing, and computing a cohort.
+* https://www.iqvia.com/solutions/real-world-evidence/platforms/e360-real-world-data-platform[e360]

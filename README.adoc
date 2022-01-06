@@ -13,6 +13,8 @@ _Asclepias (n)_:
 
 include::docs/motivation.adoc[leveloffset=+2]
 
+include::docs/features.adoc[leveloffset=+2]
+
 include::docs/comparison.adoc[leveloffset=+2]
 
 == Design

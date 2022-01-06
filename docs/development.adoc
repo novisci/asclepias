@@ -8,7 +8,7 @@ git clone git@gitlab.novisci.com:nsStat/asclepias.git
 
 == Installing GHC and cabal
 
-To compile a Haskell library or application you will need a suitable compiler such as the https://www.haskell.org/ghc/[Glasgow Haskell Compiler] (GHC). Furthermore, to make the creation, distribution, and bulding of libraries and applications more convenient several systems and supporting tooling for defining Haskell packages have been created. In particular the asclepias project uses the https://www.haskell.org/cabal[cabal] system for building and packaging Haskell libraries and programs so it will be helpful to have the cabal application available on your development platform.
+To compile Haskell libraries and/or applications you will need a suitable compiler such as the https://www.haskell.org/ghc/[Glasgow Haskell Compiler] (GHC). Furthermore, to make the creation, distribution, and bulding of libraries and applications more convenient several systems and supporting tooling for defining Haskell packages have been created. In particular, the asclepias project uses the https://www.haskell.org/cabal[cabal] system for building and packaging Haskell libraries and programs so consequently it will be helpful to have the cabal application available on your development platform.
 
 === Installing ghcup
 
@@ -23,10 +23,11 @@ To install an application you can use a command such as `ghcup install ghc 8.10.
 We recommend installing the recommended version of cabal according to ghcup, and the version of GHC used in the `.gitlab-ci.yml` file (see the `GHC` variable defined therein). So in summary, this means that you can run the following commands.
 [source,shell]
 ----
-ghcup upgrade
 ghcup install ghc 8.10.7  # double-check to make sure this is current
 ghcup install cabal
 ----
+
+If you already have GHC and/or cabal installed through ghcup and you need to change the version then you can use the `ghcup set` command. See `ghcup set --help` for details.
 
 ==== ghcup troubleshooting: SSL certificate problem
 
@@ -51,13 +52,40 @@ Although the Haskell language definition itself has stayed stable since the Hask
 
 Additional language extensions can be (and typically are) specified by various mechanisms in the sub-project cabal configuration files or in the modules (i.e. source code files) themselves  https://kowainik.github.io/posts/extensions(as described here).
 
+== Compiling asclepias projects
+
+=== Compiling asclepias projects libraries and executables
+
+The asclepias repository is organized using a multiple package setup. In more detail, some of the subdirectories of the repository such as `hasklepias-core`, `hasklepias-main`, etc. contain a cabal package. To start with, you can build all of the cabal projects in the repository using the following commands. Note that this will take 10 minutes or so to complete the first time that you do it. See `cabal build --help` for full details.
+[source,shell]
+----
+# Build all of the projects. Add `-j` or `--jobs` to use all of your cores
+cabal update
+cabal build all
+
+# Build projects one-at-a-time. This is useful when you are working on a particular
+# project and don't want to compile everything. Add `-j` or `--jobs` to use all
+# of your cores
+cabal update
+cabal build hasklepias-core  # or `hasklepias-main` or ...
+----
+
+=== Compiling asclepias projects tests
+
+By default cabal doesn't compile the test suite for a given package so if you want to compile the tests you can use e.g. the `--enable-tests` option. (Note that it also doesn't compile benchmarking modules by default either.)
+[source,shell]
+----
+cabal update
+cabal build hasklepias-core --enable-tests  # or `hasklepias-main` or ...
+----
+
 == Setting up a development environment
 
 === Installing an editor
 
-Haskell development is well-supported by many popular editors such as https://code.visualstudio.com[Visual Studio Code], https://www.sublimetext.com/[Sublime Text], https://www.vim.org/[vim]/https://neovim.io/[Neovim], https://atom.io/[Atom], https://www.gnu.org/software/emacs/[Emacs], and others. If you do not have a preexisting preference of editor then we recommend using Visual Studio Code to get started.
+Haskell development is well-supported by many popular editors such as https://code.visualstudio.com[Visual Studio Code], https://www.sublimetext.com/[Sublime Text], https://www.vim.org/[vim]/https://neovim.io/[Neovim], https://atom.io/[Atom], https://www.gnu.org/software/emacs/[Emacs], and others. If you do not have a preexisting preference of editor then we recommend using Visual Studio Code to get started since it is easy to set up for Haskell development and is currently the most popular editor.
 
-To see installation instructions for a given editor listed above, please visit the corresponding provided link. Note however that in the case of Emacs it is fairly common to use an Emacs distribution to reduce the effort required to set up Emacs (basically a collection of packages bundled with base Emacs) such as https://www.spacemacs.org/[Spacemacs], https://github.com/hlissner/doom-emacs[Doom Emacs], https://prelude.emacsredux.com/en/latest/[Emacs Prelude], and https://github.com/purcell/emacs.d[Purcell Emacs].
+To see installation instructions for a given editor listed above, please visit the corresponding provided link. Note however that in the case of Emacs it is fairly common to use an Emacs distribution (basically a collection of packages bundled with base Emacs) to reduce the effort required to set up Emacs such as https://www.spacemacs.org/[Spacemacs], https://github.com/hlissner/doom-emacs[Doom Emacs], https://prelude.emacsredux.com/en/latest/[Emacs Prelude], and https://github.com/purcell/emacs.d[Purcell Emacs].
 
 === Installing the Haskell Language Server
 
@@ -66,7 +94,6 @@ The https://github.com/haskell/haskell-language-server[Haskell language server] 
 You can use ghcup to install whatever its current recommended version of HLS is.
 [source,shell]
 ----
-ghcup upgrade
 ghcup install hls
 ----
 
@@ -76,7 +103,7 @@ Please see  https://haskell-language-server.readthedocs.io/en/latest/configurati
 
 ==== A note on using HLS in multi-project repositories
 
-Since the asclepias repository has a multiple project layout, it may not be obvious how to configure HLS. For example, should you run one server that serves all of the files across the various projects, or should you run one server per project?
+Since the asclepias repository has a multiple project layout (i.e. hasklepias-core, hasklepias-main, etc.), it may not be obvious how to set up HLS. For example, should you run one server that serves all of the files across the various projects, or should you run one server per project?
 
 To resolve this issue, the asclepias repository provides a file `hie.yaml` in the repository root that specifies the HLS configuration for all of the projects in the repository (see the https://github.com/haskell/hie-bios[hie-bios documentation] for details). As a result of this setup, you can run a single HLS server that will work correctly for all of the projects in the repository. If you are asked by your editor to specify what directory to start HLS in then you can use the repository root directory.
 

@@ -12,7 +12,7 @@ To compile Haskell libraries and/or applications you will need a suitable Haskel
 
 === Installing ghcup
 
-ghcup is a utility that allows for easy downloading and installation of various applications in the Haskell toolchain such as GHC and Cabal, among others. To install GHC and Cabal we recommend using the https://www.haskell.org/ghcup[ghcup utility]. Please see the linked documentation for instructions to lauch the installer.
+To install GHC and Cabal we recommend using https://www.haskell.org/ghcup[ghcup], which is a utility that allows for easy downloading and installation of various applications in the Haskell toolchain. Please see the linked documentation for instructions to lauch the installer.
 
 Once the installer is launched, you will be asked a series of questions. The following is a rough guide to the recommended answers for these questions.
 

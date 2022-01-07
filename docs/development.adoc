@@ -66,15 +66,15 @@ Note that if you already have a different version of GHC and/or Cabal installed 
 
 ==== A note on the Cabal version
 
-As you find your way around the asclepias project, you may notice that in the sub-project Cabal configuration files (i.e. the files with filenames ending in `.cabal`), that the `cabal-version` is specified as an older version of Cabal (such as version 2.2) than can be downloaded through ghcup. According to https://cabal.readthedocs.io/en/3.6/cabal-package.html#pkg-field-cabal-version[the Cabal documentation] Cabal is mostly backwards compatible so there shouldn't be any issue with using a newer version.
+As you find your way around the asclepias project, you may notice that in the sub-project Cabal package description files (i.e. the files with filenames ending in `.cabal`), that the `cabal-version` is specified as an older version of Cabal (such as version 2.2) than can be downloaded through ghcup. According to https://cabal.readthedocs.io/en/3.6/cabal-package.html#pkg-field-cabal-version[the Cabal documentation] Cabal is mostly backwards compatible so there shouldn't be any issue with using a newer version.
 
 ==== A note on the GHC version and language extensions
 
-As you find your way around the asclepias project, you may notice that in the sub-project Cabal configuration files (i.e. the files with filenames ending in `.cabal`) that the `default-language` is specified as `Haskell2010`, which refers to the https://www.haskell.org/onlinereport/haskell2010/[Haskell 2010 language report], and is the current definition of the Haskell language (also see https://en.wikipedia.org/wiki/Haskell_(programming_language)#Haskell_2010[Wikipedia] and https://wiki.haskell.org/Language_and_library_specification#The_Haskell_2010_report[The Haskell Wiki]). GHC versions 8.0.2 and later implement the Haskell 2010 language report.
+As you find your way around the asclepias project, you may notice that in the sub-project Cabal package description files (i.e. the files with filenames ending in `.cabal`) that the `default-language` is specified as `Haskell2010`, which refers to the https://www.haskell.org/onlinereport/haskell2010/[Haskell 2010 language report], and is the current definition of the Haskell language (also see https://en.wikipedia.org/wiki/Haskell_(programming_language)#Haskell_2010[Wikipedia] and https://wiki.haskell.org/Language_and_library_specification#The_Haskell_2010_report[The Haskell Wiki]). GHC versions 8.0.2 and later implement the Haskell 2010 language report.
 
 Although the Haskell language definition itself has stayed stable since the Haskell 2010 language report, the GHC compiler supports the adoption of new language features through the use of _language extensions_, which are opt-in non-standard language features. One of the effects of the specifying the Haskell 2010 language is that the language extensions listed https://downloads.haskell.org/~ghc/8.10.7/docs/html/users_guide/glasgow_exts.html#extension-Haskell2010[in this link] are enabled by GHC.
 
-Additional language extensions can be (and typically are) specified by various mechanisms in the sub-project Cabal configuration files or in the modules (i.e. source code files) themselves https://kowainik.github.io/posts/extensions[as described here].
+Additional language extensions can be (and typically are) specified by various mechanisms in the sub-project Cabal package description files or in the modules (i.e. source code files) themselves https://kowainik.github.io/posts/extensions[as described here].
 
 == Compiling asclepias projects
 
@@ -84,21 +84,106 @@ The asclepias repository is organized using a multiple project setup. In more de
 
 === Cabal packaging overview
 
+==== Cabal package definition
+
 A Cabal package is defined by the following (see https://cabal.readthedocs.io/en/3.6/cabal-package.html#package-description[the Cabal documentation] for full detail).
 
 * A collection of Haskell files.
-* A file with a name of the form `package-name.cabal` in the package root directory containing metadata about the package.
-* In some circumstances, a file named `Setup.hs` in the package root directory containing instructions for various setup tasks. In more detail, this file is only needed when the `build-type` field in the `.cabal` file is specified as `Custom` (see https://cabal.readthedocs.io/en/3.6/cabal-package.html#pkg-field-build-type[the Cabal documentation] for more details).
+* A package description file with a name of the form `package-name.cabal` in the package root directory containing metadata about the package.
+* In some circumstances, a file named `Setup.hs` in the package root directory containing instructions for various setup tasks. In more detail, this file is only needed when the `build-type` field in the package description file is specified as `Custom` (see https://cabal.readthedocs.io/en/3.6/cabal-package.html#pkg-field-build-type[the Cabal documentation] for more details).
 
-So in general you can locate the various Cabal packages in the repository by using a command such as the following. For this particular project there is also a file `hie.yaml` (and which is described further in the <<A note on using HLS in multi-project repositories>> section) that should (unless it gets out-of-sync) accurately describe the package layout.
+So in general you can locate the various Cabal packages in the repository by using a command such as one of the ones shown below. For this particular project there is also a file `hie.yaml` (and which is described further in the <<A note on using HLS in multi-project repositories>> section) that should (unless it gets out-of-sync) accurately describe the package layout.
 [source,shell]
 ----
-find . -maxdepth 2 -name '*cabal'
+# Using `find`
+find . -path ./dist-newstyle -prune -o -name '*.cabal'
+
+# Alternatively using `fd`
+fd --exclude dist-newstyle '\.cabal$'
 ----
 
-=== Compiling asclepias projects libraries and executables
+==== Cabal package description file format
 
-As previously mentioned, the asclepias repository is organized using a multiple project setup. In more detail, some of the subdirectories of the repository such as `hasklepias-core`, `hasklepias-main`, etc. contain a Cabal package. The simplest thing to do to get started is to build all of the Cabal projects in the repository using the following commands. Note that this will take 10 minutes or so to complete the first time that you do it. See `cabal build --help` for full details.
+The Cabal package description file (i.e. the `.cabal` file) contains information about the package such as the package name, version, structure, and dependencies. A good source of documentation for the format of this file can be found in https://cabal.readthedocs.io/en/3.6/cabal-package.html#package-descriptions[the Cabal documentation].
+
+In short, the description file contains a number of top-level fields called _Package Properties_ and which contain information such as `cabal-version`, `name`, `version`, etc. In addition to these fields there may be an arbitrary number of sections from a fixed number of types that are called _Component Types_. The section type keywords include `library`, `executable`, and `test-suite` among others. Typically each section is named (with one important exception mentioned below) and contains a number of section-specific field/value pairs describing the given component. The fields within a section may optionally be indented, but each field within the section must have the same indentation.
+
+Currently, there can only be one publicly exposed library in a package, and its name is the same as package name set by global name field. In this case, the name argument to the library section must be omitted (c.f. https://cabal.readthedocs.io/en/3.6/cabal-package.html#library[the Cabal documentation]).
+
+Some fields expect lists for their specified values which for a given field can rather confusingly take exactly one of three forms: space separated (no commas allowed between elements), comma separated (a comma is required between elements), or optional comma separated (the elements may all either be comma seperated or all not comma separated). Furthermore, all optional comma separated fields must follow the same comma or non-comma style (the non-comma style is recommended). https://cabal.readthedocs.io/en/3.6/buildinfo-fields-reference.html[The Cabal documentation] lists the grammer for some of the fields.
+
+==== Cabal package description file example
+
+Consider the following abridged version of the `hasklepias-main.cabal` file. In this example we see the top-level fields (i.e. the package properties) `cabal-version`, `name`, and `version`, and following these fields we see a total of three sections. The first section has a "library" component type, and because its name is omitted (i.e. there is no text to the right of the `library` keyword) this is taken to be the sole publicly exposed library for the package, and is given the same name as is specified by the `name` field (i.e. `hasklepias-main`). The second section has a "test-suite" component type, and is given the name `examples`. The third section has a "executable" component type, and is given the name `exampleApp`.
+
+The visibility of a given module in a package is controlled by the `other-modules`, `exposed-modules` and `main-is` fields. Note that every package module _must_ be listed in one of these fields.
+
+* `exposed-modules`: a list of modules exposed to users of the package (note that this field is applicable only to libraries).
+* `other-modules:`: a list of modules used by the component but not exposed to users.
+* `main-is`: the name of the file containing the `Main` module (note that this field is applicable only to executables).
+
+The meaning of some of the other section-specific fields is listed below.
+
+* `default-language`: which definition of the Haskell language to use.
+* `hs-source-dirs`: a list of the directories in which to search for package component modules.
+* `build-depends`: a list declaring the library dependencies required to build the package component.
+* `type`: has different meanings for various component types. For the `test-suite` type having a value of `exitcode-stdio-1.0` means that the testing interface is an executable that indicates test failure with a non-zero exit code when run.
+
+[source,conf]
+----
+cabal-version:  2.2
+name:           hasklepias-main
+version:        0.22.5
+
+library
+  exposed-modules:
+      Hasklepias
+      Hasklepias.ExampleApp
+      Hasklepias.ExampleFilterApp
+  hs-source-dirs:
+      src
+  build-depends:
+      edm
+    , hasklepias-appBuilder
+    , stype
+    , hasklepias-core
+    , hasklepias-templates
+  default-language: Haskell2010
+
+test-suite examples
+  type: exitcode-stdio-1.0
+  main-is: Main.hs
+  other-modules:
+      ExampleEvents
+      ExampleFeatures1
+      ExampleFeatures2
+      ExampleFeatures3
+      ExampleFeatures4
+      ExampleCohort1
+  hs-source-dirs:
+      examples
+  build-depends:
+      hasklepias-main
+    , hasklepias-core
+    , hspec
+    , base >=4.14 && <5
+    , tasty  == 1.4.1
+    , tasty-hunit == 0.10.0.3
+    , tasty-hspec == 1.2
+  default-language: Haskell2010
+
+executable exampleApp
+  main-is: Main.hs
+  hs-source-dirs:
+      exampleApp
+  build-depends:
+      hasklepias-main
+  default-language: Haskell2010
+----
+
+=== Compiling asclepias packages
+
+As previously mentioned, the asclepias repository is organized using a multiple project setup. In more detail, some of the subdirectories of the repository such as `hasklepias-core`, `hasklepias-main`, etc. contain a Cabal package. The simplest thing to do to get started is to build all of the Cabal projects in the repository using the following commands. Note that this could take around half-an-hour to complete the first time that you do it. See `cabal build --help` for full details.
 [source,shell]
 ----
 # Build all of the projects. Add `-j` or `--jobs` to use all of your cores, or
@@ -116,14 +201,14 @@ cabal update
 cabal build hasklepias-core  # or `hasklepias-main` or any other package
 ----
 
-=== Compiling asclepias projects tests
-
-By default Cabal doesn't compile the test suite for a given package so if you want to compile the tests you can use e.g. the `--enable-tests` option. (Note that it also doesn't compile benchmarking modules by default either.)
+Note that by default Cabal doesn't compile the test suite or benchmarking modules for a given package so if you want to compile the tests along with the package itself then you can use e.g. the `--enable-tests` and/or `--enable-profiling` options.
 [source,shell]
 ----
 cabal update
-cabal build hasklepias-core --enable-tests  # or `hasklepias-main` or ...
+cabal build hasklepias-core --enable-tests --enable-profiling
 ----
+
+=== Compiling asclepias projects tests
 
 == Setting up a development environment
 
@@ -137,7 +222,7 @@ To see installation instructions for a given editor listed above, please visit t
 
 The https://github.com/haskell/haskell-language-server[Haskell language server] (HLS) implements the https://microsoft.github.io/language-server-protocol/[Language Server Protocol] (LSP) for the Haskell language. It can be very useful for development when paired with an editor with support for LSP (such as one of the editors mentioned above) since it provides immediate feedback from the compiler, among other features.
 
-You can use ghcup to install whatever its current recommended version of HLS is. Note that you may already have installed HLS during the ghcup installation process or at some other time, in which case you can skip this step (however there is no harm in running it in any case since ghcup is smart enough to not download an existing application a second time)
+You can use ghcup to install whatever its current recommended version of HLS is. Note that you may already have installed HLS during the ghcup installation process or at some other time, in which case you can skip this step (however there is no harm in running it in any case since ghcup is smart enough to not download an existing application a second time).
 [source,shell]
 ----
 ghcup install hls

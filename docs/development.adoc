@@ -24,7 +24,7 @@ Once installed use `ghcup --help` to see a description of all the available comm
 
 ==== ghcup troubleshooting: SSL certificate problem
 
-Some users on our team (as of January 2022) have reported difficulties when using ghcup where they encounter an error with a message like the following.
+Some users on our team (as of January 2022) have reported difficulties when using ghcup (i.e. when using a command such as `ghcup list` after installation) where they encounter an error with a message like the following.
 [literal]
 curl: (60) SSL certificate problem: self signed certificate in certificate chain
 
@@ -74,9 +74,27 @@ As you find your way around the asclepias project, you may notice that in the su
 
 Although the Haskell language definition itself has stayed stable since the Haskell 2010 language report, the GHC compiler supports the adoption of new language features through the use of _language extensions_, which are opt-in non-standard language features. One of the effects of the specifying the Haskell 2010 language is that the language extensions listed https://downloads.haskell.org/~ghc/8.10.7/docs/html/users_guide/glasgow_exts.html#extension-Haskell2010[in this link] are enabled by GHC.
 
-Additional language extensions can be (and typically are) specified by various mechanisms in the sub-project cabal configuration files or in the modules (i.e. source code files) themselves  https://kowainik.github.io/posts/extensions[as described here].
+Additional language extensions can be (and typically are) specified by various mechanisms in the sub-project cabal configuration files or in the modules (i.e. source code files) themselves https://kowainik.github.io/posts/extensions[as described here].
 
 == Compiling asclepias projects
+
+=== asclepias project organization
+
+The asclepias repository is organized using a multiple project setup. In more detail, some of the subdirectories of the repository such as `hasklepias-core`, `hasklepias-main`, etc. contain a cabal package which we sometimes more generally call a "project" or "sub-project".
+
+=== cabal packaging overview
+
+A cabal package is defined by the following (see https://cabal.readthedocs.io/en/3.6/cabal-package.html#package-description[the cabal documentation] for full detail).
+
+* A collection of Haskell files.
+* A file with a name of the form `package-name.cabal` in the package root directory containing metadata about the package.
+* In some circumstances, a file named `Setup.hs` in the package root directory containing instructions for various setup tasks. In more detail, this file is only needed when the `build-type` field in the `.cabal` file is specified as `Custom` as described in https://cabal.readthedocs.io/en/3.6/cabal-package.html#pkg-field-build-type[the cabal documentation].
+
+So in general you can locate the various cabal packages in the repository by using a command such as the following. For this particular project there is also a file `hie.yaml` (and which is described further in the <<A note on using HLS in multi-project repositories>> section) that should (unless it gets out-of-sync) accurately describe the package layout.
+[source,shell]
+----
+find . -maxdepth 2 -name '*cabal'
+----
 
 === Compiling asclepias projects libraries and executables
 

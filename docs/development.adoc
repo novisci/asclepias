@@ -8,11 +8,11 @@ git clone git@gitlab.novisci.com:nsStat/asclepias.git
 
 == Installing GHC and cabal
 
-To compile Haskell libraries and/or applications you will need a suitable compiler such as the https://www.haskell.org/ghc/[Glasgow Haskell Compiler] (GHC). Furthermore, to make the creation, distribution, and bulding of libraries and applications more convenient several systems and supporting tooling for defining Haskell packages have been created. In particular, the asclepias project uses the GHC compiler and the https://www.haskell.org/cabal[cabal] system for building and packaging Haskell libraries and programs so consequently it will be helpful to have GHC and cabal available on your development platform.
+To compile Haskell libraries and/or applications you will need a suitable Haskell compiler. Furthermore, to make the creation, distribution, and bulding of libraries and applications more convenient several systems and supporting tooling for defining Haskell packages have been created. In particular, the asclepias project uses the https://www.haskell.org/ghc/[Glasgow Haskell Compiler (GHC)] compiler and the https://www.haskell.org/cabal[cabal] system for building and packaging Haskell libraries and programs so consequently it will be helpful to have GHC and cabal available on your development platform.
 
 === Installing ghcup
 
-ghcup is a utility that allows for easy downloading and installation of various Haskell-related applications such as GHC and cabal, among others. To install GHC and cabal we recommend using the https://www.haskell.org/ghcup[ghcup utility]. Please see the linked documentation for instructions to lauch the installer.
+ghcup is a utility that allows for easy downloading and installation of various applications in the Haskell toolchain such as GHC and cabal, among others. To install GHC and cabal we recommend using the https://www.haskell.org/ghcup[ghcup utility]. Please see the linked documentation for instructions to lauch the installer.
 
 Once the installer is launched, you will be asked a series of questions. The following is a rough guide to the recommended answers for these questions.
 
@@ -29,6 +29,7 @@ Some users on our team (as of January 2022) have reported difficulties when usin
 curl: (60) SSL certificate problem: self signed certificate in certificate chain
 
 Below we list a few workarounds that we have found for this issue.
+
 * Update your OpenSSL certificates. If you installed OpenSSL on macOS through homebrew then you can use the command `brew postinstall openssl`.
 * Upgrade the version of curl. If you run `curl --version` and it lists an old release date then you may want to install a newer version.
 * Use wget instead of curl when running ghcup by specifying the option `--downloader=wget`. So for example, you can use the command `ghcup --downloader=wget list`
@@ -40,7 +41,7 @@ Use the command `ghcup list` to orient yourself with the following information.
 1. What applications and application versions are available for download through ghcup.
 2. What applications have already been downloaded through ghcup.
 3. What the current recommended version of an application is according to ghcup.
-4. What version of a given application "is active" (see <<ghcup application version management>> for details on what is meant by "is active").
+4. What version of a given application "is active" (see the <<ghcup application version management>> section for details on what is meant by "is active").
 
 The first column of the table provided by `ghcup list` is the least obvious. If a given row has an "✗", then it means that the corresponding version of the application _hasn't_ been downloaded by ghcup. If it has a "✔", then it means that it _has_ been downloaded by ghcup, and if it has a "✔✔" then it means that it both _has_ been downloaded by ghcup _and is_ the currently active version.
 
@@ -48,20 +49,20 @@ The first column of the table provided by `ghcup list` is the least obvious. If 
 
 ghcup stores various application versions in the `~/.ghcup/bin` directory, and which is assumed to be on your shell's path. Then for example, the `ghc` file located in that directory is a symbolic link to the active version of GHC according to ghcup (a similar pattern is used for other applications managed by ghcup). So suppose that the active version of GHC was GHC 8.10.7, then running the command `ghc` in your shell would run GHC 8.10.7. If however you wanted to run a different version of GHC, say GHC 9.2.1, for a particular project without changing the active version, then you could invoke that version directly by running the command `ghc-9.2.1` in your shell since this is one of the files in `~/.ghcup/bin` (assuming that it has previously been downloaded).
 
-To change the currently active version for a particular application, use the `ghcup set` command.
+To change the currently active version for a particular application, use the `ghcup set` command. See `ghcup set --help` for details.
 
 === Installing GHC and cabal using ghcup
 
-To install an application you can use a command such as `ghcup install ghc 8.10.7`. Supplying the version number is optional, and if not supplied then ghcup will install what it considers to be the recommended version. To see which version of a given application that ghcup considers to be recommended, you can use `ghcup list`. Use `ghcup install --help` for documentation.
+To install an application you can use a command such as `ghcup install ghc 8.10.7`. Supplying the version number is optional, and if not supplied then ghcup will install what it considers to be the recommended version. To see which version of a given application that ghcup considers to be recommended, you can use `ghcup list` as described in the <<Obtaining the ghcup facilities information>> section. Use `ghcup install --help` for documentation.
 
-We recommend installing the recommended version of cabal according to ghcup, and the version of GHC used in the `.gitlab-ci.yml` file (see the `GHC` variable defined therein). So in summary, this means that you can run the following commands.
+We recommend installing the recommended version of cabal according to ghcup, and the version of GHC used in the `.gitlab-ci.yml` file (see the `GHC` variable defined therein). So in summary, this means that you can run the following commands. Note that you may already have the necessary versions of GHC and cabal installed in which case either or both of these commands can be omitted as appropriate (however there is no harm in running them in any case since ghcup is smart enough to not download an existing application a second time).
 [source,shell]
 ----
-ghcup install ghc 8.10.7  # double-check to make sure the version is current
+ghcup install ghc 8.10.7  # double-check to ensure this is the correct version
 ghcup install cabal
 ----
 
-If you already have GHC and/or cabal installed through ghcup and you need to change the version then you can use the `ghcup set` command. See `ghcup set --help` for details.
+If you already have GHC and/or cabal installed through ghcup and you need to change the version then you can use the `ghcup set` command.
 
 ==== A note on the cabal version
 

@@ -41,7 +41,7 @@ Use the command `ghcup list` to orient yourself with the following information.
 1. What applications and application versions are available for download through ghcup.
 2. What applications have already been downloaded through ghcup.
 3. What the current recommended version of an application is according to ghcup.
-4. What version of a given application "is active" (see the <<ghcup application version management>> section for details on what is meant by "is active").
+4. What version of a given application is active (see the <<ghcup application version management>> section for details on what is meant by "is active").
 
 The first column of the table provided by `ghcup list` is the least obvious. If a given row has an "✗", then it means that the corresponding version of the application _hasn't_ been downloaded by ghcup. If it has a "✔", then it means that it _has_ been downloaded by ghcup, and if it has a "✔✔" then it means that it both _has_ been downloaded by ghcup _and is_ the currently active version.
 
@@ -62,7 +62,7 @@ ghcup install ghc 8.10.7  # double-check to ensure this is the correct version
 ghcup install cabal
 ----
 
-If you already have GHC and/or Cabal installed through ghcup and you need to change the version then you can use the `ghcup set` command.
+Note that if you already have a different version of GHC and/or Cabal installed through ghcup and you would like to change the active version then you can use the `ghcup set` command.
 
 ==== A note on the Cabal version
 
@@ -70,7 +70,7 @@ As you find your way around the asclepias project, you may notice that in the su
 
 ==== A note on the GHC version and language extensions
 
-As you find your way around the asclepias project, you may notice that in the sub-project cabal configuration files (i.e. the files with filenames ending in `.cabal`) that the `default-language` is specified as `Haskell2010`, which refers to the https://www.haskell.org/onlinereport/haskell2010/[Haskell 2010 language report], and is the current definition of the Haskell language (also see https://en.wikipedia.org/wiki/Haskell_(programming_language)#Haskell_2010[Wikipedia] and https://wiki.haskell.org/Language_and_library_specification#The_Haskell_2010_report[The Haskell Wiki]). GHC versions 8.0.2 and later implement the Haskell 2010 language report.
+As you find your way around the asclepias project, you may notice that in the sub-project Cabal configuration files (i.e. the files with filenames ending in `.cabal`) that the `default-language` is specified as `Haskell2010`, which refers to the https://www.haskell.org/onlinereport/haskell2010/[Haskell 2010 language report], and is the current definition of the Haskell language (also see https://en.wikipedia.org/wiki/Haskell_(programming_language)#Haskell_2010[Wikipedia] and https://wiki.haskell.org/Language_and_library_specification#The_Haskell_2010_report[The Haskell Wiki]). GHC versions 8.0.2 and later implement the Haskell 2010 language report.
 
 Although the Haskell language definition itself has stayed stable since the Haskell 2010 language report, the GHC compiler supports the adoption of new language features through the use of _language extensions_, which are opt-in non-standard language features. One of the effects of the specifying the Haskell 2010 language is that the language extensions listed https://downloads.haskell.org/~ghc/8.10.7/docs/html/users_guide/glasgow_exts.html#extension-Haskell2010[in this link] are enabled by GHC.
 
@@ -88,7 +88,7 @@ A Cabal package is defined by the following (see https://cabal.readthedocs.io/en
 
 * A collection of Haskell files.
 * A file with a name of the form `package-name.cabal` in the package root directory containing metadata about the package.
-* In some circumstances, a file named `Setup.hs` in the package root directory containing instructions for various setup tasks. In more detail, this file is only needed when the `build-type` field in the `.cabal` file is specified as `Custom` as described in https://cabal.readthedocs.io/en/3.6/cabal-package.html#pkg-field-build-type[the Cabal documentation].
+* In some circumstances, a file named `Setup.hs` in the package root directory containing instructions for various setup tasks. In more detail, this file is only needed when the `build-type` field in the `.cabal` file is specified as `Custom` (see https://cabal.readthedocs.io/en/3.6/cabal-package.html#pkg-field-build-type[the Cabal documentation] for more details).
 
 So in general you can locate the various Cabal packages in the repository by using a command such as the following. For this particular project there is also a file `hie.yaml` (and which is described further in the <<A note on using HLS in multi-project repositories>> section) that should (unless it gets out-of-sync) accurately describe the package layout.
 [source,shell]
@@ -98,18 +98,22 @@ find . -maxdepth 2 -name '*cabal'
 
 === Compiling asclepias projects libraries and executables
 
-The asclepias repository is organized using a multiple package setup. In more detail, some of the subdirectories of the repository such as `hasklepias-core`, `hasklepias-main`, etc. contain a Cabal package. To start with, you can build all of the Cabal projects in the repository using the following commands. Note that this will take 10 minutes or so to complete the first time that you do it. See `cabal build --help` for full details.
+As previously mentioned, the asclepias repository is organized using a multiple project setup. In more detail, some of the subdirectories of the repository such as `hasklepias-core`, `hasklepias-main`, etc. contain a Cabal package. The simplest thing to do to get started is to build all of the Cabal projects in the repository using the following commands. Note that this will take 10 minutes or so to complete the first time that you do it. See `cabal build --help` for full details.
 [source,shell]
 ----
-# Build all of the projects. Add `-j` or `--jobs` to use all of your cores
+# Build all of the projects. Add `-j` or `--jobs` to use all of your cores, or
+# e.g. `jobs=2` to use 2 cores
 cabal update
 cabal build all
+----
 
-# Build projects one-at-a-time. This is useful when you are working on a particular
-# project and don't want to compile everything. Add `-j` or `--jobs` to use all
-# of your cores
+Alternatively, you can build the projects one-at-a-time using a command of the following form. This is useful when you are working on a particular project and don't want to compile everything at once to save time.
+[source,shell]
+----
+# Build the specified project. Add `-j` or `--jobs` to use all of your cores, or
+# e.g. `jobs=2` to use 2 cores
 cabal update
-cabal build hasklepias-core  # or `hasklepias-main` or ...
+cabal build hasklepias-core  # or `hasklepias-main` or any other package
 ----
 
 === Compiling asclepias projects tests
@@ -133,7 +137,7 @@ To see installation instructions for a given editor listed above, please visit t
 
 The https://github.com/haskell/haskell-language-server[Haskell language server] (HLS) implements the https://microsoft.github.io/language-server-protocol/[Language Server Protocol] (LSP) for the Haskell language. It can be very useful for development when paired with an editor with support for LSP (such as one of the editors mentioned above) since it provides immediate feedback from the compiler, among other features.
 
-You can use ghcup to install whatever its current recommended version of HLS is.
+You can use ghcup to install whatever its current recommended version of HLS is. Note that you may already have installed HLS during the ghcup installation process or at some other time, in which case you can skip this step (however there is no harm in running it in any case since ghcup is smart enough to not download an existing application a second time)
 [source,shell]
 ----
 ghcup install hls

@@ -6,13 +6,13 @@ To develop and work with asclepias locally, clone the repository:
 git clone git@gitlab.novisci.com:nsStat/asclepias.git
 ----
 
-== Installing GHC and cabal
+== Installing GHC and Cabal
 
-To compile Haskell libraries and/or applications you will need a suitable Haskell compiler. Furthermore, to make the creation, distribution, and bulding of libraries and applications more convenient several systems and supporting tooling for defining Haskell packages have been created. In particular, the asclepias project uses the https://www.haskell.org/ghc/[Glasgow Haskell Compiler (GHC)] compiler and the https://www.haskell.org/cabal[cabal] system for building and packaging Haskell libraries and programs so consequently it will be helpful to have GHC and cabal available on your development platform.
+To compile Haskell libraries and/or applications you will need a suitable Haskell compiler. Furthermore, to make the creation, distribution, and bulding of libraries and applications more convenient several systems and supporting tooling for defining Haskell packages have been created. In particular, the asclepias project uses the https://www.haskell.org/ghc/[Glasgow Haskell Compiler (GHC)] compiler and the https://www.haskell.org/cabal[Cabal] system for building and packaging Haskell libraries and programs so consequently it will be helpful to have GHC and Cabal available on your development platform.
 
 === Installing ghcup
 
-ghcup is a utility that allows for easy downloading and installation of various applications in the Haskell toolchain such as GHC and cabal, among others. To install GHC and cabal we recommend using the https://www.haskell.org/ghcup[ghcup utility]. Please see the linked documentation for instructions to lauch the installer.
+ghcup is a utility that allows for easy downloading and installation of various applications in the Haskell toolchain such as GHC and Cabal, among others. To install GHC and Cabal we recommend using the https://www.haskell.org/ghcup[ghcup utility]. Please see the linked documentation for instructions to lauch the installer.
 
 Once the installer is launched, you will be asked a series of questions. The following is a rough guide to the recommended answers for these questions.
 
@@ -51,22 +51,22 @@ ghcup stores various application versions in the `~/.ghcup/bin` directory, and w
 
 To change the currently active version for a particular application, use the `ghcup set` command. See `ghcup set --help` for details.
 
-=== Installing GHC and cabal using ghcup
+=== Installing GHC and Cabal using ghcup
 
 To install an application you can use a command such as `ghcup install ghc 8.10.7`. Supplying the version number is optional, and if not supplied then ghcup will install what it considers to be the recommended version. To see which version of a given application that ghcup considers to be recommended, you can use `ghcup list` as described in the <<Obtaining the ghcup facilities information>> section. Use `ghcup install --help` for documentation.
 
-We recommend installing the recommended version of cabal according to ghcup, and the version of GHC used in the `.gitlab-ci.yml` file (see the `GHC` variable defined therein). So in summary, this means that you can run the following commands. Note that you may already have the necessary versions of GHC and cabal installed in which case either or both of these commands can be omitted as appropriate (however there is no harm in running them in any case since ghcup is smart enough to not download an existing application a second time).
+We recommend installing the recommended version of Cabal according to ghcup, and the version of GHC used in the `.gitlab-ci.yml` file (see the `GHC` variable defined therein). So in summary, this means that you can run the following commands. Note that you may already have the necessary versions of GHC and Cabal installed in which case either or both of these commands can be omitted as appropriate (however there is no harm in running them in any case since ghcup is smart enough to not download an existing application a second time).
 [source,shell]
 ----
 ghcup install ghc 8.10.7  # double-check to ensure this is the correct version
 ghcup install cabal
 ----
 
-If you already have GHC and/or cabal installed through ghcup and you need to change the version then you can use the `ghcup set` command.
+If you already have GHC and/or Cabal installed through ghcup and you need to change the version then you can use the `ghcup set` command.
 
-==== A note on the cabal version
+==== A note on the Cabal version
 
-As you find your way around the asclepias project, you may notice that in the sub-project cabal configuration files (i.e. the files with filenames ending in `.cabal`), that the `cabal-version` is specified as an older version of cabal (such as version 2.2) than can be downloaded through ghcup. According to https://cabal.readthedocs.io/en/3.6/cabal-package.html#pkg-field-cabal-version[the cabal documentation] cabal is mostly backwards compatible so there shouldn't be any issue with using a newer version.
+As you find your way around the asclepias project, you may notice that in the sub-project Cabal configuration files (i.e. the files with filenames ending in `.cabal`), that the `cabal-version` is specified as an older version of Cabal (such as version 2.2) than can be downloaded through ghcup. According to https://cabal.readthedocs.io/en/3.6/cabal-package.html#pkg-field-cabal-version[the Cabal documentation] Cabal is mostly backwards compatible so there shouldn't be any issue with using a newer version.
 
 ==== A note on the GHC version and language extensions
 
@@ -74,23 +74,23 @@ As you find your way around the asclepias project, you may notice that in the su
 
 Although the Haskell language definition itself has stayed stable since the Haskell 2010 language report, the GHC compiler supports the adoption of new language features through the use of _language extensions_, which are opt-in non-standard language features. One of the effects of the specifying the Haskell 2010 language is that the language extensions listed https://downloads.haskell.org/~ghc/8.10.7/docs/html/users_guide/glasgow_exts.html#extension-Haskell2010[in this link] are enabled by GHC.
 
-Additional language extensions can be (and typically are) specified by various mechanisms in the sub-project cabal configuration files or in the modules (i.e. source code files) themselves https://kowainik.github.io/posts/extensions[as described here].
+Additional language extensions can be (and typically are) specified by various mechanisms in the sub-project Cabal configuration files or in the modules (i.e. source code files) themselves https://kowainik.github.io/posts/extensions[as described here].
 
 == Compiling asclepias projects
 
 === asclepias project organization
 
-The asclepias repository is organized using a multiple project setup. In more detail, some of the subdirectories of the repository such as `hasklepias-core`, `hasklepias-main`, etc. contain a cabal package which we sometimes more generally call a "project" or "sub-project".
+The asclepias repository is organized using a multiple project setup. In more detail, some of the subdirectories of the repository such as `hasklepias-core`, `hasklepias-main`, etc. contain a Cabal package which we sometimes more generally call a "project" or "sub-project".
 
-=== cabal packaging overview
+=== Cabal packaging overview
 
-A cabal package is defined by the following (see https://cabal.readthedocs.io/en/3.6/cabal-package.html#package-description[the cabal documentation] for full detail).
+A Cabal package is defined by the following (see https://cabal.readthedocs.io/en/3.6/cabal-package.html#package-description[the Cabal documentation] for full detail).
 
 * A collection of Haskell files.
 * A file with a name of the form `package-name.cabal` in the package root directory containing metadata about the package.
-* In some circumstances, a file named `Setup.hs` in the package root directory containing instructions for various setup tasks. In more detail, this file is only needed when the `build-type` field in the `.cabal` file is specified as `Custom` as described in https://cabal.readthedocs.io/en/3.6/cabal-package.html#pkg-field-build-type[the cabal documentation].
+* In some circumstances, a file named `Setup.hs` in the package root directory containing instructions for various setup tasks. In more detail, this file is only needed when the `build-type` field in the `.cabal` file is specified as `Custom` as described in https://cabal.readthedocs.io/en/3.6/cabal-package.html#pkg-field-build-type[the Cabal documentation].
 
-So in general you can locate the various cabal packages in the repository by using a command such as the following. For this particular project there is also a file `hie.yaml` (and which is described further in the <<A note on using HLS in multi-project repositories>> section) that should (unless it gets out-of-sync) accurately describe the package layout.
+So in general you can locate the various Cabal packages in the repository by using a command such as the following. For this particular project there is also a file `hie.yaml` (and which is described further in the <<A note on using HLS in multi-project repositories>> section) that should (unless it gets out-of-sync) accurately describe the package layout.
 [source,shell]
 ----
 find . -maxdepth 2 -name '*cabal'
@@ -98,7 +98,7 @@ find . -maxdepth 2 -name '*cabal'
 
 === Compiling asclepias projects libraries and executables
 
-The asclepias repository is organized using a multiple package setup. In more detail, some of the subdirectories of the repository such as `hasklepias-core`, `hasklepias-main`, etc. contain a cabal package. To start with, you can build all of the cabal projects in the repository using the following commands. Note that this will take 10 minutes or so to complete the first time that you do it. See `cabal build --help` for full details.
+The asclepias repository is organized using a multiple package setup. In more detail, some of the subdirectories of the repository such as `hasklepias-core`, `hasklepias-main`, etc. contain a Cabal package. To start with, you can build all of the Cabal projects in the repository using the following commands. Note that this will take 10 minutes or so to complete the first time that you do it. See `cabal build --help` for full details.
 [source,shell]
 ----
 # Build all of the projects. Add `-j` or `--jobs` to use all of your cores
@@ -114,7 +114,7 @@ cabal build hasklepias-core  # or `hasklepias-main` or ...
 
 === Compiling asclepias projects tests
 
-By default cabal doesn't compile the test suite for a given package so if you want to compile the tests you can use e.g. the `--enable-tests` option. (Note that it also doesn't compile benchmarking modules by default either.)
+By default Cabal doesn't compile the test suite for a given package so if you want to compile the tests you can use e.g. the `--enable-tests` option. (Note that it also doesn't compile benchmarking modules by default either.)
 [source,shell]
 ----
 cabal update

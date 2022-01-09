@@ -9,6 +9,18 @@ _Asclepias (n)_:
 1. The genus of North American milkweeds, named after Linnaeus after the greek god of healing, Asclepius.
 2. A language and software project for defining and deriving features from temporally ordered events using the https://hackage.haskell.org/package/interval-algebra[interval algebra].
 
+== Introduction
+
+include::docs/motivation.adoc[leveloffset=+2]
+
+include::docs/features.adoc[leveloffset=+2]
+
+include::docs/comparison.adoc[leveloffset=+2]
+
+== Design
+
+include::docs/roadmap.adoc[leveloffset=+2]
+
 == Tools
 
 include::cohort-collector/README.adoc[leveloffset=+2]
@@ -16,3 +28,7 @@ include::cohort-collector/README.adoc[leveloffset=+2]
 include::docs/development.adoc[leveloffset=+1]
 
 include::ci/README.adoc[leveloffset=+2]
+
+
+
+include::docs/bibliography.adoc[leveloffset=+1]

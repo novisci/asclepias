@@ -8,11 +8,11 @@ git clone git@gitlab.novisci.com:nsStat/asclepias.git
 
 == Installing GHC and Cabal
 
-To compile Haskell libraries and/or applications you will need a suitable Haskell compiler. Furthermore, to make the creation, distribution, and bulding of libraries and applications more convenient several systems and supporting tooling for defining Haskell packages have been created. In particular, the asclepias project uses the https://www.haskell.org/ghc/[Glasgow Haskell Compiler (GHC)] compiler and the https://www.haskell.org/cabal[Cabal] system for building and packaging Haskell libraries and programs so consequently it will be helpful to have GHC and Cabal available on your development platform.
+To compile Haskell libraries and/or applications you will need a suitable Haskell compiler. Furthermore, to make the creation, distribution, and building of libraries and applications more convenient several systems and supporting tooling for defining Haskell packages have been created. In particular, the asclepias project uses the https://www.haskell.org/ghc/[Glasgow Haskell Compiler (GHC)] compiler and the https://www.haskell.org/cabal[Cabal] system for building and packaging Haskell libraries and programs so consequently it will be helpful to have GHC and Cabal available on your development platform.
 
 === Installing ghcup
 
-To install GHC and Cabal we recommend using https://www.haskell.org/ghcup[ghcup], which is a utility that allows for easy downloading and installation of various applications in the Haskell toolchain. Please see the linked documentation for instructions to lauch the installer.
+To install GHC and Cabal we recommend using https://www.haskell.org/ghcup[ghcup], which is a utility that allows for easy downloading and installation of various applications in the Haskell toolchain. Please see the linked documentation for instructions on how to lauch the ghcup installer.
 
 Once the installer is launched, you will be asked a series of questions. The following is a rough guide to the recommended answers for these questions.
 
@@ -47,9 +47,11 @@ The first column of the table provided by `ghcup list` is the least obvious. If 
 
 ==== ghcup application version management
 
-ghcup stores various application versions in the `~/.ghcup/bin` directory, and which is assumed to be on your shell's path. Then for example, the `ghc` file located in that directory is a symbolic link to the active version of GHC according to ghcup (a similar pattern is used for other applications managed by ghcup). So suppose that the active version of GHC was GHC 8.10.7, then running the command `ghc` in your shell would run GHC 8.10.7. If however you wanted to run a different version of GHC, say GHC 9.2.1, for a particular project without changing the active version, then you could invoke that version directly by running the command `ghc-9.2.1` in your shell since this is one of the files in `~/.ghcup/bin` (assuming that it has previously been downloaded).
+The "active version" of a given application according to ghcup is the version that gets run when using a shell command such as `ghc` without supplying a version number (as in e.g. `ghc-9.2.1`). To change the currently active version for a particular application, use the `ghcup set` command. See `ghcup set --help` for details.
 
-To change the currently active version for a particular application, use the `ghcup set` command. See `ghcup set --help` for details.
+In more detail, ghcup stores various application versions in the `~/.ghcup/bin` directory which is assumed to be on your shell's path. Then for example, the `ghc` file located in that directory is a symbolic link to the active version of GHC according to ghcup (a similar pattern is used for other applications managed by ghcup). So suppose that the active version of GHC was GHC 8.10.7, then running the command `ghc` in your shell would run GHC 8.10.7 because the `~/.ghup/bin/ghc` file would a symbolic link pointing to GHC 8.10.7.
+
+Note that if you wanted to run a different version of GHC, say GHC 9.2.1, for a particular project without changing the active version, then you could invoke that version directly by running the command `ghc-9.2.1` in your shell since this is one of the files in `~/.ghcup/bin` (assuming that it has previously been downloaded).
 
 === Installing GHC and Cabal using ghcup
 

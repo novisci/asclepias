@@ -284,8 +284,13 @@ rm -rf ~/.cache/hie-bios/dist-asclepias*
 
 == Interactive usage of GHC
 
-To run the examples interactively, open a ghci session with:
+The GHC compiler provides an interactive environment (i.e. a read–eval–print loop or REPL) called GHCi (the "i" stands for "Interactive"). It can be very helpful to experiment with the REPL while writing Haskell code, much as you would with other programming languages like R or Python.
 
+=== Starting GHCi in Cabal projects
+
+To run GHCi in a Cabal project you can use the `cabal repl` command followed by an optional target package component (by default `cabal repl` loads the first component in a package). There are many command-line arguments that can be provided with `cabal repl`, however for the sake of brevity these are not covered here. See `cabal repl --help` and https://cabal.readthedocs.io/en/3.6/cabal-commands.html#cabal-v2-repl[the Cabal documentation] for full details.
+
+The `cabal repl` command uses the same method of specifying a target package component as for `cabal build`. So for example, the following command will load the modules in the `examples` component of the `hasklepias-main` package into a GHCi session.
 [source,shell]
 ----
 cabal repl hasklepias-main:examples

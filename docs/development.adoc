@@ -76,13 +76,13 @@ As you find your way around the asclepias project, you may notice that in the su
 
 Although the Haskell language definition itself has stayed stable since the Haskell 2010 language report, the GHC compiler supports the adoption of new language features through the use of _language extensions_, which are opt-in non-standard language features. One of the effects of the specifying the Haskell 2010 language is that the language extensions listed https://downloads.haskell.org/~ghc/8.10.7/docs/html/users_guide/glasgow_exts.html#extension-Haskell2010[in this link] are enabled by GHC.
 
-Additional language extensions can be (and typically are) specified by various mechanisms in the sub-project Cabal package description files or in the modules (i.e. source code files) themselves https://kowainik.github.io/posts/extensions[as described here].
+Additional language extensions can be (and typically are) specified by various mechanisms in the sub-project Cabal package description files and/or in the modules (i.e. source code files) themselves https://kowainik.github.io/posts/extensions[as described here].
 
 == Compiling asclepias projects
 
 === asclepias project organization
 
-The asclepias repository is organized using a multiple project setup. In more detail, some of the subdirectories of the repository such as `hasklepias-core`, `hasklepias-main`, etc. contain a Cabal package which we sometimes more generally call a "project" or "sub-project".
+The asclepias repository is organized using a multiple project setup. In more detail, some of the subdirectories of the repository such as `hasklepias-core`, `hasklepias-main`, etc. contain a Cabal package which we sometimes more generically call a "project" or "sub-project".
 
 === Cabal packaging overview
 
@@ -116,18 +116,18 @@ Some fields expect lists for their specified values which for a given field can 
 
 ==== Cabal package description file example
 
-Consider the following abridged version of the `hasklepias-main.cabal` file. In this example we see the top-level fields (i.e. the package properties) `cabal-version`, `name`, and `version`, and following these fields we see a total of three sections. The first section has a "library" component type, and because its name is omitted (i.e. there is no text to the right of the `library` keyword) this is taken to be the sole publicly exposed library for the package, and is given the same name as is specified by the `name` field (i.e. `hasklepias-main`). The second section has a "test-suite" component type, and is given the name `examples`. The third section has a "executable" component type, and is given the name `exampleApp`.
+Consider the following abridged version of the `hasklepias-main.cabal` file. In this example we see the top-level fields (i.e. the package properties) `cabal-version`, `name`, and `version`, and following these fields we see a total of three sections. The first section has a "library" component type, and because its name is omitted (i.e. there is no text to the right of the `library` keyword) this is taken to be the sole publicly exposed library for the package, and is given the same name as is specified by the `name` field (i.e. `hasklepias-main`). The second section has a "test-suite" component type, and is given the name `examples`. The third section has an "executable" component type, and is given the name `exampleApp`.
 
 The visibility of a given module in a package is controlled by the `other-modules`, `exposed-modules` and `main-is` fields. Note that every package module _must_ be listed in one of these fields.
 
-* `exposed-modules`: a list of modules exposed to users of the package (note that this field is applicable only to libraries).
+* `exposed-modules`: a list of modules exposed to users of the package (note that this field is applicable only to libraries). Here "exposed" means that package users are able access the functions and data exported by a given exposed module.
 * `other-modules:`: a list of modules used by the component but not exposed to users.
 * `main-is`: the name of the file containing the `Main` module (note that this field is applicable only to executables).
 
-The meaning of some of the other section-specific fields is listed below.
+The meaning of some of the other section-specific fields shown in the example is listed below.
 
 * `default-language`: which definition of the Haskell language to use.
-* `hs-source-dirs`: a list of the directories in which to search for package component modules.
+* `hs-source-dirs`: a list of the directories in which to search for Haskell modules.
 * `build-depends`: a list declaring the library dependencies required to build the package component.
 * `type`: has different meanings for various component types. For the `test-suite` type having a value of `exitcode-stdio-1.0` means that the testing interface is an executable that indicates test failure with a non-zero exit code when run.
 
@@ -185,32 +185,63 @@ executable exampleApp
 
 === Compiling asclepias packages
 
-As previously mentioned, the asclepias repository is organized using a multiple project setup. In more detail, some of the subdirectories of the repository such as `hasklepias-core`, `hasklepias-main`, etc. contain a Cabal package. The simplest thing to do to get started is to build all of the Cabal projects in the repository using the following commands. Note that this could take around half-an-hour to complete the first time that you do it. See `cabal build --help` for full details.
+The `cabal build` command is used to compile Cabal packages and package components. There are many command-line arguments that can be provided with `cabal build`, however for the sake of brevity these are not covered here. See `cabal build --help` and https://cabal.readthedocs.io/en/3.6/cabal-commands.html#cabal-v2-build[the Cabal documentation] for full details.
+
+==== Compiling all asclepias packages
+
+As previously mentioned, the asclepias repository is organized using a multiple project setup. In more detail, some of the subdirectories of the repository such as `hasklepias-core`, `hasklepias-main`, etc. contain a Cabal package. The simplest thing to do to get started is to build (i.e. compile) all of the Cabal projects in the repository using the following command. Note that this could take around half-an-hour to complete the first time that you do it (future compilations take significantly less time since GHC will only recompile modules that have changed since the last compilation).
 [source,shell]
 ----
-# Build all of the projects. Add `-j` or `--jobs` to use all of your cores, or
-# e.g. `jobs=2` to use 2 cores
 cabal update
 cabal build all
 ----
 
-Alternatively, you can build the projects one-at-a-time using a command of the following form. This is useful when you are working on a particular project and don't want to compile everything at once to save time.
-[source,shell]
-----
-# Build the specified project. Add `-j` or `--jobs` to use all of your cores, or
-# e.g. `jobs=2` to use 2 cores
-cabal update
-cabal build hasklepias-core  # or `hasklepias-main` or any other package
-----
+Note that by default Cabal doesn't compile the test suite or benchmarking modules when using `cabal build`. In the following sections we will see ways to compile these components if desired.
 
-Note that by default Cabal doesn't compile the test suite or benchmarking modules for a given package so if you want to compile the tests along with the package itself then you can use e.g. the `--enable-tests` and/or `--enable-profiling` options.
+==== Compiling asclepias packages one-at-a-time
+
+Alternatively, you can build the packages one-at-a-time using a command of the following form. This is useful when you are working on a particular project and don't want to compile everything at once in order to save time. Note that compiling a given package will still cause you to compile all of its dependencies, so the first time you compile a package can still take quite a long time if you have many dependencies to compile.
 [source,shell]
 ----
 cabal update
-cabal build hasklepias-core --enable-tests --enable-profiling
+cabal build hasklepias-main
 ----
 
-=== Compiling asclepias projects tests
+By default Cabal doesn't compile the test suite or benchmarking modules for a given package so if you want to compile the tests along with the package itself then you can use e.g. the `--enable-tests` and/or `--enable-profiling` options.
+[source,shell]
+----
+cabal update
+cabal build hasklepias-main --enable-tests --enable-profiling
+----
+
+==== Compiling asclepias package components
+
+In addition to specifying a package name to compile, the `cabal build` command allows you to specify finer-grained units of compilation called _package components_, and where the package components correspond to the sections in the Cabal package description file. So for example, in the example <<Cabal package description file example>> section the package name was `hasklepias-main`, and the package components were called `hasklepias-main` (a library), `examples` (a test-suite), and `exampleApp` an executable (recall that the `hasklepias-main` library was implicitly named after the package name).
+
+Typically package components are identified using the form `package:component` (the available syntax is actually more flexible than the form shown here). So for example, you could use the command `hasklepias-main:examples` to compile the `examples` component from the `hasklepias-main` package.
+
+Additionally you can use one of the forms `package:ctype` or `all:ctype` to compile all components of the specified type (i.e. the `ctype`) for a given package or across all packages, respectively. So for example, you could use the command `hasklepias-main:executables` to compile any components with a library component type from the `hasklepias-main` package (of which there happens to be one component, i.e. the `exampleApp` component), or the command `all:executables` to compile any components with a library component type from any package the asclepias repository.
+
+There are other ways of specifying a component by specifying either a module name or the filepath of a module that belongs to the target component, however we do not cover those approaches here.
+[source,shell]
+----
+cabal update
+
+# Using the `package:component` form
+cabal build hasklepias-main:hasklepias-main
+cabal build hasklepias-main:examples
+cabal build hasklepias-main:exampleApp
+
+# Using the `package:ctype` form
+cabal build hasklepias-main:libraries
+cabal build hasklepias-main:tests
+cabal build hasklepias-main:executables
+
+# Using the `all:ctype` form
+cabal build all:libraries
+cabal build all:tests
+cabal build all:executables
+----
 
 == Setting up a development environment
 

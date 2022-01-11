@@ -361,6 +361,19 @@ import Hasklepias
 lookback455 :: Integer
 lookback455 = 455
 ----
+
+==== Haskell module exports
+
+Each Haskell module can export 0 or more declarations. Declaration include things like data and type declarations, class and instance declarations, type signatures, function definitions, and so on. The full export specification is rather involved so we will not try to cover everything in full detail, but rather try to cover the most common cases. See https://www.haskell.org/onlinereport/haskell2010/haskellch5.html#x11-1000005.2[Export Lists in the Haskell 2010 Language Report] for complete documentation.
+
+* Data types declared using a `data` or `newtype` declaration are typically exported by one of the following forms. Suppose we have the declaration `data Status = Include | Exclude`. Then
+** The statement `Status(..)` exports the `Status` data type as well as all of its constructors, which in this case are `Include` and `Exclude`.
+** The statement `Status` exports the `Status` data type but not its constructors (which makes the data type an `abstract data type`, i.e. you can't construct one "by hand").
+* Data types declared using a `type` declaration are exported using the type name.
+* Values are exported by providing the value name.
+* Classes are typically exported by using the following form. Suppose that we have a declared a class `Predicatable` with methods `(|||)` and `&&&`. Then the form `Predicatable(..)` exports the `Predicatable` class as well as all of its methods, which in this case are `(|||)` and `(&&&)`. It is also possible to export `Predictable` without exporting all of its method declarations, but this is usually not very useful.
+* Imported modules can be reexported by using the following form. Suppose that we import the module `Cohort.Attrition`, then we can reexport the module using the statement `Module Cohort.Attrition`.
+
 In ghci you have access to all exposed functions in hasklepias, interval-algebra, and those in the examples folder.
 
 

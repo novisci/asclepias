@@ -74,9 +74,9 @@ As you find your way around the asclepias project, you may notice that in the su
 
 As you find your way around the asclepias project, you may notice that in the sub-project Cabal package description files (i.e. the files with filenames ending in `.cabal`) that the `default-language` is specified as `Haskell2010`, which refers to the https://www.haskell.org/onlinereport/haskell2010/[Haskell 2010 language report], and is the current definition of the Haskell language (also see https://en.wikipedia.org/wiki/Haskell_(programming_language)#Haskell_2010[Wikipedia] and https://wiki.haskell.org/Language_and_library_specification#The_Haskell_2010_report[The Haskell Wiki]). GHC versions 8.0.2 and later implement the Haskell 2010 language report.
 
-Although the Haskell language definition itself has stayed stable since the Haskell 2010 language report, the GHC compiler supports the adoption of new language features through the use of _language extensions_, which are opt-in non-standard language features. One of the effects of the specifying the Haskell 2010 language is that the language extensions listed https://downloads.haskell.org/~ghc/8.10.7/docs/html/users_guide/glasgow_exts.html#extension-Haskell2010[in this link] are enabled by GHC.
+Although the Haskell language definition itself has stayed stable since the Haskell 2010 language report, the GHC compiler supports the adoption of new language features through the use of _language extensions_, which are opt-in non-standard language features. One of the effects of the specifying the Haskell 2010 language is that the language extensions listed in the https://downloads.haskell.org/~ghc/8.10.7/docs/html/users_guide/glasgow_exts.html#extension-Haskell2010[Haskell 2010 Language Extensions] in the GHC documentation are enabled by GHC.
 
-Additional language extensions can be (and typically are) specified by various mechanisms in the sub-project Cabal package description files and/or in the modules (i.e. source code files) themselves https://kowainik.github.io/posts/extensions[as described here].
+Additional language extensions can be (and typically are) specified by various mechanisms in the sub-project Cabal package description files and/or in the source code files themselves as described in the https://kowainik.github.io/posts/extensions[Extensions] blog post.
 
 == Compiling asclepias projects
 
@@ -84,15 +84,17 @@ Additional language extensions can be (and typically are) specified by various m
 
 The asclepias repository is organized using a multiple project setup. In more detail, some of the subdirectories of the repository such as `hasklepias-core`, `hasklepias-main`, etc. contain a Cabal package which we sometimes more generically call a "project" or "sub-project".
 
+Note that in the following sections we often refer to a Haskell _module_, which for the time-being can be thought of as the contents of a Haskell file (but see the <<The Haskell module system>> section for a complete definition).
+
 === Cabal packaging overview
 
 ==== Cabal package definition
 
-A Cabal package is defined by the following (see https://cabal.readthedocs.io/en/3.6/cabal-package.html#package-description[the Cabal documentation] for full detail).
+A Cabal package is defined by the following (see https://cabal.readthedocs.io/en/3.6/cabal-package.html#package-description[Package Description] in the Cabal documentation for full detail).
 
 * A collection of Haskell files.
 * A package description file with a name of the form `package-name.cabal` in the package root directory containing metadata about the package.
-* In some circumstances, a file named `Setup.hs` in the package root directory containing instructions for various setup tasks. In more detail, this file is only needed when the `build-type` field in the package description file is specified as `Custom` (see https://cabal.readthedocs.io/en/3.6/cabal-package.html#pkg-field-build-type[the Cabal documentation] for more details).
+* In some circumstances, a file named `Setup.hs` in the package root directory containing instructions for various setup tasks. In more detail, this file is only needed when the `build-type` field in the package description file is specified as `Custom` (see https://cabal.readthedocs.io/en/3.6/cabal-package.html#pkg-field-build-type[The Package Field: build-type] in the Cabal documentation for more details).
 
 So in general you can locate the various Cabal packages in the repository by using a command such as one of the ones shown below. For this particular project there is also a file `hie.yaml` (and which is described further in the <<A note on using HLS in multi-project repositories>> section) that should (unless it gets out-of-sync) accurately describe the package layout.
 [source,shell]
@@ -106,13 +108,13 @@ fd --exclude dist-newstyle '\.cabal$'
 
 ==== Cabal package description file format
 
-The Cabal package description file (i.e. the `.cabal` file) contains information about the package such as the package name, version, structure, and dependencies. A good source of documentation for the format of this file can be found in https://cabal.readthedocs.io/en/3.6/cabal-package.html#package-descriptions[the Cabal documentation].
+The Cabal package description file (i.e. the `.cabal` file) contains information about the package such as the package name, version, structure, and dependencies. A good source of documentation for the format of this file can be found in https://cabal.readthedocs.io/en/3.6/cabal-package.html#package-descriptions[Package descriptions] in the Cabal documentation.
 
 In short, the description file contains a number of top-level fields called _Package Properties_ and which contain information such as `cabal-version`, `name`, `version`, etc. In addition to these fields there may be an arbitrary number of sections from a fixed number of types that are called _Component Types_. The section type keywords include `library`, `executable`, and `test-suite` among others. Typically each section is named (with one important exception mentioned below) and contains a number of section-specific field/value pairs describing the given component. The fields within a section may optionally be indented, but each field within the section must have the same indentation.
 
-Currently, there can only be one publicly exposed library in a package, and its name is the same as package name set by global name field. In this case, the name argument to the library section must be omitted (c.f. https://cabal.readthedocs.io/en/3.6/cabal-package.html#library[the Cabal documentation]).
+Currently, there can only be one publicly exposed library in a package, and its name is the same as package name set by global name field. In this case, the name argument to the library section must be omitted (c.f. https://cabal.readthedocs.io/en/3.6/cabal-package.html#library[Library] in the Cabal documentation).
 
-Some fields expect lists for their specified values which for a given field can rather confusingly take exactly one of three forms: space separated (no commas allowed between elements), comma separated (a comma is required between elements), or optional comma separated (the elements may all either be comma seperated or all not comma separated). Furthermore, all optional comma separated fields must follow the same comma or non-comma style (the non-comma style is recommended). https://cabal.readthedocs.io/en/3.6/buildinfo-fields-reference.html[The Cabal documentation] lists the grammer for some of the fields.
+Some fields expect lists for their specified values which for a given field can rather confusingly take exactly one of three forms: space separated (no commas allowed between elements), comma separated (a comma is required between elements), or optional comma separated (the elements may all either be comma seperated or all not comma separated). Furthermore, all optional comma separated fields must follow the same comma or non-comma style (the non-comma style is recommended). The https://cabal.readthedocs.io/en/3.6/buildinfo-fields-reference.html[Field Syntax Reference] in the Cabal documentation lists the grammar for some of the fields.
 
 ==== Cabal package description file example
 
@@ -185,7 +187,7 @@ executable exampleApp
 
 === Compiling asclepias packages
 
-The `cabal build` command is used to compile Cabal packages and package components. There are many command-line arguments that can be provided with `cabal build`, however for the sake of brevity these are not covered here. See `cabal build --help` and https://cabal.readthedocs.io/en/3.6/cabal-commands.html#cabal-v2-build[the Cabal documentation] for full details.
+The `cabal build` command is used to compile Cabal packages and package components. There are many command-line arguments that can be provided with `cabal build`, however for the sake of brevity these are not covered here. See `cabal build --help` and https://cabal.readthedocs.io/en/3.6/cabal-commands.html#cabal-v2-build[cabal-build] in the Cabal documentation for full details.
 
 ==== Compiling all asclepias packages
 
@@ -263,7 +265,7 @@ ghcup install hls
 
 === Configuring your editor to utilize HLS
 
-Please see  https://haskell-language-server.readthedocs.io/en/latest/configuration.html#configuring-your-editor[the HLS documentation] for instructions on how to configure your editor to utilize HLS.
+Please see  https://haskell-language-server.readthedocs.io/en/latest/configuration.html#configuring-your-editor[Configuring your editor] in the HLS documentation for instructions on how to configure your editor to utilize HLS.
 
 ==== A note on using HLS in multi-project repositories
 
@@ -284,11 +286,10 @@ rm -rf ~/.cache/hie-bios/dist-asclepias*
 
 == The Haskell module system
 
-Gaining familiarity with the Haskell module system is helpful in becoming proficient with the asclepias Haskell libraries. Furthermore,  To fully understand how the provided mechanisms work, we will first need a basic understanding of Haskell modules and how they are used to manage namespacing.
-The following subsections provide a basic description of the Haskell module system. Please see the following documentation for more details.
+Gaining familiarity with the Haskell module system is helpful in becoming proficient with the asclepias Haskell libraries. Furthermore, to fully understand how the provided mechanisms work we will need a basic understanding of Haskell modules and how they are used to manage namespacing. The following subsections provide a basic description of the Haskell module system, please see the following documentation for more details.
 
-* https://www.haskell.org/tutorial/modules.html
-* https://www.haskell.org/onlinereport/haskell2010/haskellch5.html
+* https://www.haskell.org/tutorial/modules.html[Modules] in A Gentle Introduction to Haskell.
+* https://www.haskell.org/onlinereport/haskell2010/haskellch5.html[Modules] in the Haskell 2010 Language Report.
 
 === Haskell module overview
 
@@ -298,7 +299,7 @@ Module names are required to be a sequence of one or more strings beginning with
 
 === Haskell module declarations
 
-The standard form of a module declaration is defined by the keyword `module`, the module name, and an optional list of entities (enclosed in round parentheses) to be exported, followed by the `where` keyword, followed by the module body (there is also an abbreviated form of the module declaration provided for one special case that is not mentioned here). The body consists of 0 or more import declarations, followed by 0 or more top-level declarations. So in the following example the module is named `ExampleCohort1`, the export list has the single entity `exampleCohort1tests`, and the body consists of two import declarations followed by two top-level declarations.
+The standard form of a module declaration is defined by the keyword `module` followed by the module name, followed by an optional list of entities enclosed in round parentheses to be exported, followed by the `where` keyword, and followed by the module body (there is also an abbreviated form of the module declaration provided for one special case that is not mentioned here). The body consists of 0 or more import declarations, followed by 0 or more top-level declarations. So in the following example the module is named `ExampleCohort1`, the export list has the single entity `exampleCohort1tests`, and the body consists of two import declarations followed by two top-level declarations.
 
 [source,haskell]
 ----
@@ -327,7 +328,7 @@ Since this section requires some prior knowledge of Haskell to fully understand 
 Suppose the export list looks like the following. Loosely speaking this means the following.
 
 1. The `Status` entity is exported. The `(..)` syntax can be thought of as meaning "all of the components of the entity."
-2. The `makeBaselineFromIndex` entity is exported. Many types of entities are just a singular thing and thus don't need (and aren't allowed to) include the `(..)` syntax.
+2. The `makeBaselineFromIndex` entity is exported. Many types of entities are just a singular thing and thus the `(..)` syntax is not applicable.
 3. The `Cohort.Attrition` module is reexported (this implies that `Cohort.Attrition` is imported somewhere in the module body).
 
 [source,haskell]
@@ -340,7 +341,7 @@ Suppose the export list looks like the following. Loosely speaking this means th
 
 ==== Haskell module exports: in more detail
 
-The full export specification is rather involved so we will not try to cover everything in full detail, but rather try to cover the most common cases. See https://www.haskell.org/onlinereport/haskell2010/haskellch5.html#x11-1000005.2[Export Lists in the Haskell 2010 Language Report] for complete documentation.
+The full export specification is rather involved so we will not try to cover everything in full detail, but rather try to cover the most common cases. See https://www.haskell.org/onlinereport/haskell2010/haskellch5.html#x11-1000005.2[Export Lists] in the Haskell 2010 Language Report for complete documentation.
 
 * Data types declared using a `data` or `newtype` declaration are typically exported by one of the following forms. Suppose we have the declaration `data Status = Include | Exclude`. Then
 ** The statement `Status(..)` exports the `Status` data type as well as all of its constructors, which in this case are `Include` and `Exclude`.
@@ -403,7 +404,7 @@ When you update the source code for a given module or modules that has already b
 
 === Managing scope in GHCi
 
-GHCi provides support for fine-grained control over what top-level declarations are available in the session (i.e. what is in scope).
+GHCi provides support for fine-grained control over what top-level declarations are available in the session (i.e. what is in scope). The following subsections describe that various mechanisms that can used to modify the scope. See https://downloads.haskell.org/~ghc/9.0.1/docs/html/users_guide/ghci.html#what-s-really-in-scope-at-the-prompt[What’s really in scope at the prompt?] for full details.
 
 ==== Module import *-form in GHCi
 

@@ -411,11 +411,27 @@ When a given module is imported in GHCi (i.e. added to the current scope) it can
 
 
 https://downloads.haskell.org/~ghc/9.0.1/docs/html/users_guide/ghci.html#the-effect-of-load-on-what-is-in-scope
+==== How module loads affect scope in GHCi
 
+When modules are loaded at GHCi startup (e.g. after invoking `cabal repl`) or through the `:load` command then a secondary effect of the load is that an automatic import is added to the scope for the most recently loaded target module. The effect of this import is that (i) the data and definitions of the module are made available to the top-level scope in GHCi, and (ii) all other bindings are removed from the top-level scope.
 
+==== Controlling what is in scope with `import`
 
+You can use the full Haskell `import` syntax to add a module's exports (or possibly a subset of them) to the scope. In the following example we add the exports from `ExampleFeatures1` and `ExampleFeatures1` to the scope. See https://downloads.haskell.org/~ghc/9.0.1/docs/html/users_guide/ghci.html#controlling-what-is-in-scope-with-import[Controlling what is in scope with import] in the GHC documentation for full details.
+[source,shell]
+----
+cabal repl hasklepias-main:examples
+----
+[source]
+----
+:show imports
 
+:import ExampleFeatures1
+:show imports
 
+:import ExampleEvents
+:show imports
+----
 
 
 

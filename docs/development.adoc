@@ -433,12 +433,26 @@ cabal repl hasklepias-main:examples
 :show imports
 ----
 
+==== Controlling what is in scope with the `:module` command in GHCi
 
+An alternative to using an `import` command to modify the scope is to use the `:module` command. In the following example we see three forms of the `:module` command: one with a `+` that adds module declarations to the current scope, one with a `-` that removes module declarations from the current scope, and one without either a `+` or a `-` that replaces the current scope with a new scope. Furthermore, each module that is imported by the `:module` command can be either a regular import or a *-form input. See https://downloads.haskell.org/~ghc/9.0.1/docs/html/users_guide/ghci.html#controlling-what-is-in-scope-with-the-module-command[Controlling what is in scope with the :module command] in the GHC documentation for full details.
+[source,shell]
+----
+cabal repl hasklepias-main:examples
+----
+[source]
+----
+:show imports
 
+:module + *ExampleCohort1 *ExampleEvents ExampleFeatures1 ExampleFeatures2
+:show imports
 
-In ghci you have access to all exposed functions in hasklepias, interval-algebra, and those in the examples folder.
+:module - ExampleEvents ExampleFeatures2
+:show imports
 
-=== Loading changes in GHCi
+:module *ExampleCohort1 *ExampleEvents
+:show imports
+----
 
 == Linting and Formatting
 

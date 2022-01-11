@@ -341,6 +341,26 @@ The following subsections provide a basic description of the Haskell module syst
 A Haskell program consists of a collection of modules. The primary purpose of modules is to provide a mechanism for namespacing. A module is defined as a Haskell declaration and is given a name. By convention, exactly one module is included per file with the filename sans suffix exactly matching the module name. So for example, if a module was named `Features`, then it would be the sole module included in the file `Features.hs`.
 
 Module names are required to be a sequence of one or more strings beginning with capital letters and separated by dots with no intervening spaces, such as e.g. `Features` or `Cohort.Core`. The `.` separator is provided to allow package authors to indicate a hierarchy, however the language itself considers all modules to belong to a flat namespace (in other words the `.` separators have no effect on the program). By convention, a module named `Cohort.Core` would be the sole module declared in the file `Cohort/Core.hs`.
+
+===== Haskell module declarations
+
+The standard form of a module declaration is defined by the keyword `module`, the module name, and an optional list of entities (enclosed in round parentheses) to be exported, followed by the `where` keyword, followed by the module body (there is also an abbreviated form of the module declaration provided for one special case that is not mentioned here). The body consists of 0 or more import declarations, followed by 0 or more top-level declarations. So in the following example the module is named `ExampleCohort1`, the export list has the single entity `exampleCohort1tests`, and the body consists of two import declarations followed by two top-level declarations.
+
+[source,haskell]
+----
+-- Module header
+module ExampleCohort1
+  ( exampleCohort1tests
+  ) where
+
+-- Import declarations
+import Cohort.Attrition
+import Hasklepias
+
+-- Top level declarations
+lookback455 :: Integer
+lookback455 = 455
+----
 In ghci you have access to all exposed functions in hasklepias, interval-algebra, and those in the examples folder.
 
 

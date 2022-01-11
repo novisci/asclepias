@@ -364,7 +364,29 @@ lookback455 = 455
 
 ==== Haskell module exports
 
-Each Haskell module can export 0 or more declarations. Declaration include things like data and type declarations, class and instance declarations, type signatures, function definitions, and so on. The full export specification is rather involved so we will not try to cover everything in full detail, but rather try to cover the most common cases. See https://www.haskell.org/onlinereport/haskell2010/haskellch5.html#x11-1000005.2[Export Lists in the Haskell 2010 Language Report] for complete documentation.
+Each Haskell module can export 0 or more declarations. Declarations include things like data and type declarations, class and instance declarations, type signatures, function definitions, and so on.
+
+Since this section requires some prior knowledge of Haskell to fully understand we have included two subsections, one which can be read during a first pass, and another which can be read at a later time if desired.
+
+===== Haskell module exports: first approximation
+
+Suppose the export list looks like the following. Loosely speaking this means the following.
+
+1. The `Status` entity is exported. The `(..)` syntax can be thought of as meaning "all of the components of the entity."
+2. The `makeBaselineFromIndex` entity is exported. Many types of entities are just a singular thing and thus don't need (and aren't allowed to) include the `(..)` syntax.
+3. The `Cohort.Attrition` module is reexported (this implies that `Cohort.Attrition` is imported somewhere in the module body).
+
+[source,haskell]
+----
+  ( Status(..)
+  , makeBaselineFromIndex
+  , module Cohort.Attrition
+  )
+----
+
+===== Haskell module exports: in more detail
+
+The full export specification is rather involved so we will not try to cover everything in full detail, but rather try to cover the most common cases. See https://www.haskell.org/onlinereport/haskell2010/haskellch5.html#x11-1000005.2[Export Lists in the Haskell 2010 Language Report] for complete documentation.
 
 * Data types declared using a `data` or `newtype` declaration are typically exported by one of the following forms. Suppose we have the declaration `data Status = Include | Exclude`. Then
 ** The statement `Status(..)` exports the `Status` data type as well as all of its constructors, which in this case are `Include` and `Exclude`.

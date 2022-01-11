@@ -284,18 +284,48 @@ rm -rf ~/.cache/hie-bios/dist-asclepias*
 
 == Interactive usage of GHC
 
-The GHC compiler provides an interactive environment (i.e. a read–eval–print loop or REPL) called GHCi (the "i" stands for "Interactive"). It can be very helpful to experiment with the REPL while writing Haskell code, much as you would with other programming languages like R or Python.
+The GHC compiler provides an interactive environment (i.e. a read–eval–print loop or REPL) called GHCi (the "i" stands for "Interactive"). It can be very helpful to experiment with the REPL while writing Haskell code, much as you would with other programming languages like R or Python. See https://downloads.haskell.org/~ghc/8.10.7/docs/html/users_guide/ghci.html[the Cabal documentation] for documentation on GHCi usage.
 
 === Starting GHCi in Cabal projects
 
 To run GHCi in a Cabal project you can use the `cabal repl` command followed by an optional target package component (by default `cabal repl` loads the first component in a package). There are many command-line arguments that can be provided with `cabal repl`, however for the sake of brevity these are not covered here. See `cabal repl --help` and https://cabal.readthedocs.io/en/3.6/cabal-commands.html#cabal-v2-repl[the Cabal documentation] for full details.
 
-The `cabal repl` command uses the same method of specifying a target package component as for `cabal build`. So for example, the following command will load the modules in the `examples` component of the `hasklepias-main` package into a GHCi session.
+The `cabal repl` command uses the same method of specifying a target package component as for `cabal build`. So for example, the following command will start GHCi and load the modules in the `examples` component of the `hasklepias-main` package into the session (see the <<Loading modules in GHCi>> section for more detail on what "load" means).
 [source,shell]
 ----
 cabal repl hasklepias-main:examples
 ----
 
+=== Managing module visibility in GHCi
+
+==== Loading modules in GHCi
+
+Loosely speaking, loading a module means that the data and definitions in the module are made known to GHCi. Loading a module is a prerequisite to adding the module data and definitions to the GHCi top-level scope (unless the module is part of a package known to GHCi). To see what modules are loaded in a GHCi session at any given time you can use the command `:show modules` in the REPL.
+
+When GHCi is invoked, all of the modules in the specified package component are loaded into GHCi. So for example, if GHCi is invoked using the command `cabal repl hasklepias-main:examples`, then the modules in the `examples` component of the `hasklepias-main` package are loaded into the session. Additionally, if you want to change which modules are loaded during your session then you can use the `:load` command in the REPL to (i) load 0 or more specified modules and (ii) to forget all of the previously loaded modules. We note however, that it is often more convenient to simply close the current GHCi session and start a new session with the desired package component automatically loaded.
+
+The following examples demonstrate how to view and change what modules are currently loaded.
+[source,shell]
+----
+cabal repl hasklepias-main:examples
+----
+[source]
+----
+:show modules
+
+:load ExampleCohort1
+:show modules
+
+:load ExampleCohort1 ExampleEvents
+:show modules
+----
+
+For more details see the following documentation.
+
+* https://cabal.readthedocs.io/en/3.6/cabal-package.html#opening-an-interpreter-session
+* https://downloads.haskell.org/~ghc/8.10.7/docs/html/users_guide/ghci.html#loading-source-files
+* https://downloads.haskell.org/~ghc/8.10.7/docs/html/users_guide/ghci.html#ghci-cmd-:load
+* https://downloads.haskell.org/~ghc/8.10.7/docs/html/users_guide/ghci.html#module-and-load
 In ghci you have access to all exposed functions in hasklepias, interval-algebra, and those in the examples folder.
 
 

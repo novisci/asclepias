@@ -282,6 +282,78 @@ If HLS ever stops working, you may need to clear the cache:
 rm -rf ~/.cache/hie-bios/dist-asclepias*
 ----
 
+== The Haskell module system
+
+Gaining familiarity with the Haskell module system is helpful in becoming proficient with the asclepias Haskell libraries. Furthermore,  To fully understand how the provided mechanisms work, we will first need a basic understanding of Haskell modules and how they are used to manage namespacing.
+The following subsections provide a basic description of the Haskell module system. Please see the following documentation for more details.
+
+* https://www.haskell.org/tutorial/modules.html
+* https://www.haskell.org/onlinereport/haskell2010/haskellch5.html
+
+=== Haskell module overview
+
+A Haskell program consists of a collection of modules. The primary purpose of modules is to provide a mechanism for namespacing. A module is defined as a Haskell declaration and is given a name. By convention, exactly one module is included per file with the filename sans suffix exactly matching the module name. So for example, if a module was named `Features`, then it would be the sole module included in the file `Features.hs`.
+
+Module names are required to be a sequence of one or more strings beginning with capital letters and separated by dots with no intervening spaces, such as e.g. `Features` or `Cohort.Core`. The `.` separator is provided to allow package authors to indicate a hierarchy, however the language itself considers all modules to belong to a flat namespace (in other words the `.` separators have no effect on the program). By convention, a module named `Cohort.Core` would be the sole module declared in the file `Cohort/Core.hs`.
+
+=== Haskell module declarations
+
+The standard form of a module declaration is defined by the keyword `module`, the module name, and an optional list of entities (enclosed in round parentheses) to be exported, followed by the `where` keyword, followed by the module body (there is also an abbreviated form of the module declaration provided for one special case that is not mentioned here). The body consists of 0 or more import declarations, followed by 0 or more top-level declarations. So in the following example the module is named `ExampleCohort1`, the export list has the single entity `exampleCohort1tests`, and the body consists of two import declarations followed by two top-level declarations.
+
+[source,haskell]
+----
+-- Module header
+module ExampleCohort1
+  ( exampleCohort1tests
+  ) where
+
+-- Import declarations
+import Cohort.Attrition
+import Hasklepias
+
+-- Top level declarations
+lookback455 :: Integer
+lookback455 = 455
+----
+
+=== Haskell module exports
+
+Each Haskell module can export 0 or more declarations. Declarations include things like data and type declarations, class and instance declarations, type signatures, function definitions, and so on.
+
+Since this section requires some prior knowledge of Haskell to fully understand it we have included two subsections, one which can be read during a first pass, and another which can be read at a later time if desired.
+
+==== Haskell module exports: first approximation
+
+Suppose the export list looks like the following. Loosely speaking this means the following.
+
+1. The `Status` entity is exported. The `(..)` syntax can be thought of as meaning "all of the components of the entity."
+2. The `makeBaselineFromIndex` entity is exported. Many types of entities are just a singular thing and thus don't need (and aren't allowed to) include the `(..)` syntax.
+3. The `Cohort.Attrition` module is reexported (this implies that `Cohort.Attrition` is imported somewhere in the module body).
+
+[source,haskell]
+----
+  ( Status(..)
+  , makeBaselineFromIndex
+  , module Cohort.Attrition
+  )
+----
+
+==== Haskell module exports: in more detail
+
+The full export specification is rather involved so we will not try to cover everything in full detail, but rather try to cover the most common cases. See https://www.haskell.org/onlinereport/haskell2010/haskellch5.html#x11-1000005.2[Export Lists in the Haskell 2010 Language Report] for complete documentation.
+
+* Data types declared using a `data` or `newtype` declaration are typically exported by one of the following forms. Suppose we have the declaration `data Status = Include | Exclude`. Then
+** The statement `Status(..)` exports the `Status` data type as well as all of its constructors, which in this case are `Include` and `Exclude`.
+** The statement `Status` exports the `Status` data type but not its constructors (which makes the data type an `abstract data type`, i.e. you can't construct one "by hand").
+* Data types declared using a `type` declaration are exported using the type name.
+* Values are exported by providing the value name.
+* Classes are typically exported by using the following form. Suppose that we have a declared a class `Predicatable` with methods `(|||)` and `&&&`. Then the form `Predicatable(..)` exports the `Predicatable` class as well as all of its methods, which in this case are `(|||)` and `(&&&)`. It is also possible to export `Predictable` without exporting all of its method declarations, but this is usually not very useful.
+* Imported modules can be reexported by using the following form. Suppose that we import the module `Cohort.Attrition`, then we can reexport the module using the statement `Module Cohort.Attrition`.
+
+=== Haskell module imports
+
+TODO: https://www.haskell.org/onlinereport/haskell2010/haskellch5.html#x11-990005.1
+
 == Interactive usage of GHC
 
 The GHC compiler provides an interactive environment (i.e. a read–eval–print loop or REPL) called GHCi (the "i" stands for "Interactive"). It can be very helpful to experiment with the REPL while writing Haskell code, much as you would with other programming languages like R or Python. See https://downloads.haskell.org/~ghc/8.10.7/docs/html/users_guide/ghci.html[the Cabal documentation] for documentation on GHCi usage.
@@ -327,77 +399,26 @@ For more details see the following documentation.
 
 === Managing scope in GHCi
 
-GHCi provides support for fine-grained control over what top-level declarations are available in the session (i.e. what is in scope). To fully understand how the provided mechanisms work, we will first need a basic understanding of Haskell modules and how they are used to manage namespacing.
+GHCi provides support for fine-grained control over what top-level declarations are available in the session (i.e. what is in scope).
 
-==== The Haskell module system
+==== How `:load` affects scope in GHCi
 
-The following subsections provide a basic description of the Haskell module system. Please see the following documentation for more details.
+When modules are loaded at GHCi startup (e.g. after invoking `cabal repl`) or through the `:load` command then a secondary effect of the load is that an automatic import is added to the scope for the most recently loaded target module. The effect of this import is that (i) the data and definitions of the module are made available to the top-level scope in GHCi, and (ii) all other bindings are removed from the top-level scope.
 
-* https://www.haskell.org/tutorial/modules.html
-* https://www.haskell.org/onlinereport/haskell2010/haskellch5.html
 
-===== Haskell module overview
+https://downloads.haskell.org/~ghc/9.0.1/docs/html/users_guide/ghci.html#the-effect-of-load-on-what-is-in-scope
 
-A Haskell program consists of a collection of modules. The primary purpose of modules is to provide a mechanism for namespacing. A module is defined as a Haskell declaration and is given a name. By convention, exactly one module is included per file with the filename sans suffix exactly matching the module name. So for example, if a module was named `Features`, then it would be the sole module included in the file `Features.hs`.
 
-Module names are required to be a sequence of one or more strings beginning with capital letters and separated by dots with no intervening spaces, such as e.g. `Features` or `Cohort.Core`. The `.` separator is provided to allow package authors to indicate a hierarchy, however the language itself considers all modules to belong to a flat namespace (in other words the `.` separators have no effect on the program). By convention, a module named `Cohort.Core` would be the sole module declared in the file `Cohort/Core.hs`.
 
-===== Haskell module declarations
 
-The standard form of a module declaration is defined by the keyword `module`, the module name, and an optional list of entities (enclosed in round parentheses) to be exported, followed by the `where` keyword, followed by the module body (there is also an abbreviated form of the module declaration provided for one special case that is not mentioned here). The body consists of 0 or more import declarations, followed by 0 or more top-level declarations. So in the following example the module is named `ExampleCohort1`, the export list has the single entity `exampleCohort1tests`, and the body consists of two import declarations followed by two top-level declarations.
 
-[source,haskell]
-----
--- Module header
-module ExampleCohort1
-  ( exampleCohort1tests
-  ) where
 
--- Import declarations
-import Cohort.Attrition
-import Hasklepias
 
--- Top level declarations
-lookback455 :: Integer
-lookback455 = 455
-----
 
-==== Haskell module exports
-
-Each Haskell module can export 0 or more declarations. Declarations include things like data and type declarations, class and instance declarations, type signatures, function definitions, and so on.
-
-Since this section requires some prior knowledge of Haskell to fully understand we have included two subsections, one which can be read during a first pass, and another which can be read at a later time if desired.
-
-===== Haskell module exports: first approximation
-
-Suppose the export list looks like the following. Loosely speaking this means the following.
-
-1. The `Status` entity is exported. The `(..)` syntax can be thought of as meaning "all of the components of the entity."
-2. The `makeBaselineFromIndex` entity is exported. Many types of entities are just a singular thing and thus don't need (and aren't allowed to) include the `(..)` syntax.
-3. The `Cohort.Attrition` module is reexported (this implies that `Cohort.Attrition` is imported somewhere in the module body).
-
-[source,haskell]
-----
-  ( Status(..)
-  , makeBaselineFromIndex
-  , module Cohort.Attrition
-  )
-----
-
-===== Haskell module exports: in more detail
-
-The full export specification is rather involved so we will not try to cover everything in full detail, but rather try to cover the most common cases. See https://www.haskell.org/onlinereport/haskell2010/haskellch5.html#x11-1000005.2[Export Lists in the Haskell 2010 Language Report] for complete documentation.
-
-* Data types declared using a `data` or `newtype` declaration are typically exported by one of the following forms. Suppose we have the declaration `data Status = Include | Exclude`. Then
-** The statement `Status(..)` exports the `Status` data type as well as all of its constructors, which in this case are `Include` and `Exclude`.
-** The statement `Status` exports the `Status` data type but not its constructors (which makes the data type an `abstract data type`, i.e. you can't construct one "by hand").
-* Data types declared using a `type` declaration are exported using the type name.
-* Values are exported by providing the value name.
-* Classes are typically exported by using the following form. Suppose that we have a declared a class `Predicatable` with methods `(|||)` and `&&&`. Then the form `Predicatable(..)` exports the `Predicatable` class as well as all of its methods, which in this case are `(|||)` and `(&&&)`. It is also possible to export `Predictable` without exporting all of its method declarations, but this is usually not very useful.
-* Imported modules can be reexported by using the following form. Suppose that we import the module `Cohort.Attrition`, then we can reexport the module using the statement `Module Cohort.Attrition`.
 
 In ghci you have access to all exposed functions in hasklepias, interval-algebra, and those in the examples folder.
 
+=== Loading changes in GHCi
 
 == Linting and Formatting
 

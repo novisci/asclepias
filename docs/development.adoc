@@ -397,6 +397,10 @@ For more details see the following documentation.
 * https://downloads.haskell.org/~ghc/8.10.7/docs/html/users_guide/ghci.html#ghci-cmd-:load
 * https://downloads.haskell.org/~ghc/8.10.7/docs/html/users_guide/ghci.html#module-and-load
 
+=== Reloading updated modules in GHCi
+
+When you update the source code for a given module or modules that has already been loaded and you want GHCi to recompile the program, you can use the `:reload` command.
+
 === Managing scope in GHCi
 
 GHCi provides support for fine-grained control over what top-level declarations are available in the session (i.e. what is in scope).

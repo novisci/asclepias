@@ -409,8 +409,19 @@ GHCi provides support for fine-grained control over what top-level declarations 
 
 When a given module is imported in GHCi (i.e. added to the current scope) it can be in one of two forms: the usual import form and a so-called *-form. The regular form places the module exports in scope, whereas the *-form places all top-level bindings in the module in scope.
 
+==== Viewing the current scope in GHCi
 
-https://downloads.haskell.org/~ghc/9.0.1/docs/html/users_guide/ghci.html#the-effect-of-load-on-what-is-in-scope
+Use the command `:show imports` to list the modules that are currently in scope, and the command `:show bindings` to list any binding that were declared directly in the REPL.
+
+Suppose that the output of `:show imports` looks like the following. This can be read as meaning that the exports from the `ExampleEvents` and `ExampleFeatures1` modules are in scope, whereas the entirety of the `ExampleCohort1` and the `Main` modules are in scope (i.e. they are *-form imports).
+[source]
+----
+:module +*ExampleCohort1
+import ExampleEvents
+import ExampleFeatures1
+:module +*Main -- added automatically
+----
+
 ==== How module loads affect scope in GHCi
 
 When modules are loaded at GHCi startup (e.g. after invoking `cabal repl`) or through the `:load` command then a secondary effect of the load is that an automatic import is added to the scope for the most recently loaded target module. The effect of this import is that (i) the data and definitions of the module are made available to the top-level scope in GHCi, and (ii) all other bindings are removed from the top-level scope.

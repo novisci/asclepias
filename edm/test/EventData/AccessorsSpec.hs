@@ -3,6 +3,7 @@ module EventData.AccessorsSpec
   ( spec
   ) where
 
+import           Data.Aeson                     ( decode, eitherDecode )
 import           Data.Functor.Contravariant
 import           Data.Maybe                     ( Maybe(Nothing) )
 import           Data.Set                       ( fromList )
@@ -17,6 +18,7 @@ import           EventData.Context             as HC
 import           EventData.Context.Domain
 import           EventData.Predicates
 import           IntervalAlgebra
+import qualified Data.ByteString.Lazy          as B
 import           Test.Hspec                     ( Spec
                                                 , it
                                                 , shouldBe
@@ -38,7 +40,6 @@ demoYear :: Domain
 demoYear =
   Demographics $ DemographicsFacts (DemographicsInfo BirthYear (Just "1987"))
 
-
 evntGender :: Event Int
 evntGender = event
   (beginerval (4 :: Int) (2 :: Int))
@@ -51,6 +52,15 @@ evntGender = event
 evntYear :: Event Int
 evntYear = event (beginerval (4 :: Int) (2 :: Int))
                  (HC.context demoYear (packConcepts []) Nothing)
+
+enrollEvent :: B.ByteString
+enrollEvent = 
+  "[\"abc\",0,1,\"Enrollment\",[]\
+  \,{\"patient_id\":\"abc\"\
+  \,\"time\":{\"begin\":0,\"end\":1}\
+  \,\"domain\":\"Enrollment\"\
+  \,\"facts\":{\"plan\":{\"benefit\":\"PPO\",\"exchange\":\"None\"}}}]"
+
 
 spec :: Spec
 spec = do
@@ -69,3 +79,6 @@ spec = do
   it "viewBirthYears on demographic event"
     $          viewBirthYears [evntYear]
     `shouldBe` [1987]
+  it "viewBenefits on enrollment event"
+    $         (fmap viewBenefits (sequenceA [decode enrollEvent :: Maybe (Event Int)]))
+    `shouldBe` Just ["PPO"]

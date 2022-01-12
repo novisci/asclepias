@@ -534,7 +534,12 @@ cabal repl hasklepias-main:examples
 
 == Linting and Formatting
 
-The CI process checks that code in the repository is appropriately formatted and linted, using the https://hackage.haskell.org/package/brittany[`brittany`] and  https://github.com/ndmitchell/hlint[`hlint`] tools respectively. 
+The CI process checks that code in the repository is appropriately formatted and linted, 
+using the 
+https://hackage.haskell.org/package/brittany[`brittany`]
+and
+https://github.com/ndmitchell/hlint[`hlint`] 
+tools respectively. 
 
 You can install these locally using (e.g.) `cabal`:
 

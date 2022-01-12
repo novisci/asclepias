@@ -84,7 +84,7 @@ Additional language extensions can be (and typically are) specified by various m
 
 The asclepias repository is organized using a multiple project setup. In more detail, some of the subdirectories of the repository such as `hasklepias-core`, `hasklepias-main`, etc. contain a Cabal package which we sometimes more generically call a "project" or "sub-project".
 
-Note that in the following sections we often refer to a Haskell _module_, which for the time-being can be thought of as the contents of a Haskell file (but see the <<The Haskell module system>> section for a complete definition).
+Note that in the following sections we often refer to a Haskell _module_, which for the time-being can be thought of as the contents of a Haskell file (but see the <<The Haskell module system>> section for a more complete definition).
 
 === Cabal packaging overview
 
@@ -120,7 +120,7 @@ Some fields expect lists for their specified values which for a given field can 
 
 Consider the following abridged version of the `hasklepias-main.cabal` file. In this example we see the top-level fields (i.e. the package properties) `cabal-version`, `name`, and `version`, and following these fields we see a total of three sections. The first section has a "library" component type, and because its name is omitted (i.e. there is no text to the right of the `library` keyword) this is taken to be the sole publicly exposed library for the package, and is given the same name as is specified by the `name` field (i.e. `hasklepias-main`). The second section has a "test-suite" component type, and is given the name `examples`. The third section has an "executable" component type, and is given the name `exampleApp`.
 
-The visibility of a given module in a package is controlled by the `other-modules`, `exposed-modules` and `main-is` fields. Note that every package module _must_ be listed in one of these fields.
+The visibility of a given module in a package is controlled by the `other-modules`, `exposed-modules` and `main-is` fields. Note that every package module _must_ be listed in one of these fields. The meanings of these fields are described below.
 
 * `exposed-modules`: a list of modules exposed to users of the package (note that this field is applicable only to libraries). Here "exposed" means that package users are able access the functions and data exported by a given exposed module.
 * `other-modules:`: a list of modules used by the component but not exposed to users.
@@ -202,7 +202,7 @@ Note that by default Cabal doesn't compile the test suite or benchmarking module
 
 ==== Compiling asclepias packages one-at-a-time
 
-Alternatively, you can build the packages one-at-a-time using a command of the following form. This is useful when you are working on a particular project and don't want to compile everything at once in order to save time. Note that compiling a given package will still cause you to compile all of its dependencies, so the first time you compile a package can still take quite a long time if you have many dependencies to compile.
+Alternatively, you can build the packages one-at-a-time using a command of the following form. This is useful when you are working on a particular package and don't want to compile everything at once in order to save time. Note however that compiling a package will still cause you to compile all of its dependencies, so even if you limit yourself to a single package it can still take quite a long time the first time that you do it.
 [source,shell]
 ----
 cabal update
@@ -222,7 +222,7 @@ In addition to specifying a package name to compile, the `cabal build` command a
 
 Typically package components are identified using the form `package:component` (the available syntax is actually more flexible than the form shown here). So for example, you could use the command `hasklepias-main:examples` to compile the `examples` component from the `hasklepias-main` package.
 
-Additionally you can use one of the forms `package:ctype` or `all:ctype` to compile all components of the specified type (i.e. the `ctype`) for a given package or across all packages, respectively. So for example, you could use the command `hasklepias-main:executables` to compile any components with a library component type from the `hasklepias-main` package (of which there happens to be one component, i.e. the `exampleApp` component), or the command `all:executables` to compile any components with a library component type from any package the asclepias repository.
+Additionally you can use one of the forms `package:ctype` or `all:ctype` to compile all components of the specified type (i.e. the `ctype`) for a given package or across all packages, respectively. So for example, you could use the command `hasklepias-main:executables` to compile any components with an executable component type from the `hasklepias-main` package (of which there happens to be one component, i.e. the `exampleApp` component), or the command `all:executables` to compile any components with an executable component type from any package the asclepias repository.
 
 There are other ways of specifying a component by specifying either a module name or the filepath of a module that belongs to the target component, however we do not cover those approaches here.
 [source,shell]
@@ -273,7 +273,7 @@ Since the asclepias repository has a multiple project layout (i.e. hasklepias-co
 
 To resolve this issue, the asclepias repository provides a file `hie.yaml` in the repository root that specifies the HLS configuration for all of the projects in the repository (see the https://github.com/haskell/hie-bios[hie-bios documentation] for details). As a result of this setup, you can run a single HLS server that will work correctly for all of the projects in the repository. If you are asked by your editor to specify what directory to start HLS in then you can use the repository root directory.
 
-Note that some editors may automatically detect the hie-bios configuration setup in the repository and just "do the right thing." If you open a Haskell file in your editor and LSP seems to be working properly then you are probably good-to-go.
+Note that some editors may automatically detect the hie-bios configuration setup in the repository and just "do the right thing." If you open a Haskell file in your editor and the LSP client seems to be working properly then you are probably good-to-go.
 
 ==== Troubleshooting HLS
 
@@ -286,7 +286,7 @@ rm -rf ~/.cache/hie-bios/dist-asclepias*
 
 == The Haskell module system
 
-Gaining familiarity with the Haskell module system is helpful in becoming proficient with the asclepias Haskell libraries. Furthermore, to fully understand how the provided mechanisms work we will need a basic understanding of Haskell modules and how they are used to manage namespacing. The following subsections provide a basic description of the Haskell module system, but for a complete description please see the following documentation.
+Gaining familiarity with the Haskell module system is helpful in becoming proficient with Hasklepias. Furthermore, to fully understand how the provided mechanisms work we will need a basic understanding of Haskell modules and how they are used to manage namespacing. The following subsections provide a basic description of the Haskell module system, but for a complete description please see the following documentation.
 
 * https://www.haskell.org/tutorial/modules.html[Modules] in A Gentle Introduction to Haskell.
 * https://www.haskell.org/onlinereport/haskell2010/haskellch5.html[Modules] in the Haskell 2010 Language Report.
@@ -325,7 +325,7 @@ Since this section requires some prior knowledge of Haskell to fully understand 
 
 ==== Haskell module exports: first approximation
 
-Suppose the export list looks like the following. Loosely speaking this means the following.
+Suppose the export list looks like the example shown below. Loosely speaking this means the following.
 
 1. The `Status` entity is exported. The `(..)` syntax can be thought of as meaning "all of the components of the entity."
 2. The `makeBaselineFromIndex` entity is exported. Many types of entities are just a singular thing and thus the `(..)` syntax is not applicable.
@@ -348,14 +348,14 @@ The full export specification is rather involved so we will not try to cover eve
 ** The statement `Status` exports the `Status` data type but not its constructors (which makes the data type an `abstract data type`, i.e. you can't construct one "by hand").
 * Data types declared using a `type` declaration are exported using the type name.
 * Values are exported by providing the value name.
-* Classes are typically exported by using the following form. Suppose that we have a declared a class `Predicatable` with methods `(|||)` and `&&&`. Then the form `Predicatable(..)` exports the `Predicatable` class as well as all of its methods, which in this case are `(|||)` and `(&&&)`. It is also possible to export `Predictable` without exporting all of its method declarations, but this is usually not very useful.
+* Classes are typically exported by using the following form. Suppose that we have a declared a class `Predicatable` with methods `(|||)` and `(&&&)`. Then the form `Predicatable(..)` exports the `Predicatable` class as well as all of its methods, which in this case are `(|||)` and `(&&&)`. It is also possible to export `Predictable` without exporting all of its method declarations, but this is usually not very useful.
 * Imported modules can be reexported by using the following form. Suppose that we import the module `Cohort.Attrition`, then we can reexport the module using the statement `Module Cohort.Attrition`.
 
 === Haskell module imports
 
 Understanding how Haskell module imports function can be helpful in gaining facility with asclepias since it enables you to trace back where various entities are defined or created. At a high level, an import serves to add 0 or more entities to the module top-level scope. A full definition of module imports can be found in https://www.haskell.org/onlinereport/haskell2010/haskellch5.html#x11-1010005.3[Import Declarations] in the GHC documentation.
 
-One concept that module imports provide is that of _qualified_ and _non-qualified_ imports (non-qualified imports are usually referred to simply as "imports"). Suppose that we were to specify a qualified import of the `ExampleEvents` module (see Example 1 below). This would mean that a given entity exported from within `ExampleEvents` has to be referred to via the `ExampleEvents` namespace. So suppose that `ExampleEvents` exports an entity `exampleEvents1`, then the default syntax to refer to this entity would be `ExampleEvents.exampleEvents1`. There is also a way to specify an alternative name for the namespace such as `EE` instead of ExampleEvents to make it more convenient to use within the module (see Example 2 below). On the other hand, a non-qualified import would simply place all of the exported entities from ExampleEvents into the top-level scope (see Example 3 below). So in that case you can just refer to `exampleEvents1` directly.
+One concept that module imports provide is that of _qualified_ and _non-qualified_ imports (non-qualified imports are usually referred to simply as "imports"). Suppose that we were to specify a qualified import of the `ExampleEvents` module (see Example 1 below). This would mean that a given entity exported from within `ExampleEvents` has to be referred to via the `ExampleEvents` namespace. So if for example `ExampleEvents` exports an entity `exampleEvents1`, then the default syntax to refer to this entity would be `ExampleEvents.exampleEvents1`. There is also a way to specify an alternative name for the namespace such as `EE` instead of ExampleEvents to make it more convenient to use within the module (see Example 2 below). On the other hand, a non-qualified import would simply place all of the exported entities from ExampleEvents into the top-level scope (see Example 3 below). In that case you can just refer to `exampleEvents1` directly.
 
 The module import system also allows you to import a subset of the exported entities from a given module. To do this you can either provide a list of entities to include from the module exports (see Example 4 below), or conversely you can provide a list of entities to remove from the module exports (see Example 5 below).
 
@@ -374,8 +374,8 @@ import qualified ExampleEvents as EE
 ----
 [source,haskell]
 ----
--- Example 3. Add all exported entities from `ExampleEvents` to the top-level
--- scope
+-- Example 3. All exported entities from `ExampleEvents` are added to the
+-- top-level scope
 import ExampleEvents
 ----
 [source,haskell]
@@ -397,7 +397,7 @@ The GHC compiler provides an interactive environment (i.e. a read–eval–print
 
 === Starting GHCi in Cabal projects
 
-To run GHCi in a Cabal project you can use the `cabal repl` command followed by an optional target package component (by default `cabal repl` loads the first component in a package). There are many command-line arguments that can be provided with `cabal repl`, however for the sake of brevity these are not covered here. See `cabal repl --help` and https://cabal.readthedocs.io/en/3.6/cabal-commands.html#cabal-v2-repl[cabal repl] in the Cabal documentation for full details.
+To run GHCi in a Cabal project you can use the `cabal repl` command followed by an optional target package or package component (if the component is not specified `cabal repl` loads the first component in a package). There are many command-line arguments that can be provided with `cabal repl`, however for the sake of brevity these are not covered here. See `cabal repl --help` and https://cabal.readthedocs.io/en/3.6/cabal-commands.html#cabal-v2-repl[cabal repl] in the Cabal documentation for full details.
 
 The `cabal repl` command uses the same method of specifying a target package component as for `cabal build` (see the <<Compiling asclepias packages>> section for details). So for example, the following command will start GHCi and load the modules in the `examples` component of the `hasklepias-main` package into the session (see the <<Loading modules into GHCi>> section for more detail on what "load" means).
 [source,shell]
@@ -409,7 +409,7 @@ cabal repl hasklepias-main:examples
 
 Loosely speaking, loading a module means that the declarations in the module are made known to GHCi. Loading a module is a prerequisite to adding the module data and definitions to the GHCi top-level scope (unless the module is part of a package known to GHCi). To see what modules are loaded in a GHCi session at any given time you can use the command `:show modules` in the REPL.
 
-When GHCi is invoked through `cabal repl` all of the modules in the specified package component are loaded into GHCi. So for example, if GHCi is invoked using the command `cabal repl hasklepias-main:examples`, then the modules in the `examples` component of the `hasklepias-main` package are loaded into the session. Additionally, if you want to change which modules are loaded during your session then you can use the `:load` command in the REPL to (i) load 0 or more specified modules and (ii) to forget all of the previously loaded modules. We note however, that it is often more convenient to simply close the current GHCi session and start a new session with a new package component loaded.
+When GHCi is invoked through `cabal repl` all of the modules in the specified package component are loaded into GHCi. So for example, if GHCi is invoked using the command `cabal repl hasklepias-main:examples`, then the modules in the `examples` component of the `hasklepias-main` package are loaded into the session. Additionally, if you want to change which modules are loaded during your session then you can use the `:load` command in the REPL to (i) load 0 or more specified modules and (ii) to forget all of the previously loaded modules. We note however, that it is often more convenient to simply close the current GHCi session and start a new session with the modules from a different package component loaded.
 
 The following examples demonstrate how to view and change what modules are currently loaded.
 [source,shell]

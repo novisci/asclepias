@@ -74,7 +74,7 @@ As you find your way around the asclepias project, you may notice that in the su
 
 As you find your way around the asclepias project, you may notice that in the sub-project Cabal package description files (i.e. the files with filenames ending in `.cabal`) that the `default-language` is specified as `Haskell2010`, which refers to the https://www.haskell.org/onlinereport/haskell2010/[Haskell 2010 language report], and is the current definition of the Haskell language (also see https://en.wikipedia.org/wiki/Haskell_(programming_language)#Haskell_2010[Haskell 2010] in Wikipedia and https://wiki.haskell.org/Language_and_library_specification#The_Haskell_2010_report[The Haskell 2010 report] in The Haskell Wiki). GHC versions 8.0.2 and later implement the Haskell 2010 language report.
 
-Although the Haskell language definition itself has stayed stable since the Haskell 2010 language report, the GHC compiler supports the adoption of new language features through the use of _language extensions_, which are opt-in non-standard language features. One of the effects of the specifying the Haskell 2010 language is that the language extensions listed in the https://downloads.haskell.org/~ghc/8.10.7/docs/html/users_guide/glasgow_exts.html#extension-Haskell2010[Haskell 2010 Language Extensions] in the GHC documentation are enabled by GHC.
+Although the Haskell language definition itself has stayed stable since the Haskell 2010 language report, the GHC compiler supports the adoption of new language features through the use of _language extensions_, which are opt-in non-standard language features. One of the effects of the specifying the Haskell 2010 language is that the language extensions listed in the https://downloads.haskell.org/~ghc/9.0.1/docs/html/users_guide/glasgow_exts.html#extension-Haskell2010[Haskell 2010 Language Extensions] in the GHC documentation are enabled by GHC.
 
 Additional language extensions can be (and typically are) specified by various mechanisms in the sub-project Cabal package description files and/or in the source code files themselves as described in the https://kowainik.github.io/posts/extensions[Extensions] blog post by Veronika Romashkina.
 
@@ -393,7 +393,7 @@ import ExampleEvents hiding (exampleSubject1, exampleSubject2)
 
 == Interactive usage of GHC
 
-The GHC compiler provides an interactive environment (i.e. a read–eval–print loop or REPL) called GHCi (the "i" stands for "Interactive"). It can be very helpful to experiment with the REPL while writing Haskell code, much as you would with other programming languages like R or Python. See https://downloads.haskell.org/~ghc/8.10.7/docs/html/users_guide/ghci.html[Using GHCi] in the Cabal documentation for the full GHCi documentation.
+The GHC compiler provides an interactive environment (i.e. a read–eval–print loop or REPL) called GHCi (the "i" stands for "Interactive"). It can be very helpful to experiment with the REPL while writing Haskell code, much as you would with other programming languages like R or Python. See https://downloads.haskell.org/~ghc/9.0.1/docs/html/users_guide/ghci.html[Using GHCi] in the Cabal documentation for the full GHCi documentation.
 
 === Starting GHCi in Cabal projects
 
@@ -430,13 +430,13 @@ cabal repl hasklepias-main:examples
 For more details see the following documentation.
 
 * https://cabal.readthedocs.io/en/3.6/cabal-package.html#opening-an-interpreter-session[Opening an interpreter session] in the Cabal documentation
-* https://downloads.haskell.org/~ghc/8.10.7/docs/html/users_guide/ghci.html#loading-source-files[Loading source files] in the GHC documentation
-* https://downloads.haskell.org/~ghc/8.10.7/docs/html/users_guide/ghci.html#ghci-cmd-:load[GHCi commands :load] in the GHC documentation
-* https://downloads.haskell.org/~ghc/8.10.7/docs/html/users_guide/ghci.html#module-and-load[:module and :load] in the GHC documentation
+* https://downloads.haskell.org/~ghc/9.0.1/docs/html/users_guide/ghci.html#loading-source-files[Loading source files] in the GHC documentation
+* https://downloads.haskell.org/~ghc/9.0.1/docs/html/users_guide/ghci.html#ghci-cmd-:load[GHCi commands :load] in the GHC documentation
+* https://downloads.haskell.org/~ghc/9.0.1/docs/html/users_guide/ghci.html#module-and-load[:module and :load] in the GHC documentation
 
 === Reloading updated modules in GHCi
 
-When you update the source code for a given module or modules that have already been loaded and you want GHCi to recompile the program, you can use the `:reload` command. See https://downloads.haskell.org/~ghc/8.10.7/docs/html/users_guide/ghci.html#ghci-cmd-:reload[GHCi commands :reload] in the GHC documentation for details.
+When you update the source code for a given module or modules that have already been loaded and you want GHCi to recompile the program, you can use the `:reload` command. See https://downloads.haskell.org/~ghc/9.0.1/docs/html/users_guide/ghci.html#ghci-cmd-:reload[GHCi commands :reload] in the GHC documentation for details.
 
 === Managing scope in GHCi
 
@@ -473,7 +473,7 @@ fib = 1 : scanl (+) 1 fib
 
 When modules are loaded at GHCi startup (e.g. after invoking `cabal repl`) or through the `:load` command then a secondary effect of the load is that an automatic import is added to the scope for the most recently loaded target module. The effect of this import is that (i) the data and definitions of the module are made available to the top-level scope in GHCi, and (ii) all other bindings are removed from the top-level scope.
 
-Note that the above effects also occur for the `:add` and `:reload` commands. See https://downloads.haskell.org/~ghc/8.10.7/docs/html/users_guide/ghci.html#the-effect-of-load-on-what-is-in-scope[The effect of :load on what is in scope] in the GHC documentation for more details.
+Note that the above effects also occur for the `:add` and `:reload` commands. See https://downloads.haskell.org/~ghc/9.0.1/docs/html/users_guide/ghci.html#the-effect-of-load-on-what-is-in-scope[The effect of :load on what is in scope] in the GHC documentation for more details.
 
 ==== Controlling what is in scope with the 'import' comand in GHCi
 

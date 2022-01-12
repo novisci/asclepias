@@ -450,22 +450,34 @@ When a given module is imported in GHCi (i.e. added to the current scope) it can
 
 Use the command `:show imports` to list the modules that are currently in scope, and the command `:show bindings` to list any binding that were declared directly in the REPL.
 
-Suppose that the output of `:show imports` looks like the following. This can be read as meaning that the exports from the `ExampleEvents` and `ExampleFeatures1` modules are in scope, whereas the entirety of the `ExampleCohort1` and the `Main` modules are in scope (i.e. they are *-form imports).
+In the following example we first start a new GHCi session and define the object `fib`. The subsequent `:show bindings` command then reports that the only binding made at the prompt was for `lib`. Next we use `:module` command to add several modules into the scope (see the <<Controlling what is in scope with the ':module' command in GHCi>> section for a description of `:module`). Then a subsequent `:show imports` command provides the output shown below. This can be read as meaning that the exports from the `ExampleEvents` and `ExampleFeatures1` modules are in scope, whereas the entirety of the `ExampleCohort1` and the `Main` modules are in scope (i.e. they are *-form imports).
+[source,shell]
+----
+cabal repl hasklepias-main:examples
+----
 [source]
 ----
-:module +*ExampleCohort1
-import ExampleEvents
-import ExampleFeatures1
-:module +*Main -- added automatically
+fib = 1 : scanl (+) 1 fib
+:show bindings
+-- fib :: Num a => [a] = _
+
+:module +*ExampleCohort1 ExampleEvents ExampleFeatures1
+:show imports
+-- :module +*ExampleCohort1
+-- import ExampleEvents
+-- import ExampleFeatures1
+-- :module +*Main -- added automatically
 ----
 
 ==== How module loads affect scope in GHCi
 
 When modules are loaded at GHCi startup (e.g. after invoking `cabal repl`) or through the `:load` command then a secondary effect of the load is that an automatic import is added to the scope for the most recently loaded target module. The effect of this import is that (i) the data and definitions of the module are made available to the top-level scope in GHCi, and (ii) all other bindings are removed from the top-level scope.
 
-==== Controlling what is in scope with `import`
+Note that the above effects also occur for the `:add` and `:reload` commands. See https://downloads.haskell.org/~ghc/8.10.7/docs/html/users_guide/ghci.html#the-effect-of-load-on-what-is-in-scope[The effect of :load on what is in scope] in the GHC documentation for more details.
 
-You can use the full Haskell `import` syntax to add a module's exports (or possibly a subset of them) to the scope. In the following example we add the exports from `ExampleFeatures1` and `ExampleFeatures1` to the scope. See https://downloads.haskell.org/~ghc/9.0.1/docs/html/users_guide/ghci.html#controlling-what-is-in-scope-with-import[Controlling what is in scope with import] in the GHC documentation for full details.
+==== Controlling what is in scope with the 'import' comand in GHCi
+
+You can use the usual Haskell `import` syntax to add a module's exports (or possibly a subset of them) to the scope. In the following example we sequentially add the exports from `ExampleFeatures1` and `ExampleFeatures1` to the scope, but note that the effect is cumulative (i.e. each module is successively added to the scope). See https://downloads.haskell.org/~ghc/9.0.1/docs/html/users_guide/ghci.html#controlling-what-is-in-scope-with-import[Controlling what is in scope with import] in the GHC documentation for full details.
 [source,shell]
 ----
 cabal repl hasklepias-main:examples
@@ -473,17 +485,24 @@ cabal repl hasklepias-main:examples
 [source]
 ----
 :show imports
+-- :module +*Main -- added automatically
 
-:import ExampleFeatures1
+import ExampleFeatures1
 :show imports
+-- import ExampleFeatures1
+-- :module +*Main -- added automatically
 
-:import ExampleEvents
+
+import ExampleEvents
 :show imports
+-- import ExampleFeatures1
+-- import ExampleEvents
+-- :module +*Main -- added automatically
 ----
 
-==== Controlling what is in scope with the `:module` command in GHCi
+==== Controlling what is in scope with the ':module' command in GHCi
 
-An alternative to using an `import` command to modify the scope is to use the `:module` command. In the following example we see three forms of the `:module` command: one with a `+` that adds module declarations to the current scope, one with a `-` that removes module declarations from the current scope, and one without either a `+` or a `-` that replaces the current scope with a new scope. Furthermore, each module that is imported by the `:module` command can be either a regular import or a *-form input. See https://downloads.haskell.org/~ghc/9.0.1/docs/html/users_guide/ghci.html#controlling-what-is-in-scope-with-the-module-command[Controlling what is in scope with the :module command] in the GHC documentation for full details.
+An alternative to using an `import` command to modify the scope is to use the `:module` command. In the following example we see three forms of the `:module` command: one with a `+` that adds module declarations to the current scope, one with a `-` that removes module declarations from the current scope, and one without either a `+` or a `-` which replaces the current scope with a new scope. Furthermore, each module that is imported by the `:module` command can be either a regular import or a \*-form input by either omitting or including an `*` before each module name. See https://downloads.haskell.org/~ghc/9.0.1/docs/html/users_guide/ghci.html#controlling-what-is-in-scope-with-the-module-command[Controlling what is in scope with the :module command] in the GHC documentation for full details.
 [source,shell]
 ----
 cabal repl hasklepias-main:examples
@@ -491,15 +510,26 @@ cabal repl hasklepias-main:examples
 [source]
 ----
 :show imports
+-- :module +*Main -- added automatically
 
 :module + *ExampleCohort1 *ExampleEvents ExampleFeatures1 ExampleFeatures2
 :show imports
+-- :module +*ExampleCohort1
+-- :module +*ExampleEvents
+-- import ExampleFeatures1
+-- import ExampleFeatures2
+-- :module +*Main -- added automatically
 
 :module - ExampleEvents ExampleFeatures2
 :show imports
+-- :module +*ExampleCohort1
+-- import ExampleFeatures1
+-- :module +*Main -- added automatically
 
 :module *ExampleCohort1 *ExampleEvents
 :show imports
+-- :module +*ExampleCohort1
+-- :module +*ExampleEvents
 ----
 
 == Linting and Formatting

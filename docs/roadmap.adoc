@@ -1,3 +1,22 @@
 = Roadmap
 
 #TODO: add roadmap#
+
+.Zero
+
+* Identify coverage and testing weaknesses
+* Implement tighter testing and monitoring harness for package(s)
+* Sketch out and experiment with tools for creating tests of features
+* Towards EDM generics: 
+create "meta" EDM module of which current EDM module
+is an instance of
+
+
+.Succ Zero
+
+* Refactor cohort core module
+* Towards EDM generics: 
+implement concepts as concrete types
+* Have an operational tutorial
+
+.Succ (Succ Zero)

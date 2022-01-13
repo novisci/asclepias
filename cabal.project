@@ -2,6 +2,7 @@ packages: hasklepias-core
         , hasklepias-main
         , hasklepias-templates
         , cohort-collector
+        , event-data-theory
         , edm
         , stype
 

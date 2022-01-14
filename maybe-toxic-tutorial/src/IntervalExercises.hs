@@ -19,7 +19,7 @@ import           IntervalExamples
 
 -- CREATING AND MODIFYING INTERVALS
 
--- EXERCISE: TODO
+-- EX 1
 -- Create a parseMeeting function that appropriately wraps the parseInterval
 -- function for the type signature provided below
 
@@ -33,13 +33,13 @@ import           IntervalExamples
 parseMeeting :: Hour -> Hour -> Either ParseErrorInterval (Meeting Hour)
 parseMeeting = undefined
 
--- EXERCISE: TODO
+-- EX 2
 -- Create a version of unitInterval called unitMeeting that creates the
 -- shortest meeting possible, starting from a given Hour
 unitMeeting :: Hour -> Meeting Hour
 unitMeeting = undefined
 
--- BONUS EXERCISE: TODO
+-- BONUS EXERCISE
 -- Create a version of unitInterval that is as general as it can be. Hint: look at the type signature of beginerval.
 -- NOTE i don't actually think this is doable within the exported
 -- interval-algebra api, or at least i don't see a way around the following
@@ -52,7 +52,7 @@ unitMeeting = undefined
 --unitInterval' = beginerval (moment :: b)
 
 
--- EXERCISE: TODO
+-- EX 3
 -- Create a function that reschedules a meeting to a different start time,
 -- keeping the same duration. to avoid confusion with the reschedule type below, i've called it shiftMeeting
 shiftMeeting :: Hour -> Meeting Hour -> Meeting Hour
@@ -75,14 +75,14 @@ shiftMeeting = undefined
 type Schedule = [MeetingData Hour]
 
 
--- EXERCISE: TODO
+-- EX 4
 -- Write a function to sort a Schedule by interval start points
 
 sortSchedule :: Schedule -> Schedule
 sortSchedule = undefined
 
 
--- EXERCISE: TODO
+-- EX 5
 -- Write a function that checks whether any of the meetings in a Schedule have
 -- shared support (meaning they overlap in any way)
 
@@ -90,7 +90,7 @@ hasOverlap :: Schedule -> Bool
 hasOverlap = undefined
 
 
--- EXERCISE: TODO
+-- EX 6
 -- Write a function that takes a list of Hour meeting start times and returns
 -- Either String Schedule. This function will try (and possibly fail) to create
 -- a Schedule of duration 1 meetings that do not conflict. If none of the Hour
@@ -102,15 +102,14 @@ makeBasicSchedule :: [Hour] -> Either String Schedule
 makeBasicSchedule = undefined
 
 
--- EXERCISE: TODO
+-- EX 7
 -- Create another version of makeBasicSchedule that allows for variable
 -- durations, for example by taking [(Integer, Hour)] as input
 -- write the type signature for this function yourself.
 makeSchedule = undefined
 
 
-
--- EXERCISE: TODO
+-- EX 8
 -- Write a function that checks whether a provided meeting conflicts (i.e. has
 -- shared support with) any meeting in Schedule
 isConflict :: MeetingData Hour -> Schedule -> Bool
@@ -141,12 +140,6 @@ isConflict = undefined
       -}
 
 
-   {- NOTE
-       Below is just some messing around to see if this exercise even really is
-       doable. I think it might need to be fleshed out quite a bit as an
-       exercise, or greatly simplified.
-       -}
-
 
 -- NOTE implicitly chunks are relative to the 0 day and hour of the Modified Julian Calendar
 -- midnight on 1858-11-17
@@ -164,7 +157,6 @@ data UTCChunked a
 
 
 -- Utilities
--- TODO is there not an existing constructor from DiffTime?
 -- could write in terms of defaultUTC rather than hard-coding
 chunkedToUTCTime :: (ChunkSize a, Eq a) => UTCChunked a -> UTCTime
 chunkedToUTCTime cx = addUTCTime dt ref
@@ -173,11 +165,9 @@ chunkedToUTCTime cx = addUTCTime dt ref
       UTCChunked { chunkSize = sx, nChunks = tx } = cx
       dt = chunksizeToNominalDiffTime sx * fromInteger tx
 
--- EXERCISE: TODO
+-- EXERCISE
 --chunkedFromUTCTime :: (ChunkSize a) => a -> UTCTime -> UTCChunked a
---chunkedFromUTCTime cs t = truncate (td + ts) / chunksizeToNominalDiffTime cs
---   where
---      td = nominalDay * 
+--chunkedFromUTCTime cs t = ???
 
 
 -- UTCChunked instances
@@ -195,7 +185,7 @@ instance (Eq a, ChunkSize a) => Num (UTCChunked a) where
    (+) cx cy = cx { nChunks = ty + tx }
      where UTCChunked { nChunks = tx } = cx
            UTCChunked { nChunks = ty } = cy
-   -- EXERCISE: TODO
+   -- EXERCISE
    (-) = undefined
    (*) = undefined
    abs = undefined
@@ -211,7 +201,7 @@ instance (Eq a, ChunkSize a) => IntervalSizeable (UTCChunked a) NominalDiffTime 
          UTCChunked { chunkSize = s, nChunks = t } = c
          dn = toInteger $ truncate (x / chunksizeToNominalDiffTime s)
 
-   -- EXERCISE: TODO
+   -- EXERCISE
    diff = undefined
 
 
@@ -234,14 +224,3 @@ m3 = UTCChunked { chunkSize = OneMin, nChunks = 20 }
 good = m1 + m2
 -- compile-time error
 -- bad = m2 + m3
-
-
-
-
--- Old stuff
-defaultDay :: Day
-defaultDay = fromGregorian 2021 10 31
-
--- 12pm (8 am in EST) on defaultDay
-defaultUTC :: UTCTime
-defaultUTC = UTCTime defaultDay (fromInteger (12 * 60 ^ 2))

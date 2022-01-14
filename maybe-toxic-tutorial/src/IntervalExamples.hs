@@ -6,6 +6,12 @@
 
 {-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# OPTIONS_GHC -Wno-unused-type-patterns #-}
+{-# OPTIONS_GHC -Wno-missing-signatures #-}
+{-# OPTIONS_GHC -Wno-type-defaults #-}
+{-# OPTIONS_GHC -Wno-unused-top-binds #-}
+{-# OPTIONS_GHC -Wno-unused-matches #-}
+
 
 module IntervalExamples ( Meeting (..)
                         , Hour (..)
@@ -16,7 +22,6 @@ module IntervalExamples ( Meeting (..)
                         , module IntervalAlgebra
                         ) where
 
-import           Data.Either     (fromLeft, fromRight)
 import           GHC.Natural     (Natural, naturalFromInteger, naturalToInteger)
 import           IntervalAlgebra
 
@@ -24,9 +29,9 @@ import           IntervalAlgebra
     BASICS
 
     An Interval in IntervalAlgebra is a data type (like Int or String) endowed
-    with three essential pieces of information: A begin, an end and a duration. The main benefit of the Interval type is that it ensures begin, end and duration are defined in a consistent set of units, units which are again represented by types. With this, IntervalAlgebra can also define relations between two intervals of the same type. 
+    with three essential pieces of information: A begin, an end and a duration. The main benefit of the Interval type is that it ensures begin, end and duration are defined in a consistent set of units, units which are again represented by types. With this, IntervalAlgebra can also define relations between two intervals of the same type.
 
-    For example, below we will look at Intervals whose begin, end and duration are all of the Int type. 
+    For example, below we will look at Intervals whose begin, end and duration are all of the Int type.
 
     -}
 
@@ -48,7 +53,7 @@ startFromEnd :: Interval Int
 startFromEnd = enderval 2 2
 
 -- a function that builds an interval of smallest possible length starting from
--- a given value. 
+-- a given value.
 unitInterval :: Int -> Interval Int
 unitInterval = beginerval 0
 
@@ -104,7 +109,7 @@ nutinRight _         = beginerDefault
 
 -- expand to the right
 longerDefault :: Interval Int
-longerDefault = expandr 2 beginerDefault 
+longerDefault = expandr 2 beginerDefault
 
 -- if the first argument is less than the 'moment' value
 -- defined in the appropriate IntervalSizeable instance,
@@ -153,11 +158,11 @@ metOrBefore' = foldr (<|>)  metBy [meets, before]
 
 -- actually, this is as alternate way to define a version of the
 -- interval-algebra function unionPredicates, with a default of False if we
--- provide an empty list of predicates. 
+-- provide an empty list of predicates.
 
 -- see the source code for unionPredicates for how it is actually defined
 -- https://hackage.haskell.org/package/interval-algebra-1.0.0/docs/src/IntervalAlgebra.Core.html#unionPredicates
--- Look at the type signature of unionPredicates to see that function is more general than the version defined here, which includes some typeclass constraints necessary for using (<|>) 
+-- Look at the type signature of unionPredicates to see that function is more general than the version defined here, which includes some typeclass constraints necessary for using (<|>)
 
 -- here (\x y -> False) is an anonymous function that always returns False.
 -- The constant False alone there would not work because it doesn't fit the
@@ -203,7 +208,7 @@ beginerListN :: Int -> [Interval Int]
 beginerListN n = take n beginerList
 
 
--- a very dumb way to create an interval with duration n 
+-- a very dumb way to create an interval with duration n
 -- combineIntervals does what it says: combined intervals that meet or share support
 -- lengthNInterval 3
 -- [(0, 3)]
@@ -323,7 +328,7 @@ conflictsWithAny m = any (concur m)
 
 -- A little functional programming example
 -- the . is an operator on functions. see more in the functional programming
--- basics tutorial (TODO).
+-- basics tutorial.
 -- f . g is the function defined by f(g(x)) for any x
 conflictsWithAny' :: Meeting Hour -> [Meeting Hour] -> Bool
 conflictsWithAny' = any . concur
@@ -344,7 +349,7 @@ conflictsWithAny' = any . concur
 conflictsWithAny'' :: Meeting Hour -> [Meeting Hour] -> Bool
 conflictsWithAny'' m = any $ concur m
 
--- is my Meeting the first one of the day? 
+-- is my Meeting the first one of the day?
 -- its OK if it 'meets' another interval, meaning its end time matches the
 -- start time, which is not true of the Before interval relation. to capture
 -- that, we use unionPredicates' first
@@ -355,7 +360,7 @@ isFirst m = all (unionPredicates' [before, meets] m)
 
   {- INTERVALS EMBEDDED IN OTHER TYPES
 
-        The Intervallic typeclass allows us to define how we get and set intervals for objects that themselves might not be intervals but which nonetheless have an interval component. 
+        The Intervallic typeclass allows us to define how we get and set intervals for objects that themselves might not be intervals but which nonetheless have an interval component.
 
         In this case we create a MeetingData type, which is just a meeting and some metadata.
 

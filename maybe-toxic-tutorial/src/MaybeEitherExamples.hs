@@ -170,5 +170,3 @@ type GiftInt = Gift Int
 
 
 -- define an abstract relation
-
-

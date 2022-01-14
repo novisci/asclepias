@@ -349,12 +349,12 @@ isitbear = whatisitImproved "grizzly bear" bears
 
 -- doesn't save us from typos though
 mistypedX :: String
-mistypedX = whatisitImproved "grizzly" bears
+mistypedX = whatisitImproved "grussly burr" bears
 
 mongeese :: Anmls
 mongeese = Mongoose ["meerkat", "kusimanse", "mongoose"]
 
--- and this is one big reason why the design here was bad.
+-- and this is one big reason why my design here was bad.
 -- you have to manually ensure the input x makes sense to check in the Anmls
 -- list.
 mistypedName :: String

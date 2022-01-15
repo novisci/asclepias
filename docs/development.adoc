@@ -1,5 +1,6 @@
 :description: This file details how to develop in the asclepias project.
 :toc: 
+:source-highlighter: highlightjs
 
 = Development
 
@@ -24,8 +25,8 @@ Once the installer is launched, you will be asked a series of questions.
 The following is a rough guide to the recommended answers for these questions.
 
 * _Do you want ghcup to automatically add the required PATH variable to your shell startup file?_ 
-  This is optional. Either (i) you should choose the "Yes, prepend" option and the installer will add a line of code to the end of your shell startup file (e.g. `~/.bashrc`) appropriately modifying the `PATH` environmental variable, or (ii) you should choose the "No" option and manually add some code to your shell startup file performing an equivalent modification to `PATH`. 
-  In the latter case you should prepend `~/.cabal/bin` and `~/.ghcup/bin` to `PATH`.
+  This is optional. Either (i) you should choose the "Yes, prepend" option and the installer will add a line of code to the end of your shell startup file (e.g. `\~/.bashrc`) appropriately modifying the `PATH` environmental variable, or (ii) you should choose the "No" option and manually add some code to your shell startup file performing an equivalent modification to `PATH`. 
+  In the latter case you should prepend `\~/.cabal/bin` and `\~/.ghcup/bin` to `PATH`.
 * _Do you want to install haskell-language-server (HLS)?_ Select "Yes".
 * _Do you want to install stack?_ There is no harm in selecting "Yes", but it is not necessary for the asclepias project.
   So in other words, you can select "No" and download it at a later time if desired.
@@ -66,11 +67,11 @@ The "active version" of a given application according to ghcup is the version th
 To change the currently active version for a particular application, use the `ghcup set` command.
 See `ghcup set --help` for details.
 
-In more detail, ghcup stores various application versions in the `~/.ghcup/bin` directory which is assumed to be on your shell's path.
+In more detail, ghcup stores various application versions in the `+~/.ghcup/bin+` directory which is assumed to be on your shell's path.
 Then for example, the `ghc` file located in that directory is a symbolic link to the active version of GHC according to ghcup (a similar pattern is used for other applications managed by ghcup).
-So suppose that the active version of GHC was GHC 8.10.7, then running the command `ghc` in your shell would run GHC 8.10.7 because the `~/.ghup/bin/ghc` file would a symbolic link pointing to GHC 8.10.7.
+So suppose that the active version of GHC was GHC 8.10.7, then running the command `ghc` in your shell would run GHC 8.10.7 because the `+~/.ghup/bin/ghc+` file would a symbolic link pointing to GHC 8.10.7.
 
-Note that if you wanted to run a different version of GHC, say GHC 9.2.1, for a particular project without changing the active version, then you could invoke that version directly by running the command `ghc-9.2.1` in your shell since this is one of the files in `~/.ghcup/bin` (assuming that it has previously been downloaded).
+Note that if you wanted to run a different version of GHC, say GHC 9.2.1, for a particular project without changing the active version, then you could invoke that version directly by running the command `ghc-9.2.1` in your shell since this is one of the files in `\~/.ghcup/bin` (assuming that it has previously been downloaded).
 
 === Installing GHC and Cabal using ghcup
 
@@ -237,6 +238,24 @@ executable exampleApp
 The `cabal build` command is used to compile Cabal packages and package components.
 There are many command-line arguments that can be provided with `cabal build`, however for the sake of brevity these are not covered here.
 See `cabal build --help` and https://cabal.readthedocs.io/en/3.6/cabal-commands.html#cabal-v2-build[cabal-build] in the Cabal documentation for full details.
+
+[TIP]
+.Building on an M1 Mac
+====
+On an M1 mac you may get errors like:
+[source,shell]
+----
+<no location info>: error:
+    Warning: Couldn't figure out LLVM version!
+             Make sure you have installed LLVM between [9 and 13)
+----
+You may need to install `+llvm+`, which you can do using `+homebrew+`: 
+[source,shell]
+----
+brew install llvm@12
+echo 'export PATH="/opt/homebrew/opt/llvm@12/bin:$PATH"' >> ~/.zshrc
+----
+====
 
 ==== Compiling all asclepias packages
 

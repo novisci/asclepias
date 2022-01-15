@@ -28,4 +28,5 @@ library
   build-depends:
       base >=4.14 && <4.15
     , interval-algebra == 1.2.0
+    , text
   default-language: Haskell2010

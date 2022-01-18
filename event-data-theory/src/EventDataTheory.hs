@@ -45,17 +45,6 @@ instance (Ord a) => Intervallic (Event d c) a where
   getInterval (MkEvent x) =  getInterval x
   setInterval (MkEvent x) y = MkEvent $ setInterval x y
 
-bar :: (Eq a, Eq c, Eq d) => Event d c a -> [Event d c a] -> [Event d c a]
-bar x = filter (x ==)
-
-makePairPredicate
-  :: (Ord a)
-  => ComparativePredicateOf2 (i0 a) ((Event d c) a)
-  -> i0 a
-  -> (Context d c -> Bool)
-  -> (Event d c a -> Bool)
-makePairPredicate pi i pd x = pi i x && pd (getPairData (getEvent x))
-
 data ClaimsDomain =
     Enrollment
   | Medication
@@ -68,6 +57,21 @@ data PrjConcepts =
   | HeartFailure
 
 type PrjEvent a = ClaimsEvent PrjConcepts a
+
+{------------}
+
+bar :: (Eq a, Eq c, Eq d) => Event d c a -> [Event d c a] -> [Event d c a]
+bar x = filter (x ==)
+
+makePairPredicate
+  :: (Ord a)
+  => ComparativePredicateOf2 (i0 a) ((Event d c) a)
+  -> i0 a
+  -> (Context d c -> Bool)
+  -> (Event d c a -> Bool)
+makePairPredicate pi i pd x = pi i x && pd (getPairData (getEvent x))
+
+{------------}
 
 {--}
 
@@ -84,6 +88,10 @@ instance (Ord a) => Intervallic (MyEvent2 b) a where
   setInterval (MkMyEvent2 x) y = MkMyEvent2 $ setInterval x y
 
 instance (Ord a, Eq c, Eq d) => EventModel2 MyEvent2 c d a
+
+
+
+
 
 foo2 :: EventModel2 e c d a => e (Context c d) a -> [e (Context c d) a] -> [e (Context c d)  a]
 foo2 x = filter (x ==)

@@ -4,4 +4,5 @@ packages: hasklepias-core
         , cohort-collector
         , edm
         , stype
+        , maybe-toxic-tutorial
 

@@ -80,5 +80,5 @@ spec = do
     $          viewBirthYears [evntYear]
     `shouldBe` [1987]
   it "viewBenefits on enrollment event"
-    $         (fmap viewBenefits (sequenceA [decode enrollEvent :: Maybe (Event Int)]))
+    $         fmap viewBenefits (sequenceA [decode enrollEvent :: Maybe (Event Int)])
     `shouldBe` Just ["PPO"]

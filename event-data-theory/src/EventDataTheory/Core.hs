@@ -137,7 +137,7 @@ instance (Ord a) => Intervallic (Event d c) a where
   setInterval (MkEvent x) y = MkEvent $ setInterval x y
 
 instance Ord c => HasConcept (Event d c a) c where
-  hasConcept e concept = hasConcept (getContext e) concept
+  hasConcept e = hasConcept (getContext e) 
 
 -- | A smart constructor for 'Event d c a's.
 event :: Interval a -> Context d c -> Event d c a
@@ -181,7 +181,7 @@ data Context d c = Context
   deriving (Eq, Show, Generic)
 
 instance Ord c => HasConcept (Context d c) c where
-  hasConcept c concept = hasConcept (concepts c) concept
+  hasConcept c = hasConcept (concepts c) 
 
 {- |
 -}

@@ -290,3 +290,6 @@ instance EventPredicate (Maybe Source) d c a where
 
 instance (Ord a) => EventPredicate (Interval a) d c a where
   liftToEventPredicate = contramap getInterval
+
+
+

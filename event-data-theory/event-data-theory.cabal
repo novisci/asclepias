@@ -8,7 +8,7 @@ author:         Bradley Saul
 maintainer:     bsaul@novisci.com
 copyright:      NoviSci, Inc
 category:       Data Science
-synopsis:       event data model 
+synopsis:       event data theory 
 license:        BSD-3-Clause
 license-file:   LICENSE
 build-type:     Simple
@@ -23,10 +23,14 @@ source-repository head
 library
   exposed-modules:
       EventDataTheory
+      EventDataTheory.Core
+      EventDataTheory.Predicatable
   hs-source-dirs:
       src
   build-depends:
       base >=4.14 && <4.15
+    , containers == 0.6.5.1
     , interval-algebra == 1.2.0
-    , text
+    , text >= 1.2
+    , witch == 1.0.0.1
   default-language: Haskell2010

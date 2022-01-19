@@ -47,7 +47,7 @@ f3F = define f3
 
 
 featInts :: [Int] -> Feature "someInts" [Int]
-featInts = pure 
+featInts = pure
 
 feat1 :: Definition (Feature "someInts" [Int] -> Feature "hasMoreThan3" Bool)
 feat1 = defineA

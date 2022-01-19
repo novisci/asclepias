@@ -15,7 +15,7 @@ module Cohort.Attrition
   ) where
 
 import           Cohort.Criteria
-import           Control.Applicative           ( (<$>) )
+import           Control.Applicative            ( (<$>) )
 import           Data.Eq                        ( Eq )
 import           Data.Function                  ( ($) )
 import           Data.Functor                   ( fmap )
@@ -28,7 +28,9 @@ import           Data.Map.Strict               as Map
                                                 , fromListWith
                                                 , unionsWith
                                                 )
-import           Data.Maybe                     ( Maybe, maybe )
+import           Data.Maybe                     ( Maybe
+                                                , maybe
+                                                )
 import           Data.Monoid                    ( mempty )
 import           Data.Ord                       ( Ord(compare) )
 import           Data.Semigroup                 ( Semigroup((<>)) )
@@ -95,7 +97,7 @@ initAttritionInfo x = fromList
 -- | Measures @'AttritionInfo'@ from a @'Criteria'@ and a list of @'CohortStatus'@.
 measureAttrition :: Maybe Criteria -> [CohortStatus] -> AttritionInfo
 measureAttrition c l =
-   MkAttritionInfo (length l) $ mapToSetAttrLevel $ unionsWith
+  MkAttritionInfo (length l) $ mapToSetAttrLevel $ unionsWith
     (+)
     [ maybe mempty initAttritionInfo c
     , Map.fromListWith (+) $ fmap (, 1) l

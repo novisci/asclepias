@@ -6,7 +6,6 @@ License     : BSD3
 Maintainer  : bsaul@novisci.com
 -}
 
-{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE UndecidableInstances #-}
 
@@ -44,7 +43,7 @@ import           Data.Maybe                     ( fromMaybe )
 import           Data.Monoid                    ( Any(Any, getAny) )
 import           Data.Vector                    ( (!) )
 
-import           Colog                          ( (<&)
+import           Colog.Core                     ( (<&)
                                                 , logStringStderr
                                                 )
 
@@ -78,7 +77,7 @@ newtype HoldID = MkID SubjectID deriving (Eq, Show)
 instance FromJSON HoldID where
   parseJSON = withArray "Event" $ \a -> do
     id <- parseJSON (a ! 0)
-    return $ MkID id
+    pure $ MkID id
 
 -- Collector for filter
 --  * current ID
@@ -126,7 +125,7 @@ fsc x y = do
     (True, True) -> C.putStrLn (getAcc x)
     -- (True, False) -> do errLog <& (unpack . (\(MkID z) -> z)) (getId x)
     _            -> C.putStr ""
-  return (x <> y)
+  pure (x <> y)
 
 -- Lifted version of fsc
 fscIO :: IO FilterState -> IO FilterState -> IO FilterState
@@ -144,7 +143,7 @@ prefilterC
 prefilterC p x =
   yield x
     .| CC.linesUnboundedAscii
-    .| mapC (return . initFilterState decodeStrict' p)
+    .| mapC (pure . initFilterState decodeStrict' p)
     .| CC.foldl1 fscIO
 
 -- | Type containing the filter app

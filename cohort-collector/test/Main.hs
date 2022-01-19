@@ -1,14 +1,19 @@
 {-| Tests of the collector application
 -}
 
-module Main 
+module Main
   ( main
   ) where
 
-import CohortCollection (runCollectionApp, Location(..))
-import Test.Tasty (defaultMain, TestTree, testGroup)
-import Test.Tasty.Silver
+import           CohortCollection               ( Location(..)
+                                                , runCollectionApp
+                                                )
 import qualified Data.ByteString.Lazy          as B
+import           Test.Tasty                     ( TestTree
+                                                , defaultMain
+                                                , testGroup
+                                                )
+import           Test.Tasty.Silver
 
 appTestRw :: IO ()
 appTestRw = do

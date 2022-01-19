@@ -8,7 +8,6 @@ Maintainer  : bsaul@novisci.com
 
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE OverloadedStrings #-}
@@ -22,9 +21,9 @@ module Cohort.Input
   , SubjectParseError(..)
   ) where
 
-import           Cohort.Core                    ( SubjectID
-                                                , Population(..)
+import           Cohort.Core                    ( Population(..)
                                                 , Subject(MkSubject)
+                                                , SubjectID
                                                 )
 import           Control.Applicative            ( (<$>)
                                                 , Applicative(..)
@@ -33,8 +32,8 @@ import           Control.Monad
 import           Data.Aeson                     ( FromJSON(..)
                                                 , ToJSON(..)
                                                 , Value(Array)
-                                                , withArray
                                                 , eitherDecode
+                                                , withArray
                                                 )
 import           Data.Aeson.Types
 
@@ -73,12 +72,12 @@ import           EventData                      ( Event
                                                 , event
                                                 )
 import           EventData.Aeson
+import           GHC.Generics
 import           GHC.Int                        ( Int )
 import           GHC.Num                        ( Natural )
 import           GHC.Show                       ( Show )
 import           IntervalAlgebra
 import           Prelude                        ( String )
-import           GHC.Generics
 
 newtype SubjectEvent a = MkSubjectEvent (SubjectID, Event a)
 
@@ -89,7 +88,7 @@ instance (FromJSON a, Show a, IntervalSizeable a b) => FromJSON (SubjectEvent a)
   parseJSON = withArray "Event" $ \a -> do
     id <- parseJSON (a ! 0)
     ev <- parseJSON (Array a)
-    return $ MkSubjectEvent (id,  ev)
+    pure $ MkSubjectEvent (id, ev)
 
 
 mapIntoPop :: (Ord a) => [SubjectEvent a] -> Population (Events a)
@@ -114,7 +113,9 @@ parseSubjectLines
   => B.ByteString
   -> ([SubjectParseError], [SubjectEvent a])
 parseSubjectLines l = partitionEithers $ zipWith
-  (\x i -> first (\t -> MkSubjectParseError (i, t)) (decodeIntoSubj $ B.fromStrict x))
+  (\x i ->
+    first (\t -> MkSubjectParseError (i, t)) (decodeIntoSubj $ B.fromStrict x)
+  )
   (C.lines $ B.toStrict l)
   [1 ..]
 

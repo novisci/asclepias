@@ -83,8 +83,6 @@ import safe      Data.Eq                        ( (==)
 import safe      Data.Foldable                  ( Foldable(..)
                                                 , and
                                                 , asum
-                                                , maximum
-                                                , minimum
                                                 , or
                                                 )
 import safe      Data.Function                  ( ($)
@@ -182,7 +180,7 @@ import safe      GHC.Generics                   ( Generic )
 import safe      GHC.Num                        ( Integer(..)
                                                 , Natural(..)
                                                 , Num(..)
-                                                , naturalToInt
+                                                , fromInteger
                                                 )
 import safe      GHC.Real                       ( Integral(..)
                                                 , toInteger
@@ -228,3 +226,5 @@ mapToList = M.toList
 
 emptySet :: Set.Set a
 emptySet = Set.empty
+
+

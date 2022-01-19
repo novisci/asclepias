@@ -8,7 +8,6 @@ Maintainer  : bsaul@novisci.com
 -}
 -- {-# OPTIONS_HADDOCK hide #-}
 {-# LANGUAGE NoImplicitPrelude #-}
-{-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE FlexibleInstances #-}
 -- {-# LANGUAGE Safe #-}
 
@@ -37,6 +36,7 @@ import           EventData.Context              ( Concept
                                                 , packConcept
                                                 , toConcepts
                                                 )
+import           GHC.Generics                   ( Generic )
 import           GHC.Show                       ( Show(show) )
 import           IntervalAlgebra                ( Interval
                                                 , Intervallic(getInterval)

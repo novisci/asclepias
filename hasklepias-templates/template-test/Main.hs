@@ -1,9 +1,9 @@
-module Main(
-   main
-) where
+module Main
+  ( main
+  ) where
 
-import Test.Tasty                 ( defaultMain )
-import Templates.Tests ( templateTests )
+import           Templates.Tests                ( templateTests )
+import           Test.Tasty                     ( defaultMain )
 
 main :: IO ()
-main =  defaultMain templateTests
+main = defaultMain templateTests

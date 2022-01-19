@@ -58,7 +58,6 @@ import           Data.Bool                      ( (&&)
                                                 , otherwise
                                                 , (||)
                                                 )
-import           Data.Either                    ( either )
 import           Data.Eq                        ( Eq )
 import           Data.Foldable                  ( Foldable(length, null)
                                                 , all

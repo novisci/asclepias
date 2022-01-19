@@ -57,8 +57,8 @@ class Predicatable a where
   (&&&) :: a -> a -> a
 
 instance Predicatable (a -> Bool) where
-  (|||) f g = \x -> f x || g x
-  (&&&) f g = \x -> f x && g x
+  (|||) f g x = f x || g x
+  (&&&) f g x = f x && g x
 
 instance Predicatable (Predicate a) where
   (|||) p1 p2 = Predicate (getPredicate p1 ||| getPredicate p2)

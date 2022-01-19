@@ -1,6 +1,6 @@
 cabal-version:  2.2
 name:           hasklepias-main
-version:        0.22.4
+version:        0.22.5
 description:    Please see the README on GitHub at <https://github.com/novisci/asclepias#readme>
 homepage:       https://github.com/novisci/asclepias/#readme
 bug-reports:    https://github.com/novisci/asclepias/issues
@@ -30,6 +30,7 @@ library
   build-depends:
     -- Internal packages
       edm
+    , hasklepias-appBuilder
     , stype
     , hasklepias-core
     , hasklepias-templates
@@ -52,7 +53,7 @@ test-suite examples
       hasklepias-main
     , hasklepias-core
     , hspec
-    , base >=4.14 && <4.15
+    , base >=4.14 && <5
     , tasty  == 1.4.1
     , tasty-hunit == 0.10.0.3
     , tasty-hspec == 1.2
@@ -74,7 +75,8 @@ test-suite exampleApp-test
   build-depends:
       hasklepias-main
     , hasklepias-core
-    , base >=4.14 && <4.15
+    , hasklepias-appBuilder
+    , base >=4.14 && <5
     , tasty  == 1.4.1
     , tasty-silver 
     , bytestring
@@ -96,7 +98,8 @@ test-suite exampleFilterApp-test
   build-depends:
       hasklepias-main
     , hasklepias-core
-    , base >=4.14 && <4.15
+    , hasklepias-appBuilder
+    , base >=4.14 && <5
     , tasty  == 1.4.1
     , tasty-silver 
     , bytestring

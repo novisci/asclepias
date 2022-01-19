@@ -6,22 +6,24 @@ Module      : Event Data Enrollment Domain
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DuplicateRecordFields #-}
 
-module EventData.Context.Domain.Enrollment(
-    EnrollmentFacts(..)
+module EventData.Context.Domain.Enrollment
+  ( EnrollmentFacts(..)
   , emptyEnrollmentFact
-) where
+  ) where
 
-import Data.Aeson               ( FromJSON(..) )
-import Data.Eq                  ( Eq )
-import Data.Maybe               ( Maybe(..) )
-import GHC.Generics             ( Generic )
-import GHC.Show                 ( Show )
-import EventData.Context.Facts.Plan ( Plan, emptyPlan )
+import           Data.Aeson                     ( FromJSON(..) )
+import           Data.Eq                        ( Eq )
+import           Data.Maybe                     ( Maybe(..) )
+import           EventData.Context.Facts.Plan   ( Plan
+                                                , emptyPlan
+                                                )
+import           GHC.Generics                   ( Generic )
+import           GHC.Show                       ( Show )
 
 -- | Enrollment
 newtype EnrollmentFacts = EnrollmentFacts {
-     plan :: Maybe Plan 
-  } 
+     plan :: Maybe Plan
+  }
   deriving( Eq, Show, Generic )
 
 emptyEnrollmentFact :: EnrollmentFacts

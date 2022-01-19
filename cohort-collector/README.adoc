@@ -1,0 +1,63 @@
+:testdir: test/tests
+:downloads_path: downloads.novisci.com/hasklepias/
+:registry_path: registry.novisci.com/nsstat/asclepias
+:cohort-collector-version: 0.20.3
+
+
+= Cohort Collector
+
+The `cohort-collector` application provides a utility for combining cohorts 
+*built from the same cohort specification*. 
+A common use case is combining cohort data created on different partitions of event data. 
+The application takes a single text file containing one filepath per line as input.
+The file can be located either on the local file system or on S3. 
+
+The latest linux executable can be downloaded from: 
+
+- https://{downloads_path}cohort-collector-{cohort-collector-version}-x86_64-linux.tar.gz 
+
+If you have access to our container registry, 
+a minimal docker image containing the application is also available:
+
+[source, subs=attributes+]
+----
+docker pull {registry_path}/cohort-collector:latest
+----
+
+== Usage
+
+[source]
+----
+include::help.txt[]
+----
+
+== Example usage
+
+Suppose we have 3 cohort json files we want to combine.
+
+.testcw1.json
+[source]
+include::{testdir}/testcw1.json[]
+
+.testcw2.json
+[source]
+include::{testdir}/testcw2.json[]
+
+.testcw3.json
+[source]
+include::{testdir}/testcw3.json[]
+
+To combine these files, we provide a manifest file:
+
+.manifest.txt
+[source]
+include::{testdir}/manifestcw.txt[]
+
+Then the `cohort-collector` app can be run from the same directory as the location of the manifest file: 
+
+[source,shell]
+----
+$ cohort-collector -f manifestcw.txt
+{"example":[{"attritionInfo":[{"attritionCount":2,"attritionLevel":{"contents":[1,"dummy"],"tag":"ExcludedBy"}},{"attritionCount":5,"attritionLevel":{"tag":"Included"}}],"totalProcessed":7},{"contents":{"attributes":[{"attrs":{"getDerivation":"","getLongLabel":"another label","getPurpose":{"getRole":["Outcome"],"getTags":[]},"getShortLabel":"somelabel"},"name":"myVar1","type":"Count"},{"attrs":{"getDerivation":"","getLongLabel":"","getPurpose":{"getRole":[],"getTags":[]},"getShortLabel":""},"name":"myVar2","type":"Bool"}],"cohortData":[[5,5,10,99,86],[true,true,false,true,true]],"ids":["a","b","c","d","f"]},"tag":"CW"}]}
+----
+

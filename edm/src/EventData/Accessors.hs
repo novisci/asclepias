@@ -1,13 +1,13 @@
 {-|
 Module      : Hasklepias Event accessors
 Description : Methods fro accessing data in events.
-Copyright   : (c) NoviSci, Inc 2020
 License     : BSD3
 Maintainer  : bsaul@novisci.com
 -}
 -- {-# OPTIONS_HADDOCK hide #-}
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE DataKinds #-}
 
 module EventData.Accessors
@@ -31,19 +31,20 @@ module EventData.Accessors
   , previewLengthOfStay
   ) where
 
-import           Lens.Micro                     ( (^?) )
-import           Control.Applicative            ( Alternative((<|>)), (<*>) )
+import           Control.Applicative            ( (<*>)
+                                                , Alternative((<|>))
+                                                )
 import           Control.Monad                  ( (=<<)
                                                 , (>>=)
                                                 , Functor(fmap)
                                                 )
-import           Data.Either                    ( either )
+import           Data.Either                    ( Either(..) )
 import           Data.Foldable                  ( toList )
 import           Data.Function                  ( ($)
                                                 , (.)
                                                 , const
                                                 )
-import           Data.Functor                   ((<&>))
+import           Data.Functor                   ( (<&>) )
 import           Data.Functor.Contravariant     ( Predicate(..) )
 import           Data.Generics.Internal.VL.Lens ( (^.) )
 import           Data.Generics.Product          ( HasField(field) )
@@ -89,6 +90,7 @@ import           GHC.Num                        ( Integer
                                                 , fromInteger
                                                 )
 import           GHC.Real                       ( RealFrac(floor) )
+import           Lens.Micro                     ( (^?) )
 import           Witherable                     ( Filterable(filter, mapMaybe)
                                                 , Witherable
                                                 )
@@ -100,51 +102,71 @@ previewDemoInfo dmn =
 
 -- | Utility for reading text into a maybe integer
 intMayMap :: Text -> Maybe Integer -- TODO: this is ridiculous
-intMayMap x =
-  fmap floor (either (const Nothing) (Just . fst) (Data.Text.Read.rational x))
+intMayMap x = fmap
+  floor
+  ((\case
+     Left  _ -> Nothing
+     Right v -> Just (fst v)
+   )
+    (Data.Text.Read.rational x)
+  )
 
 -- | Preview days supply field information from a medication domain
-previewDaysSupply :: Domain -> Maybe Integer 
+previewDaysSupply :: Domain -> Maybe Integer
 previewDaysSupply dmn =
-  (dmn ^? _As @"Medication") >>= (^. field @"fill") >>= (^. field @"days_supply")
+  (dmn ^? _As @"Medication")
+    >>= (^. field @"fill")
+    >>= (^. field @"days_supply")
 
 -- | Preview the text part of a 'Code' from a 'Diagnosis', 'Labs', 
 --  'Medication', or 'Procedure' Domain.
-previewCode :: Domain -> Maybe Text 
+previewCode :: Domain -> Maybe Text
 previewCode dmn =
-      ((dmn ^? (_As @"Diagnosis")) <&> (^. field @"code" . field @"code" ))
-  <|> ((dmn ^? (_As @"Labs")) <&> (^. field @"code" . field @"code"))
-  <|> ((dmn ^? (_As @"Medication")) <&> (^. field @"code" . field @"code"))
-  <|> ((dmn ^? (_As @"Procedure")) <&> (^. field @"code" . field @"code"))
+  ((dmn ^? (_As @"Diagnosis")) <&> (^. field @"code" . field @"code"))
+    <|> ((dmn ^? (_As @"Labs")) <&> (^. field @"code" . field @"code"))
+    <|> ((dmn ^? (_As @"Medication")) <&> (^. field @"code" . field @"code"))
+    <|> ((dmn ^? (_As @"Procedure")) <&> (^. field @"code" . field @"code"))
 
 -- | Preview the text part of a 'Code' from an event, using `previewCode'.
 previewCodeE :: Event a -> Maybe Text
-previewCodeE = previewCode . facts . ctxt 
+previewCodeE = previewCode . facts . ctxt
 
 -- | Preview @Provider@ from 'Diagnosis', 'Medication', or 'Procedure' Domain
-previewProvider :: Domain -> Maybe Provider 
+previewProvider :: Domain -> Maybe Provider
 previewProvider dmn =
-      ((dmn ^? (_As @"Diagnosis")) >>= (^. field @"provider"))
-  <|> ((dmn ^? (_As @"Medication")) >>= (^. field @"provider"))
-  <|> ((dmn ^? (_As @"Procedure")) >>= (^. field @"provider"))
+  ((dmn ^? (_As @"Diagnosis")) >>= (^. field @"provider"))
+    <|> ((dmn ^? (_As @"Medication")) >>= (^. field @"provider"))
+    <|> ((dmn ^? (_As @"Procedure")) >>= (^. field @"provider"))
 
 -- | Preview @Plan@ from 'Eligibility' or 'Enrollment' Domain
-previewPlan :: Domain -> Maybe Plan 
+previewPlan :: Domain -> Maybe Plan
 previewPlan dmn =
-      ((dmn ^? (_As @"Eligibility")) >>= (^. field @"plan"))
-  <|> ((dmn ^? (_As @"Enrollment")) >>= (^. field @"plan"))
+  ((dmn ^? (_As @"Eligibility")) >>= (^. field @"plan"))
+    <|> ((dmn ^? (_As @"Enrollment")) >>= (^. field @"plan"))
 
 -- | Preview @discharge_status@ f rom the 'Hospitalization' fact of'Diagnosis' or 'Procedure' Domain
-previewDischargeStatus :: Domain -> Maybe Text 
+previewDischargeStatus :: Domain -> Maybe Text
 previewDischargeStatus dmn =
-      ((dmn ^? (_As @"Diagnosis")) >>= (^. field @"hospitalization") >>= (^. field @"discharge_status"))
-  <|> ((dmn ^? (_As @"Procedure")) >>= (^. field @"hospitalization") >>= (^. field @"discharge_status"))
+  (   (dmn ^? (_As @"Diagnosis"))
+    >>= (^. field @"hospitalization")
+    >>= (^. field @"discharge_status")
+    )
+    <|> (   (dmn ^? (_As @"Procedure"))
+        >>= (^. field @"hospitalization")
+        >>= (^. field @"discharge_status")
+        )
 
 -- | Preview @length_of_stay@ from the 'Hospitalization' fact of 'Diagnosis' or 'Procedure' Domain
-previewLengthOfStay :: Domain -> Maybe Double 
+previewLengthOfStay :: Domain -> Maybe Double
 previewLengthOfStay dmn =
-      ((dmn ^? (_As @"Diagnosis")) >>= (^. field @"hospitalization") >>= (^. field @"length_of_stay"))
-  <|> ((dmn ^? (_As @"Procedure")) >>= (^. field @"hospitalization") >>= (^. field @"length_of_stay"))
+  (   (dmn ^? (_As @"Diagnosis"))
+    >>= (^. field @"hospitalization")
+    >>= (^. field @"length_of_stay")
+    )
+    <|> (   (dmn ^? (_As @"Procedure"))
+        >>= (^. field @"hospitalization")
+        >>= (^. field @"length_of_stay")
+        )
 
 
 -- | View the @benefit@ field of a @Plan@
@@ -156,12 +178,12 @@ previewBenefitE :: Event a -> Maybe Text
 previewBenefitE = previewBenefit . facts . ctxt
 
 -- | View the @exchange@ field of a @Plan@
-previewExchange :: Domain -> Maybe Exchange 
+previewExchange :: Domain -> Maybe Exchange
 previewExchange x = previewPlan x >>= (^? field @"exchange")
 
 -- | View the @exchange@ field of a @Event@
-previewExchangeE :: Event a -> Maybe Exchange  
-previewExchangeE = previewExchange . facts . ctxt 
+previewExchangeE :: Event a -> Maybe Exchange
+previewExchangeE = previewExchange . facts . ctxt
 
 -- | Preview birth year from a domain
 previewBirthYear :: Domain -> Maybe Year

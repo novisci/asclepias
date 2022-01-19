@@ -5,24 +5,25 @@ Module      : Claim fact
 {-# LANGUAGE Trustworthy #-}
 {-# LANGUAGE DeriveGeneric #-}
 
-module EventData.Context.Facts.Claim(
-  Claim(..)
-) where
-import EventData.Context.Facts.Codebook
-import Data.Aeson               ( FromJSON )
-import Data.Eq                  ( Eq )
-import Data.Maybe               ( Maybe )
-import Data.Text                ( Text )
-import GHC.Generics             ( Generic )
-import GHC.Show                 ( Show )
-import GHC.Num                  ( Integer )
+module EventData.Context.Facts.Claim
+  ( Claim(..)
+  ) where
+import           Data.Aeson                     ( FromJSON )
+import           Data.Eq                        ( Eq )
+import           Data.Maybe                     ( Maybe )
+import           Data.Text                      ( Text )
+import           EventData.Context.Facts.Codebook
+import           GHC.Generics                   ( Generic )
+import           GHC.Num                        ( Integer )
+import           GHC.Show                       ( Show )
 
-data Claim = Claim {
-    id :: Text
-  , _type :: Maybe Text -- TODO: field does not actually have underscore
+data Claim = Claim
+  { id        :: Text
+  , _type     :: Maybe Text -- TODO: field does not actually have underscore
                         -- ; using it to avoid clash with "type" keyword 
-  , index :: Maybe Integer
+  , index     :: Maybe Integer
   , procedure :: Maybe Text
-} deriving (Eq, Show, Generic)
+  }
+  deriving (Eq, Show, Generic)
 
 instance FromJSON Claim where

@@ -85,10 +85,10 @@ testInputsDay2 =
 
 dx :: Domain
 dx = Diagnosis
-  (DiagnosisFacts { code     = F.Code { F.code = "abc", F.codebook = Nothing }
-                  , claim    = Nothing
-                  , location = Nothing
-                  , provider = Nothing
+  (DiagnosisFacts { code = F.Code { F.code = "abc", F.codebook = Nothing }
+                  , claim           = Nothing
+                  , location        = Nothing
+                  , provider        = Nothing
                   , hospitalization = Nothing
                   }
   )
@@ -104,10 +104,10 @@ testOutDay1 = event
     dx
     (packConcepts ["someThing"])
     (Just $ Source { database = "someDb"
-                   , table  = "someTable"
-                   , file   = Nothing
-                   , row    = Nothing
-                   , column = Nothing
+                   , table    = "someTable"
+                   , file     = Nothing
+                   , row      = Nothing
+                   , column   = Nothing
                    }
     )
   )
@@ -127,8 +127,7 @@ enl :: Domain
 enl = Enrollment emptyEnrollmentFact
 
 jsonEnrollTest :: B.ByteString
-jsonEnrollTest =
-    "{\"domain\":\"Enrollment\",\"facts\":{}}"
+jsonEnrollTest = "{\"domain\":\"Enrollment\",\"facts\":{}}"
 -- "{\"domain\":\"Enrollment\",\"facts\":{\"plan\":{\"exchange\":\"None\"}}}"
 
 dth :: Domain
@@ -139,10 +138,10 @@ jsonDeathTest = "{\"domain\":\"Death\",\"facts\":{}}"
 
 src1 :: HC.Source
 src1 = HC.Source { database = "someDb"
-                 , table  = "someTable"
-                 , row    = Just 1
-                 , column = Just "someColumn"
-                 , file   = Just "someFile"
+                 , table    = "someTable"
+                 , row      = Just 1
+                 , column   = Just "someColumn"
+                 , file     = Just "someFile"
                  }
 
 jsonSrc1Test :: B.ByteString
@@ -150,7 +149,8 @@ jsonSrc1Test =
   "{\"table\":\"someTable\",\"row\":1,\"file\":\"someFile\",\"column\":\"someColumn\",\"database\":\"someDb\"}"
 
 jsonOtherTest :: B.ByteString
-jsonOtherTest = "{\"domain\":\"NotANothing\",\"facts\":{\"code\":{\"code\":\"XYZ\"}}}"
+jsonOtherTest =
+  "{\"domain\":\"NotANothing\",\"facts\":{\"code\":{\"code\":\"XYZ\"}}}"
 
 spec :: Spec
 spec = do
@@ -187,14 +187,22 @@ spec = do
     `shouldBe` Just src1
 
   it "time is parsed correctly"
-    $          (decode "{\"time\":{\"begin\":\"2020-01-01\",\"end\":\"2020-01-01\"}}" :: Maybe (EDMInterval Day))
+    $ (decode "{\"time\":{\"begin\":\"2020-01-01\",\"end\":\"2020-01-01\"}}" :: Maybe
+          (EDMInterval Day)
+      )
     `shouldBe` Just (EDMInterval (beginerval 1 (fromGregorian 2020 1 1)))
   it "time is parsed correctly"
-    $          (decode "{\"time\":{\"begin\":\"2020-01-01\",\"end\":\"2020-01-02\"}}" :: Maybe (EDMInterval Day))
+    $ (decode "{\"time\":{\"begin\":\"2020-01-01\",\"end\":\"2020-01-02\"}}" :: Maybe
+          (EDMInterval Day)
+      )
     `shouldBe` Just (EDMInterval (beginerval 2 (fromGregorian 2020 1 1)))
   it "time is parsed correctly"
-    $          (decode "{\"time\":{\"begin\":\"2020-01-01\",\"end\":\"2019-12-30\"}}" :: Maybe (EDMInterval Day))
+    $ (decode "{\"time\":{\"begin\":\"2020-01-01\",\"end\":\"2019-12-30\"}}" :: Maybe
+          (EDMInterval Day)
+      )
     `shouldBe` Nothing
   it "time is parsed correctly"
-    $          (decode "{\"time\":{\"begin\":\"2020-01-01\",\"end\":\"2019-12-31\"}}" :: Maybe (EDMInterval Day))
+    $ (decode "{\"time\":{\"begin\":\"2020-01-01\",\"end\":\"2019-12-31\"}}" :: Maybe
+          (EDMInterval Day)
+      )
     `shouldBe` Nothing

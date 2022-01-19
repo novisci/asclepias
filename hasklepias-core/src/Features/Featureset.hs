@@ -9,29 +9,34 @@ Maintainer  : bsaul@novisci.com
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE DataKinds #-}
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE OverloadedStrings #-}
 
-module Features.Featureset (
-    Featureset
+module Features.Featureset
+  ( Featureset
   , FeaturesetList(..)
   , featureset
   , getFeatureset
   , getFeaturesetAttrs
   , getFeaturesetList
   , tpose
-) where
+  ) where
 
-import Features.Featureable           ( Featureable
-                                      , getFeatureableAttrs
-                                      )
-import Features.Attributes            ( Attributes )
-import Data.Aeson                     ( ToJSON(toJSON), object, (.=) )
-import Data.List.NonEmpty as NE       ( NonEmpty(..), transpose, head )
-import Data.Functor                   ( Functor(fmap) )
-import Data.Function                  ( (.) )
-import GHC.Generics                   ( Generic )
-import GHC.Show                       ( Show )
+import           Data.Aeson                     ( (.=)
+                                                , ToJSON(toJSON)
+                                                , object
+                                                )
+import           Data.Function                  ( (.) )
+import           Data.Functor                   ( Functor(fmap) )
+import           Data.List.NonEmpty            as NE
+                                                ( NonEmpty(..)
+                                                , head
+                                                , transpose
+                                                )
+import           Features.Attributes            ( Attributes )
+import           Features.Featureable           ( Featureable
+                                                , getFeatureableAttrs
+                                                )
+import           GHC.Generics                   ( Generic )
+import           GHC.Show                       ( Show )
 
 -- | A Featureset is a (non-empty) list of @Featureable@.
 newtype Featureset = MkFeatureset (NE.NonEmpty Featureable)
@@ -53,7 +58,7 @@ instance ToJSON Featureset where
   toJSON (MkFeatureset x) = toJSON x
 
 -- | A newtype wrapper for a 'NE.NonEmpty' 'Featureset'.
-newtype FeaturesetList = MkFeaturesetList (NE.NonEmpty Featureset) 
+newtype FeaturesetList = MkFeaturesetList (NE.NonEmpty Featureset)
   deriving (Show)
 
 -- | Constructor of a @Featureset@.
@@ -62,5 +67,5 @@ getFeaturesetList (MkFeaturesetList x) = x
 
 -- | Transpose a FeaturesetList
 tpose :: FeaturesetList -> FeaturesetList
-tpose (MkFeaturesetList x) = MkFeaturesetList 
-  (fmap featureset ( transpose (fmap getFeatureset x)))
+tpose (MkFeaturesetList x) =
+  MkFeaturesetList (fmap featureset (transpose (fmap getFeatureset x)))

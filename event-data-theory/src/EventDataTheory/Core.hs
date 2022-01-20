@@ -34,6 +34,11 @@ module EventDataTheory.Core
   , liftToEventPredicate
   ) where
 
+import           Control.DeepSeq                ( NFData )
+import           Data.Aeson                     ( FromJSON
+                                                , ToJSON
+                                                )
+import           Data.Binary                    ( Binary )
 import           Data.Bool                      ( Bool )
 import           Data.Eq                        ( Eq )
 import           Data.Foldable                  ( all
@@ -66,6 +71,7 @@ import           IntervalAlgebra                ( Interval
                                                 , getPairData
                                                 , makePairedInterval
                                                 )
+import           Type.Reflection                ( Typeable )
 
 import           Witch                          ( From(..)
                                                 , into
@@ -102,6 +108,7 @@ The 'event' function is a smart constructor for 'Event'.
 >>> import IntervalAlgebra ( beginerval ) 
 
 >>> data SomeDomain = A | B deriving (Eq, Ord, Show, Generic)
+>>>
 >>> type MyEvent = Event SomeDomain T.Text Integer
 >>> let myEvent = event (beginerval 5 0) (Context (packConcepts ["foo"]) A Nothing) :: MyEvent
 >>> show myEvent
@@ -115,6 +122,7 @@ False
 
 >>> data NewDomain = A T.Text | B Integer deriving (Eq, Ord, Show, Generic)
 >>> data MyConcepts = Foo | Bar | Baz deriving (Eq, Ord, Show, Generic) 
+>>>
 >>> type NewEvent = Event NewDomain MyConcepts Integer
 >>> let newEvent = event (beginerval 5 0) (Context (packConcepts [Foo, Bar]) (A "cool") Nothing) :: NewEvent
 >>> show newEvent
@@ -126,11 +134,16 @@ True
 >>> hasConcept newEvent Baz
 False
 
-
 -}
 
 newtype Event d c a = MkEvent ( PairedInterval (Context d c) a )
   deriving (Eq, Show, Generic)
+
+-- TODO: make PairedInterval and Interval instances of NFData
+-- instance (NFData a, NFData d, NFData c) => NFData (Event d c a)
+
+-- TODO: make PairedInterval and Interval instances of Binary
+-- instance (Binary d, Binary c, Binary a) => Binary (Event d c a)
 
 instance (Ord a) => Intervallic (Event d c) a where
   getInterval (MkEvent x) = getInterval x
@@ -141,7 +154,7 @@ instance Ord c => HasConcept (Event d c a) c where
 
 -- | A smart constructor for 'Event d c a's.
 event
-  :: (Show d, Eq d, Generic d, Show c, Eq c, Ord c, Generic c)
+  :: (Show d, Eq d, Generic d, Show c, Eq c, Ord c, Typeable c) -- Text is not Generic; but c should at least be Typeable
   => Interval a
   -> Context d c
   -> Event d c a
@@ -154,7 +167,6 @@ getEvent (MkEvent x) = x
 -- | Get the 'Context' of an 'Event'. 
 getContext :: Event d c a -> Context d c
 getContext = getPairData . getEvent
-
 
 {- |
 A 'Context' contains information about what ocurred during an 'Event''s interval.
@@ -173,8 +185,9 @@ However, one could create a collection of facts that includes both claims and EH
 By having a 'Context' parametrized by the shape of a domain's facts,
 users are free to define the structure of their facts as needed. 
 
-A context also has a @source@ field
-which may be used to carry information about the provenance of the data.
+A context also has a @source@ field,
+possibly containing a 'Source',
+which carries information about the provenance of the data.
 
 -}
 data Context d c = Context
@@ -188,6 +201,9 @@ instance Ord c => HasConcept (Context d c) c where
   hasConcept c = hasConcept (concepts c)
 
 {- |
+A source may be used to record the provenance of an event from some database.
+This data is sometimes useful for debugging.
+We generally discourage using @Source@ information in defining features.
 -}
 data Source = Source
   { column   :: Maybe T.Text
@@ -198,8 +214,18 @@ data Source = Source
   }
   deriving (Eq, Show, Generic)
 
+instance NFData Source
+instance Binary Source
+instance FromJSON Source
+instance ToJSON Source
+
 -- | A @Concept@ is simply a tag or label for an 'Event'.
 newtype Concept c = Concept c deriving (Eq, Ord, Show, Generic)
+
+instance NFData c => NFData (Concept c)
+instance Binary c => Binary (Concept c)
+instance FromJSON c => FromJSON (Concept c)
+instance ToJSON c => ToJSON (Concept c)
 
 instance From (Concept c) c where
 instance From c (Concept c) where
@@ -218,6 +244,11 @@ Concepts inherit the monoidal properties of 'Set', by 'Data.Set.union'.
 -}
 newtype Concepts c = Concepts ( Set ( Concept c ) )
     deriving (Eq, Show, Generic)
+
+instance NFData c => NFData (Concepts c)
+instance Binary c => Binary (Concepts c)
+instance (Ord c, FromJSON c) => FromJSON (Concepts c)
+instance ToJSON c => ToJSON (Concepts c)
 
 instance (Ord c) => Semigroup ( Concepts c ) where
   Concepts x <> Concepts y = Concepts (x <> y)

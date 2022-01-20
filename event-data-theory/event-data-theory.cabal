@@ -29,7 +29,10 @@ library
       src
   build-depends:
       base >=4.14 && <4.15
+    , aeson >= 2.0
+    , binary == 0.8.8.0
     , containers == 0.6.5.1
+    , deepseq == 1.4.4.0
     , interval-algebra == 1.2.0
     , text >= 1.2
     , witch == 1.0.0.1

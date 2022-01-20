@@ -283,9 +283,13 @@ unpackConcepts = from
 toConcepts :: (Ord c) => Set (Concept c) -> Concepts c
 toConcepts = from
 
-{- |
+{- 
 The 'HasConcept' typeclass provides predicate functions
 for determining whether an @a@ contains a concept.
+
+This class is only used in this 'Core' module
+for the purposes of having a single @hasConcept@ function
+that works on 'Concepts', 'Context', or 'Event' data.
 -}
 class HasConcept a c where
     hasConcept  :: a -> c -> Bool

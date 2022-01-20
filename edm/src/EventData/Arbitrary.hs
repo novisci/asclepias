@@ -11,7 +11,7 @@ Stability   : experimental
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE FlexibleContexts #-}
 module EventData.Arbitrary
-  ( 
+  (
    -- generateEventsInt
   ) where
 

@@ -49,7 +49,7 @@ import           Data.Functor.Contravariant     ( Predicate(..) )
 import           Data.Generics.Internal.VL.Lens ( (^.) )
 import           Data.Generics.Product          ( HasField(field) )
 import           Data.Generics.Sum              ( AsAny(_As) )
-import           Data.List                      (concat)
+import           Data.List                      ( concat )
 import           Data.Maybe                     ( Maybe(..) )
 import           Data.Ord                       ( Ord )
 import           Data.Semigroup                 ( (<>) )
@@ -78,11 +78,11 @@ import           EventData.Core                 ( Event
                                                 , ctxt
                                                 )
 import           EventData.Predicates           ( isBirthYearEvent
-                                                , isGenderFactEvent
-                                                , isStateFactEvent
-                                                , isRegionFactEvent
-                                                , isEnrollmentEvent
                                                 , isEligibilityEvent
+                                                , isEnrollmentEvent
+                                                , isGenderFactEvent
+                                                , isRegionFactEvent
+                                                , isStateFactEvent
                                                 , (|||)
                                                 )
 import           GHC.Float                      ( Double )
@@ -171,7 +171,7 @@ previewLengthOfStay dmn =
 
 -- | View the @benefit@ field of a @Plan@
 previewBenefit :: Domain -> Maybe Text
-previewBenefit x = previewPlan x >>= (^. field @"benefit") 
+previewBenefit x = previewPlan x >>= (^. field @"benefit")
 
 -- | View the @benefit@ field of a @Event@
 previewBenefitE :: Event a -> Maybe Text

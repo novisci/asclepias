@@ -3,9 +3,9 @@
 {-# LANGUAGE NoImplicitPrelude #-}
 
 module EventDataTheory
-  ( module EventDataTheory.Core 
+  ( module EventDataTheory.Core
   , module EventDataTheory.Predicatable
   ) where
 
-import EventDataTheory.Core
-import EventDataTheory.Predicatable
+import           EventDataTheory.Core
+import           EventDataTheory.Predicatable

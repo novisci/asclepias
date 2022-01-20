@@ -1,4 +1,4 @@
-https://novisci.slack.com/archives/C011Z8QMPE0/p1637335360003600# Summary
+# Summary
 
 (Summarize the bug encountered concisely)
 

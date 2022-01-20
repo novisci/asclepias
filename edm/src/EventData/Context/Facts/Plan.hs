@@ -8,15 +8,16 @@ Module      : Plan fact
 module EventData.Context.Facts.Plan
   ( Plan(..)
   , emptyPlan
-) where
-import Data.Aeson               ( FromJSON )
-import Data.Eq                  ( Eq )
-import Data.Maybe               ( Maybe(..) )
-import Data.Text                ( Text )
-import GHC.Generics             ( Generic )
-import GHC.Show                 ( Show )
+  ) where
+import           Data.Aeson                     ( FromJSON )
+import           Data.Eq                        ( Eq )
+import           Data.Maybe                     ( Maybe(..) )
+import           Data.Text                      ( Text )
+import           GHC.Generics                   ( Generic )
+import           GHC.Show                       ( Show )
 
-import EventData.Context.Facts.Exchange ( Exchange(..) )
+import           EventData.Context.Facts.Exchange
+                                                ( Exchange(..) )
 
 -- | plan
 data Plan = Plan
@@ -25,7 +26,7 @@ data Plan = Plan
   , group_id                :: Maybe Text
   , subscriber_id           :: Maybe Text
   , subscriber_relationship :: Maybe Text
-  , benefit :: Maybe Text -- TODO: Maybe is different from EDM 1.1 spec
+  , benefit                 :: Maybe Text -- TODO: Maybe is different from EDM 1.1 spec
   }
   deriving (Eq, Show, Generic)
 

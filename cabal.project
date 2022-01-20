@@ -3,6 +3,7 @@ packages: hasklepias-core
         , hasklepias-appBuilder
         , hasklepias-templates
         , cohort-collector
+        , event-data-theory
         , edm
         , stype
 

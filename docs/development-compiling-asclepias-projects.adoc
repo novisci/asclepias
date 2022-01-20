@@ -75,54 +75,9 @@ The meaning of some of the other section-specific fields shown in the example is
 
 [source,conf]
 ----
-cabal-version:  2.2
-name:           hasklepias-main
-version:        0.22.5
+include::../hasklepias-main/hasklepias-main.cabal[tag=devel-docs-package-properties]
 
-library
-  exposed-modules:
-      Hasklepias
-      Hasklepias.ExampleApp
-      Hasklepias.ExampleFilterApp
-  hs-source-dirs:
-      src
-  build-depends:
-      edm
-    , hasklepias-appBuilder
-    , stype
-    , hasklepias-core
-    , hasklepias-templates
-  default-language: Haskell2010
-
-test-suite examples
-  type: exitcode-stdio-1.0
-  main-is: Main.hs
-  other-modules:
-      ExampleEvents
-      ExampleFeatures1
-      ExampleFeatures2
-      ExampleFeatures3
-      ExampleFeatures4
-      ExampleCohort1
-  hs-source-dirs:
-      examples
-  build-depends:
-      hasklepias-main
-    , hasklepias-core
-    , hspec
-    , base >=4.14 && <5
-    , tasty  == 1.4.1
-    , tasty-hunit == 0.10.0.3
-    , tasty-hspec == 1.2
-  default-language: Haskell2010
-
-executable exampleApp
-  main-is: Main.hs
-  hs-source-dirs:
-      exampleApp
-  build-depends:
-      hasklepias-main
-  default-language: Haskell2010
+include::../hasklepias-main/hasklepias-main.cabal[tag=devel-docs-components]
 ----
 
 == Compiling asclepias packages

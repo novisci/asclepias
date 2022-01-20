@@ -4,11 +4,13 @@
 
 = Development
 
-To develop and work with asclepias locally, clone the repository:s
+To develop and work with asclepias locally, clone the repository:
 
 ----
 git clone git@gitlab.novisci.com:nsStat/asclepias.git
 ----
+
+include::development-quick-start.adoc[leveloffset=+1]
 
 include::development-installing-ghc-and-cabal.adoc[leveloffset=+1]
 

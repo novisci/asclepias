@@ -131,27 +131,36 @@ The `cabal build` command is used to compile Cabal packages and package componen
 There are many command-line arguments that can be provided with `cabal build`, however for the sake of brevity these are not covered here.
 See `cabal build --help` and https://cabal.readthedocs.io/en/3.6/cabal-commands.html#cabal-v2-build[cabal-build] in the Cabal documentation for full details.
 
+=== 'cabal build' troubleshooting: LLVM version on an M1 Mac
+
 [TIP]
 .Building on an M1 Mac
-===
 The first time you run `cabal build` on an M1 Mac,
 you may get errors like:
-[source,shell]
+[source]
 ----
 <no location info>: error:
     Warning: Couldn't figure out LLVM version!
              Make sure you have installed LLVM between [9 and 13)
 ----
 
-You probably need to install `+llvm+`,
-which you can do using `+homebrew+`:footnote:redditllvmthread[
-https://www.reddit.com/r/haskell/comments/rjm0x8/help_wanted_for_llvm_config_for_haskell_on_mac/[
-  Helpful reddit thread on running ghc on an M1 Mac]
-]
+https://llvm.org/[LLVM] is provided as part of Xcode which ships with macOS,
+but as of January 2022 team members using M1 Macs have reported problems with compiling Haskell packages using the default version of LLVM.
+If you get the above error message,
+then you probably need to install a different build of LLVM,
+which you can do using e.g. homebrew as shown below.
+Note that in this example we specify LLVM version 12 as suggested in the thread shown below,
+however the LLVM versions that are compatible with Haskell compilations may change over time.
+See https://www.reddit.com/r/haskell/comments/rjm0x8/help_wanted_for_llvm_config_for_haskell_on_mac/[Help wanted for LLVM config for Haskell on Mac] on Reddit for a more detailed discussion.
+
 [source,shell]
 ----
 brew install llvm@12
-echo 'export PATH="/opt/homebrew/opt/llvm@12/bin:$PATH"' >> ~/.zshrc
+----
+You will also want to add a line like the following to the appropriate shell startup file such as `~/.bashrc`, `~/.zshrc`, etc.
+[source,shell]
+----
+export PATH="/opt/homebrew/opt/llvm@12/bin:$PATH"
 ----
 
 === Compiling all asclepias packages

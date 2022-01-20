@@ -24,7 +24,6 @@ library
   exposed-modules:
       EventDataTheory
       EventDataTheory.Core
-      EventDataTheory.Predicatable
   hs-source-dirs:
       src
   build-depends:

@@ -6,25 +6,32 @@
 
 _Asclepias (n)_:
 
-1. The genus of North American milkweeds, named after Linnaeus after the greek god of healing, Asclepius.
-2. A language and software project for defining and deriving features from temporally ordered events using the https://hackage.haskell.org/package/interval-algebra[interval algebra].
+1. The genus of North American milkweeds
+named after Linnaeus after the greek god of healing, Asclepius.
+2. A language and software project for defining and deriving features 
+from temporally ordered events using the 
+https://hackage.haskell.org/package/interval-algebra[interval algebra].
+
+== Introduction
+
+include::docs/motivation.adoc[leveloffset=+2]
+
+include::docs/features.adoc[leveloffset=+2]
+
+include::docs/comparison.adoc[leveloffset=+2]
+
+== Design
+
+include::docs/roadmap.adoc[leveloffset=+2]
 
 == Tools
 
 include::cohort-collector/README.adoc[leveloffset=+2]
 
-== Development
-
-To develop and work with asclepias locally, clone the repository:
-
-----
-git clone git@gitlab.novisci.com:nsStat/asclepias.git
-----
-
-You will need to install a Haskell toolchain, especially the https://www.haskell.org/ghc/[Glasgow Haskell Compiler] (GHC) and the building and packaging system https://www.haskell.org/cabal[cabal]. Both of which you can install using the https://www.haskell.org/ghcup[`ghcup` utility]. You can use any development environment you choose, but for maximum coding pleasure,
-you should install the https://github.com/haskell/haskell-language-server[Haskell language server] (`hls`), also available using `ghcup`. Some integrated development
-environments, such as https://code.visualstudio.com[Visual Studio Code], have 
-https://marketplace.visualstudio.com/items?itemName=haskell.haskell[excellent `hls` integration].
-
+include::docs/development.adoc[leveloffset=+1]
 
 include::ci/README.adoc[leveloffset=+2]
+
+
+
+include::docs/bibliography.adoc[leveloffset=+1]

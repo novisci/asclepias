@@ -3,8 +3,18 @@ packages: hasklepias-core
         , hasklepias-appBuilder
         , hasklepias-templates
         , cohort-collector
+        , event-data-theory
         , edm
         , stype
+
+allow-newer:
+  blaze-html:text,
+  blaze-markup:text,
+  generic-lens-core:text,
+  generic-lens:text,
+  witch:text,
+  aeson:text,
+  amazonka:text,
 
 -- For amazonka (temp until amazonka > 2.0 is released to hackage )
 -- Multiple subdirs in a single `source-repository-package` stanza are supported by cabal-install >= 3.2.0.0.

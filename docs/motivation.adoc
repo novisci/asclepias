@@ -1,0 +1,27 @@
+= Motivation
+
+Cohorts are fundamental to epidemiology. 
+Loosely, a cohort is simply a group of study subjects sharing a common set of characteristics.
+The Asclepias project proposes a more rigorous definition.
+Using purely algebraic terms,
+Asclepias defines a mapping from a population of subjects who have events occurring in time to a cohort (or set of cohorts) of observational units with a collection of features -- relevant information (or "variables") drawn from events.
+The benefits of this formalism are manifest in the challenges of creating analyzable data from disparate data sources based on scientists' description of who should be in a cohort and what information a cohort should contain.
+
+The extraction and transformation of source data such as insurance claims, electronic medical records, or case report forms into analysis-ready cohorts consumes an inordinate amount of resources in a research workflow.
+Bottlenecks in the process may include:
+
+* computationally-intensive transformations of source data into a common data model;
+* a data model (e.g. relational databases) that does not align with how scientists reason or describe the cohort;
+* error-prone translations of a scientist's plan by programmers when creating analytic data from the common model.
+
+In terms of human resources, the translation step is often the most consuming.
+A scientist describes a cohort in natural language, which is often unintentionally imprecise.
+No matter how articulate or structured the description, the translation to code is prone to misinterpretations by programmers.
+This step requires frequent clarification between the scientists and programmers.
+The canonical model for this process involves teams of scientists writing data specifications in Microsoft Word documents which are then translated by SAS programmers into analytic datasets.
+This step is often coded by two or more programmers to ensure quality. 
+
+The ultimate goal of Asclepias is to provide scientists with a domain specific language (DSL) to define cohorts without the expensive translation process.
+To that end, the Asclepias team will design an algebra of events in terms of temporal logic that maps closely to how scientists think about defining cohorts and its algorithms.
+This algebra will be based upon in part upon existing research, such as Allen's Interval Algebra <<allen83>>.
+At the same time, the Asclepias team will implement the algebra as an embedded DSL (eDSL) in a functional programming language with the goal of creating a compilation target language for an eventual DSL. 

@@ -31,7 +31,8 @@ build-cohort-collector-static:
     - job: "docker-build-musl"
       optional: true
   rules:
-    - changes: 
+    - changes:
+      - "cohort-collector/*.cabal" 
       - "cohort-collector/**/*.hs"
       - "hasklepias-appBuilder/**/*.hs"
       - "hasklepias-core/**/*.hs"

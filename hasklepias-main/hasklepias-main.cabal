@@ -34,7 +34,6 @@ library
     , stype
     , hasklepias-core
     , hasklepias-templates
-
   default-language: Haskell2010
 
 test-suite examples

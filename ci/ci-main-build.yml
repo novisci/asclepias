@@ -1,12 +1,22 @@
 # The main build pipeline 
 
 stages:
-  - pre-build
+  - prep
   - build 
+  - deploy 
+
+# The child pipeline needs at minimum one job to run - otherwise the sub-pipeline fails
+# See https://gitlab.com/gitlab-org/gitlab/-/issues/218538
+dummy:
+  stage: build
+  variables:
+    GIT_STRATEGY: none
+  script:
+    - ":"
 
 # Build the docker image will all dependencies installed.
 docker-build:
- stage : pre-build
+ stage : prep
  image: docker:$DOCKER
  needs:
   - pipeline: $PARENT_PIPELINE_ID
@@ -18,7 +28,7 @@ docker-build:
  script:
     - ./ci/ci-docker-build.sh $MAINVERSION hasklepias-build-musl haskell $GHC
 
-build:
+main-build:
   stage: build
   needs:
     - pipeline: $PARENT_PIPELINE_ID
@@ -27,16 +37,32 @@ build:
     - job: "docker-build"
       optional: true
   rules:
-    - changes: ["**/*.hs"]
+    - changes: ["**/*.cabal", "**/*.hs"]
+    - if: '$CI_COMMIT_MESSAGE =~ /-build/'
   image: registry.novisci.com/nsstat/asclepias/hasklepias-build:${MAINVERSION}
   script:
      - ./ci/ci-cabal-build-all.sh
+  artifacts:
+    paths:
+      - install
+    expire_in: 1 hour
 
-# The child pipeline needs at minimum one job to run - otherwise the sub-pipeline fails
-# See https://gitlab.com/gitlab-org/gitlab/-/issues/218538
-dummy:
-  stage: build
-  variables:
-    GIT_STRATEGY: none
+# Upload docs to S3
+upload-haddock-docs:
+  image: registry.novisci.com/nsstat/statocker/aws:latest
+  needs:
+    - pipeline: $PARENT_PIPELINE_ID
+      job: build_vars
+      artifacts: true
+    - job: "main-build"
+      optional: false
+      artifacts: true
+  rules:
+    - changes: ["**/*.cabal", "**/*.hs"]
+    - if: '$CI_COMMIT_MESSAGE =~ /-build/'
+  stage: deploy
   script:
-    - ":"
+    - ./ci/ci-upload-docs-to-s3.sh
+
+
+

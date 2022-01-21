@@ -10,6 +10,8 @@ cradle:
       component: "hasklepias-templates"  
     - path: "./edm/"
       component: "edm"
+    - path: "./event-data-theory/"
+      component: "event-data-theory"
     - path: "./cohort-collector/"
       component: "cohort-collector"
     - path: "./stype/"

@@ -1,0 +1,77 @@
+= Development
+
+To develop and work with asclepias locally, clone the repository:
+
+----
+git clone git@gitlab.novisci.com:nsStat/asclepias.git
+----
+
+You will need to install a Haskell toolchain, 
+especially the 
+https://www.haskell.org/ghc/[Glasgow Haskell Compiler] (GHC)
+and the building and packaging system 
+https://www.haskell.org/cabal[cabal]. 
+Both of which you can install using the 
+https://www.haskell.org/ghcup[`ghcup` utility].
+You can use any development environment you choose,
+but for maximum coding pleasure,
+you should install the 
+https://github.com/haskell/haskell-language-server[Haskell language server] (`hls`), 
+also available using `ghcup`. 
+Some integrated development environments, 
+such as 
+https://code.visualstudio.com[Visual Studio Code], 
+have 
+https://marketplace.visualstudio.com/items?itemName=haskell.haskell[excellent `hls` integration].
+
+== Interactive Usage
+
+To run the examples interactively, open a ghci session with:
+
+[source,shell]
+----
+cabal repl hasklepias:examples 
+----
+
+In ghci you have access to all exposed functions in hasklepias, interval-algebra, and those in the examples folder.
+
+
+== Linting and Formatting
+
+The CI process checks that code in the repository is appropriately formatted and linted, 
+using the 
+https://hackage.haskell.org/package/brittany[`brittany`]
+and
+https://github.com/ndmitchell/hlint[`hlint`] 
+tools respectively. 
+
+You can install these locally using (e.g.) `cabal`:
+
+[source,shell]
+----
+cabal install brittany
+cabal install hlint
+----
+
+Scripts are provided to format code locally with:
+
+[source,shell]
+----
+./scripts/format.sh
+----
+
+or linted using: 
+
+[source,shell]
+----
+./scripts/lint.sh
+----
+
+== Using Haskell Language Server
+
+If HLS ever stops working, you may need to clear the cache:
+
+[source,shell]
+----
+rm -rf ~/.cache/hie-bios/dist-asclepias*
+----

@@ -11,7 +11,8 @@ Stability   : experimental
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE FlexibleContexts #-}
 module EventData.Arbitrary
-  ( generateEventsInt
+  (
+   -- generateEventsInt
   ) where
 
 import           Control.Monad                  ( Functor(fmap)
@@ -42,6 +43,11 @@ import           Test.QuickCheck                ( Arbitrary(arbitrary, shrink)
                                                 , suchThat
                                                 )
 
+{- !!! Temporarily Disabled 
+  - will be moved to event-data-theory
+  - update to interval algebra 1.2 created overlapping instances errors
+   
+
 instance (Arbitrary (Interval a)) => Arbitrary (Event a) where
   arbitrary = liftM2 event arbitrary arbitrary
 
@@ -52,3 +58,4 @@ instance (Ord a, Show a, Arbitrary (Interval a)) => Arbitrary (ConceptEvent a) w
 generateEventsInt :: Int -> IO [Event Int]
 generateEventsInt i =
   generate $ suchThat (orderedList :: Gen [Event Int]) (\x -> length x == i)
+-}

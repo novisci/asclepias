@@ -1,5 +1,5 @@
 cabal-version:  2.2
-name:           hasklepias-appBuilder
+name:           event-data-theory 
 version:        0.1.0
 description:    Please see the README on GitHub at <https://github.com/novisci/asclepias#readme>
 homepage:       https://github.com/novisci/asclepias/#readme
@@ -8,7 +8,7 @@ author:         Bradley Saul
 maintainer:     bsaul@novisci.com
 copyright:      NoviSci, Inc
 category:       Data Science
-synopsis:       embedded DSL for defining epidemiologic cohorts
+synopsis:       event data theory 
 license:        BSD-3-Clause
 license-file:   LICENSE
 build-type:     Simple
@@ -22,32 +22,17 @@ source-repository head
 
 library
   exposed-modules:
-      Hasklepias.AppUtilities
-      Hasklepias.MakeApp
-      Hasklepias.MakeFilterApp
+      EventDataTheory
+      EventDataTheory.Core
   hs-source-dirs:
       src
   build-depends:
-    -- Internal packages
-      edm
-    , hasklepias-core
-
-    -- External packages
-    , aeson >= 2.0.2.0
-    , amazonka >= 2.0
-    , amazonka-core >= 2.0
-    , amazonka-sts >= 2.0
-    , amazonka-s3 >= 2.0
-    , base >=4.14 && <5
-    , bytestring == 0.11.1.0
+      base >=4.14 && <4.15
+    , aeson >= 2.0
+    , binary == 0.8.8.0
     , containers == 0.6.5.1
-    , co-log-core == 0.3.0.0
-    , conduit == 1.3.4.2
-    , conduit-extra == 1.3.5
-    , generic-lens == 2.2.0.0
+    , deepseq == 1.4.4.0
     , interval-algebra == 1.2.0
-    , microlens == 0.4.12.0
-    , optparse-applicative == 0.16.1.0
-    , text >= 2.0 
-    , vector == 0.12.2.0
+    , text >= 1.2
+    , witch == 1.0.0.1
   default-language: Haskell2010

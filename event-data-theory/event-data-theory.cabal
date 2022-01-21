@@ -32,7 +32,7 @@ library
     , binary == 0.8.8.0
     , containers == 0.6.5.1
     , deepseq == 1.4.4.0
-    , interval-algebra == 1.2.0
+    , interval-algebra == 1.3.0
     , text >= 1.2
     , witch == 1.0.0.1
   default-language: Haskell2010

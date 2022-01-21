@@ -139,18 +139,15 @@ False
 newtype Event d c a = MkEvent ( PairedInterval (Context d c) a )
   deriving (Eq, Show, Generic)
 
--- TODO: make PairedInterval and Interval instances of NFData
--- instance (NFData a, NFData d, NFData c) => NFData (Event d c a)
-
--- TODO: make PairedInterval and Interval instances of Binary
--- instance (Binary d, Binary c, Binary a) => Binary (Event d c a)
-
 instance (Ord a) => Intervallic (Event d c) a where
   getInterval (MkEvent x) = getInterval x
   setInterval (MkEvent x) y = MkEvent $ setInterval x y
 
 instance Ord c => HasConcept (Event d c a) c where
   hasConcept e = hasConcept (getContext e)
+
+instance (NFData a, NFData d, NFData c) => NFData (Event d c a)
+instance (Binary d, Binary c, Binary a) => Binary (Event d c a)
 
 -- | A smart constructor for 'Event d c a's.
 event
@@ -199,6 +196,9 @@ data Context d c = Context
 
 instance Ord c => HasConcept (Context d c) c where
   hasConcept c = hasConcept (concepts c)
+
+instance (NFData d, NFData c) => NFData (Context d c) 
+instance (Binary d, Binary c) => Binary (Context d c) 
 
 {- |
 A source may be used to record the provenance of an event from some database.

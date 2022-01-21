@@ -23,7 +23,7 @@ docker-build:
     job: build_vars
     artifacts: true
  rules:
-  # - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+  # if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
   - changes: ["**/*.cabal", "cabal.project"]
  script:
     - ./ci/ci-docker-build.sh $MAINVERSION hasklepias-build-musl haskell $GHC

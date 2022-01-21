@@ -5,6 +5,16 @@ Description : Defines the Event type and its component types, constructors,
 Copyright   : (c) NoviSci, Inc 2020
 License     : BSD3
 Maintainer  : bsaul@novisci.com
+
+NOTE: The types herein are how events are represently internally. 
+Events may be represented in different structures for transferring or storing data, for example.
+The To/FromJSON instances for types defined in this module are derived generically.
+These can be useful for writing tests, for example, but
+they are not designed to encode/decode data in the new line delimited format
+defined in the 
+[event data model docs](https://docs.novisci.com/edm-sandbox/latest/index.html#_event_representation)
+See the neighboring EventLine module for types and To/FromJSON instances
+designed for the purpose of marshaling data from JSON lines.
 -}
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE TypeFamilies #-}
@@ -17,6 +27,7 @@ Maintainer  : bsaul@novisci.com
 
 module EventDataTheory.Core
   ( Event
+  , event
   , getEvent
   , getContext
   , Source(..)
@@ -32,9 +43,15 @@ module EventDataTheory.Core
   , hasAnyConcepts
   , hasAllConcepts
   , liftToEventPredicate
+  , SubjectID
   ) where
 
+import           Control.Applicative            ( Applicative(pure) )
 import           Control.DeepSeq                ( NFData )
+import           Control.Monad                  ( Functor(fmap)
+                                                , liftM2
+                                                , liftM3
+                                                )
 import           Data.Aeson                     ( FromJSON
                                                 , ToJSON
                                                 )
@@ -47,7 +64,6 @@ import           Data.Foldable                  ( all
 import           Data.Function                  ( ($)
                                                 , (.)
                                                 )
-import           Data.Functor                   ( fmap )
 import           Data.Functor.Contravariant     ( Contravariant(contramap)
                                                 , Predicate(..)
                                                 )
@@ -71,6 +87,7 @@ import           IntervalAlgebra                ( Interval
                                                 , getPairData
                                                 , makePairedInterval
                                                 )
+import           Test.QuickCheck                ( Arbitrary(arbitrary) )
 import           Type.Reflection                ( Typeable )
 
 import           Witch                          ( From(..)
@@ -148,10 +165,23 @@ instance Ord c => HasConcept (Event d c a) c where
 
 instance (NFData a, NFData d, NFData c) => NFData (Event d c a)
 instance (Binary d, Binary c, Binary a) => Binary (Event d c a)
+-- See NOTE at top of module regarding To/FromJSON instances
+instance ( FromJSON b, FromJSON (Interval a) ) => FromJSON (PairedInterval b a)
+instance ( ToJSON b, ToJSON (Interval a) ) => ToJSON (PairedInterval b a)
+instance ( Ord c, FromJSON c, FromJSON d, FromJSON (Interval a) ) => FromJSON (Event d c a)
+instance ( Ord c, ToJSON c, ToJSON d, ToJSON (Interval a) ) => ToJSON (Event d c a)
+
+
+instance ( Arbitrary (Interval a)
+          , Arbitrary d, Show d, Eq d, Generic d
+          , Arbitrary c, Show c, Eq c, Ord c, Typeable c) =>
+      Arbitrary (Event d c a) where
+  arbitrary = liftM2 event arbitrary arbitrary
 
 -- | A smart constructor for 'Event d c a's.
 event
-  :: (Show d, Eq d, Generic d, Show c, Eq c, Ord c, Typeable c) -- Text is not Generic; but c should at least be Typeable
+  :: (Show d, Eq d, Generic d, Show c, Eq c, Ord c, Typeable c)
+  -- Text is not Generic; but c should at least be Typeable
   => Interval a
   -> Context d c
   -> Event d c a
@@ -197,8 +227,17 @@ data Context d c = Context
 instance Ord c => HasConcept (Context d c) c where
   hasConcept c = hasConcept (concepts c)
 
-instance (NFData d, NFData c) => NFData (Context d c) 
-instance (Binary d, Binary c) => Binary (Context d c) 
+instance (NFData d, NFData c) => NFData (Context d c)
+instance (Binary d, Binary c) => Binary (Context d c)
+-- See NOTE at top of module regarding To/FromJSON
+instance ( Ord c, FromJSON c, FromJSON d ) => FromJSON (Context d c)
+instance ( Ord c, ToJSON c, ToJSON d ) => ToJSON (Context d c)
+
+instance ( Arbitrary d, Show d, Eq d, Generic d
+         , Arbitrary c, Show c, Eq c, Ord c, Typeable c) =>
+      Arbitrary (Context d c) where
+  arbitrary = liftM3 Context arbitrary arbitrary (pure Nothing)
+
 
 {- |
 A source may be used to record the provenance of an event from some database.
@@ -247,8 +286,12 @@ newtype Concepts c = Concepts ( Set ( Concept c ) )
 
 instance NFData c => NFData (Concepts c)
 instance Binary c => Binary (Concepts c)
+-- See NOTE at top of module regarding To/FromJSON
 instance (Ord c, FromJSON c) => FromJSON (Concepts c)
 instance ToJSON c => ToJSON (Concepts c)
+
+instance (Arbitrary c, Ord c) => Arbitrary (Concepts c) where
+  arbitrary = fmap packConcepts arbitrary
 
 instance (Ord c) => Semigroup ( Concepts c ) where
   Concepts x <> Concepts y = Concepts (x <> y)
@@ -330,5 +373,19 @@ instance EventPredicate (Maybe Source) d c a where
 instance (Ord a) => EventPredicate (Interval a) d c a where
   liftToEventPredicate = contramap getInterval
 
+{-|
+-}
 
+data SubjectID =
+    SubjectIDText T.Text
+  | SubjectIDInteger Integer
+  deriving (Eq, Show, Generic)
 
+instance FromJSON SubjectID
+instance From SubjectID T.Text where
+  from (SubjectIDText    x) = x
+  from (SubjectIDInteger x) = T.pack $ show x
+instance From Integer SubjectID where
+  from = SubjectIDInteger
+instance From T.Text SubjectID where
+  from = SubjectIDText

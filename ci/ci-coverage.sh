@@ -71,3 +71,26 @@ for path in "${tix_paths[@]}"; do
     hpc report "${mix_paths[@]}" "$path"
     echo '=================================================='
 done
+
+# Print a banner to make the overall coverage report easy to spot
+cat << EOF
+==================================================================
+   ___                   _ _    ___
+  / _ \__ _____ _ _ __ _| | |  / __|_____ _____ _ _ __ _ __ _ ___
+ | (_) \ V / -_) '_/ _\` | | | | (__/ _ \ V / -_) '_/ _\` / _\` / -_)
+  \___/ \_/\___|_| \__,_|_|_|  \___\___/\_/\___|_| \__,_\__, \___|
+                                                        |___/
+==================================================================
+EOF
+
+# Report the overall test coverage. Creates a temporary directory and file (note
+# that Hpc seems to require the filename suffix ends in tix), then combine the
+# tix files using `hpc sum`, and then write the coverage summary
+tmpdir=$(mktemp -d)
+tmpfile="$tmpdir"/package-sum-union.tix
+hpc sum --union --output="$tmpfile" "${tix_paths[@]}"
+hpc report "${mix_paths[@]}" "$tmpfile" \
+    | gsed -r 's/(\s*)(.*top-level declarations used.*)/\1<<< \2 >>>/'
+echo '=================================================================='
+rm "$tmpfile"
+rm -r "$tmpdir"

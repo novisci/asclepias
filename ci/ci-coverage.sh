@@ -5,7 +5,7 @@
 #
 # The documentation for using Hpc is rather sparse. The best documentaion I
 # could find was at https://wiki.haskell.org/Haskell_program_coverage. Is there
-# any better? (DP)
+# any better? (DP 2021-01-21)
 #
 # In short, you can use `hpc report` to generate a summary of the test coverage
 # for a given package. There are two types of files that are needed for the
@@ -24,33 +24,44 @@
 #   * ghc-8.10.7/edm-0.23.5/hpc/vanilla/tix/edm-0.23.5/edm-0.23.5.tix
 #   * ghc-8.10.7/edm-0.23.5/hpc/vanilla/tix/edm-test/edm-test.tix
 
-# Safely find and store the mix paths into an array.
-# Each path is prepended with `--hpcdir=` in preparation for being passed in as command line arguments to the
-# `hpc report` application.
-# Assumes that $GHC has been placed into the
-# environment by the CI. See https://mywiki.wooledge.org/BashGuide/Arrays#Creating_Arrays-1 for the basic pattern for parsing
-# filepaths in the possible presence of spaces or newlines.
+# Use GNU sed and find if on a macOS system
+if [[ $OSTYPE =~ "darwin" ]]; then
+    sed=gsed
+    find=gfind
+else
+    sed=sed
+fi
+
+# Safely find and store the mix paths into an array. Each path is prepended with
+# `--hpcdir=` in preparation for being passed in as command line arguments to
+# the `hpc report` application. Assumes that $GHC has been placed into the
+# environment by the CI. See
+# https://mywiki.wooledge.org/BashGuide/Arrays#Creating_Arrays-1 for the basic
+# pattern for parsing filepaths in the possible presence of spaces or newlines.
+# Note that you may need to use the GNU version of `sed` for this command to
+# work.
 [[ -z "$GHC" ]] && exit 1
 mix_paths=()
 while read -r -d ''; do
     mix_paths+=("$REPLY")
 done < <(
-    find dist-newstyle -path "*/ghc-$GHC/*/hpc/vanilla/mix/*" -print0         \
-        | sed -zr "s|^(.*ghc-$GHC/.*/hpc/vanilla/mix/[^/]+).*$|--hpcdir=\1|" \
+    $find dist-newstyle -path "*/ghc-$GHC/*/hpc/vanilla/mix/*" -print0         \
+        | $sed -zr "s|^(.*ghc-$GHC/.*/hpc/vanilla/mix/[^/]+).*$|--hpcdir=\1|" \
         | sort -z                                                             \
         | uniq -z
     )
 
-# Find and store the tix paths into an array. See the comment for constructing the mix paths
-# for the form of this block.
+# Find and store the tix paths into an array. See the comment for constructing
+# the mix paths for the form of this block. Note that you may need to use the
+# GNU version of `find` for this command to work.
 [[ -z "$GHC" ]] && exit 1
 path_regex=".*/ghc-$GHC/.*/hpc/vanilla/tix/[[:alnum:]_-]+[[:digit:]]+[.][[:digit:]]+[.][[:digit:]]+/.*[.]tix"
 tix_paths=()
 while read -r -d ''; do
     tix_paths+=("$REPLY")
-done < <(find dist-newstyle -regextype posix-extended -regex "$path_regex" -print0)
+done < <($find dist-newstyle -regextype posix-extended -regex "$path_regex" -print0)
 
-# Print a summary of code completion statistics
+# Print a per-package summary of code completion statistics for each package
 for path in "${tix_paths[@]}"; do
     echo
     echo

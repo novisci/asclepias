@@ -373,15 +373,16 @@ instance EventPredicate (Maybe Source) d c a where
 instance (Ord a) => EventPredicate (Interval a) d c a where
   liftToEventPredicate = contramap getInterval
 
-{-|
--}
-
+-- | Contains a subject identifier
 data SubjectID =
     SubjectIDText T.Text
   | SubjectIDInteger Integer
   deriving (Eq, Show, Generic)
 
+instance Binary SubjectID
+instance NFData SubjectID
 instance FromJSON SubjectID
+instance ToJSON SubjectID
 instance From SubjectID T.Text where
   from (SubjectIDText    x) = x
   from (SubjectIDInteger x) = T.pack $ show x

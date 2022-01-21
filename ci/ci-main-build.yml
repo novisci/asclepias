@@ -24,7 +24,7 @@ docker-build:
     artifacts: true
  rules:
   # if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-  - changes: ["**/*.cabal", "cabal.project"]
+  - changes: ["**/*.cabal", "cabal.project", "ci/dockerHasklepias"]
  script:
     - ./ci/ci-docker-build.sh $MAINVERSION hasklepias-build-musl haskell $GHC
 

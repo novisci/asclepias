@@ -26,10 +26,10 @@
 
 # Use GNU sed and find if on a macOS system
 if [[ $OSTYPE =~ "darwin" ]]; then
-    sed=gsed
-    find=gfind
+    sed='gsed'
+    find='gfind'
 else
-    sed=sed
+    sed='sed'
 fi
 
 # Escape periods in the GHC_ver_re version number for the purpose of being used as part

@@ -13,6 +13,7 @@ cabal test all \
   --enable-coverage
 
 bash ci/ci-coverage.sh > coverage-report.txt
+cat coverage-report.txt
 
 # If on the main branch then run haddock
 if [[ "$CI_COMMIT_BRANCH" == "$CI_DEFAULT_BRANCH" ]]; then

@@ -32,30 +32,34 @@ else
     sed=sed
 fi
 
+# Escape periods in the GHC_ver_re version number for the purpose of being used as part
+# of a regular expression
+[[ -z "$GHC" ]] && exit 1
+GHC_ver_re=$(echo "$GHC" | $sed "s/\\./\\\\./g")
+
 # Safely find and store the mix paths into an array. Each path is prepended with
 # `--hpcdir=` in preparation for being passed in as command line arguments to
-# the `hpc report` application. Assumes that $GHC has been placed into the
+# the `hpc report` application. Assumes that $GHC_ver_re has been placed into the
 # environment by the CI. See
 # https://mywiki.wooledge.org/BashGuide/Arrays#Creating_Arrays-1 for the basic
 # pattern for parsing filepaths in the possible presence of spaces or newlines.
 # Note that you may need to use the GNU version of `sed` for this command to
 # work.
-[[ -z "$GHC" ]] && exit 1
 mix_paths=()
 while read -r -d ''; do
     mix_paths+=("$REPLY")
 done < <(
-    $find dist-newstyle -path "*/ghc-$GHC/*/hpc/vanilla/mix/*" -print0         \
-        | $sed -zr "s|^(.*ghc-$GHC/.*/hpc/vanilla/mix/[^/]+).*$|--hpcdir=\1|" \
-        | sort -z                                                             \
+    $find dist-newstyle -path "*/ghc-$GHC_ver_re/*/hpc/vanilla/mix/*" -print0        \
+        | $sed -zr "s|^(.*ghc-$GHC_ver_re/.*/hpc/vanilla/mix/[^/]+).*$|--hpcdir=\1|" \
+        | sort -z                                                                    \
         | uniq -z
     )
 
 # Find and store the tix paths into an array. See the comment for constructing
 # the mix paths for the form of this block. Note that you may need to use the
 # GNU version of `find` for this command to work.
-[[ -z "$GHC" ]] && exit 1
-path_regex=".*/ghc-$GHC/.*/hpc/vanilla/tix/[[:alnum:]_-]+[[:digit:]]+[.][[:digit:]]+[.][[:digit:]]+/.*[.]tix"
+[[ -z "$GHC_ver_re" ]] && exit 1
+path_regex=".*/ghc-$GHC_ver_re/.*/hpc/vanilla/tix/[[:alnum:]_-]+[[:digit:]]+[.][[:digit:]]+[.][[:digit:]]+/.*[.]tix"
 tix_paths=()
 while read -r -d ''; do
     tix_paths+=("$REPLY")
@@ -65,14 +69,16 @@ done < <($find dist-newstyle -regextype posix-extended -regex "$path_regex" -pri
 for path in "${tix_paths[@]}"; do
     echo
     echo
-    echo '=================================================='
+    echo '=================================================================='
     echo "tix file: $path"
     echo
     hpc report "${mix_paths[@]}" "$path"
-    echo '=================================================='
+    echo '=================================================================='
 done
 
 # Print a banner to make the overall coverage report easy to spot
+echo
+echo
 cat << EOF
 ==================================================================
    ___                   _ _    ___

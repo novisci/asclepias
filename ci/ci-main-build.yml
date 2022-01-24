@@ -76,4 +76,4 @@ coverage-report:
   image: docker:$DOCKER
   coverage: '\d+\% top-level'
     script:
-      - ./ci/ci-docker-build.sh $MAINVERSION hasklepias-build-musl haskell $GHC
+      - cat coverage-report.txt

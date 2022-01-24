@@ -1,6 +1,10 @@
+:description: How to get starting developing on asclepias
+:source-highlighter: highlightjs
+
 = Quick start
 
-In this section we provide a quick start guide for getting up and running with asclepias development.
+In this section we provide a quick start guide
+for getting up and running with asclepias development.
 In future sections we cover all of these steps in greater detail.
 
 . Clone the project: `git clone ++git@gitlab.novisci.com:nsStat/asclepias.git++`

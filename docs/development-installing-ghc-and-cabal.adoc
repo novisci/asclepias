@@ -1,95 +1,185 @@
+:description: How to install a Haskell toolchain
+:source-highlighter: highlightjs
+
 = Installing GHC and Cabal
 
-To compile Haskell libraries and/or applications you will need a suitable Haskell compiler.
-Furthermore, to make the creation, distribution, and building of libraries and applications more convenient several systems and supporting tooling for defining Haskell packages have been created.
-In particular, the asclepias project uses the https://www.haskell.org/ghc/[Glasgow Haskell Compiler (GHC)] compiler and the https://www.haskell.org/cabal[Cabal] system for building and packaging Haskell libraries and programs so consequently it will be helpful to have GHC and Cabal available on your development platform.
+To compile 
+https://www.haskell.org/[Haskell]
+libraries and/or applications you will need a suitable compiler.
+Furthermore, to make the creation, distribution, and building of libraries and applications more convenient
+several systems and supporting tooling for defining Haskell packages have been created.
+In particular, the asclepias project uses 
+https://www.haskell.org/ghc/[Glasgow Haskell Compiler (GHC)]
+and the 
+https://www.haskell.org/cabal[Cabal] 
+system for building and packaging Haskell libraries and programs,
+so consequently it will be helpful to have GHC and Cabal available on your development platform.
 
 == Installing ghcup
 
-To install GHC and Cabal we recommend using https://www.haskell.org/ghcup[ghcup], which is a utility that allows for easy downloading and installation of various applications in the Haskell toolchain.
-Please see the linked documentation for instructions on how to launch the ghcup installer.
+To install GHC and Cabal we recommend using 
+https://www.haskell.org/ghcup[ghcup],
+which is a utility for installing various applications in the Haskell toolchain.
+Please see the linked documentation for instructions on how to launch the `ghcup` installer.
 
 Once the installer is launched, you will be asked a series of questions.
 The following is a rough guide to the recommended answers for these questions.
 
 * _Do you want ghcup to automatically add the required PATH variable to your shell startup file?_
-  This is optional. Either (i) you should choose the "Yes, prepend" option and the installer will add a line of code to the end of your shell startup file (e.g. `~/.bashrc`, `~/.zshrc`, etc.) appropriately modifying the `PATH` environmental variable, or (ii) you should choose the "No" option and manually add some code to your shell startup file performing an equivalent modification to `PATH`.
-  In the latter case you should prepend `~/.cabal/bin` and `~/.ghcup/bin` to `PATH`.
-* _Do you want to install haskell-language-server (HLS)?_ Select "Yes".
-* _Do you want to install stack?_ There is no harm in selecting "Yes", but it is not necessary for the asclepias project.
+  This is optional. 
+  Either (i) you should choose the "Yes, prepend" option
+  and the installer will add a line of code
+  to the end of your shell startup file (e.g. `$HOME/.bashrc`, `$HOME/.zshrc`, etc.)
+  appropriately modifying the `PATH` environmental variable,
+  or (ii) you should choose the "No" option
+  and manually add some code to your shell startup file performing an equivalent modification to `PATH`.
+  In the latter case you should prepend `$HOME/.cabal/bin` and `$HOME/.ghcup/bin` to `PATH`.
+* _Do you want to install haskell-language-server (HLS)?_ 
+  Select "Yes".
+* _Do you want to install stack?_ 
+  There is no harm in selecting "Yes",
+  but it is not necessary for the asclepias project.
   So in other words, you can select "No" and download it at a later time if desired.
 
 Once installed use `ghcup --help` to see a description of all the available commands.
 
-=== ghcup troubleshooting: SSL certificate problem
 
-Some users on our team (as of January 2022) have reported difficulties when using ghcup (i.e. when using a command such as `ghcup list` after installation) where they encounter an error with a message like the following.
+[NOTE]
+.Troubleshooting ghcup: SSL certificate problem 
+====
+Some users on our team (as of January 2022) have reported difficulties when using `ghcup`
+(i.e. when using a command such as `ghcup list` after installation)
+where they encounter an error with a message like the following.
 [literal]
 curl: (60) SSL certificate problem: self signed certificate in certificate chain
 
 Below we list a few workarounds that we have found for this issue.
 
 * Update your OpenSSL certificates.
-  If you installed OpenSSL on macOS through homebrew then you can use the command `brew postinstall openssl`.
+  If you installed OpenSSL on macOS through homebrew 
+  then you can use the command `brew postinstall openssl`.
 * Upgrade the version of curl.
-  If you run `curl --version` and it lists an old release date then you may want to install a newer version.
+  If you run `curl --version` and it lists an old release date
+  then you may want to install a newer version.
 * Use wget instead of curl when running ghcup by specifying the option `--downloader=wget`.
   So for example, you can use the command `ghcup --downloader=wget list`
+====
 
 === Obtaining the ghcup facilities information
 
 Use the command `ghcup list` to orient yourself with the following information.
 
-1. What applications and application versions are available for download through ghcup.
-2. What applications have already been downloaded through ghcup.
-3. What the current recommended version of an application is according to ghcup.
+1. What applications and application versions are available for download through `ghcup`.
+2. What applications have already been downloaded through `ghcup`.
+3. What the current recommended version of an application is according to `ghcup`.
 4. What version of a given application is active (see the <<ghcup application version management>> section for details on what is meant by "is active").
 
 The first column of the table provided by `ghcup list` is the least obvious.
-If a given row has an "✗", then it means that the corresponding version of the application _hasn't_ been downloaded by ghcup.
-If it has a "✔", then it means that it _has_ been downloaded by ghcup, and if it has a "✔✔" then it means that it both _has_ been downloaded by ghcup _and is_ the currently active version.
+If a given row has an "✗",
+then it means that the corresponding version of the application _hasn't_ been downloaded by `ghcup`.
+If it has a "✔",
+then it means that it _has_ been downloaded by `ghcup`,
+and if it has a "✔✔" then it means that it both _has_ been downloaded by `ghcup`
+_and is_ the currently active version.
 
 === ghcup application version management
 
-The "active version" of a given application according to ghcup is the version that gets run when using a shell command such as `ghc` without supplying a version number (as in e.g. `ghc-9.2.1`).
-To change the currently active version for a particular application, use the `ghcup set` command.
+The "active version" of a given application according to `ghcup`
+is the version that gets run when using a shell command such as `ghc`
+without supplying a version number (as in e.g. `ghc-9.2.1`).
+To change the currently active version for a particular application,
+use the `ghcup set` command.
 See `ghcup set --help` for details.
 
-In more detail, ghcup stores various application versions in the `+~/.ghcup/bin+` directory which is assumed to be on your shell's path.
-Then for example, the `ghc` file located in that directory is a symbolic link to the active version of GHC according to ghcup (a similar pattern is used for other applications managed by ghcup).
-So suppose that the active version of GHC was GHC 8.10.7, then running the command `ghc` in your shell would run GHC 8.10.7 because the `+~/.ghup/bin/ghc+` file would a symbolic link pointing to GHC 8.10.7.
+In more detail, ghcup stores various application versions
+in the `+$HOME/.ghcup/bin+` directory
+which is assumed to be on your shell's path.
+Then for example,
+the `ghc` file located in that directory is
+a symbolic link to the active version of GHC according to `ghcup`
+(a similar pattern is used for other applications managed by `ghcup`).
+So suppose that the active version of GHC was GHC 8.10.7, 
+then running the command `ghc` in your shell would run GHC 8.10.7 
+because the `+${HOME}/.ghup/bin/ghc+` file would a symbolic link pointing to GHC 8.10.7.
 
-Note that if you wanted to run a different version of GHC, say GHC 9.2.1, for a particular project without changing the active version, then you could invoke that version directly by running the command `ghc-9.2.1` in your shell since this is one of the files in `\~/.ghcup/bin` (assuming that it has previously been downloaded).
+NOTE: If you wanted to run a different version of GHC, 
+say GHC 9.2.1, 
+for a particular project without changing the active version, 
+then you could invoke that version directly by
+running the command `ghc-9.2.1` in your shell
+since this is one of the files in `$HOME/.ghcup/bin`
+(assuming that it has previously been downloaded).
 
 == Installing GHC and Cabal using ghcup
 
-To install an application you can use a command such as `ghcup install ghc 8.10.7`.
-Supplying the version number is optional, and if not supplied then ghcup will install what it considers to be the recommended version.
-To see which version of a given application that ghcup considers to be recommended, you can use `ghcup list` as described in the <<Obtaining the ghcup facilities information>> section.
+To install an application you can use a command
+such as `ghcup install ghc 8.10.7`.
+Supplying the version number is optional,
+and if not supplied then `ghcup` will install
+what it considers to be the recommended version.
+To see which version of a given application that ghcup considers to be recommended,
+you can use `ghcup list` as described 
+in the <<Obtaining the ghcup facilities information>> section.
 Use `ghcup install --help` for documentation.
 
-We recommend installing the recommended version of Cabal according to ghcup, and the version of GHC used in the `.gitlab-ci.yml` file (see the `GHC` variable defined therein).
-So in summary, this means that you can run the following commands.
-Note that you may already have the necessary versions of GHC and Cabal installed in which case either or both of these commands can be omitted as appropriate (however there is no harm in running them in any case since ghcup is smart enough to not download an existing application a second time).
+We recommend installing the recommended version of Cabal according to ghcup,
+and the version of GHC used in the `.gitlab-ci.yml` file
+(see the `GHC` variable defined therein).
+So in summary,
+this means that you can run the following commands.
+You may already have the necessary versions of GHC and Cabal installed
+in which case either or both of these commands can be omitted as appropriate
+(however there is no harm in running them, 
+since `ghcup` is smart enough to not download an existing application a second time).
+
 [source,shell]
 ----
 ghcup install ghc 8.10.7  # double-check to ensure this is the correct version
 ghcup install cabal
 ----
 
-Note that if you already have a different version of GHC and/or Cabal installed through ghcup and you would like to change the active version then you can use the `ghcup set` command.
+TIP: If you already have a different version of GHC and/or Cabal installed through `ghcup`,
+use the `ghcup set` command to change the active version.
 
 === A note on the Cabal version
 
-As you find your way around the asclepias project, you may notice that in the sub-project Cabal package description files (i.e. the files with filenames ending in `.cabal`), that the `cabal-version` is specified as an older version of Cabal (such as version 2.2) than can be downloaded through ghcup.
-According to https://cabal.readthedocs.io/en/3.6/cabal-package.html#pkg-field-cabal-version[Package Field: cabal-version] in the Cabal documentation Cabal is mostly backwards compatible so there shouldn't be any issue with using a newer version.
+As you find your way around the asclepias project,
+you may notice that in the sub-project Cabal package description files
+(i.e. the files with filenames ending in `.cabal`),
+that the `cabal-version` is specified as an older version of Cabal (such as version 2.2)
+than can be downloaded through `ghcup`.
+According to 
+https://cabal.readthedocs.io/en/3.6/cabal-package.html#pkg-field-cabal-version[Package Field: cabal-version]
+in the Cabal documentation Cabal is mostly backwards compatible
+so there shouldn't be any issue with using a newer version.
 
 === A note on the GHC version and language extensions
 
-As you find your way around the asclepias project, you may notice that in the sub-project Cabal package description files (i.e. the files with filenames ending in `.cabal`) that the `default-language` is specified as `Haskell2010`, which refers to the https://www.haskell.org/onlinereport/haskell2010/[Haskell 2010 language report], and is the current definition of the Haskell language (also see https://en.wikipedia.org/wiki/Haskell_(programming_language)#Haskell_2010[Haskell 2010] in Wikipedia and https://wiki.haskell.org/Language_and_library_specification#The_Haskell_2010_report[The Haskell 2010 report] in The Haskell Wiki).
+As you find your way around the asclepias project, 
+you may notice that in the sub-project Cabal package description files
+(i.e. the files with filenames ending in `.cabal`)
+that the `default-language` is specified as `Haskell2010`, 
+which refers to the 
+https://www.haskell.org/onlinereport/haskell2010/[Haskell 2010 language report], 
+and is the current definition of the Haskell language 
+(also see 
+https://en.wikipedia.org/wiki/Haskell_(programming_language)#Haskell_2010[Haskell 2010] 
+inn Wikipedia and 
+https://wiki.haskell.org/Language_and_library_specification#The_Haskell_2010_report[The Haskell 2010 report]
+in The Haskell Wiki).
 GHC versions 8.0.2 and later implement the Haskell 2010 language report.
 
-Although the Haskell language definition itself has stayed stable since the Haskell 2010 language report, the GHC compiler supports the adoption of new language features through the use of _language extensions_, which are opt-in non-standard language features.
-One of the effects of the specifying the Haskell 2010 language is that the language extensions listed in the https://downloads.haskell.org/~ghc/9.0.1/docs/html/users_guide/glasgow_exts.html#extension-Haskell2010[Haskell 2010 Language Extensions] in the GHC documentation are enabled by GHC.
+Although the Haskell language definition itself has stayed stable
+since the Haskell 2010 language report,
+the GHC compiler supports the adoption of new language features
+through the use of _language extensions_, 
+which are opt-in non-standard language features.
+An effect of the specifying the Haskell 2010 language is that the language extensions listed in the 
+https://downloads.haskell.org/~ghc/9.0.1/docs/html/users_guide/glasgow_exts.html#extension-Haskell2010[Haskell 2010 Language Extensions]
+in the GHC documentation are enabled by GHC.
 
-Additional language extensions can be (and typically are) specified by various mechanisms in the sub-project Cabal package description files and/or in the source code files themselves as described in the https://kowainik.github.io/posts/extensions[Extensions] blog post by Veronika Romashkina.
+Additional language extensions can be specified by various mechanisms
+in the sub-project Cabal package description files 
+and/or in the source code files themselves as described in the 
+https://kowainik.github.io/posts/extensions[Extensions] 
+blog post by Veronika Romashkina.

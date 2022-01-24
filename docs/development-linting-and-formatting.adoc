@@ -1,3 +1,6 @@
+:description: This file explains how to lint and format code in asclepias
+:source-highlighter: highlightjs
+
 = Linting and Formatting
 
 The CI process checks that code in the repository is appropriately formatted and linted,

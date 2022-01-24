@@ -1,5 +1,5 @@
--- tag::devel-docs-package-properties[]
 cabal-version:  2.2
+-- tag::devel-docs-package-properties[]
 name:           hasklepias-main
 version:        0.22.5
 -- end::devel-docs-package-properties[]

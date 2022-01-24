@@ -57,5 +57,5 @@ coverage-report:
   stage: coverage
   image: docker:$DOCKER
   coverage: '\d+\% top-level'
-    script:
-      - cat coverage-report.txt
+  script:
+    - cat coverage-report.txt

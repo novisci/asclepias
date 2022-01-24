@@ -25,6 +25,7 @@ docker-build:
  rules:
   - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
     changes: ["**/*.cabal", "cabal.project", "ci/dockerHasklepias"]
+  - if: '$CI_COMMIT_MESSAGE =~ /-build/'
  script:
     - ./ci/ci-docker-build.sh $MAINVERSION hasklepias-build-musl haskell $GHC
 

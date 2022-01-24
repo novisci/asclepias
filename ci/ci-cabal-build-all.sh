@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
 
+cabal update
+
 cabal build all \
   -j \
   --enable-tests \

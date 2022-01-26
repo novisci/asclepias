@@ -113,7 +113,6 @@ instance FromJSON SubjectIDLine where
         Right i -> pure $ MkSubjectIDLine $ from @Integer i
       _ -> fail (show z)
 
-
 -- | See 'EventLine'.
 newtype ContextLine d c  = MkContextLine { getContextLine :: Context d c }
   deriving (Eq, Show)
@@ -131,8 +130,8 @@ newtype IntervalLine a = MkIntervalLine { getIntervalLine :: Interval a }
 
 {-|
 Parses the @time@ JSON object.
-NOTE: a @'moment
-In the case that the end is missing, a moment is created.
+NOTE: a @'moment is always added to the 'end'.
+Moreover, in the case that the end is missing, a moment is created.
 -}
 instance (FromJSON a, Show a, IntervalSizeable a b) => FromJSON (IntervalLine a) where
   parseJSON = withObject "Time" $ \o -> do
@@ -149,6 +148,7 @@ instance (FromJSON a, Show a, IntervalSizeable a b) => FromJSON (IntervalLine a)
 NOTE: See https://hackage.haskell.org/package/aeson-2.0.3.0/docs/Data-Aeson.html#g:22 
 for discusson of json vs json'.
 -}
+
 eitherDecodeEvent, eitherDecodeEvent'
   :: ( Show d
      , Eq d

@@ -42,7 +42,7 @@ instance FromJSON SillyDomain where
       "B" -> B <$> o .: "facts"
       "C" -> pure C
       "D" -> pure D
-      _   -> fail ("unknown domain:" <> show domain)
+      _   -> fail ("unknown domain: " <> show domain)
 
 type SillyEvent a = Event SillyDomain Text a
 

@@ -13,9 +13,9 @@ Maintainer  : bsaul@novisci.com
 {-# LANGUAGE MultiParamTypeClasses #-}
 
 module EventDataTheory.EventLines
-  ( parseEventLinesL
+  ( EventLine
+  , parseEventLinesL
   , parseEventLinesL'
-  , EventLine
   , eitherDecodeEvent
   , eitherDecodeEvent'
   , decodeEvent
@@ -254,5 +254,3 @@ parseEventLinesL'
   => B.ByteString
   -> ([String], [(SubjectID, Event d c a)])
 parseEventLinesL' l = partitionEithers $ fmap eitherDecodeEvent' (B.lines l)
-
-

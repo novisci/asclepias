@@ -32,9 +32,12 @@ else
     sed='sed'
 fi
 
-# Escape periods in the GHC_ver_re version number for the purpose of being used as part
+# Escape periods in the GHC version number for the purpose of being used as part
 # of a regular expression
-[[ -z "$GHC" ]] && exit 1
+if [[ -z "$GHC" ]]; then
+    echo 'Error: the $GCH environmental variable was not set'
+    exit 1
+fi
 GHC_ver_re=$(echo "$GHC" | $sed "s/\\./\\\\./g")
 
 # Safely find and store the mix paths into an array. Each path is prepended with

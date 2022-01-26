@@ -12,18 +12,28 @@ module EventDataTheory.TheoryTest
   ( theoryTests
   ) where
 
-import           Data.Aeson
+import           Data.Aeson                     ( (.:)
+                                                , FromJSON(parseJSON)
+                                                , withObject
+                                                )
 import           Data.Functor.Contravariant     ( Predicate(..) )
 import           Data.List                      ( sort )
-import           Data.Maybe
-import           Data.Text
-import           Data.Time
+import           Data.Maybe                     ( isNothing )
+import           Data.Text                      ( Text )
+import           Data.Time                      ( Day )
 import           EventDataTheory.Core
-import           EventDataTheory.Test
+import           EventDataTheory.Test           ( eventDecodeFailTests
+                                                , eventDecodeTests
+                                                )
 import           GHC.Generics                   ( Generic )
-import           IntervalAlgebra
-import           Test.Tasty
-import           Test.Tasty.HUnit
+import           IntervalAlgebra                ( beginerval )
+import           Test.Tasty                     ( TestTree
+                                                , defaultMain
+                                                , testGroup
+                                                )
+import           Test.Tasty.HUnit               ( (@?=)
+                                                , testCase
+                                                )
 import           Witch                          ( into )
 
 -- | Just a dummy type with which to define an event

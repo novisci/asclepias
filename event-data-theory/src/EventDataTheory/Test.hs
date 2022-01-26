@@ -6,25 +6,36 @@ Description : Provides test making functions for event models
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE TypeApplications #-}
 
 module EventDataTheory.Test
-  ( EventSmokers
+  ( eventDecodeTests
+  , eventDecodeFailTests
   ) where
 
-import           Data.Aeson                     ( FromJSON )
+import           Data.Aeson                     ( FromJSON
+                                                , eitherDecode
+                                                )
 import qualified Data.ByteString.Lazy          as B
 import qualified Data.ByteString.Lazy.Char8    as B
 import           Data.Either                    ( fromLeft
+                                                , isLeft
                                                 , isRight
                                                 )
+import           Data.Text                      ( Text )
 import           Data.Time                      ( Day )
 import           EventDataTheory.Core           ( Event
                                                 , SubjectID
                                                 )
 import           EventDataTheory.EventLines     ( eitherDecodeEvent )
 import           GHC.Generics                   ( Generic )
-import           IntervalAlgebra                ( IntervalSizeable )
-import           System.FilePath                ( takeBaseName, FilePath )
+import           IntervalAlgebra                ( Interval
+                                                , IntervalSizeable
+                                                )
+import           System.FilePath                ( FilePath
+                                                , takeBaseName
+                                                )
 import           Test.Tasty                     ( TestName
                                                 , TestTree
                                                 , testGroup
@@ -42,13 +53,16 @@ into @Either String a@.
 The test passes if the decoding results in a @Right a@ value.
 -}
 createDecodeSmokeTestDecode
-  :: (B.ByteString -> Either String a) -- ^ a function which decodes a @ByteString@ to @Either String a@
+  :: (Either String a -> (String, Bool))
+  -- ^ a function which tests the decoding result, first value is the string if test fails
+  -> (B.ByteString -> Either String a)
+  -- ^ a function which decodes a @ByteString@ to @Either String a@
   -> FilePath -- ^ path to file to be decoded
   -> IO TestTree
-createDecodeSmokeTestDecode decoder testFile = do
+createDecodeSmokeTestDecode testf decoder testFile = do
   z <- decoder <$> B.readFile testFile
-  let res = assertBool (fromLeft "" z) (isRight z)
-  return $ testCase (takeBaseName testFile) res
+  let res = uncurry assertBool (testf z)
+  pure $ testCase (takeBaseName testFile) res
 
 {-|
 Creates a group of tests 
@@ -60,19 +74,33 @@ Each test passes if the decoding results in a @Right a@ value.
 -}
 createDecodeSmokeTestGroup
   :: TestName -- ^ name to give this group of tests
-  -> (B.ByteString -> Either String a) -- ^ a function which decodes a @ByteString@ to @Either String a@
+  -> (Either String a -> (String, Bool))
+  -- ^ a function which tests the decoding result, first value is the string if test fails
+  -> (B.ByteString -> Either String a)
+  -- ^ a function which decodes a @ByteString@ to @Either String a@
   -> [FilePath] -- ^ a list of file extensions to find in the provided directory
   -> FilePath -- ^ name of directory containing files to be parsed
   -> IO TestTree
-createDecodeSmokeTestGroup n decoder exts dir = do
+createDecodeSmokeTestGroup n testf decoder exts dir = do
   sources <- findByExtension exts dir
-  let tests = traverse (createDecodeSmokeTestDecode decoder)
-                       [ file | file <- sources ]
+  let tests = traverse (createDecodeSmokeTestDecode testf decoder) sources
   testGroup n <$> tests
 
 {-|
+Creates a group of tests 
+from all the files 
+in given directory
+for all files ending in '.jsonl'.
+Each file should contain 1 line containing 1 event.
+Each test passes if the decoding results in a @Right a@ value.
+
+The test group is meant as a smoke test
+to check that events you think should parse 
+do in fact parse. 
 -}
-class ( Show d
+eventDecodeTests
+  :: forall d c a b
+   . ( Show d
      , Eq d
      , Generic d
      , FromJSON d
@@ -84,22 +112,48 @@ class ( Show d
      , FromJSON a
      , Show a
      , IntervalSizeable a b
-     ) => EventSmokers d c a b where
-  eventDecodeTests :: FilePath -> IO TestTree
-  eventDecodeTests x = createDecodeSmokeTestGroup
-      (".jsonl files in " <> x <> "can be decoded")
-      (eitherDecodeEvent :: (B.ByteString  -> Either String (SubjectID, Event d c a)))
-      [".jsonl"]
-      x
+     )
+  => FilePath
+  -> IO TestTree
+eventDecodeTests dir = createDecodeSmokeTestGroup
+  ("Checking that .jsonl files in " <> dir <> " can be decoded")
+  (\x -> (fromLeft "" x, isRight x))
+  (eitherDecodeEvent @d @c @a)
+  [".jsonl"]
+  dir
 
-instance (Show d, Eq d, Generic d, FromJSON d
-         , Show c, Eq c, Ord c, Typeable c, FromJSON c) =>
-        EventSmokers d c Day Integer
+{-|
+Creates a group of tests 
+from all the files 
+in given directory
+for all files ending in '.jsonl'.
+Each file should contain 1 line containing 1 event.
+Each test passes if the decoding results in a @Left String@ value.
 
-instance (Show d, Eq d, Generic d, FromJSON d
-         , Show c, Eq c, Ord c, Typeable c, FromJSON c) =>
-        EventSmokers d c Integer Integer
-
-instance (Show d, Eq d, Generic d, FromJSON d
-         , Show c, Eq c, Ord c, Typeable c, FromJSON c) =>
-        EventSmokers d c Int Int
+The test group is meant as a smoke test
+to check that events you think should _not_ parse 
+do not in fact parse. 
+-}
+eventDecodeFailTests
+  :: forall d c a b
+   . ( Show d
+     , Eq d
+     , Generic d
+     , FromJSON d
+     , Show c
+     , Eq c
+     , Ord c
+     , Typeable c
+     , FromJSON c
+     , FromJSON a
+     , Show a
+     , IntervalSizeable a b
+     )
+  => FilePath
+  -> IO TestTree
+eventDecodeFailTests dir = createDecodeSmokeTestGroup
+  ("Checking that .jsonl files in " <> dir <> " fail to decode")
+  (\x -> ("successly parsed; should fail", isLeft x))
+  (eitherDecodeEvent @d @c @a)
+  [".jsonl"]
+  dir

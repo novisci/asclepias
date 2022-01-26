@@ -29,7 +29,7 @@ import           Control.Monad                  ( Functor(fmap)
 import           Data.Aeson                     ( (.:)
                                                 , (.:?)
                                                 , FromJSON(parseJSON)
-                                                , Value(Array)
+                                                , Value(..)
                                                 , decode
                                                 , decode'
                                                 , eitherDecode
@@ -37,7 +37,6 @@ import           Data.Aeson                     ( (.:)
                                                 , withArray
                                                 , withObject
                                                 )
-import           Data.Bifunctor                 ( Bifunctor(second) )
 import qualified Data.ByteString.Lazy          as B
 import qualified Data.ByteString.Lazy.Char8    as B
 import           Data.Either                    ( Either(..)
@@ -51,6 +50,7 @@ import           Data.Maybe                     ( Maybe
                                                 , maybe
                                                 )
 import           Data.Ord                       ( Ord )
+import           Data.Scientific                ( floatingOrInteger )
 import           Data.String                    ( String )
 import           Data.Text                      ( Text
                                                 , pack
@@ -70,10 +70,12 @@ import           IntervalAlgebra                ( Interval
                                                 , parseInterval
                                                 )
 import           Type.Reflection                ( Typeable )
-
+import           Witch
 
 {-|
-At this time, 'EventLine', 'ContextLine', and 'IntervalLine' are simply wrapper types
+At this time, 
+'EventLine', 'ContextLine', 'SubjectIDLine', and 'IntervalLine' are
+simply wrapper types
 in order to create 'FromJSON' instances which can be used to marshal data from 
 [ndjson](http://ndjson.org/).
 See [event data model docs](https://docs.novisci.com/edm-sandbox/latest/index.html#_event_representation)
@@ -90,12 +92,27 @@ instance (FromJSON a, Show a, IntervalSizeable a b
          , Show c, Eq c, Ord c, Typeable c, FromJSON c)
           => FromJSON (EventLine d c a) where
   parseJSON = withArray "Event" $ \a -> do
-    sid    <- parseJSON (a ! 0)
+    sid    <- parseJSON (a ! 5)
     intrvl <- parseJSON (a ! 5)
     let i = getIntervalLine intrvl
     c <- parseJSON (Array a)
 
-    pure $ MkEventLine sid (event i (getContextLine c))
+    pure $ MkEventLine (getSubjectIDLine sid) (event i (getContextLine c))
+
+-- | See 'EventLine'.
+newtype SubjectIDLine = MkSubjectIDLine {getSubjectIDLine  :: SubjectID }
+  deriving (Eq, Show)
+
+instance FromJSON SubjectIDLine where
+  parseJSON = withObject "patient ID" $ \o -> do
+    z <- o .: "patient_id"
+    case z of
+      String x -> pure $ MkSubjectIDLine $ from x
+      Number x -> case floatingOrInteger x of
+        Left  _ -> fail "SubjectID number is not an integer"
+        Right i -> pure $ MkSubjectIDLine $ from @Integer i
+      _ -> fail (show z)
+
 
 -- | See 'EventLine'.
 newtype ContextLine d c  = MkContextLine { getContextLine :: Context d c }
@@ -132,7 +149,6 @@ instance (FromJSON a, Show a, IntervalSizeable a b) => FromJSON (IntervalLine a)
 NOTE: See https://hackage.haskell.org/package/aeson-2.0.3.0/docs/Data-Aeson.html#g:22 
 for discusson of json vs json'.
 -}
-
 eitherDecodeEvent, eitherDecodeEvent'
   :: ( Show d
      , Eq d

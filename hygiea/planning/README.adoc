@@ -15,7 +15,7 @@ The primary goal of the planning phase is to
 
 Note the goals for this phase do *not* include actually running the tests. Dhall is also probably not the desired format for user input. I expect it to allow me to avoid some annoying parsing issues, since Dhall already provides an API for mapping user-defined types in `.dhall` files to Haskell types. See the example below for a taste of what an actual tabular user interface might look like.
 
-These goals are addressed in the `specifications` directory of this `planning` directory.
+These goals are addressed in the sub-directories of this `planning` directory.
 
 === What is not
 The goal is not to replace the internal testing routines for `asclepias` packages, which require more nuance and more features than this project intends to provide.

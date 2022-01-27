@@ -11,7 +11,7 @@ At its core, the testing tool needs to create a logic for parsing:
 
 For example, consider the following case pulled from project `P0059/plans/CohortTests.hs`:
 
-[script,haskell]
+[source,haskell]
 ----
 enrlCtxt :: Context
 enrlCtxt = context (Enrollment emptyEnrollmentFact) (packConcepts ["is_enrollment"]) Nothing
@@ -39,7 +39,7 @@ The `P0059Outcome` type contains six censoring times (wrapped in the hasklepias 
 
 Now `Just expectedExample1` is the [expected output](https://gitlab.novisci.com/nsResearch/P0059/-/blob/master/plans/CohortsTests.hs#L695) of [`evalSubjectOutcome inputExample1`](https://gitlab.novisci.com/nsResearch/P0059/-/blob/master/plans/CohortsTests.hs#L56), a project-specific testing utility that wraps the function
 
-[script,haskell]
+[source,haskell]
 ----
 makeOutcomeDefinition ["is_wellness_visit"] WellnessVisit :: DefOutcome "wellness"
 ----
@@ -76,9 +76,8 @@ The particular syntax here is just an example and there are many alternatives to
 === Complexity of the type system
 Writing the test above, without the tools to be developed for `hygiea`, requires the developer to understand the following code, and in the case of the code from `P0059/plans/Cohort.hs` to be able to write it. This block is not complete, since for example it does not include the definition of various functions used in `makeOutcomeDefinition`, such as `firstConceptOccurrence` from `Hasklepias.FeatureEvents`.
 
-[script,haskell]
+[source,haskell]
 ----
-
 -- P0059/plans/Cohort.hs
 readInterval :: (Integral b, IntervalSizeable a b) => a -> a -> Interval a
 readInterval b e = beginerval (diff e b) b

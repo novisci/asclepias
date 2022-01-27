@@ -1,1 +1,260 @@
 = Planning and prototyping for a testing framework in `asclepias`
+
+== Goals
+
+At its core, the testing tool needs to create a logic for parsing:
+
+1. a `Hasklepias` type, and possibly project-specific types,
+2. a `Hasklepias` function taking that type as input,
+3. a specified input to that function of the stated type,
+4. a specified output of that function, of some possibly different `Hasklepias` or project-specific type.
+
+For example, consider the following case pulled from project `P0059/plans/CohortTests.hs`:
+
+[script,haskell]
+----
+enrlCtxt :: Context
+enrlCtxt = context (Enrollment emptyEnrollmentFact) (packConcepts ["is_enrollment"]) Nothing
+
+inputExample1 :: Events Day
+inputExample1 =
+  [ event (readInterval (date 2017 1 1) (date 2017 1 3)) (makeSimpleContext ["is_mi_discharge"] confinementSource)
+  , event (readInterval (date 2017 1 1) (date 2017 1 31)) enrlCtxt
+  , event (readInterval (date 2017 2 1) (date 2017 2 28)) enrlCtxt
+  , event (readInterval (date 2017 2 15) (date 2017 2 16)) (makeSimpleContext ["is_pcsk9"] Nothing)
+  ]
+
+expectedExample1 :: P0059Outcome
+expectedExample1 =  MkP0059Outcome
+  { noInit       = MkCensoredOccurrence (C Noncompliance) (RightCensored (mkEventTime (Just 43)))
+  , init0to30    = MkCensoredOccurrence (C Noncompliance) (RightCensored (mkEventTime (Just 30)))
+  , init31to90   = MkCensoredOccurrence (C Disenrollment) (RightCensored (mkEventTime (Just 87)))
+  , init91to180  = MkCensoredOccurrence (C Noncompliance) (RightCensored (mkEventTime (Just 43)))
+  , init181to365 = MkCensoredOccurrence (C Noncompliance) (RightCensored (mkEventTime (Just 43)))
+  , init366to540 = MkCensoredOccurrence (C Noncompliance) (RightCensored (mkEventTime (Just 43)))
+  }
+----
+
+The `P0059Outcome` type contains six censoring times (wrapped in the hasklepias type `CensoredOccurrence` and aliased in the project at `OType`) for each of six comparison groups in the study.
+
+Now `Just expectedExample1` is the [expected output](https://gitlab.novisci.com/nsResearch/P0059/-/blob/master/plans/CohortsTests.hs#L695) of [`evalSubjectOutcome inputExample1`](https://gitlab.novisci.com/nsResearch/P0059/-/blob/master/plans/CohortsTests.hs#L56), a project-specific testing utility that wraps the function
+
+[script,haskell]
+----
+makeOutcomeDefinition ["is_wellness_visit"] WellnessVisit :: DefOutcome "wellness"
+----
+
+See the 'Complexity of the type system' section for an annotation of this function's definition.
+
+In this proposed addition to the `asclepias` collection of packages, with working name of `hygiea`, the goal is to write tools allowing the test above to be specified by parsing a text file with a relatively simple structure. For example, such input might be in table form, and might look something like this:
+
+[cols="1,1,1,1"]
+|===
+|testid |event start |event end |context |
+|1 | 01012017 | 01032017 | is_mi_discharge | 
+|1 | 01012017 | 01312017 | is_enrollment | 
+|1 | 02012017 | 02282017 | is_enrollment | 
+|1 | 02152017 | 02162017 | is_psck9 | 
+|===
+
+
+[cols="1,1,1,1,1"]
+|===
+|testid |group |censor reason|outcome reason|value |
+|1 | no init | noncompliance | rightcensored | 43 |
+|1 | init 0-30 | noncompliance | rightcensored | 30 |
+|1 | init 31-90 | disenrollment | rightcensored | 87 |
+|1 | init 91-180 | noncompliance | rightcensored | 43 |
+|1 | init 181-365 | noncompliance | rightcensored | 43 |
+|1 | init 366-540 | noncompliance | rightcensored | 43 |
+|===
+
+The particular syntax here is just an example and there are many alternatives to consider: Events are specified in different lines of the first table, outcomes specified in a separate table, and testid identifies which events are associated with which outcomes.
+
+== Motivation and challenges
+
+=== Complexity of the type system
+Writing the test above, without the tools to be developed for `hygiea`, requires the developer to understand the following code, and in the case of the code from `P0059/plans/Cohort.hs` to be able to write it. This block is not complete, since for example it does not include the definition of various functions used in `makeOutcomeDefinition`, such as `firstConceptOccurrence` from `Hasklepias.FeatureEvents`.
+
+[script,haskell]
+----
+
+-- P0059/plans/Cohort.hs
+readInterval :: (Integral b, IntervalSizeable a b) => a -> a -> Interval a
+readInterval b e = beginerval (diff e b) b
+
+date :: Year -> MonthOfYear -> DayOfMonth -> Day
+date = fromGregorian
+
+{- | The reasons that an observational unit may be censored. The order matters here
+ in that if two censoring events occur on the same day then the reason for 
+ censoring will be chosen based on the following  ordering.
+-}
+data CensorReason =
+    Disenrollment
+  | Discontinuation
+  | Noncompliance
+  | EndOfData
+  deriving (Eq, Show, Ord, Generic)
+
+{- | all the study outcomes
+-}
+data Outcome =
+    WellnessVisit
+  | Accident
+  | DecubitusUlcer
+  | Fracture
+  | VisualTest
+  | FluVaccine
+  | ZosterVaccine
+  | PneumoVaccine
+  | ZosterPneumoVaccine
+  | ColonCancer
+  | NonMelanomaMohs
+  | Cancer
+  deriving (Eq, Show, Ord, Generic)
+
+{- | For each @Outcome@, either the outcome can occur or the competing risk of
+death may occur 
+-}
+data OutcomeReason =
+    PrimaryOutcome Outcome
+  | DeathOutcome -- disambiguate from Hasklepias.Death
+  deriving (Eq, Show, Ord, Generic)
+
+{- | Type synoynm for definition of an outcome. Note that the return type is a
+   pair containing the occurrence time of the outcome (or death) and the value
+   for the @P0059@ data.
+-}
+type DefOutcome name
+  =  Def (
+     F "index" (Index Interval Day)
+  -> F "allFollowupEvents" (Events Integer)
+  -> F "death" (Maybe MomentOfOccurrence)
+  -> F "firstpcsk9followup" (Maybe (Interval Integer))
+  -> F "censortime" (Maybe MomentOfOccurrence)
+  -> F name (Maybe (P0059Reasons, Integer), P0059Outcome)
+  )
+
+-- | Constructor for a 'MomentOfOccurrence'
+makeMomentOfOccurrence :: P0059Reasons -> Interval Integer -> MomentOfOccurrence
+makeMomentOfOccurrence = makePairedInterval
+
+-- | Synonym for an intermediary type used to create outcomes
+type MomentOfOccurrence = PairedInterval P0059Reasons Integer
+
+-- | Syonym for 'CensoringReason' for this study
+type P0059Reasons = CensoringReason CensorReason OutcomeReason
+
+
+-- Stype.Numeric
+-- this is a GADT: note  the different constructor signatures
+data MaybeCensored a where
+   IntervalCensored :: a -> a -> MaybeCensored a
+   RightCensored :: a -> MaybeCensored a
+   LeftCensored :: a -> MaybeCensored a
+   Uncensored :: a -> MaybeCensored a
+   deriving( Eq, Show, Ord, Generic )
+
+mkEventTime :: Maybe a -> EventTime a
+mkEventTime (Just x) = EventTime $ NonNegCont x
+mkEventTime Nothing  = EventTime NonNegContInf
+
+newtype EventTime a = EventTime { getEventTime :: NonnegContinuous a }
+  deriving (Eq, Show, Ord, Generic)
+
+data NonnegContinuous a = NonNegCont a | NonNegContInf
+  deriving (Eq, Show, Ord, Generic)
+
+
+-- EventData.Core
+event :: Interval a -> Context -> Event a
+event i c = makePairedInterval c i
+
+-- EventData.Context
+context :: Domain -> Concepts -> Maybe Source -> Context
+context d x  = Context x d
+
+-- Enrollment variant
+-- EventData.Context.Domain
+data Domain =
+      Death DeathFacts
+    | Demographics DemographicsFacts
+    | Diagnosis DiagnosisFacts
+    | Eligibility EligibilityFacts
+    | Enrollment EnrollmentFacts
+    | Labs LabsFacts
+    | Medication MedicationFacts
+    | Procedure ProcedureFacts
+    | UnimplementedDomain ()
+    deriving ( Eq, Show, Generic )
+
+newtype EnrollmentFacts = EnrollmentFacts {
+     plan :: Maybe Plan
+  }
+  deriving( Eq, Show, Generic )
+
+-- EventData.Facts
+data Plan = Plan {
+    exchange :: Exchange
+  , plan_id  :: Maybe Text
+  , group_id :: Maybe Text
+  , subscriber_id :: Maybe Text
+  , subscriber_relationship :: Maybe Text
+  , benefit :: Maybe Text
+  }
+   deriving (Eq, Show, Generic)
+
+data Exchange = 
+      UnknownExchange
+    | None
+    | Group
+    | IndFederal           
+    | IndState             
+    | Medicaid
+    | Medicare             
+    | ThirdParty           
+   deriving (Eq, Show, Generic)
+----
+
+It is instructive also to annotate the `makeOutcomeDefinition` function that we are testing,
+defined locally in the P0059 project.
+
+[source,haskell]
+----
+-- | Creates an definition for single outcome.
+makeOutcomeDefinition :: (KnownSymbol name) =>
+     [Text]
+  -> Outcome
+  -> DefOutcome name
+makeOutcomeDefinition cpt outcome = define
+  (\index events death pcsk censor ->
+    events
+    -- get the first event with concept in cpt (a list of Text), returning Maybe
+    |> firstConceptOccurrence cpt 
+    -- if filtered event gave Nothing, leave it, else return a single-unit
+    -- length interval from the starting point of the event 
+    |> fmap (getInterval . momentize) 
+    -- alias for makePairedInterval with associated data of type P0059Reasons,
+    -- which is a type alias for CensoringReasons CensorReason OutcomeReason (O is
+    -- a variant of CensoringReaons), where the latter two *Reason types are local
+    -- to this project. PrimaryOutcome is a constructor for OutcomeReason with
+    -- argument outcome passed to makeOutcomeDefinition, which in the example
+    -- above is WellnessVisit. makeMomentOfOccurrence when partially
+    -- evaluated with those two arguments is then a function pairing O
+    -- (PrimaryOutcome WellnessVisit) with the event passed from the previous
+    -- step.
+    |> fmap (makeMomentOfOccurrence (O (PrimaryOutcome outcome))) 
+    -- extract the first Just value from the list [x, death], where x is the event from the previous step. 
+    -- If x is Nothing, death is returned. If both are Just, the earlier of x and death is returned.
+    -- event death is an argument of this Feature.  asum is a generalized
+    -- concatenation, a Hasklepias re-export of Data.Foldable.asum from the base
+    -- package. 
+    |> \x -> asum (sort [x, death])
+    -- builds a P0059Outcome type (locally defined in the project) with the
+    -- interval given by the result of the previous step.
+    |> \x -> (fmap (\i -> (getPairData i, begin i)) x, makeP0059Outcome pcsk censor x)
+  )
+----
+
+Clearly some level of familiarity with `asclepias` is necessary and expected of any project developer, but this level of complexity is in my opinion a substantial impediment to the writing of comprehensive, correct testing procedures for project cohorts. 

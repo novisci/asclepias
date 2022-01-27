@@ -1,15 +1,26 @@
 = Planning and prototyping for a testing framework in `asclepias`
 
-== Goals
+== Goals for planning phase
+The primary goal of the planning phase is to
 
+1. Define which types exported from `asclepias` packages are allowed to be tested.
+2. Sketch how these types can be mapped
+  a. from some structured text input file, the user interface of `hygiea` for non-programmers
+  b. from user-defined, project-specific types that either alias or extend `asclepias` types
+3. Prototype a barebones internal type system in `hygiea` that provides the 'glue' between the user interface, the test interface and the `asclepias` types 
+4. Prototype a simple working example of mapping user text and project code into this type system, perhaps with text input being in dhall format for convenience
+
+Note the goals do *not* include actually running the tests. Dhall is also probably not the desired format for user input. See the example below.
+
+=== Example
 At its core, the testing tool needs to create a logic for parsing:
 
-1. a `Hasklepias` type, and possibly project-specific types,
-2. a `Hasklepias` function taking that type as input,
-3. a specified input to that function of the stated type,
-4. a specified output of that function, of some possibly different `Hasklepias` or project-specific type.
+* a `Hasklepias` type, and possibly project-specific types,
+* a `Hasklepias` function taking that type as input,
+* a specified input to that function of the stated type,
+* a specified output of that function, of some possibly different `Hasklepias` or project-specific type.
 
-For example, consider the following case pulled from project `P0059/plans/CohortTests.hs`:
+Consider the following case pulled from project `P0059/plans/CohortTests.hs`:
 
 [source,haskell]
 ----
@@ -256,4 +267,4 @@ makeOutcomeDefinition cpt outcome = define
   )
 ----
 
-Clearly some level of familiarity with `asclepias` is necessary and expected of any project developer, but this level of complexity is in my opinion a substantial impediment to the writing of comprehensive, correct testing procedures for project cohorts. 
+Clearly familiarity with `asclepias` is necessary and expected of any project developer, but this level of complexity is in my opinion a substantial impediment to the writing of comprehensive, correct testing procedures for project cohorts. 

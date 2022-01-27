@@ -3,15 +3,15 @@
 == Goals for planning phase
 The primary goal of the planning phase is to
 
-1. Define which types exported from `asclepias` packages are allowed to be tested. This must be done in a way so as to:
-  a. shield the end-user from complexity as much as practicable
-  b. be flexible enough to test most if not all meaningful cases
-  c. be robust to internal changes in `asclepias`, so that end-users do not need to re-learn the tools whenever `asclepias` itself changes
-2. Sketch how these types can be mapped
-  a. from some structured text input file, the user interface of `hygiea` for non-programmers
-  b. from user-defined, project-specific types that either alias or extend `asclepias` types
-3. Prototype a barebones internal type system (including type classes) in `hygiea` that provides the 'glue' between the user interface, the test interface and the `asclepias` types 
-4. Write a simple working example of mapping user text and project code into this type system, perhaps with text input being in dhall format for convenience
+. Define which types exported from `asclepias` packages are allowed to be tested. This must be done in a way so as to:
+  .. shield the end-user from complexity as much as practicable
+  .. be flexible enough to test most if not all meaningful cases
+  .. be robust to internal changes in `asclepias`, so that end-users do not need to re-learn the tools whenever `asclepias` itself changes
+. Sketch how these types can be mapped
+  .. from some structured text input file, the user interface of `hygiea` for non-programmers
+  .. from user-defined, project-specific types that either alias or extend `asclepias` types
+. Prototype a barebones internal type system (including type classes) in `hygiea` that provides the 'glue' between the user interface, the test interface and the `asclepias` types 
+. Write a simple working example of mapping user text and project code into this type system, perhaps with text input being in dhall format for convenience
 
 Note the goals for this phase do *not* include actually running the tests. Dhall is also probably not the desired format for user input. I expect it to allow me to avoid some annoying parsing issues, since Dhall already provides an API for mapping user-defined types in `.dhall` files to Haskell types. See the example below for a taste of what an actual tabular user interface might look like.
 
@@ -102,14 +102,14 @@ In this proposed addition to the `asclepias` collection of packages, with workin
 The particular syntax here is just an example and there are many alternatives to consider: Events are specified in different lines of the first table, outcomes specified in a separate table, and testid identifies which events are associated with which outcomes.
 
 == Challenges
-Challenges to achieving the planning phase goals fall into two categories, both with roots in the complexity of `asclepias` package's type systems:
+Challenges to achieving the planning phase goals fall into a few categories, with roots in the complexity of `asclepias` package's type systems:
 
-1. `asclepias` types of interest can be relatively heavily parameterized, deeply nested or inter-dependent, all of which should be hidden from the end-user yet must be accounted for somehow in the testing specification. See for example the `CensoredOccurrence` type in `Hasklepias.Misc`, a fundamental type for the outcome to be tested
-2. Much of the relevant type-ing for items we wish to test happens outside of `asclepias`:
-  a. project-specific types or type aliases, based on the code for P0059
-  b. text metadata, e.g. "is_enrollment", that comes from the data pipeline
-3. Type naming is sometimes opaque, (e.g. `CensoringReason` variant names), and there is more opportunity for that to be the case in project-specific types and aliases.
-4. `asclepias` is under active development, which might require substantial changes to `hygiea` internals and perhaps to the tools and user-interface.
+. `asclepias` types of interest can be relatively heavily parameterized, deeply nested or inter-dependent, all of which should be hidden from the end-user yet must be accounted for somehow in the testing specification. See for example the `CensoredOccurrence` type in `Hasklepias.Misc`, a fundamental type for the outcome to be tested
+. Much of the relevant type-ing for items we wish to test happens outside of `asclepias`:
+  .. project-specific types or type aliases, based on the code for P0059
+  .. text metadata, e.g. "is_enrollment", that comes from the data pipeline
+. Type naming is sometimes opaque, (e.g. `CensoringReason` variant names), and there is more opportunity for that to be the case in project-specific types and aliases.
+. `asclepias` is under active development, which might require substantial changes to `hygiea` internals and perhaps to the tools and user-interface.
 
 Some of those dynamics are not simply downsides but also provide structure that a testing type system can use.
 

@@ -50,23 +50,23 @@ In this proposed addition to the `asclepias` collection of packages, with workin
 
 [cols="1,1,1,1"]
 |===
-|testid |event start |event end |context |
-|1 | 01012017 | 01032017 | is_mi_discharge | 
-|1 | 01012017 | 01312017 | is_enrollment | 
-|1 | 02012017 | 02282017 | is_enrollment | 
-|1 | 02152017 | 02162017 | is_psck9 | 
+|testid |event start |event end |context
+|1 | 01012017 | 01032017 | is_mi_discharge
+|1 | 01012017 | 01312017 | is_enrollment 
+|1 | 02012017 | 02282017 | is_enrollment 
+|1 | 02152017 | 02162017 | is_psck9
 |===
 
 
 [cols="1,1,1,1,1"]
 |===
-|testid |group |censor reason|outcome reason|value |
-|1 | no init | noncompliance | rightcensored | 43 |
-|1 | init 0-30 | noncompliance | rightcensored | 30 |
-|1 | init 31-90 | disenrollment | rightcensored | 87 |
-|1 | init 91-180 | noncompliance | rightcensored | 43 |
-|1 | init 181-365 | noncompliance | rightcensored | 43 |
-|1 | init 366-540 | noncompliance | rightcensored | 43 |
+|testid |group |censor reason|outcome reason|value
+|1 | no init | noncompliance | rightcensored | 43
+|1 | init 0-30 | noncompliance | rightcensored | 30
+|1 | init 31-90 | disenrollment | rightcensored | 87
+|1 | init 91-180 | noncompliance | rightcensored | 43
+|1 | init 181-365 | noncompliance | rightcensored | 43
+|1 | init 366-540 | noncompliance | rightcensored | 43
 |===
 
 The particular syntax here is just an example and there are many alternatives to consider: Events are specified in different lines of the first table, outcomes specified in a separate table, and testid identifies which events are associated with which outcomes.

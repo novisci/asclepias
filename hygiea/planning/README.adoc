@@ -3,14 +3,31 @@
 == Goals for planning phase
 The primary goal of the planning phase is to
 
-1. Define which types exported from `asclepias` packages are allowed to be tested.
+1. Define which types exported from `asclepias` packages are allowed to be tested. This must be done in a way so as to:
+  a. shield the end-user from complexity as much as practicable
+  b. be flexible enough to test most if not all meaningful cases
+  c. be robust to internal changes in `asclepias`, so that end-users do not need to re-learn the tools whenever `asclepias` itself changes
 2. Sketch how these types can be mapped
   a. from some structured text input file, the user interface of `hygiea` for non-programmers
   b. from user-defined, project-specific types that either alias or extend `asclepias` types
-3. Prototype a barebones internal type system in `hygiea` that provides the 'glue' between the user interface, the test interface and the `asclepias` types 
-4. Prototype a simple working example of mapping user text and project code into this type system, perhaps with text input being in dhall format for convenience
+3. Prototype a barebones internal type system (including type classes) in `hygiea` that provides the 'glue' between the user interface, the test interface and the `asclepias` types 
+4. Write a simple working example of mapping user text and project code into this type system, perhaps with text input being in dhall format for convenience
 
-Note the goals do *not* include actually running the tests. Dhall is also probably not the desired format for user input. See the example below.
+Note the goals for this phase do *not* include actually running the tests. Dhall is also probably not the desired format for user input. I expect it to allow me to avoid some annoying parsing issues, since Dhall already provides an API for mapping user-defined types in `.dhall` files to Haskell types. See the example below for a taste of what an actual tabular user interface might look like.
+
+These goals are addressed in the `specifications` directory of this `planning` directory.
+
+=== What is not
+The goal is not to replace the internal testing routines for `asclepias` packages, which require more nuance and more features than this project intends to provide.
+
+=== Motivation
+Broadly speaking, we are motivated to
+
+==== Make cohort validation directly available to subject-matter experts
+Epidemiologists can contribute to the soundness of cohort-building software by specifying tests directly through the UI `hygiea` provides.
+
+==== Make testing easier for programmers
+In addition to providing a text-based UI, programmers should have tools making it relatively simple to create common tests and eventually to incorporate property testing, additional unit testing, and edge-case analyses.
 
 === Example
 At its core, the testing tool needs to create a logic for parsing:
@@ -60,6 +77,7 @@ See the 'Complexity of the type system' section for an annotation of this functi
 In this proposed addition to the `asclepias` collection of packages, with working name of `hygiea`, the goal is to write tools allowing the test above to be specified by parsing a text file with a relatively simple structure. For example, such input might be in table form, and might look something like this:
 
 [cols="1,1,1,1"]
+.Inputs
 |===
 |testid |event start |event end |context
 |1 | 01012017 | 01032017 | is_mi_discharge
@@ -70,6 +88,7 @@ In this proposed addition to the `asclepias` collection of packages, with workin
 
 
 [cols="1,1,1,1,1"]
+.Outputs
 |===
 |testid |group |censor reason|outcome reason|value
 |1 | no init | noncompliance | rightcensored | 43
@@ -82,10 +101,20 @@ In this proposed addition to the `asclepias` collection of packages, with workin
 
 The particular syntax here is just an example and there are many alternatives to consider: Events are specified in different lines of the first table, outcomes specified in a separate table, and testid identifies which events are associated with which outcomes.
 
-== Motivation and challenges
+== Challenges
+Challenges to achieving the planning phase goals fall into two categories, both with roots in the complexity of `asclepias` package's type systems:
+
+1. `asclepias` types of interest can be relatively heavily parameterized, deeply nested or inter-dependent, all of which should be hidden from the end-user yet must be accounted for somehow in the testing specification. See for example the `CensoredOccurrence` type in `Hasklepias.Misc`, a fundamental type for the outcome to be tested
+2. Much of the relevant type-ing for items we wish to test happens outside of `asclepias`:
+  a. project-specific types or type aliases, based on the code for P0059
+  b. text metadata, e.g. "is_enrollment", that comes from the data pipeline
+3. Type naming is sometimes opaque, (e.g. `CensoringReason` variant names), and there is more opportunity for that to be the case in project-specific types and aliases.
+4. `asclepias` is under active development, which might require substantial changes to `hygiea` internals and perhaps to the tools and user-interface.
+
+Some of those dynamics are not simply downsides but also provide structure that a testing type system can use.
 
 === Complexity of the type system
-Writing the test above, without the tools to be developed for `hygiea`, requires the developer to understand the following code, and in the case of the code from `P0059/plans/Cohort.hs` to be able to write it. This block is not complete, since for example it does not include the definition of various functions used in `makeOutcomeDefinition`, such as `firstConceptOccurrence` from `Hasklepias.FeatureEvents`.
+Writing the test in the example above, without the tools to be developed for `hygiea`, requires the developer to understand the following code, and in the case of the code from `P0059/plans/Cohort.hs` to be able to write it. This block is not even complete, since for example it does not include the definition of various functions used in `makeOutcomeDefinition`, such as `firstConceptOccurrence` from `Hasklepias.FeatureEvents`.
 
 [source,haskell]
 ----
@@ -155,6 +184,12 @@ type MomentOfOccurrence = PairedInterval P0059Reasons Integer
 
 -- | Syonym for 'CensoringReason' for this study
 type P0059Reasons = CensoringReason CensorReason OutcomeReason
+
+-- Hasklepias.Misc
+-- | Sum type for possible censoring and outcome reasons, including administrative
+--   censoring.
+data CensoringReason cr or = AdminCensor | C cr | O or
+  deriving (Eq, Show, Generic)
 
 
 -- Stype.Numeric
@@ -268,3 +303,16 @@ makeOutcomeDefinition cpt outcome = define
 ----
 
 Clearly familiarity with `asclepias` is necessary and expected of any project developer, but this level of complexity is in my opinion a substantial impediment to the writing of comprehensive, correct testing procedures for project cohorts. 
+
+=== Inhomogeneity across projects
+In the example of P0059 above, the project itself defined the key types of `CensorReason` and `Outcome`, which we can only assume will be essential in specifying tests, as they were in the associated rudimentary tabular user interface. The end-user likely will need some access to these types to specify tests appropriately, and to metadata provided by the data pipeline, such as "is_enrollment". 
+
+It's not clear what the best way is to facilitate or eliminate that need.
+
+== Benefits of the `asclepias` type system
+// TODO flesh out
+
+=== Facilitates generic programming
+e.g. perhaps we can write a typeclass for conversions of `CensoredOccurence` to an internal `hygiea` test type. This would place some burden on programmers to do the actual mapping of project-specific outcome types to testable types, in a structured way. We could provide some generic implementations or at a minimum some helper functions to facilitate that.
+
+

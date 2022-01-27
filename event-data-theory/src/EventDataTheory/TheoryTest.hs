@@ -54,7 +54,14 @@ instance FromJSON SillyDomain where
       "D" -> pure D
       _   -> fail ("unknown domain: " <> show domain)
 
-type SillyEvent a = Event SillyDomain Text a
+-- | Just a dummy type to test non-text Concepts
+data SillyConcepts = Mouse | Giraffe | Hornbill
+  deriving (Show, Eq, Ord, Generic)
+
+instance FromJSON SillyConcepts
+
+type SillyEvent1 a = Event SillyDomain Text a
+type SillyEvent2 a = Event SillyDomain SillyConcepts a
 
 c1 :: Context SillyDomain Text
 c1 = Context { concepts = into (["this", "that"] :: [Text])
@@ -62,7 +69,7 @@ c1 = Context { concepts = into (["this", "that"] :: [Text])
              , source   = Nothing
              }
 
-e1 :: SillyEvent Int
+e1 :: SillyEvent1 Int
 e1 = event (beginerval 2 0) c1
 
 hasConceptUnitTests :: TestTree
@@ -128,20 +135,32 @@ toFromConceptsUnitTests = testGroup
   @?= (unpackConcepts . packConcepts) ["foo", "bar"]
   ]
 
--- | Check that files in test/events-good successfully parse
-decodeSillyTests :: IO TestTree
-decodeSillyTests = eventDecodeTests @SillyDomain @Text @Day "test/events-good"
+-- | Check that files in test/events-day-text-good successfully parse
+decodeSillyTests1 :: IO TestTree
+decodeSillyTests1 =
+  eventDecodeTests @SillyDomain @Text @Day "test/events-day-text-good"
 
--- | Check that files in test/events-bad successfully fail
-decodeSillyFailTests :: IO TestTree
-decodeSillyFailTests =
-  eventDecodeFailTests @SillyDomain @Text @Day "test/events-bad"
+-- | Check that files in test/events-day-text-bad successfully fail
+decodeSillyFailTests1 :: IO TestTree
+decodeSillyFailTests1 =
+  eventDecodeFailTests @SillyDomain @Text @Day "test/events-day-text-bad"
 
+-- | Check that files in test/events-integer-silly-good successfully parse
+decodeSillyTests2 :: IO TestTree
+decodeSillyTests2 = eventDecodeTests @SillyDomain @SillyConcepts @Integer
+  "test/events-integer-silly-good"
+
+-- | Check that files in test/events-integer-silly-bad successfully fail
+decodeSillyFailTests2 :: IO TestTree
+decodeSillyFailTests2 =
+  eventDecodeFailTests @SillyDomain @Text @Day "test/events-integer-silly-bad"
 
 theoryTests :: IO ()
 theoryTests = defaultMain . testGroup "Event Theory tests" =<< sequenceA
-  [ decodeSillyTests
-  , decodeSillyFailTests
+  [ decodeSillyTests1
+  , decodeSillyTests2
+  , decodeSillyFailTests1
+  , decodeSillyFailTests2
   , pure hasConceptUnitTests
   , pure eventPredicateUnitTests
   , pure toFromConceptsUnitTests

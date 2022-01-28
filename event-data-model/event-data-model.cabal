@@ -1,5 +1,5 @@
 cabal-version:  2.2
-name:           edm 
+name:           event-data-model 
 version:        0.23.5
 description:    Please see the README on GitHub at <https://github.com/novisci/asclepias#readme>
 homepage:       https://github.com/novisci/asclepias/#readme
@@ -71,7 +71,7 @@ library
     autoexporter:autoexporter
   default-language: Haskell2010
 
-test-suite edm-test
+test-suite event-data-model-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
@@ -79,14 +79,14 @@ test-suite edm-test
       EventData.AesonSpec
       EventData.AccessorsSpec
       EventData.ContextSpec
-      Paths_edm
+      Paths_event_data_model
   autogen-modules:
-      Paths_edm
+      Paths_event_data_model
   hs-source-dirs:
       test
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      edm
+      event-data-model
     , aeson >= 2.0.2.0
     , base >=4.7 && <5
     , bytestring >=0.10

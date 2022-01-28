@@ -6,7 +6,7 @@ COPY hasklepias-templates/hasklepias-templates.cabal hasklepias-templates/haskle
 COPY hasklepias-main/hasklepias-main.cabal hasklepias-main/hasklepias-main.cabal
 COPY cohort-collector/cohort-collector.cabal cohort-collector/cohort-collector.cabal
 COPY event-data-theory/event-data-theory.cabal event-data-theory/event-data-theory.cabal
-COPY edm/edm.cabal edm/edm.cabal
+COPY event-data-model/event-data-model.cabal event-data-model/event-data-model.cabal
 COPY stype/stype.cabal stype/stype.cabal
 
 RUN cabal update

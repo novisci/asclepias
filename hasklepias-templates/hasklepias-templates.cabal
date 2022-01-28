@@ -39,7 +39,7 @@ library
   build-depends:
     -- Internal packages
         hasklepias-core
-      , edm
+      , event-data-model
       , stype
     
     -- External packages

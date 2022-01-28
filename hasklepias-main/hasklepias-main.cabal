@@ -29,7 +29,7 @@ library
       src
   build-depends:
     -- Internal packages
-      edm
+      event-data-model
     , hasklepias-appBuilder
     , stype
     , hasklepias-core

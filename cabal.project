@@ -4,7 +4,7 @@ packages: hasklepias-core
         , hasklepias-templates
         , cohort-collector
         , event-data-theory
-        , edm
+        , event-data-model
         , stype
 
 -- For amazonka (temp until amazonka > 2.0 is released to hackage )

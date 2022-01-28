@@ -44,7 +44,7 @@ library
       src
   build-depends:
     -- Internal packages
-      edm
+      event-data-model
     , stype
 
     -- External packages
@@ -94,7 +94,7 @@ test-suite hasklepias-core-test
   build-depends:
     -- Internal
       hasklepias-core
-    , edm
+    , event-data-model
 
     -- External
     , aeson >= 2.0.2.0

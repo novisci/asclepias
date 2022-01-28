@@ -10,10 +10,16 @@ Maintainer  : bsaul@novisci.com
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 
 module EventDataTheory.EventLines
-  ( parseEventLinesL
+  ( EventLine
+  , parseEventLinesL
   , parseEventLinesL'
+  , eitherDecodeEvent
+  , eitherDecodeEvent'
+  , decodeEvent
+  , decodeEvent'
   ) where
 
 import           Control.Applicative            ( Applicative(pure) )
@@ -23,13 +29,14 @@ import           Control.Monad                  ( Functor(fmap)
 import           Data.Aeson                     ( (.:)
                                                 , (.:?)
                                                 , FromJSON(parseJSON)
-                                                , Value(Array)
+                                                , Value(..)
+                                                , decode
+                                                , decode'
                                                 , eitherDecode
                                                 , eitherDecode'
                                                 , withArray
                                                 , withObject
                                                 )
-import           Data.Bifunctor                 ( Bifunctor(second) )
 import qualified Data.ByteString.Lazy          as B
 import qualified Data.ByteString.Lazy.Char8    as B
 import           Data.Either                    ( Either(..)
@@ -43,6 +50,7 @@ import           Data.Maybe                     ( Maybe
                                                 , maybe
                                                 )
 import           Data.Ord                       ( Ord )
+import           Data.Scientific                ( floatingOrInteger )
 import           Data.String                    ( String )
 import           Data.Text                      ( Text
                                                 , pack
@@ -62,12 +70,15 @@ import           IntervalAlgebra                ( Interval
                                                 , parseInterval
                                                 )
 import           Type.Reflection                ( Typeable )
-
+import           Witch
 
 {-|
-At this time, 'EventLine', 'ContextLine', and 'IntervalLine' are simply wrapper types
+At this time, 
+'EventLine', 'ContextLine', 'SubjectIDLine', and 'IntervalLine' are
+simply wrapper types
 in order to create 'FromJSON' instances which can be used to marshal data from 
 [ndjson](http://ndjson.org/).
+See [event data model docs](https://docs.novisci.com/edm-sandbox/latest/index.html#_event_representation)
 'ToJSON' instances are not provided, but may be in the future. 
 -}
 data EventLine d c a = MkEventLine
@@ -76,14 +87,31 @@ data EventLine d c a = MkEventLine
   }
   deriving (Eq, Show)
 
-instance ( FromJSON a, Show a, IntervalSizeable a b, Show d, Eq d, Generic d, FromJSON d
-         , Show c, Eq c, Ord c, Typeable c, FromJSON c) => FromJSON (EventLine d c a) where
+instance (FromJSON a, Show a, IntervalSizeable a b
+         , Show d, Eq d, Generic d, FromJSON d
+         , Show c, Eq c, Ord c, Typeable c, FromJSON c)
+          => FromJSON (EventLine d c a) where
   parseJSON = withArray "Event" $ \a -> do
-    sid    <- parseJSON (a ! 0)
+    sid    <- parseJSON (a ! 5)
     intrvl <- parseJSON (a ! 5)
     let i = getIntervalLine intrvl
     c <- parseJSON (Array a)
-    pure $ MkEventLine sid (event i (getContextLine c))
+
+    pure $ MkEventLine (getSubjectIDLine sid) (event i (getContextLine c))
+
+-- | See 'EventLine'.
+newtype SubjectIDLine = MkSubjectIDLine {getSubjectIDLine  :: SubjectID }
+  deriving (Eq, Show)
+
+instance FromJSON SubjectIDLine where
+  parseJSON = withObject "patient ID" $ \o -> do
+    z <- o .: "patient_id"
+    case z of
+      String x -> pure $ MkSubjectIDLine $ from x
+      Number x -> case floatingOrInteger x of
+        Left  _ -> fail "SubjectID number is not an integer"
+        Right i -> pure $ MkSubjectIDLine $ from @Integer i
+      _ -> fail (show z)
 
 -- | See 'EventLine'.
 newtype ContextLine d c  = MkContextLine { getContextLine :: Context d c }
@@ -102,7 +130,8 @@ newtype IntervalLine a = MkIntervalLine { getIntervalLine :: Interval a }
 
 {-|
 Parses the @time@ JSON object.
-In the case that the end is missing, a moment is created.
+NOTE: a @'moment is always added to the 'end'.
+Moreover, in the case that the end is missing, a moment is created.
 -}
 instance (FromJSON a, Show a, IntervalSizeable a b) => FromJSON (IntervalLine a) where
   parseJSON = withObject "Time" $ \o -> do
@@ -120,11 +149,8 @@ NOTE: See https://hackage.haskell.org/package/aeson-2.0.3.0/docs/Data-Aeson.html
 for discusson of json vs json'.
 -}
 
-eitherDecodeEvent
-  :: ( FromJSON a
-     , Show a
-     , IntervalSizeable a b
-     , Show d
+eitherDecodeEvent, eitherDecodeEvent'
+  :: ( Show d
      , Eq d
      , Generic d
      , FromJSON d
@@ -133,16 +159,17 @@ eitherDecodeEvent
      , Ord c
      , Typeable c
      , FromJSON c
+     , FromJSON a
+     , Show a
+     , IntervalSizeable a b
      )
   => B.ByteString
   -> Either String (SubjectID, Event d c a)
 eitherDecodeEvent = makeEventDecoder eitherDecode
+eitherDecodeEvent' = makeEventDecoder eitherDecode'
 
-eitherDecodeEvent'
-  :: ( FromJSON a
-     , Show a
-     , IntervalSizeable a b
-     , Show d
+decodeEvent, decodeEvent'
+  :: ( Show d
      , Eq d
      , Generic d
      , FromJSON d
@@ -151,15 +178,20 @@ eitherDecodeEvent'
      , Ord c
      , Typeable c
      , FromJSON c
+     , FromJSON a
+     , Show a
+     , IntervalSizeable a b
      )
   => B.ByteString
-  -> Either String (SubjectID, Event d c a)
-eitherDecodeEvent' = makeEventDecoder eitherDecode'
+  -> Maybe (SubjectID, Event d c a)
+decodeEvent' = makeEventDecoder decode'
+decodeEvent = makeEventDecoder decode
 
 makeEventDecoder
-  :: (B.ByteString -> Either String (EventLine d c a))
-  -> (B.ByteString -> Either String (SubjectID, Event d c a))
-makeEventDecoder f = second (\x -> (getSubjectID x, getEventLine x)) . f
+  :: Functor f
+  => (B.ByteString -> f (EventLine d c a))
+  -> (B.ByteString -> f (SubjectID, Event d c a))
+makeEventDecoder f = fmap (\x -> (getSubjectID x, getEventLine x)) . f
 
 {-| 
 Parse @Event d c a@ from new-line delimited JSON.
@@ -175,10 +207,7 @@ the first element is a list of parse errors
 and the second element is a list of successfully parsed (subjectID, event) pairs.
 -}
 parseEventLinesL
-  :: ( FromJSON a
-     , Show a
-     , IntervalSizeable a b
-     , Show d
+  :: ( Show d
      , Eq d
      , Generic d
      , FromJSON d
@@ -187,6 +216,9 @@ parseEventLinesL
      , Ord c
      , Typeable c
      , FromJSON c
+     , FromJSON a
+     , Show a
+     , IntervalSizeable a b
      )
   => B.ByteString
   -> ([String], [(SubjectID, Event d c a)])
@@ -206,10 +238,7 @@ the first element is a list of parse errors
 and the second element is a list of successfully parsed (subjectID, event) pairs.
 -}
 parseEventLinesL'
-  :: ( FromJSON a
-     , Show a
-     , IntervalSizeable a b
-     , Show d
+  :: ( Show d
      , Eq d
      , Generic d
      , FromJSON d
@@ -218,9 +247,10 @@ parseEventLinesL'
      , Ord c
      , Typeable c
      , FromJSON c
+     , FromJSON a
+     , Show a
+     , IntervalSizeable a b
      )
   => B.ByteString
   -> ([String], [(SubjectID, Event d c a)])
 parseEventLinesL' l = partitionEithers $ fmap eitherDecodeEvent' (B.lines l)
-
-

@@ -17,7 +17,6 @@ See the neighboring EventLine module for types and To/FromJSON instances
 designed for the purpose of marshaling data from JSON lines.
 -}
 {-# LANGUAGE NoImplicitPrelude #-}
-{-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE FlexibleContexts #-}

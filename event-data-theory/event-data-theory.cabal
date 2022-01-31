@@ -27,6 +27,7 @@ library
       EventDataTheory.EventLines
       EventDataTheory.Test
       EventDataTheory.TheoryTest
+      EventDataTheory.Utilities
   hs-source-dirs:
       src
   build-depends:

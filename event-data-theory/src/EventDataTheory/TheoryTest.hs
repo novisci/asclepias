@@ -26,7 +26,12 @@ import           EventDataTheory.Test           ( eventDecodeFailTests
                                                 , eventDecodeTests
                                                 )
 import           GHC.Generics                   ( Generic )
-import           IntervalAlgebra                ( beginerval )
+import           IntervalAlgebra                ( beginerval
+                                                , filterContains
+                                                , meets
+                                                , metBy
+                                                , overlaps
+                                                )
 import           Test.Tasty                     ( TestTree
                                                 , defaultMain
                                                 , testGroup
@@ -70,8 +75,41 @@ c1 = Context { concepts = into (["this", "that"] :: [Text])
              }
 
 e1 :: SillyEvent1 Int
-e1 = event (beginerval 2 0) c1
+e1 = event (beginerval 2 1) c1
 
+c2 :: Context SillyDomain Text
+c2 = Context { concepts = into (["this", "another"] :: [Text])
+             , facts    = A 1
+             , source   = Nothing
+             }
+
+e2 :: SillyEvent1 Int
+e2 = event (beginerval 4 3) c2
+
+{-
+These tests of the interval algebra are in a way silly
+because events are basically PairedIntervals
+which are well tested in the interval-algebra library
+These few tests are here for a basic sanity check
+to be sure interval functions work on events.
+-}
+eventIntervalUnitTests :: TestTree
+eventIntervalUnitTests = testGroup
+  "Interval algebra sanity checks"
+  [ testCase "e1 meets e2" $ meets e1 e2 @?= True
+  , testCase "e2 metBy e1" $ metBy e2 e1 @?= True
+  , testCase "e1 does not overlap e2" $ overlaps e1 e2 @?= False
+  , testCase "(0, 10) contains both e1 and e2" $ filterContains ci es @?= es
+  , testCase "(4, 10) contains neither e1 and e2" $ filterContains ni es @?= []
+  ]
+ where
+  es = [e1, e2]
+  ci = beginerval 10 0
+  ni = beginerval 6 4
+
+{-
+Tests of the hasConcepts functions.
+-}
 hasConceptUnitTests :: TestTree
 hasConceptUnitTests = testGroup
   "Unit tests for HasConcepts using a dummy event model"
@@ -161,6 +199,7 @@ theoryTests = defaultMain . testGroup "Event Theory tests" =<< sequenceA
   , decodeSillyTests2
   , decodeSillyFailTests1
   , decodeSillyFailTests2
+  , pure eventIntervalUnitTests
   , pure hasConceptUnitTests
   , pure eventPredicateUnitTests
   , pure toFromConceptsUnitTests

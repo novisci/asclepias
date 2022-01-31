@@ -150,7 +150,8 @@ for discusson of json vs json'.
 -}
 
 eitherDecodeEvent, eitherDecodeEvent'
-  :: ( Show d
+  :: forall d c a b
+   . ( Show d
      , Eq d
      , Generic d
      , FromJSON d
@@ -169,7 +170,8 @@ eitherDecodeEvent = makeEventDecoder eitherDecode
 eitherDecodeEvent' = makeEventDecoder eitherDecode'
 
 decodeEvent, decodeEvent'
-  :: ( Show d
+  :: forall d c a b
+   . ( Show d
      , Eq d
      , Generic d
      , FromJSON d
@@ -207,7 +209,8 @@ the first element is a list of parse errors
 and the second element is a list of successfully parsed (subjectID, event) pairs.
 -}
 parseEventLinesL
-  :: ( Show d
+  :: forall d c a b
+   . ( Show d
      , Eq d
      , Generic d
      , FromJSON d
@@ -238,7 +241,8 @@ the first element is a list of parse errors
 and the second element is a list of successfully parsed (subjectID, event) pairs.
 -}
 parseEventLinesL'
-  :: ( Show d
+  :: forall d c a b
+   . ( Show d
      , Eq d
      , Generic d
      , FromJSON d

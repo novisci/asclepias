@@ -123,3 +123,5 @@ test-suite hasklepias-core-test
     , vector >=0.12
     , QuickCheck
   default-language: Haskell2010
+  build-tool-depends:
+      hspec-discover:hspec-discover >= 2.8

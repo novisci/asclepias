@@ -12,10 +12,7 @@ module EventDataTheory.TheoryTest
   ( theoryTests
   ) where
 
-import           Data.Aeson                     ( (.:)
-                                                , FromJSON(parseJSON)
-                                                , withObject
-                                                )
+import           Data.Aeson
 import           Data.Functor.Contravariant     ( Predicate(..) )
 import           Data.List                      ( sort )
 import           Data.Maybe                     ( isNothing )
@@ -50,14 +47,13 @@ data SillyDomain =
   deriving (Show, Eq, Generic)
 
 instance FromJSON SillyDomain where
-  parseJSON = withObject "Domain" $ \o -> do
-    domain :: Text <- o .: "domain"
-    case domain of
-      "A" -> A <$> o .: "facts"
-      "B" -> B <$> o .: "facts"
-      "C" -> pure C
-      "D" -> pure D
-      _   -> fail ("unknown domain: " <> show domain)
+  parseJSON = genericParseJSON
+    (defaultOptions
+      { sumEncoding = TaggedObject { tagFieldName      = "domain"
+                                   , contentsFieldName = "facts"
+                                   }
+      }
+    )
 
 -- | Just a dummy type to test non-text Concepts
 data SillyConcepts = Mouse | Giraffe | Hornbill
@@ -69,18 +65,18 @@ type SillyEvent1 a = Event SillyDomain Text a
 type SillyEvent2 a = Event SillyDomain SillyConcepts a
 
 c1 :: Context SillyDomain Text
-c1 = Context { concepts = into (["this", "that"] :: [Text])
-             , facts    = A 1
-             , source   = Nothing
+c1 = Context { getConcepts = into (["this", "that"] :: [Text])
+             , getFacts    = A 1
+             , getSource   = Nothing
              }
 
 e1 :: SillyEvent1 Int
 e1 = event (beginerval 2 1) c1
 
 c2 :: Context SillyDomain Text
-c2 = Context { concepts = into (["this", "another"] :: [Text])
-             , facts    = A 1
-             , source   = Nothing
+c2 = Context { getConcepts = into (["this", "another"] :: [Text])
+             , getFacts    = A 1
+             , getSource   = Nothing
              }
 
 e2 :: SillyEvent1 Int
@@ -140,7 +136,7 @@ hasConceptUnitTests = testGroup
   ]
 
 cPred1 :: Predicate (Context SillyDomain Text)
-cPred1 = Predicate (\x -> facts x == C)
+cPred1 = Predicate (\x -> getFacts x == C)
 
 cPred2 :: Predicate (Maybe Source)
 cPred2 = Predicate isNothing
@@ -166,7 +162,7 @@ eventPredicateUnitTests = testGroup
 
 toFromConceptsUnitTests :: TestTree
 toFromConceptsUnitTests = testGroup
-  "Unit test that pack/unpack concepts roundtrips"
+  "Unit test that pack/unpack getConcepts roundtrips"
   [ testCase "single concept" $ "foo" @?= (unpackConcept . packConcept) "foo"
   , testCase "multiple concepts"
   $   sort ["foo", "bar"]

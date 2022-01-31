@@ -23,6 +23,7 @@ designed for the purpose of marshaling data from JSON lines.
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DuplicateRecordFields #-}
 
 module EventDataTheory.Core
   ( Event
@@ -217,14 +218,14 @@ which carries information about the provenance of the data.
 
 -}
 data Context d c = Context
-  { concepts :: Concepts c
-  , facts    :: d
-  , source   :: Maybe Source
+  { getConcepts :: Concepts c
+  , getFacts    :: d
+  , getSource   :: Maybe Source
   }
   deriving (Eq, Show, Generic)
 
 instance Ord c => HasConcept (Context d c) c where
-  hasConcept c = hasConcept (concepts c)
+  hasConcept c = hasConcept (getConcepts c)
 
 instance (NFData d, NFData c) => NFData (Context d c)
 instance (Binary d, Binary c) => Binary (Context d c)
@@ -236,7 +237,6 @@ instance ( Arbitrary d, Show d, Eq d, Generic d
          , Arbitrary c, Show c, Eq c, Ord c, Typeable c) =>
       Arbitrary (Context d c) where
   arbitrary = liftM3 Context arbitrary arbitrary (pure Nothing)
-
 
 {- |
 A source may be used to record the provenance of an event from some database.
@@ -361,13 +361,13 @@ instance EventPredicate (Context d c) d c a where
   liftToEventPredicate = contramap getContext
 
 instance EventPredicate d d c a where
-  liftToEventPredicate = contramap (facts . getContext)
+  liftToEventPredicate = contramap (getFacts . getContext)
 
 instance EventPredicate (Concepts c) d c a where
-  liftToEventPredicate = contramap (concepts . getContext)
+  liftToEventPredicate = contramap (getConcepts . getContext)
 
 instance EventPredicate (Maybe Source) d c a where
-  liftToEventPredicate = contramap (source . getContext)
+  liftToEventPredicate = contramap (getSource . getContext)
 
 instance (Ord a) => EventPredicate (Interval a) d c a where
   liftToEventPredicate = contramap getInterval

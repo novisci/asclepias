@@ -12,7 +12,7 @@ module EventData.ClaimsSchema.Tests
 import           Data.Aeson
 import qualified Data.ByteString.Lazy          as B
 import           Data.Text                      ( Text )
-import  Data.Time (Day)
+import           Data.Time                      ( Day )
 import           EventData.ClaimsSchema
 import           EventData.ClaimsSchema.Accessors
 import           EventData.ClaimsSchema.Predicates
@@ -26,9 +26,9 @@ import           Test.Tasty.HUnit
 e1 :: Event ClaimsSchema Text Int
 e1 = event
   (beginerval 4 1)
-  (Context { concepts = packConcepts ["c1", "c2"]
-           , facts    = Enrollment (EnrollmentFacts { plan = Nothing })
-           , source   = Nothing
+  (Context { getConcepts = packConcepts ["c1", "c2"]
+           , getFacts    = Enrollment (EnrollmentFacts { plan = Nothing })
+           , getSource   = Nothing
            }
   )
 
@@ -36,9 +36,9 @@ e1 = event
 e2 :: Event ClaimsSchema Text Int
 e2 = event
   (beginerval 4 2)
-  (Context { concepts = packConcepts ["c3", "c4"]
-           , facts    = Enrollment (EnrollmentFacts { plan = Nothing })
-           , source   = Nothing
+  (Context { getConcepts = packConcepts ["c3", "c4"]
+           , getFacts    = Enrollment (EnrollmentFacts { plan = Nothing })
+           , getSource   = Nothing
            }
   )
 
@@ -46,10 +46,10 @@ e3 :: Event ClaimsSchema Text Int
 e3 = event
   (beginerval 4 2)
   (Context
-    { concepts = packConcepts []
-    , facts    = Demographics
-                   (DemographicsFacts (DemographicsInfo Gender (Just "F")))
-    , source   = Nothing
+    { getConcepts = packConcepts []
+    , getFacts    = Demographics
+                      (DemographicsFacts (DemographicsInfo Gender (Just "F")))
+    , getSource   = Nothing
     }
   )
 
@@ -60,7 +60,11 @@ demoYear =
 e4 :: Event ClaimsSchema Text Int
 e4 = event
   (beginerval 4 2)
-  (Context { concepts = packConcepts [], facts = demoYear, source = Nothing })
+  (Context { getConcepts = packConcepts []
+           , getFacts    = demoYear
+           , getSource   = Nothing
+           }
+  )
 
 enrollEvent :: B.ByteString
 enrollEvent =
@@ -95,8 +99,7 @@ accessorUnitTests = testGroup
   , testCase "viewBenefits on enrollment event"
   $   fmap
         viewBenefits
-        (sequenceA [snd <$> decodeEvent @ClaimsSchema @Text @Int enrollEvent]
-        )
+        (sequenceA [snd <$> decodeEvent @ClaimsSchema @Text @Int enrollEvent])
   @?= Just ["PPO"]
   ]
 
@@ -107,6 +110,4 @@ decodeClaimEvents =
 
 claimsSchemaTests :: IO TestTree
 claimsSchemaTests = testGroup "ClaimsSchema tests" <$> sequenceA
-  [ pure accessorUnitTests
-  , pure predicateUnitTests
-  , decodeClaimEvents]
+  [pure accessorUnitTests, pure predicateUnitTests, decodeClaimEvents]

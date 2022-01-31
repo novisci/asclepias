@@ -46,16 +46,10 @@ data ClaimsSchema =
     deriving ( Eq, Show, Generic )
 
 instance FromJSON ClaimsSchema where
-  parseJSON = withObject "Domain" $ \o -> do
-    domain :: Text <- o .: "domain"
-    case domain of
-      "Death"        -> pure $ Death DeathFacts
-      "Demographics" -> Demographics <$> o .: "facts"
-      "Diagnosis"    -> Diagnosis <$> o .: "facts"
-      "Eligibility"  -> Eligibility <$> o .: "facts"
-      "Enrollment"   -> Enrollment <$> o .: "facts"
-      "Labs"         -> Labs <$> o .: "facts"
-      "Medication"   -> Medication <$> o .: "facts"
-      "Procedure"    -> Procedure <$> o .: "facts"
-      _              -> fail "Unknown domain"
-
+  parseJSON = genericParseJSON
+    (defaultOptions
+      { sumEncoding = TaggedObject { tagFieldName      = "domain"
+                                   , contentsFieldName = "facts"
+                                   }
+      }
+    )

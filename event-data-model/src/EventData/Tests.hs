@@ -12,5 +12,5 @@ import           EventData.ClaimsSchema.Tests
 import           Test.Tasty
 
 edmTests :: IO ()
-edmTests = defaultMain . testGroup "Event Model tests" =<< sequenceA
-  [claimsSchemaTests]
+edmTests =
+  defaultMain . testGroup "Event Model tests" =<< sequenceA [claimsSchemaTests]

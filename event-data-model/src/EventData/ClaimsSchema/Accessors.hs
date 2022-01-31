@@ -68,7 +68,12 @@ import           EventData.ClaimsSchema         ( ClaimsSchema(..)
                                                 )
 import           EventData.ClaimsSchema.Predicates
 import           EventData.Facts
-import           EventDataTheory                ( Event(..), Predicate(..), (|||), getContext, facts )
+import           EventDataTheory                ( Event(..)
+                                                , Predicate(..)
+                                                , getContext
+                                                , getFacts
+                                                , (|||)
+                                                )
 import           GHC.Float                      ( Double )
 import           GHC.Num                        ( Integer
                                                 , fromInteger
@@ -113,7 +118,7 @@ previewCode dmn =
 
 -- | Preview the text part of a 'Code' from an event, using `previewCode'.
 previewCodeE :: Event ClaimsSchema c a -> Maybe Text
-previewCodeE = previewCode . facts . getContext
+previewCodeE = previewCode . getFacts . getContext
 
 -- | Preview @Provider@ from 'Diagnosis', 'Medication', or 'Procedure' ClaimsSchema
 previewProvider :: ClaimsSchema -> Maybe Provider
@@ -159,7 +164,7 @@ previewBenefit x = previewPlan x >>= (^. field @"benefit")
 
 -- | View the @benefit@ field of a @Event@
 previewBenefitE :: Event ClaimsSchema c a -> Maybe Text
-previewBenefitE = previewBenefit . facts . getContext
+previewBenefitE = previewBenefit . getFacts . getContext
 
 -- | View the @exchange@ field of a @Plan@
 previewExchange :: ClaimsSchema -> Maybe Exchange
@@ -167,7 +172,7 @@ previewExchange x = previewPlan x >>= (^? field @"exchange")
 
 -- | View the @exchange@ field of a @Event@
 previewExchangeE :: Event ClaimsSchema c a -> Maybe Exchange
-previewExchangeE = previewExchange . facts . getContext
+previewExchangeE = previewExchange . getFacts . getContext
 
 -- | Preview birth year from a ClaimsSchema
 previewBirthYear :: ClaimsSchema -> Maybe Year
@@ -176,30 +181,30 @@ previewBirthYear dmn = intMayMap =<< previewDemoInfo dmn
 -- | Returns a (possibly empty) list of birth years from a set of events
 viewBirthYears :: (Witherable f) => f (Event ClaimsSchema c a) -> [Year]
 viewBirthYears x = mapMaybe
-  (\e -> previewBirthYear (facts $ getContext e))
+  (\e -> previewBirthYear (getFacts $ getContext e))
   (toList $ filter (getPredicate isBirthYearEvent) x)
 
 -- | Returns a (possibly empty) list of Gender values from a set of events
 viewGenders :: (Witherable f) => f (Event ClaimsSchema c a) -> [Text]
 viewGenders x = mapMaybe
-  (\e -> previewDemoInfo =<< Just (getContext e ^. field @"facts"))
+  (\e -> previewDemoInfo =<< Just (getContext e ^. field @"getFacts"))
   (toList $ filter (getPredicate isGenderFactEvent) x)
 
 -- | Returns a (possibly empty) list of State values from a set of events
 viewStates :: (Witherable f) => f (Event ClaimsSchema c a) -> [Text]
 viewStates x = mapMaybe
-  (\e -> previewDemoInfo =<< Just (getContext e ^. field @"facts"))
+  (\e -> previewDemoInfo =<< Just (getContext e ^. field @"getFacts"))
   (toList $ filter (getPredicate isStateFactEvent) x)
 
 -- | Returns a (possibly empty) list of Region values from a set of events
 viewRegions :: (Witherable f) => f (Event ClaimsSchema c a) -> [Text]
 viewRegions x = mapMaybe
-  (\e -> previewDemoInfo =<< Just (getContext e ^. field @"facts"))
+  (\e -> previewDemoInfo =<< Just (getContext e ^. field @"getFacts"))
   (toList $ filter (getPredicate isRegionFactEvent) x)
 
 -- | Returns a (possibly empty) list of Insurance plan benefit values from a set of events
 viewBenefits :: (Witherable f) => f (Event ClaimsSchema c a) -> [Text]
 viewBenefits x = mapMaybe
-  (\e -> previewBenefit =<< Just (getContext e ^. field @"facts"))
+  (\e -> previewBenefit =<< Just (getContext e ^. field @"getFacts"))
   (toList $ filter (getPredicate (isEnrollmentEvent ||| isEligibilityEvent)) x)
 

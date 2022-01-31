@@ -30,12 +30,13 @@ if [[ $OSTYPE =~ "darwin" ]]; then
     find='gfind'
 else
     sed='sed'
+    find='find'
 fi
 
 # Escape periods in the GHC version number for the purpose of being used as part
 # of a regular expression
 if [[ -z "$GHC" ]]; then
-    echo 'Error: the $GCH environmental variable was not set'
+    >&2 echo 'Error: the GCH environmental variable was not set'
     exit 1
 fi
 GHC_ver_re=$(echo "$GHC" | $sed "s/\\./\\\\./g")
@@ -57,16 +58,21 @@ done < <(
         | sort -z                                                                    \
         | uniq -z
     )
+if [[ ${#mix_paths[@]} == "0" ]]; then
+    >&2 echo 'Error: no mix files were found'
+fi
 
 # Find and store the tix paths into an array. See the comment for constructing
 # the mix paths for the form of this block. Note that you may need to use the
 # GNU version of `find` for this command to work.
-[[ -z "$GHC_ver_re" ]] && exit 1
 path_regex=".*/ghc-$GHC_ver_re/.*/hpc/vanilla/tix/[[:alnum:]_-]+[[:digit:]]+[.][[:digit:]]+[.][[:digit:]]+/.*[.]tix"
 tix_paths=()
 while read -r -d ''; do
     tix_paths+=("$REPLY")
 done < <($find dist-newstyle -regextype posix-extended -regex "$path_regex" -print0)
+if [[ ${#tix_paths[@]} == "0" ]]; then
+    >&2 echo 'Error: no tix files were found'
+fi
 
 # Print a per-package summary of code completion statistics for each package
 for path in "${tix_paths[@]}"; do

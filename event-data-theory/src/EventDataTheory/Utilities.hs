@@ -79,7 +79,8 @@ findOccurrenceOfEvent
 findOccurrenceOfEvent f p = f . filterEvents p
 
 {-|
-Finds the *first* occurrence of an 'Event' with at least one of the concepts.
+Finds the *first* occurrence of an 'Event' with at least one of the concepts
+if one exists.
 Assumes the input 'Events' are appropriately sorted.
 -}
 firstOccurrenceOfConcept
@@ -88,7 +89,8 @@ firstOccurrenceOfConcept x =
   findOccurrenceOfEvent (headMay . toList) (containsConcepts x)
 
 {-|
-Finds the *last* occurrence of an 'Event' with at least one of the concepts.
+Finds the *last* occurrence of an 'Event' with at least one of the concepts
+if one exists.
 Assumes the input 'Events' list are appropriately sorted.
 -}
 lastOccurrenceOfConcept

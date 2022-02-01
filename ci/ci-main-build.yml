@@ -1,9 +1,9 @@
-# The main build pipeline 
+# The main build pipeline
 
 stages:
   - prep
-  - build 
-  - deploy 
+  - build
+  - deploy
 
 # The child pipeline needs at minimum one job to run - otherwise the sub-pipeline fails
 # See https://gitlab.com/gitlab-org/gitlab/-/issues/218538
@@ -14,19 +14,19 @@ dummy:
   script:
     - ":"
 
-# Build the docker image will all dependencies installed.
+# Build the docker image with all dependencies installed.
 docker-build:
- stage : prep
- image: docker:$DOCKER
- needs:
-  - pipeline: $PARENT_PIPELINE_ID
-    job: build_vars
-    artifacts: true
- rules:
-  - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-    changes: ["**/*.cabal", "cabal.project"]
- script:
-    - ./ci/ci-docker-build.sh $MAINVERSION hasklepias-build-musl haskell $GHC
+  stage : prep
+  image: docker:$DOCKER
+  needs:
+   - pipeline: $PARENT_PIPELINE_ID
+     job: build_vars
+     artifacts: true
+  rules:
+   - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+     changes: ["**/*.cabal", "cabal.project"]
+  script:
+     - ./ci/ci-docker-build.sh $MAINVERSION hasklepias-build-musl haskell $GHC
 
 main-build:
   stage: build
@@ -37,7 +37,7 @@ main-build:
     - job: "docker-build"
       optional: true
   rules:
-    - changes: ["**/*.cabal", "**/*.hs"]
+    - changes: ["**/*.cabal", "**/*.hs", "ci/ci-cabal-build-all.sh"]
     - if: '$CI_COMMIT_MESSAGE =~ /-build/'
   image: registry.novisci.com/nsstat/asclepias/hasklepias-build:${MAINVERSION}
   script:
@@ -45,6 +45,7 @@ main-build:
   artifacts:
     paths:
       - install
+      # - coverage-report.txt
     expire_in: 1 hour
 
 # Upload docs to S3
@@ -63,6 +64,3 @@ upload-haddock-docs:
   stage: deploy
   script:
     - ./ci/ci-upload-docs-to-s3.sh
-
-
-

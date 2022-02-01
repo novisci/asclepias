@@ -14,19 +14,19 @@ dummy:
   script:
     - 'echo "$CI_PIPELINE_SOURCE"'
 
-# # Build the docker image with all dependencies installed.
-# docker-build:
-#   stage : prep
-#   image: docker:$DOCKER
-#   needs:
-#    - pipeline: $PARENT_PIPELINE_ID
-#      job: build_vars
-#      artifacts: true
-#   rules:
-#    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-#      changes: ["**/*.cabal", "cabal.project"]
-#   script:
-#      - ./ci/ci-docker-build.sh $MAINVERSION hasklepias-build haskell $GHC
+# Build the docker image with all dependencies installed.
+docker-build:
+  stage : prep
+  image: docker:$DOCKER
+  needs:
+   - pipeline: $PARENT_PIPELINE_ID
+     job: build_vars
+     artifacts: true
+  rules:
+   - changes: ["**/*.cabal", "cabal.project"]
+     if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+  script:
+     - ':'
 
 # main-build:
 #   stage: build

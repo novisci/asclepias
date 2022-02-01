@@ -16,6 +16,8 @@ extra-source-files:
     README.adoc
     ChangeLog.md
 
+-- added a comment
+
 source-repository head
   type: git
   location: https://github.com/novisci/asclepias

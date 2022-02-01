@@ -13,10 +13,10 @@ dummy:
     GIT_STRATEGY: none
   script:
     # Print out some environmental variables for debugging information
-    - 'echo "CI_PIPELINE_SOURCE:        \'$CI_PIPELINE_SOURCE\'"'
-    - 'echo "CI_COMMIT_MESSAGE:         \'$CI_COMMIT_MESSAGE\'"'
-    - 'echo "PARENT_CI_PIPELINE_SOURCE: \'$PARENT_CI_PIPELINE_SOURCE\'"'
-    - 'echo "PARENT_PIPELINE_ID:        \'$PARENT_PIPELINE_ID\'"'
+    - 'echo "CI_PIPELINE_SOURCE:        $CI_PIPELINE_SOURCE"'
+    - 'echo "CI_COMMIT_MESSAGE:         $CI_COMMIT_MESSAGE"'
+    - 'echo "PARENT_CI_PIPELINE_SOURCE: $PARENT_CI_PIPELINE_SOURCE"'
+    - 'echo "PARENT_PIPELINE_ID:        $PARENT_PIPELINE_ID"'
 
 # Build the docker image with all dependencies installed.
 docker-build:

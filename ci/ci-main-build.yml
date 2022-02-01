@@ -45,7 +45,7 @@ main-build:
   artifacts:
     paths:
       - install
-      - coverage-report.txt
+      # - coverage-report.txt
     expire_in: 1 hour
 
 # Upload docs to S3

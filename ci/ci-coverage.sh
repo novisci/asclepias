@@ -24,7 +24,7 @@
 #   * ghc-8.10.7/edm-0.23.5/hpc/vanilla/tix/edm-0.23.5/edm-0.23.5.tix
 #   * ghc-8.10.7/edm-0.23.5/hpc/vanilla/tix/edm-test/edm-test.tix
 
-# Use GNU sed and find if on a macOS system
+# Use GNU `sed` and `find` if on a macOS system
 if [[ $OSTYPE =~ "darwin" ]]; then
     sed='gsed'
     find='gfind'
@@ -36,7 +36,7 @@ fi
 # Escape periods in the GHC version number for the purpose of being used as part
 # of a regular expression
 if [[ -z "$GHC" ]]; then
-    >&2 echo 'Error: the GCH environmental variable was not set'
+    >&2 echo 'Error: the GHC environmental variable was not set'
     exit 1
 fi
 GHC_ver_re=$(echo "$GHC" | $sed "s/\\./\\\\./g")

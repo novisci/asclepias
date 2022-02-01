@@ -192,6 +192,9 @@ decodeSillyFailTests2 :: IO TestTree
 decodeSillyFailTests2 =
   eventDecodeFailTests @SillySchema @Text @Day "test/events-integer-silly-bad"
 
+{-|
+The set of tests used to test the @event-data-theory@ package.
+-}
 theoryTests :: IO ()
 theoryTests = defaultMain . testGroup "Event Theory tests" =<< sequenceA
   [ decodeSillyTests1

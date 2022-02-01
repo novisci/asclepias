@@ -102,8 +102,8 @@ while being flexible in the details.
 An 'Event d c a' contains information about
 when something occurred (the 'Interval a')
 and what occurred (the 'Context d c').
-The type parameters `d', 'c', and 'a' allow to specify 
-the types for the 'Context''s @d@omain and @c@oncepts
+The type parameters @d@, @c@, and @a@ allow to specify 
+the types for the 'Context's @d@omain and @c@oncepts
 and for the type of the 'Interval' end points.
 
 The 'Event' type parameters are ordered from changing the least often to most often.
@@ -199,7 +199,7 @@ getContext :: Event d c a -> Context d c
 getContext = getPairData . getEvent
 
 {- |
-A 'Context' contains information about what ocurred during an 'Event''s interval.
+A 'Context' contains information about what ocurred during an 'Event's interval.
 This information is carried in context's @concepts@ and/or @facts@.
 'Concepts' are set of tags that can be used to identify and filter events
 using the 'hasConcept' function
@@ -340,6 +340,7 @@ for the purposes of having a single @hasConcept@ function
 that works on 'Concepts', 'Context', or 'Event' data.
 -}
 class HasConcept a c where
+    -- | Test whether a type @a@ contains a @c@.
     hasConcept  :: a -> c -> Bool
 
 instance (Ord c) => HasConcept (Concepts c) c where
@@ -361,6 +362,10 @@ For example, if @x@ is a 'Predicate' on some 'Context d c',
 thus the predicate then also be applied to @Event@s.
 -}
 class EventPredicate element d c a where
+  {-|
+  Lifts a 'Predicate' of a component of an 'Event'
+  to a 'Predicate' on an 'Event'
+  -}
   liftToEventPredicate :: Predicate element -> Predicate (Event d c a)
 
 instance EventPredicate (Context d c) d c a where

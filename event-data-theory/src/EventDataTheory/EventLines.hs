@@ -143,7 +143,7 @@ newtype IntervalLine a = MkIntervalLine { getIntervalLine :: Interval a }
 
 {-|
 Parses the @time@ JSON object.
-NOTE: a @'moment is always added to the 'end'.
+NOTE: a @'moment is always added to the 'IntervalAlgebra.Core.end'.
 Moreover, in the case that the end is missing, a moment is created.
 -}
 instance (FromJSON a, Show a, IntervalSizeable a b) => FromJSON (IntervalLine a) where
@@ -156,11 +156,15 @@ instance (FromJSON a, Show a, IntervalSizeable a b) => FromJSON (IntervalLine a)
       Left  e -> fail (show e)
       Right i -> pure (MkIntervalLine i)
 
-{-
+{-|
+Decode a bytestring corresponding to an 'EventLine' into
+@Either String (SubjectID, Event d c a)@,
+where the @String@ is an error message on failure
+and @(SubjectID, Event d c a)@ is the success case.
+
 NOTE: See https://hackage.haskell.org/package/aeson-2.0.3.0/docs/Data-Aeson.html#g:22 
 for discusson of json vs json'.
 -}
-
 eitherDecodeEvent, eitherDecodeEvent'
   :: forall d c a b
    . ( Show d
@@ -181,6 +185,15 @@ eitherDecodeEvent, eitherDecodeEvent'
 eitherDecodeEvent = makeEventDecoder eitherDecode
 eitherDecodeEvent' = makeEventDecoder eitherDecode'
 
+{-|
+Decode a bytestring corresponding to an 'EventLine' into
+@Maybe (SubjectID, Event d c a)@,
+where the value is @Nothing@ on failure
+and @Just (SubjectID, Event d c a)@ on success.
+
+NOTE: See https://hackage.haskell.org/package/aeson-2.0.3.0/docs/Data-Aeson.html#g:22 
+for discusson of json vs json'.
+-}
 decodeEvent, decodeEvent'
   :: forall d c a b
    . ( Show d

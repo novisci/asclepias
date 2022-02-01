@@ -13,7 +13,7 @@ import           Data.Maybe
 import           Data.Time                     as DT
 import           EventData
 import           EventData.Context
-import           EventData.Context.Domain
+import           EventData.Domain
 import           Features
 import           Hasklepias.FeatureEvents
 import           IntervalAlgebra

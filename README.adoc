@@ -24,6 +24,10 @@ include::docs/comparison.adoc[leveloffset=+2]
 
 include::docs/roadmap.adoc[leveloffset=+2]
 
+== Core Abstractions
+
+include::event-data-theory/README.adoc[leveloffset=+2]
+
 == Tools
 
 include::cohort-collector/README.adoc[leveloffset=+2]

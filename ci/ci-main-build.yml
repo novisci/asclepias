@@ -26,10 +26,12 @@ docker-build:
    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
      changes: ["**/*.cabal", "cabal.project"]
   script:
-     - ./ci/ci-docker-build.sh $MAINVERSION hasklepias-build-musl haskell $GHC
+     - ./ci/ci-docker-build.sh $MAINVERSION hasklepias-build haskell $GHC
 
 main-build:
   stage: build
+  variables:
+    HADDOCK_DIR: install
   needs:
     - pipeline: $PARENT_PIPELINE_ID
       job: build_vars
@@ -44,13 +46,13 @@ main-build:
      - ./ci/ci-cabal-build-all.sh
   artifacts:
     paths:
-      - install
+      - "$HADDOCK_DIR"
       # - coverage-report.txt
     expire_in: 1 hour
 
 # Upload docs to S3
 upload-haddock-docs:
-  image: registry.novisci.com/nsstat/statocker/aws:latest
+  image: registry.novisci.com/nsstat/nsbuild/aws:latest
   needs:
     - pipeline: $PARENT_PIPELINE_ID
       job: build_vars

@@ -61,7 +61,7 @@ check-docs:
 deploy-aws-cohort-collector-static:
   stage: deploy
   needs: ["build-cohort-collector-static"]
-  image: registry.novisci.com/nsstat/statocker/aws
+  image: registry.novisci.com/nsstat/nsbuild/aws
   script:
     - export BUNDLE=$(< install/cohort-collector.bundle)
     - | 

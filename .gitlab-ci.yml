@@ -27,7 +27,7 @@ build_vars:
 
 check-source:
   stage: prep
-  image: registry.novisci.com/nsstat/statocker/haskell:$GHC
+  image: registry.novisci.com/nsstat/nsbuild/haskell:$GHC
   script:
     - ./scripts/lint.sh
     - ./ci/ci-check-format.sh

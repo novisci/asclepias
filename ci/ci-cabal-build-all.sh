@@ -22,7 +22,7 @@ set -e
 # part of the CI then require the presence of $HADDOCK_DIR, otherwise a fallback
 # of `"install"` is provided as a convenience for local testing
 [[ -n $GITLAB_CI ]] && [[ -z $HADDOCK_DIR ]] && exit 1
-mkdir -p ${HADDOCK_DIR:-install}
+mkdir -p "${HADDOCK_DIR:-install}"
 if [[ "$CI_COMMIT_BRANCH" == "$CI_DEFAULT_BRANCH" ]]; then
   ./ci/ci-cabal-haddock-docs.sh
 fi

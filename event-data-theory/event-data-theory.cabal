@@ -13,7 +13,7 @@ license:        BSD-3-Clause
 license-file:   LICENSE
 build-type:     Simple
 extra-source-files:
-    README.md
+    README.adoc
     ChangeLog.md
 
 source-repository head

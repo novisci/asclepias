@@ -93,7 +93,7 @@ instance (FromJSON a, Show a, IntervalSizeable a b
          , Show c, Eq c, Ord c, Typeable c, FromJSON c) => From (EventLine d c a) (Event d c a) where
   from (MkEventLine _ _ _ _ cpts fi) = event
     (getIntervalLine $ time fi)
-    (Context { getConcepts = from @[c] cpts
+    (MkContext { getConcepts = from @[c] cpts
              , getFacts    = facts fi
              , getSource   = source fi
              }

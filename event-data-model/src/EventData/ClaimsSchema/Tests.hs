@@ -26,7 +26,7 @@ import           Test.Tasty.HUnit
 e1 :: Event ClaimsSchema Text Int
 e1 = event
   (beginerval 4 1)
-  (Context { getConcepts = packConcepts ["c1", "c2"]
+  (MkContext { getConcepts = packConcepts ["c1", "c2"]
            , getFacts    = Enrollment (EnrollmentFacts { plan = Nothing })
            , getSource   = Nothing
            }
@@ -36,7 +36,7 @@ e1 = event
 e2 :: Event ClaimsSchema Text Int
 e2 = event
   (beginerval 4 2)
-  (Context { getConcepts = packConcepts ["c3", "c4"]
+  (MkContext { getConcepts = packConcepts ["c3", "c4"]
            , getFacts    = Enrollment (EnrollmentFacts { plan = Nothing })
            , getSource   = Nothing
            }
@@ -45,7 +45,7 @@ e2 = event
 e3 :: Event ClaimsSchema Text Int
 e3 = event
   (beginerval 4 2)
-  (Context
+  (MkContext
     { getConcepts = packConcepts []
     , getFacts    = Demographics
                       (DemographicsFacts (DemographicsInfo Gender (Just "F")))
@@ -60,7 +60,7 @@ demoYear =
 e4 :: Event ClaimsSchema Text Int
 e4 = event
   (beginerval 4 2)
-  (Context { getConcepts = packConcepts []
+  (MkContext { getConcepts = packConcepts []
            , getFacts    = demoYear
            , getSource   = Nothing
            }

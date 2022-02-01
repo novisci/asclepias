@@ -153,8 +153,11 @@ False
 
 -}
 
+{- tag::eventType[] -}
 newtype Event d c a = MkEvent ( PairedInterval (Context d c) a )
+{- end::eventType[] -}
   deriving (Eq, Show, Generic)
+
 
 instance (Ord a) => Intervallic (Event d c) a where
   getInterval (MkEvent x) = getInterval x
@@ -217,12 +220,15 @@ possibly containing a 'Source',
 which carries information about the provenance of the data.
 
 -}
-data Context d c = Context
-  { getConcepts :: Concepts c
-  , getFacts    :: d
-  , getSource   :: Maybe Source
-  }
+{- tag::contextType[] -}
+data Context d c = MkContext
+  { getConcepts :: Concepts c -- <1>
+  , getFacts    :: d -- <2>
+  , getSource   :: Maybe Source -- <3>
+  } 
+  {- end::contextType[] -}
   deriving (Eq, Show, Generic)
+
 
 instance Ord c => HasConcept (Context d c) c where
   hasConcept c = hasConcept (getConcepts c)
@@ -236,14 +242,14 @@ instance ( Ord c, ToJSON c, ToJSON d ) => ToJSON (Context d c)
 instance ( Arbitrary d, Show d, Eq d, Generic d
          , Arbitrary c, Show c, Eq c, Ord c, Typeable c) =>
       Arbitrary (Context d c) where
-  arbitrary = liftM3 Context arbitrary arbitrary (pure Nothing)
+  arbitrary = liftM3 MkContext arbitrary arbitrary (pure Nothing)
 
 {- |
 A source may be used to record the provenance of an event from some database.
 This data is sometimes useful for debugging.
 We generally discourage using @Source@ information in defining features.
 -}
-data Source = Source
+data Source = MkSource
   { column   :: Maybe T.Text
   , file     :: Maybe T.Text
   , row      :: Maybe Integer
@@ -258,7 +264,7 @@ instance FromJSON Source
 instance ToJSON Source
 
 -- | A @Concept@ is simply a tag or label for an 'Event'.
-newtype Concept c = Concept c deriving (Eq, Ord, Show, Generic)
+newtype Concept c = MkConcept c deriving (Eq, Ord, Show, Generic)
 
 instance NFData c => NFData (Concept c)
 instance Binary c => Binary (Concept c)
@@ -280,7 +286,7 @@ unpackConcept = into
 @Concepts c@ is a 'Set' of 'Concept c's.
 Concepts inherit the monoidal properties of 'Set', by 'Data.Set.union'.
 -}
-newtype Concepts c = Concepts ( Set ( Concept c ) )
+newtype Concepts c = MkConcepts ( Set ( Concept c ) )
     deriving (Eq, Show, Generic)
 
 instance NFData c => NFData (Concepts c)
@@ -293,10 +299,10 @@ instance (Arbitrary c, Ord c) => Arbitrary (Concepts c) where
   arbitrary = fmap packConcepts arbitrary
 
 instance (Ord c) => Semigroup ( Concepts c ) where
-  Concepts x <> Concepts y = Concepts (x <> y)
+  MkConcepts x <> MkConcepts y = MkConcepts (x <> y)
 
 instance (Ord c) => Monoid ( Concepts c ) where
-  mempty = Concepts mempty
+  mempty = MkConcepts mempty
 
 instance (Ord c) => From (Concepts c) (Set (Concept c)) where
 instance (Ord c) => From (Set (Concept c)) (Concepts c) where
@@ -337,7 +343,7 @@ class HasConcept a c where
     hasConcept  :: a -> c -> Bool
 
 instance (Ord c) => HasConcept (Concepts c) c where
-  hasConcept (Concepts e) concept = member (Concept concept) e
+  hasConcept (MkConcepts e) concept = member (MkConcept concept) e
 
 -- | Does an @a@ have *any* of a list of 'Concept's?
 hasAnyConcepts :: HasConcept a c => a -> [c] -> Bool

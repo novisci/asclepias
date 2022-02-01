@@ -27,9 +27,9 @@ docker-build:
      job: build_vars
      artifacts: true
   rules:
-     if: '$PARENT_CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$PARENT_CI_PIPELINE_SOURCE == "merge_request_event"'
   script:
-     - ':'
+    - ':'
 
 # main-build:
 #   stage: build

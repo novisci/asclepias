@@ -12,7 +12,6 @@ Maintainer  : bsaul@novisci.com
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE DataKinds #-}
--- {-# LANGUAGE Safe #-}
 
 module Cohort.Index
   (

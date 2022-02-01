@@ -1,6 +1,6 @@
 cabal-version:  2.2
 name:           hasklepias-core
-version:        0.22.7
+version:        0.23.0
 description:    Please see the README on GitHub at <https://github.com/novisci/asclepias#readme>
 homepage:       https://github.com/novisci/asclepias/#readme
 bug-reports:    https://github.com/novisci/asclepias/issues
@@ -32,7 +32,7 @@ library
       Cohort.AssessmentIntervals
       Cohort.Attrition
       Cohort.Core
-      Cohort.Input
+      -- Cohort.Input
       Cohort.Output
       Cohort.Criteria
       Cohort.Index
@@ -44,7 +44,7 @@ library
       src
   build-depends:
     -- Internal packages
-      event-data-model
+      event-data-theory
     , stype
 
     -- External packages
@@ -57,7 +57,7 @@ library
     , formatting == 7.1.3
     , generic-lens == 2.2.0.0
     , ghc-prim == 0.6.1
-    , interval-algebra == 1.3.0
+    , interval-algebra >= 1.3.0
     , microlens == 0.4.12.0
     , nonempty-containers == 0.3.4.4
     , safe >= 0.3

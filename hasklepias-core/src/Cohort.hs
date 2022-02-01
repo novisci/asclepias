@@ -24,8 +24,8 @@ module Cohort
   , module Cohort.Attrition
 
    -- ** Cohort I/O
-   -- *** Input
-  , module Cohort.Input
+  --  -- *** Input
+  -- , module Cohort.Input
    -- *** Output
   , module Cohort.Output
   ) where
@@ -35,5 +35,5 @@ import           Cohort.Attrition
 import           Cohort.Core
 import           Cohort.Criteria
 import           Cohort.Index
-import           Cohort.Input
+-- import           Cohort.Input
 import           Cohort.Output

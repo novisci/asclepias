@@ -43,13 +43,13 @@ import           GHC.Generics                   ( Generic )
 import           GHC.TypeLits                   ( KnownSymbol
                                                 , symbolVal
                                                 )
-import           IntervalAlgebra                ( Interval
-                                                , begin
-                                                , end
-                                                )
+-- import           IntervalAlgebra                ( Interval
+--                                                 , begin
+--                                                 , end
+--                                                 )
 
-instance (ToJSON a, Ord a, Show a)=> ToJSON (Interval a) where
-  toJSON x = object ["begin" .= begin x, "end" .= end x]
+-- instance (ToJSON a, Ord a, Show a)=> ToJSON (Interval a) where
+--   toJSON x = object ["begin" .= begin x, "end" .= end x]
 
 instance ToJSON MissingReason
 

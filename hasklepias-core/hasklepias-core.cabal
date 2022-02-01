@@ -42,30 +42,25 @@ library
       src
   build-depends:
     -- Internal packages
-      event-data-theory
-    , stype
+      stype
 
     -- External packages
     , aeson >= 2.0.2.0   
     , base >=4.14 && <5
     , bytestring == 0.11.1.0
     , containers == 0.6.5.1
-    , contravariant >= 1.4
     , flow == 1.0.22
-    , formatting == 7.1.3
     , generic-lens == 2.2.0.0
     , ghc-prim == 0.6.1
+    , interval-algebra >= 1.3
     , microlens == 0.4.12.0
     , nonempty-containers == 0.3.4.4
     , safe >= 0.3
-    , split == 0.2.3.4
     , tasty  == 1.4.1
     , tasty-hunit == 0.10.0.3
-    , text == 1.2.4.1
+    , text >= 1.2
     , time >= 1.11
     , tuple == 0.3.0.2
-    , QuickCheck == 2.14.2
-    , vector == 0.12.2.0
     , witherable == 0.4.1
   default-language: Haskell2010
 

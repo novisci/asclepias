@@ -46,7 +46,7 @@ module Hasklepias.Misc
 
 import           Control.Applicative
 import           Data.Time
-import           EventDataTheory
+import           IntervalAlgebra 
 import           Features.Compose               ( Definition
                                                 , Feature
                                                 )

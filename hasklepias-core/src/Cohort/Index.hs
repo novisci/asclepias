@@ -39,7 +39,7 @@ import qualified Data.Set                      as Set
                                                 ( Set
                                                 , fromList
                                                 )
-import           EventDataTheory                ( Interval
+import           IntervalAlgebra                ( Interval
                                                 , Intervallic(..)
                                                 )
 import           Features

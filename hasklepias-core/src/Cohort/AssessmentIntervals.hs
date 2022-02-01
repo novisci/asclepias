@@ -85,7 +85,7 @@ import           Data.Functor                   ( Functor(fmap) )
 import           Data.Ord                       ( (<=)
                                                 , Ord
                                                 )
-import           EventDataTheory                ( Interval
+import           IntervalAlgebra                ( Interval
                                                 , IntervalSizeable(..)
                                                 , Intervallic(..)
                                                 , begin

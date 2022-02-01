@@ -39,12 +39,12 @@ import qualified Data.Set                      as Set
                                                 ( Set
                                                 , fromList
                                                 )
+import           EventDataTheory                ( Interval
+                                                , Intervallic(..)
+                                                )
 import           Features
 import           GHC.Generics                   ( Generic )
 import           GHC.Show                       ( Show )
-import           IntervalAlgebra                ( Interval
-                                                , Intervallic(..)
-                                                )
 {-|
 An @Index@ is a wrapper for an @Intervallic@ used to indicate that a particular
 interval is considered an index interval to which other intervals will be compared.

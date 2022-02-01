@@ -18,6 +18,7 @@ extra-source-files:
 
 -- added a comment
 -- added a second comment
+-- added a third comment
 
 source-repository head
   type: git

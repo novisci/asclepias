@@ -22,6 +22,11 @@ module EventDataTheory.EventLines
   , eitherDecodeEvent'
   , decodeEvent
   , decodeEvent'
+
+  -- for internal use; 
+  , SubjectIDLine
+  , FactsLine
+  , IntervalLine
   ) where
 
 import           Control.Applicative            ( (<$>)
@@ -94,9 +99,9 @@ instance (FromJSON a, Show a, IntervalSizeable a b
   from (MkEventLine _ _ _ _ cpts fi) = event
     (getIntervalLine $ time fi)
     (MkContext { getConcepts = from @[c] cpts
-             , getFacts    = facts fi
-             , getSource   = source fi
-             }
+               , getFacts    = facts fi
+               , getSource   = source fi
+               }
     )
 
 -- | See 'EventLine'.

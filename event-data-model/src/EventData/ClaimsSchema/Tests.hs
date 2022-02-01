@@ -27,9 +27,9 @@ e1 :: Event ClaimsSchema Text Int
 e1 = event
   (beginerval 4 1)
   (MkContext { getConcepts = packConcepts ["c1", "c2"]
-           , getFacts    = Enrollment (EnrollmentFacts { plan = Nothing })
-           , getSource   = Nothing
-           }
+             , getFacts    = Enrollment (EnrollmentFacts { plan = Nothing })
+             , getSource   = Nothing
+             }
   )
 
 
@@ -37,9 +37,9 @@ e2 :: Event ClaimsSchema Text Int
 e2 = event
   (beginerval 4 2)
   (MkContext { getConcepts = packConcepts ["c3", "c4"]
-           , getFacts    = Enrollment (EnrollmentFacts { plan = Nothing })
-           , getSource   = Nothing
-           }
+             , getFacts    = Enrollment (EnrollmentFacts { plan = Nothing })
+             , getSource   = Nothing
+             }
   )
 
 e3 :: Event ClaimsSchema Text Int
@@ -61,9 +61,9 @@ e4 :: Event ClaimsSchema Text Int
 e4 = event
   (beginerval 4 2)
   (MkContext { getConcepts = packConcepts []
-           , getFacts    = demoYear
-           , getSource   = Nothing
-           }
+             , getFacts    = demoYear
+             , getSource   = Nothing
+             }
   )
 
 enrollEvent :: B.ByteString

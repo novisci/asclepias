@@ -44,6 +44,9 @@ module EventDataTheory.Core
   , hasAllConcepts
   , liftToEventPredicate
   , SubjectID
+  -- the following names are exported for haddock linking
+  , HasConcept
+  , EventPredicate
   ) where
 
 import           Control.Applicative            ( Applicative(pure) )
@@ -225,7 +228,7 @@ data Context d c = MkContext
   { getConcepts :: Concepts c -- <1>
   , getFacts    :: d -- <2>
   , getSource   :: Maybe Source -- <3>
-  } 
+  }
   {- end::contextType[] -}
   deriving (Eq, Show, Generic)
 
@@ -331,7 +334,7 @@ unpackConcepts = from
 toConcepts :: (Ord c) => Set (Concept c) -> Concepts c
 toConcepts = from
 
-{- 
+{-| 
 The 'HasConcept' typeclass provides predicate functions
 for determining whether an @a@ contains a concept.
 
@@ -354,7 +357,7 @@ hasAnyConcepts x = any (\c -> x `hasConcept` c)
 hasAllConcepts :: HasConcept a c => a -> [c] -> Bool
 hasAllConcepts x = all (\c -> x `hasConcept` c)
 
-{- |
+{-|
 Provides a common interface to lift a 'Predicate' on some component
 of an 'Event' to a 'Predicate (Event d c a)'.
 For example, if @x@ is a 'Predicate' on some 'Context d c',

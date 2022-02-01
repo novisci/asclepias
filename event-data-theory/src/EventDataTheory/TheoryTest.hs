@@ -69,18 +69,18 @@ type SillyEvent2 a = Event SillySchema SillyConcepts a
 
 c1 :: Context SillySchema Text
 c1 = MkContext { getConcepts = into (["this", "that"] :: [Text])
-             , getFacts    = A 1
-             , getSource   = Nothing
-             }
+               , getFacts    = A 1
+               , getSource   = Nothing
+               }
 
 e1 :: SillyEvent1 Int
 e1 = event (beginerval 2 1) c1
 
 c2 :: Context SillySchema Text
 c2 = MkContext { getConcepts = into (["this", "another"] :: [Text])
-             , getFacts    = A 1
-             , getSource   = Nothing
-             }
+               , getFacts    = A 1
+               , getSource   = Nothing
+               }
 
 e2 :: SillyEvent1 Int
 e2 = event (beginerval 4 3) c2

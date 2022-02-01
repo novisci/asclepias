@@ -25,12 +25,12 @@ build_vars:
     reports:
       dotenv: .env
 
-check-source:
-  stage: prep
-  image: registry.novisci.com/nsstat/nsbuild/haskell:$GHC
-  script:
-    - ./scripts/lint.sh
-    - ./ci/ci-check-format.sh
+# check-source:
+#   stage: prep
+#   image: registry.novisci.com/nsstat/nsbuild/haskell:$GHC
+#   script:
+#     - ./scripts/lint.sh
+#     - ./ci/ci-check-format.sh
 
 trigger-main-build:
   stage: build
@@ -40,13 +40,13 @@ trigger-main-build:
     include: ci/ci-main-build.yml
     strategy: depend
 
-trigger-static-build:
-  stage: build
-  variables:
-    PARENT_PIPELINE_ID: $CI_PIPELINE_ID
-  trigger: 
-    include: ci/ci-static-build.yml
-    strategy: depend
+# trigger-static-build:
+#   stage: build
+#   variables:
+#     PARENT_PIPELINE_ID: $CI_PIPELINE_ID
+#   trigger:
+#     include: ci/ci-static-build.yml
+#     strategy: depend
 
 # # Report the test coverage as described in the following links. If the pipeline
 # # succeeds, the coverage is shown in the merge request widget and in the jobs

@@ -3,10 +3,12 @@
 # Builds the asclepias documentation using cabal haddock.
 set -e
 
-# Create a location in which to copy the resulting files. This location will
-# be saved as an artifact in the CI.
-ARTIFACT_DIR=install/docs
-mkdir -p $ARTIFACT_DIR 
+# Create a location in which to copy the resulting files. If being run as part
+# of the CI then require the presence of $HADDOCK_DIR, otherwise a fallback of
+# `"install"` is provided as a convenience for local testing.
+[[ -n $GITLAB_CI ]] && [[ -z $HADDOCK_DIR ]] && exit 1
+ARTIFACT_DIR=${HADDOCK_DIR:-install}/docs
+mkdir -p "$ARTIFACT_DIR"
 
 # Create a location in which to place any temporary files.
 TEMP=$(mktemp -d)

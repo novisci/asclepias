@@ -30,6 +30,8 @@ docker-build:
 
 main-build:
   stage: build
+  variables:
+    HADDOCK_DIR: install
   needs:
     - pipeline: $PARENT_PIPELINE_ID
       job: build_vars
@@ -44,7 +46,7 @@ main-build:
      - ./ci/ci-cabal-build-all.sh
   artifacts:
     paths:
-      - install
+      - "$HADDOCK_DIR"
       # - coverage-report.txt
     expire_in: 1 hour
 

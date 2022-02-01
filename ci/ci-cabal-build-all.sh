@@ -1,16 +1,16 @@
 #!/bin/bash
 set -e
 
-# cabal update
+cabal update
 
-# cabal build all \
-#   -j \
-#   --enable-tests \
-#   --enable-benchmarks
+cabal build all \
+  -j \
+  --enable-tests \
+  --enable-benchmarks
 
-# cabal test all \
-#   -j \
-#   --test-show-details=always
+cabal test all \
+  -j \
+  --test-show-details=always
 
 # # Report test coverage. NOTE: would need to add `--enable-coverage` to the above
 # # commands before uncommenting the following lines.

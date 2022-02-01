@@ -43,7 +43,8 @@ main-build:
     - job: "docker-build"
       optional: true
   rules:
-    - changes: ["**/*.cabal", "**/*.hs", "ci/ci-cabal-build-all.sh"]
+    - if: '$PARENT_CI_PIPELINE_SOURCE == "merge_request_event" || $PARENT_CI_PIPELINE_SOURCE == "push"'
+      changes: ["**/*.cabal", "**/*.hs", "ci/ci-cabal-build-all.sh"]
     - if: '$CI_COMMIT_MESSAGE =~ /-build/'
   image: registry.novisci.com/nsstat/asclepias/hasklepias-build:${MAINVERSION}
   script:

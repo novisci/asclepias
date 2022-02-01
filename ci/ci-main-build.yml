@@ -27,8 +27,8 @@ docker-build:
      job: build_vars
      artifacts: true
   rules:
-    - changes: ["**/*.cabal", "**/*.hs", "ci/ci-cabal-build-all.sh"]
-    - if: '$CI_COMMIT_MESSAGE =~ /-build/'
+    # - changes: ["**/*.cabal", "**/*.hs", "ci/ci-cabal-build-all.sh"]
+    - if: '$CI_COMMIT_MESSAGE =~ /try/'
   script:
     - ':'
 

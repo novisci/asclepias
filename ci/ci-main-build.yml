@@ -12,7 +12,7 @@ dummy:
   variables:
     GIT_STRATEGY: none
   script:
-    - 'echo "CI_PIPELINE_SOURCE"'
+    - 'echo "$CI_PIPELINE_SOURCE"'
 
 # # Build the docker image with all dependencies installed.
 # docker-build:

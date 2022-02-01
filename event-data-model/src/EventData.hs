@@ -7,28 +7,15 @@ License     : BSD3
 -}
 {-# LANGUAGE NoImplicitPrelude #-}
 module EventData
-  ( -- ** Event Core
-    module EventData.Core
-    -- ** Event Contexts
-  , module EventData.Context
-    -- ** Event Domains
-  , module EventData.Context.Domain
+  ( -- ** Event Data Schema
+    module EventData.ClaimsSchema
     -- ** Predicates
-  , module EventData.Predicates
+  , module EventData.ClaimsSchema.Predicates
     -- ** Accessing data in Events
-  , module EventData.Accessors
-    -- ** Parsing Events
-  , module EventData.Aeson
-    -- ** Generating arbitrary events
-  , module EventData.Arbitrary
+  , module EventData.ClaimsSchema.Accessors
   ) where
 
-import           EventData.Accessors
-import           EventData.Aeson
-import           EventData.Arbitrary
-import           EventData.Context
-import           EventData.Context.Domain
-import           EventData.Core
-import           EventData.Predicates
-
+import           EventData.ClaimsSchema
+import           EventData.ClaimsSchema.Accessors
+import           EventData.ClaimsSchema.Predicates
 

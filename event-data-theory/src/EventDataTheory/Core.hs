@@ -23,6 +23,7 @@ designed for the purpose of marshaling data from JSON lines.
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DuplicateRecordFields #-}
 
 module EventDataTheory.Core
   ( Event
@@ -43,6 +44,9 @@ module EventDataTheory.Core
   , hasAllConcepts
   , liftToEventPredicate
   , SubjectID
+  -- the following names are exported for haddock linking
+  , HasConcept
+  , EventPredicate
   ) where
 
 import           Control.Applicative            ( Applicative(pure) )
@@ -101,8 +105,8 @@ while being flexible in the details.
 An 'Event d c a' contains information about
 when something occurred (the 'Interval a')
 and what occurred (the 'Context d c').
-The type parameters `d', 'c', and 'a' allow to specify 
-the types for the 'Context''s @d@omain and @c@oncepts
+The type parameters @d@, @c@, and @a@ allow to specify 
+the types for the 'Context's @d@omain and @c@oncepts
 and for the type of the 'Interval' end points.
 
 The 'Event' type parameters are ordered from changing the least often to most often.
@@ -152,8 +156,11 @@ False
 
 -}
 
+{- tag::eventType[] -}
 newtype Event d c a = MkEvent ( PairedInterval (Context d c) a )
+{- end::eventType[] -}
   deriving (Eq, Show, Generic)
+
 
 instance (Ord a) => Intervallic (Event d c) a where
   getInterval (MkEvent x) = getInterval x
@@ -195,7 +202,7 @@ getContext :: Event d c a -> Context d c
 getContext = getPairData . getEvent
 
 {- |
-A 'Context' contains information about what ocurred during an 'Event''s interval.
+A 'Context' contains information about what ocurred during an 'Event's interval.
 This information is carried in context's @concepts@ and/or @facts@.
 'Concepts' are set of tags that can be used to identify and filter events
 using the 'hasConcept' function
@@ -216,15 +223,18 @@ possibly containing a 'Source',
 which carries information about the provenance of the data.
 
 -}
-data Context d c = Context
-  { concepts :: Concepts c
-  , facts    :: d
-  , source   :: Maybe Source
+{- tag::contextType[] -}
+data Context d c = MkContext
+  { getConcepts :: Concepts c -- <1>
+  , getFacts    :: d -- <2>
+  , getSource   :: Maybe Source -- <3>
   }
+  {- end::contextType[] -}
   deriving (Eq, Show, Generic)
 
+
 instance Ord c => HasConcept (Context d c) c where
-  hasConcept c = hasConcept (concepts c)
+  hasConcept c = hasConcept (getConcepts c)
 
 instance (NFData d, NFData c) => NFData (Context d c)
 instance (Binary d, Binary c) => Binary (Context d c)
@@ -235,15 +245,14 @@ instance ( Ord c, ToJSON c, ToJSON d ) => ToJSON (Context d c)
 instance ( Arbitrary d, Show d, Eq d, Generic d
          , Arbitrary c, Show c, Eq c, Ord c, Typeable c) =>
       Arbitrary (Context d c) where
-  arbitrary = liftM3 Context arbitrary arbitrary (pure Nothing)
-
+  arbitrary = liftM3 MkContext arbitrary arbitrary (pure Nothing)
 
 {- |
 A source may be used to record the provenance of an event from some database.
 This data is sometimes useful for debugging.
 We generally discourage using @Source@ information in defining features.
 -}
-data Source = Source
+data Source = MkSource
   { column   :: Maybe T.Text
   , file     :: Maybe T.Text
   , row      :: Maybe Integer
@@ -258,7 +267,7 @@ instance FromJSON Source
 instance ToJSON Source
 
 -- | A @Concept@ is simply a tag or label for an 'Event'.
-newtype Concept c = Concept c deriving (Eq, Ord, Show, Generic)
+newtype Concept c = MkConcept c deriving (Eq, Ord, Show, Generic)
 
 instance NFData c => NFData (Concept c)
 instance Binary c => Binary (Concept c)
@@ -280,7 +289,7 @@ unpackConcept = into
 @Concepts c@ is a 'Set' of 'Concept c's.
 Concepts inherit the monoidal properties of 'Set', by 'Data.Set.union'.
 -}
-newtype Concepts c = Concepts ( Set ( Concept c ) )
+newtype Concepts c = MkConcepts ( Set ( Concept c ) )
     deriving (Eq, Show, Generic)
 
 instance NFData c => NFData (Concepts c)
@@ -293,10 +302,10 @@ instance (Arbitrary c, Ord c) => Arbitrary (Concepts c) where
   arbitrary = fmap packConcepts arbitrary
 
 instance (Ord c) => Semigroup ( Concepts c ) where
-  Concepts x <> Concepts y = Concepts (x <> y)
+  MkConcepts x <> MkConcepts y = MkConcepts (x <> y)
 
 instance (Ord c) => Monoid ( Concepts c ) where
-  mempty = Concepts mempty
+  mempty = MkConcepts mempty
 
 instance (Ord c) => From (Concepts c) (Set (Concept c)) where
 instance (Ord c) => From (Set (Concept c)) (Concepts c) where
@@ -325,7 +334,7 @@ unpackConcepts = from
 toConcepts :: (Ord c) => Set (Concept c) -> Concepts c
 toConcepts = from
 
-{- 
+{-| 
 The 'HasConcept' typeclass provides predicate functions
 for determining whether an @a@ contains a concept.
 
@@ -334,10 +343,11 @@ for the purposes of having a single @hasConcept@ function
 that works on 'Concepts', 'Context', or 'Event' data.
 -}
 class HasConcept a c where
+    -- | Test whether a type @a@ contains a @c@.
     hasConcept  :: a -> c -> Bool
 
 instance (Ord c) => HasConcept (Concepts c) c where
-  hasConcept (Concepts e) concept = member (Concept concept) e
+  hasConcept (MkConcepts e) concept = member (MkConcept concept) e
 
 -- | Does an @a@ have *any* of a list of 'Concept's?
 hasAnyConcepts :: HasConcept a c => a -> [c] -> Bool
@@ -347,7 +357,7 @@ hasAnyConcepts x = any (\c -> x `hasConcept` c)
 hasAllConcepts :: HasConcept a c => a -> [c] -> Bool
 hasAllConcepts x = all (\c -> x `hasConcept` c)
 
-{- |
+{-|
 Provides a common interface to lift a 'Predicate' on some component
 of an 'Event' to a 'Predicate (Event d c a)'.
 For example, if @x@ is a 'Predicate' on some 'Context d c',
@@ -355,19 +365,23 @@ For example, if @x@ is a 'Predicate' on some 'Context d c',
 thus the predicate then also be applied to @Event@s.
 -}
 class EventPredicate element d c a where
+  {-|
+  Lifts a 'Predicate' of a component of an 'Event'
+  to a 'Predicate' on an 'Event'
+  -}
   liftToEventPredicate :: Predicate element -> Predicate (Event d c a)
 
 instance EventPredicate (Context d c) d c a where
   liftToEventPredicate = contramap getContext
 
 instance EventPredicate d d c a where
-  liftToEventPredicate = contramap (facts . getContext)
+  liftToEventPredicate = contramap (getFacts . getContext)
 
 instance EventPredicate (Concepts c) d c a where
-  liftToEventPredicate = contramap (concepts . getContext)
+  liftToEventPredicate = contramap (getConcepts . getContext)
 
 instance EventPredicate (Maybe Source) d c a where
-  liftToEventPredicate = contramap (source . getContext)
+  liftToEventPredicate = contramap (getSource . getContext)
 
 instance (Ord a) => EventPredicate (Interval a) d c a where
   liftToEventPredicate = contramap getInterval

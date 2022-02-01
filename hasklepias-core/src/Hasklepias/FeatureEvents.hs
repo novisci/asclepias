@@ -94,7 +94,6 @@ import           EventData                      ( ConceptEvent
                                                 , Event
                                                 , Events
                                                 , context
-                                                , ctxt
                                                 )
 import           EventData.Context              ( Concept
                                                 , Concepts
@@ -102,7 +101,7 @@ import           EventData.Context              ( Concept
                                                 , HasConcept(hasConcepts)
                                                 , facts
                                                 )
-import           EventData.Context.Domain       ( DemographicsFacts(..)
+import           EventData.Domain               ( DemographicsFacts(..)
                                                 , DemographicsField(..)
                                                 , DemographicsInfo(..)
                                                 , Domain(..)

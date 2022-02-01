@@ -15,7 +15,7 @@ import           EventData.Context             as HC
                                                 ( context
                                                 , packConcepts
                                                 )
-import           EventData.Context.Domain
+import           EventData.Domain
 import           Hasklepias.FeatureEvents
 import           IntervalAlgebra
 import           Test.Hspec                     ( Spec

@@ -12,8 +12,8 @@ import           Data.Maybe
 import           Data.Time                     as DT
 import           EventData
 import           EventData.Context             as HC
-import           EventData.Context.Domain
-import qualified EventData.Context.Facts       as F
+import           EventData.Domain
+import qualified EventData.Facts               as F
 import           IntervalAlgebra
 import           Test.Hspec
 

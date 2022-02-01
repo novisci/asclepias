@@ -12,7 +12,11 @@ dummy:
   variables:
     GIT_STRATEGY: none
   script:
-    - ":"
+    # Print out some environmental variables for debugging information
+    - 'echo "$CI_PIPELINE_SOURCE"'
+    - 'echo "$CI_COMMIT_MESSAGE"'
+    - 'echo "$PARENT_CI_PIPELINE_SOURCE"'
+    - 'echo "$PARENT_PIPELINE_ID"'
 
 # Build the docker image with all dependencies installed.
 docker-build:
@@ -23,8 +27,8 @@ docker-build:
      job: build_vars
      artifacts: true
   rules:
-   - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-     changes: ["**/*.cabal", "cabal.project"]
+   - if: '$PARENT_CI_PIPELINE_SOURCE == "merge_request_event"'
+     changes: ["**/*.cabal", "cabal.project", "ci/ci-docker-build.sh", "ci/dockerHasklepias"]
   script:
      - ./ci/ci-docker-build.sh $MAINVERSION hasklepias-build haskell $GHC
 

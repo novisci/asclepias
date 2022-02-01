@@ -36,6 +36,7 @@ trigger-main-build:
   stage: build
   variables:
     PARENT_PIPELINE_ID: $CI_PIPELINE_ID
+    PARENT_CI_PIPELINE_SOURCE: $CI_PIPELINE_SOURCE
   trigger: 
     include: ci/ci-main-build.yml
     strategy: depend

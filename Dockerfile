@@ -1,4 +1,4 @@
-FROM registry.novisci.com/nsstat/statocker/haskell:8.10.7
+FROM registry.novisci.com/nsstat/nsbuild/haskell:8.10.7
 
 COPY cabal.project .
 COPY hasklepias-core/hasklepias-core.cabal hasklepias-core/hasklepias-core.cabal

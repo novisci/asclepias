@@ -33,7 +33,7 @@ import           Features.Attributes            ( Attributes
                                                 , Purpose
                                                 , Role
                                                 )
-import           Features.Compose               ( Feature
+import           Features.Core               ( Feature
                                                 , FeatureData
                                                 , MissingReason
                                                 , getFData

@@ -1,10 +1,10 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE DataKinds #-}
-module Tests.Features.Compose
+module Tests.Features.Core
   ( tests
   ) where
 
-import           Features.Compose
+import           Features.Core
 import           Test.Tasty
 import           Test.Tasty.HUnit
 

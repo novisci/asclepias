@@ -37,7 +37,7 @@ import           Cohort.Index
 import           Data.Tuple.Solo
 -- #endif
 import           EventData
-import           Features.Compose               ( Define(..)
+import           Features.Core               ( Define(..)
                                                 , Definition(..)
                                                 , F
                                                 , Feature

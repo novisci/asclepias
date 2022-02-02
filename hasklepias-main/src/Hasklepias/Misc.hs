@@ -46,7 +46,7 @@ module Hasklepias.Misc
 
 import           Control.Applicative
 import           Data.Time
-import           Features.Compose               ( Definition
+import           Features.Core               ( Definition
                                                 , Feature
                                                 )
 import           GHC.Generics                   ( Generic )

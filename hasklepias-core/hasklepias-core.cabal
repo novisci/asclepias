@@ -13,7 +13,7 @@ license:        BSD-3-Clause
 license-file:   LICENSE
 build-type:     Simple
 extra-source-files:
-    README.md
+    README.adoc
     ChangeLog.md
 
 source-repository head
@@ -24,7 +24,7 @@ library
   exposed-modules:
       Features
       Features.Attributes
-      Features.Compose
+      Features.Core
       Features.Featureable
       Features.Output
       Features.Featureset
@@ -38,7 +38,7 @@ library
       Tests
   other-modules:
       Tests.Features
-      Tests.Features.Compose
+      Tests.Features.Core
       Tests.Features.Output
       Tests.Cohort
       Tests.Cohort.AssessmentIntervals

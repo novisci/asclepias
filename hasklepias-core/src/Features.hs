@@ -13,7 +13,7 @@ module Features
   (
 
   -- ** Creating Features
-    module Features.Compose
+    module Features.Core
 
   -- ** Adding Attributes to Features
   , module Features.Attributes
@@ -25,7 +25,7 @@ module Features
   ) where
 
 import           Features.Attributes
-import           Features.Compose
+import           Features.Core
 import           Features.Featureable
 import           Features.Featureset
 import           Features.Output

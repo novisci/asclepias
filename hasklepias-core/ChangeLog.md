@@ -1,5 +1,10 @@
 # Changelog for hasklepias-core
 
+## 0.23.0
+
+* Moves specification of test suite into `src` directly. Also, swaps out `HSpec` framework for `tasty` framework.
+* Removes `FeatureEvents` module. Functions were either removed entirely; moved (and possibly renamed) to `event-data-theory`; or moved to `Haskelpias.Misc`
+
 ## 0.22.7
 
 * Moves app building modules into `hasklepias-appBuilder` and out of `hasklepias-core`.

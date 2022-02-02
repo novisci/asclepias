@@ -18,7 +18,7 @@ Maintainer  : bsaul@novisci.com
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE FunctionalDependencies #-}
 
-module Features.Compose
+module Features.Core
   (
   -- *** Features and FeatureData
     FeatureData

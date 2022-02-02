@@ -1,8 +1,8 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE DataKinds #-}
 
-module Cohort.OutputSpec
-  ( spec
+module Tests.Cohort.Output
+  ( tests
   ) where
 
 import           Cohort
@@ -12,12 +12,8 @@ import qualified Data.ByteString.Lazy          as B
                                                 ( ByteString )
 import           Features                       ( emptyAttributes )
 import           GHC.Exts                       ( IsList(..) )
-import           Test.Hspec                     ( Spec
-                                                , describe
-                                                , it
-                                                , pending
-                                                , shouldBe
-                                                )
+import           Test.Tasty
+import           Test.Tasty.HUnit
 
 attr1 :: Maybe AttritionInfo
 attr1 = Just $ MkAttritionInfo 2 $ fromList
@@ -107,25 +103,22 @@ rw1p2 =
           \\"tag\":\"RW\"}"
 
 
-spec :: Spec
-spec = do
-
-  describe "Cohort I/O" $ do
-
-    it "AttritionInfo can roundtrip via JSON"
-      $          decode (encode attr1)
-      `shouldBe` attr1
-  describe "Cohort to/fromJSON" $ do
-
-    it "columnwise cohort data can be combined"
-      $          (decode cw1 <> decode cw2)
-      `shouldBe` Just cwt
-    it "columnwise cohort data can be combined and serialized"
-      $          encode (decode cw1 <> decode cw2 :: Maybe CohortDataShapeJSON)
-      `shouldBe` cw1p2
-    it "rowwise cohort data can be combined"
-      $          (decode rw1 <> decode rw2)
-      `shouldBe` Just rwt
-    it "rowwise cohort data can be combined and serialized"
-      $          encode (decode rw1 <> decode rw2 :: Maybe CohortDataShapeJSON)
-      `shouldBe` rw1p2
+tests :: TestTree
+tests = testGroup
+  "Unit tests on Cohort.Output"
+  [ testCase "AttritionInfo can roundtrip via JSON"
+  $   decode (encode attr1)
+  @?= attr1
+  , testCase "columnwise cohort data can be combined"
+  $   (decode cw1 <> decode cw2)
+  @?= Just cwt
+  , testCase "columnwise cohort data can be combined and serialized"
+  $   encode (decode cw1 <> decode cw2 :: Maybe CohortDataShapeJSON)
+  @?= cw1p2
+  , testCase "rowwise cohort data can be combined"
+  $   (decode rw1 <> decode rw2)
+  @?= Just rwt
+  , testCase "rowwise cohort data can be combined and serialized"
+  $   encode (decode rw1 <> decode rw2 :: Maybe CohortDataShapeJSON)
+  @?= rw1p2
+  ]

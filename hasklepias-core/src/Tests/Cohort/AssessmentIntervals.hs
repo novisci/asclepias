@@ -1,22 +1,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeApplications #-}
 
-
-module Cohort.AssessmentIntervalsSpec
-  ( spec
+module Tests.Cohort.AssessmentIntervals
+  ( tests
   ) where
 
 import           Cohort.AssessmentIntervals
 import           Cohort.Index
 import           IntervalAlgebra
 import           IntervalAlgebra.Arbitrary
-import           Test.Hspec                     ( Spec
-                                                , describe
-                                                , it
-                                                , pending
-                                                , shouldBe
-                                                )
-import           Test.QuickCheck
+import           Test.Tasty
+import           Test.Tasty.QuickCheck
 
 prop_baseline :: (IntervalSizeable a b) => b -> Interval a -> Property
 prop_baseline dur i =
@@ -45,16 +39,16 @@ prop_followupAfter
 prop_followupAfter s d i =
   relate (followupAfter s d (makeIndex i)) (makeIndex i) === After
 
-spec :: Spec
-spec = do
+tests :: TestTree
+tests = testProperties
+  "Property tests of AssessmentIntervals"
+  [ ("baseline meets index", property (prop_baseline @Int @Int))
+  , ( "baselineFinishedBy finishes index"
+    , property (prop_baselineFinishedBy @Int @Int)
+    )
+  , ("baselineBefore precedes index", property (prop_baselineBefore @Int @Int))
+  , ("followup starts index"        , property (prop_followup @Int @Int))
+  , ("followupMetBy metBy index"    , property (prop_followupMetBy @Int @Int))
+  , ("followupAfter after index"    , property (prop_followupAfter @Int @Int))
+  ]
 
-  describe "Assessment Interval properties" $ do
-
-    it "baseline meets index" $ property (prop_baseline @Int @Int)
-    it "baselineFinishedBy finishes index"
-      $ property (prop_baselineFinishedBy @Int @Int)
-    it "baselineBefore precedes index"
-      $ property (prop_baselineBefore @Int @Int)
-    it "followup starts index" $ property (prop_followup @Int @Int)
-    it "followupMetBy metBy index" $ property (prop_followupMetBy @Int @Int)
-    it "followupAfter after index" $ property (prop_followupAfter @Int @Int)

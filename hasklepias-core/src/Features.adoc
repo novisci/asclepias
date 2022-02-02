@@ -1,0 +1,71 @@
+:description: explains the feature type and how it is used
+
+= Features
+
+A `+Feature+` is a type parametrized by two types, `+name+` and `+d+`:
+
+[source,haskell]
+----
+include::Features/Core.hs[tag=feature]
+----
+
+The type `d` here stands for "data", 
+which then parametrizes the `+FeatureData+` type.
+The `+FeatureData+` type is wrapper around an
+https://hackage.haskell.org/package/base-4.16.0.0/docs/Data-Either.html#t:Either[`+Either+`]: 
+
+[source,haskell]
+----
+include::Features/Core.hs[tag=featureData]
+----
+
+Type of `d`  can be almost anything
+and need not be a scalar. 
+All the following are valid types for `d`:
+
+* `Int`
+* `Text`
+* `(Int, Maybe Text)` 
+* `[Double]`
+
+The `name` type a bit special: 
+it does not appear on the right-hand side of the `=`. 
+In type-theory parlance, 
+`name` is a 
+https://wiki.haskell.org/Phantom_type[phantom type]. 
+We'll see in a bit how this can be useful. 
+For now, think of the `name` type as the name of a variable
+as you would in most programming languages. 
+To summarize, 
+a `Feature` type constructor takes two arguments (`name` and `d`),
+but its _value_ constructor (`MkFeature`) 
+takes a single value of type `FeatureData d`.
+
+Values of the `FeatureData` type contain
+the data we're ultimately interested in analyzing
+or passing along to downstream applications. 
+However, 
+a `FeatureData` value does not simply contain data of type `d`.
+The type allows for the possibility of 
+missingness, failures, or errors
+via the 
+https://hackage.haskell.org/package/base-4.16.0.0/docs/Data-Either.html#t:Either[`+Either+` type].
+A content of a `+FeatureData d+`, then, is either
+a `+Left MissingReason+` or a
+`+Right d+`.
+
+The use of `Either` has important implications when defining features, 
+as we will see. 
+Now that we know the internals of a `Feature`,
+how do we create them? 
+There are two ways to create features:
+
+1. a `+pure+` lifting of data into a `Feature` or
+2. writing a `Definition`: 
+a function that defines a `Feature` based on other `Feature` s. 
+
+#TODO: 
+update once documentation structure is resolved. 
+Currently,
+features are documented in hasklepias-main/src/Hasklepias.hs,
+which probably isn't the best place#

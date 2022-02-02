@@ -13,16 +13,22 @@ module EventDataTheory.TheoryTest
   ) where
 
 import           Data.Aeson
+import qualified Data.ByteString.Lazy          as B
 import           Data.Functor.Contravariant     ( Predicate(..) )
 import           Data.List                      ( sort )
 import           Data.Maybe                     ( isNothing )
 import           Data.Text                      ( Text )
-import           Data.Time                      ( Day )
+import           Data.Time                      ( Day
+                                                , fromGregorian
+                                                )
 import           EventDataTheory.Core
+import           EventDataTheory.EventLines
 import           EventDataTheory.Test           ( eventDecodeFailTests
                                                 , eventDecodeTests
                                                 )
+import           EventDataTheory.Utilities
 import           GHC.Generics                   ( Generic )
+import           GHC.Num                        ( Natural )
 import           IntervalAlgebra                ( beginerval
                                                 , filterContains
                                                 , meets
@@ -36,7 +42,9 @@ import           Test.Tasty                     ( TestTree
 import           Test.Tasty.HUnit               ( (@?=)
                                                 , testCase
                                                 )
-import           Witch                          ( into )
+import           Witch                          ( from
+                                                , into
+                                                )
 
 -- | Just a dummy type with which to define an event
 {- tag::exampleEvent[] -}
@@ -192,6 +200,79 @@ decodeSillyFailTests2 :: IO TestTree
 decodeSillyFailTests2 =
   eventDecodeFailTests @SillySchema @Text @Day "test/events-integer-silly-bad"
 
+{- Unit tests on line parsers -}
+testInputsGood :: B.ByteString
+testInputsGood =
+  "[\"abc\", \"2020-01-01\", \"2020-01-02\", \"A\",\
+      \[\"someThing\"],\
+      \{\"domain\":\"A\",\
+      \ \"patient_id\":\"abc\",\
+      \ \"facts\":1,\
+      \ \"time\":{\"begin\":\"2020-01-01\",\"end\":\"2020-01-01\"}}]\n\
+      \[\"abc\", \"2020-01-05\", \"2020-01-06\", \"C\",\
+      \[\"someThing\"],\
+      \{\"domain\":\"C\",\
+      \ \"patient_id\":\"abc\",\
+      \ \"facts\":{},\
+      \ \"time\":{\"begin\":\"2020-01-05\",\"end\":\"2020-01-06\"}}]"
+
+testInputsBad :: B.ByteString
+testInputsBad =
+  "[\"def\", \"2020-01-01\", null, \"D\",\
+      \[\"someThing\"],\
+      \{\"domain\":\"D\",\
+      \ \"facts\":{},\
+      \ \"time\":{\"begin\":\"2020-01-01\",\"end\":\"2020-01-01\"}}]\n\
+      \[\"def\", \"2020-01-05\", null, \"C\",\
+      \[\"someThing\"],\
+      \{\"domain\":\"C\",\
+      \ \"facts\":{},\
+      \ \"time\":{\"begin\":\"2020-01-05\",\"end\":\"2020-01-06\"}}]"
+
+testInput = testInputsGood <> "\n" <> testInputsBad
+
+testOutput :: ([LineParseError], [(SubjectID, Event SillySchema Text Day)])
+testOutput =
+  ( [ from @(Natural, String) (3, "Error in $[5]: key \"patient_id\" not found")
+    , from @(Natural, String) (4, "Error in $[5]: key \"patient_id\" not found")
+    ]
+  , [ ( from @Text "abc"
+      , event (beginerval 1 (fromGregorian 2020 1 1))
+              (MkContext (into ["someThing" :: Text]) (A 1) Nothing)
+      )
+    , ( from @Text "abc"
+      , event (beginerval 2 (fromGregorian 2020 1 5))
+              (MkContext (into ["someThing" :: Text]) C Nothing)
+      )
+    ]
+  )
+
+parserUnitTests :: TestTree
+parserUnitTests = testGroup
+  "Unit tests of EventLines parsers"
+  [ testCase "with valid inputs"
+    $   parseEventLinesL @SillySchema @Text @Day testInput
+    @?= testOutput
+  ]
+
+-- | Unit tests on utilities
+utilitiesUnitTests :: TestTree
+utilitiesUnitTests = testGroup
+  "Unit tests on utilities"
+  [ testCase "find first occurrence of Concept 'this'"
+  $   firstOccurrenceOfConcept ["this"] [e1, e2]
+  @?= Just e1
+  , testCase "find last occurrence of Concept 'this'"
+  $   lastOccurrenceOfConcept ["this"] [e1, e2]
+  @?= Just e2
+  , testCase "find first occurrence of Concept 'another'"
+  $   firstOccurrenceOfConcept ["another"] [e1, e2]
+  @?= Just e2
+  , testCase "find first occurrence of Concept 'blah'"
+  $   firstOccurrenceOfConcept ["blah"] [e1, e2]
+  @?= Nothing
+  ]
+
 {-|
 The set of tests used to test the @event-data-theory@ package.
 -}
@@ -205,5 +286,7 @@ theoryTests = defaultMain . testGroup "Event Theory tests" =<< sequenceA
   , pure hasConceptUnitTests
   , pure eventPredicateUnitTests
   , pure toFromConceptsUnitTests
+  , pure utilitiesUnitTests
+  , pure parserUnitTests
   ]
 

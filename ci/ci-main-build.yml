@@ -27,7 +27,7 @@ docker-build:
      job: build_vars
      artifacts: true
   rules:
-   - if: '$PARENT_CI_PIPELINE_SOURCE == "merge_request_event"'
+   - if: '$PARENT_CI_PIPELINE_SOURCE == "merge_request_event" || $PARENT_CI_PIPELINE_SOURCE == "push"'
      changes: ["**/*.cabal", "cabal.project", "ci/ci-docker-build.sh", "ci/dockerHasklepias"]
   script:
      - ./ci/ci-docker-build.sh $MAINVERSION hasklepias-build haskell $GHC

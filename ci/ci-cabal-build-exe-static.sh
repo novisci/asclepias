@@ -36,10 +36,10 @@ mkdir -p "$INSTALLDIR"
 cabal build "${PKG}":exe:"${COMPONENT}" \
    -j \
    -O2 \
-   --enable-executable-static
+   --enable-executable-static \
+   || exit 1
    # --constraint='text +integer-simple' \
    # --constraint='cryptonite -integer-gmp' \
-[ $? -ne 0 ] && exit 1
 
 # Get the path to the executable
 EXE="$(./scripts/create-executable-build-path.sh "$PKG" "$VERSION" "$PKG")"

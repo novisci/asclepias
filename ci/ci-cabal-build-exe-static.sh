@@ -35,6 +35,11 @@ cabal build "${PKG}":exe:"${COMPONENT}" \
    # --constraint='cryptonite -integer-gmp' \
 
 strip "$EXE"
+if ! file "$EXE" | grep 'statically linked'; then
+    1>&2 echo 'error: the following file is not statically linked:'
+    1>&2 echo "$EXE"
+    exit 1
+fi
 
 cp "$EXE" "${INSTALLDIR}"/"${NAME}"
 

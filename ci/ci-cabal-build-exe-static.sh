@@ -41,9 +41,11 @@ cabal build "${PKG}":exe:"${COMPONENT}" \
    # --constraint='cryptonite -integer-gmp' \
 [ $? ] || exit 1
 
+# Get the path to the executable
 EXE="$(./scripts/create-executable-build-path.sh "$PKG" "$VERSION" "$PKG")"
-strip "$EXE" || exit 1
 
+# Remove symbols from the executable
+strip "$EXE" || exit 1
 if ! file "$EXE" | grep 'statically linked'; then
     1>&2 echo 'error: the following file is not statically linked:'
     1>&2 echo "$EXE"

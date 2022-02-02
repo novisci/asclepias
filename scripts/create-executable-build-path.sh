@@ -7,8 +7,8 @@ PKG=$1
 # PKGV=$2
 COMPONENT=$3
 
-# Ensure we have at least three positional arguments
-if [ -z "$3" ]; then
+# Ensure we have exactly three positional arguments
+if [ $# -ne 3 ]; then
     1>&2 echo 'error: expects 3 positional arguments'
     exit 1
 fi

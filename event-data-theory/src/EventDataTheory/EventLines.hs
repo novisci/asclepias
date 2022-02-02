@@ -4,7 +4,7 @@ Description : Defines FromJSON instances for Events.
 License     : BSD3
 Maintainer  : bsaul@novisci.com
 -}
-{-# LANGUAGE NoImplicitPrelude #-}
+-- {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeApplications #-}
@@ -22,6 +22,9 @@ module EventDataTheory.EventLines
   , eitherDecodeEvent'
   , decodeEvent
   , decodeEvent'
+  , decodeEventStrict
+  , decodeEventStrict'
+  , LineParseError
 
   -- for internal use; 
   , SubjectIDLine
@@ -29,36 +32,25 @@ module EventDataTheory.EventLines
   , IntervalLine
   ) where
 
-import           Control.Applicative            ( (<$>)
-                                                , Applicative(pure)
-                                                )
-import           Control.Monad                  ( Functor(fmap)
-                                                , MonadFail(fail)
-                                                )
+import           Control.Monad                  ( MonadFail(fail) )
 import           Data.Aeson
+import           Data.Bifunctor
+import qualified Data.ByteString.Char8         as C
 import qualified Data.ByteString.Lazy          as B
 import qualified Data.ByteString.Lazy.Char8    as B
 import           Data.Either                    ( Either(..)
                                                 , partitionEithers
                                                 )
-import           Data.Eq                        ( Eq )
-import           Data.Function                  ( ($)
-                                                , (.)
-                                                )
-import           Data.Maybe                     ( Maybe
-                                                , maybe
-                                                )
-import           Data.Ord                       ( Ord )
 import           Data.Scientific                ( floatingOrInteger )
-import           Data.String                    ( String )
 import           Data.Text                      ( Text
                                                 , pack
                                                 )
 import           Data.Vector                    ( (!) )
 import           EventDataTheory.Core
 import           GHC.Generics                   ( Generic )
-import           GHC.Num                        ( Integer )
-import           GHC.Show                       ( Show(..) )
+import           GHC.Num                        ( Integer
+                                                , Natural
+                                                )
 import           IntervalAlgebra                ( Interval
                                                 , IntervalSizeable
                                                   ( add
@@ -219,6 +211,35 @@ decodeEvent, decodeEvent'
 decodeEvent' = makeEventDecoder decode'
 decodeEvent = makeEventDecoder decode
 
+{-|
+Decode a strict bytestring corresponding to an 'EventLine' into
+@Maybe (SubjectID, Event d c a)@,
+where the value is @Nothing@ on failure
+and @Just (SubjectID, Event d c a)@ on success.
+
+NOTE: See https://hackage.haskell.org/package/aeson-2.0.3.0/docs/Data-Aeson.html#g:22 
+for discusson of json vs json'.
+-}
+decodeEventStrict, decodeEventStrict'
+  :: forall d c a b
+   . ( Show d
+     , Eq d
+     , Generic d
+     , FromJSON d
+     , Show c
+     , Eq c
+     , Ord c
+     , Typeable c
+     , FromJSON c
+     , FromJSON a
+     , Show a
+     , IntervalSizeable a b
+     )
+  => C.ByteString
+  -> Maybe (SubjectID, Event d c a)
+decodeEventStrict = makeEventDecoderStrict decodeStrict
+decodeEventStrict' = makeEventDecoderStrict decodeStrict'
+
 makeEventDecoder
   :: ( Show d
      , Eq d
@@ -238,6 +259,59 @@ makeEventDecoder
   -> (B.ByteString -> f (SubjectID, Event d c a))
 makeEventDecoder f = fmap (\x -> (getSubjectID x, into x)) . f
 
+makeEventDecoderStrict
+  :: ( Show d
+     , Eq d
+     , Generic d
+     , FromJSON d
+     , Show c
+     , Eq c
+     , Ord c
+     , Typeable c
+     , FromJSON c
+     , FromJSON a
+     , Show a
+     , IntervalSizeable a b
+     , Functor f
+     )
+  => (C.ByteString -> f (EventLine d c a))
+  -> (C.ByteString -> f (SubjectID, Event d c a))
+makeEventDecoderStrict f = fmap (\x -> (getSubjectID x, into x)) . f
+
+{-| 
+Contains the line number and error message of any parsing errors.
+-}
+newtype LineParseError = MkLineParseError (Natural, String)
+  deriving (Eq, Show, Generic)
+
+-- providing a From instance making LineParseError values in the tests
+instance From (Natural, String) LineParseError where
+
+
+-- internal for create line parsers
+makeLineParser
+  :: forall d c a b
+   . ( Show d
+     , Eq d
+     , Generic d
+     , FromJSON d
+     , Show c
+     , Eq c
+     , Ord c
+     , Typeable c
+     , FromJSON c
+     , FromJSON a
+     , Show a
+     , IntervalSizeable a b
+     )
+  => (B.ByteString -> Either String (SubjectID, Event d c a))
+  -> B.ByteString
+  -> ([LineParseError], [(SubjectID, Event d c a)])
+makeLineParser f l = partitionEithers $ zipWith
+  (\x i -> first (\t -> MkLineParseError (i, t)) (f x))
+  (B.lines l)
+  [1 ..]
+
 {-| 
 Parse @Event d c a@ from new-line delimited JSON.
 
@@ -251,7 +325,7 @@ Returns a pair where
 the first element is a list of parse errors
 and the second element is a list of successfully parsed (subjectID, event) pairs.
 -}
-parseEventLinesL
+parseEventLinesL, parseEventLinesL'
   :: forall d c a b
    . ( Show d
      , Eq d
@@ -267,37 +341,7 @@ parseEventLinesL
      , IntervalSizeable a b
      )
   => B.ByteString
-  -> ([String], [(SubjectID, Event d c a)])
-parseEventLinesL l = partitionEithers $ fmap eitherDecodeEvent (B.lines l)
+  -> ([LineParseError], [(SubjectID, Event d c a)])
+parseEventLinesL = makeLineParser eitherDecodeEvent
+parseEventLinesL' = makeLineParser eitherDecodeEvent'
 
-{-| 
-Parse @Event d c a@ from new-line delimited JSON.
-
-Per the [aeson docs](https://hackage.haskell.org/package/aeson-2.0.3.0/docs/Data-Aeson.html#g:22),
-when using this version: 
-The conversion of a parsed value to a Haskell value is deferred until the Haskell value is needed.
-This may improve performance if only a subset of the results of conversions are needed,
-but at a cost in thunk allocation. 
-
-Returns a pair where
-the first element is a list of parse errors
-and the second element is a list of successfully parsed (subjectID, event) pairs.
--}
-parseEventLinesL'
-  :: forall d c a b
-   . ( Show d
-     , Eq d
-     , Generic d
-     , FromJSON d
-     , Show c
-     , Eq c
-     , Ord c
-     , Typeable c
-     , FromJSON c
-     , FromJSON a
-     , Show a
-     , IntervalSizeable a b
-     )
-  => B.ByteString
-  -> ([String], [(SubjectID, Event d c a)])
-parseEventLinesL' l = partitionEithers $ fmap eitherDecodeEvent' (B.lines l)

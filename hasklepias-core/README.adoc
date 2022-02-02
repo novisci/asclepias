@@ -1,0 +1,23 @@
+:description: the whats and wherefore of the core of hasklepias
+:toc:
+:pkg: hasklepias-core
+:haddock-site: TODO
+
+= Hasklepias core
+
+The `{pkg}` package provides two key abstractions used in asclepias: 
+features and cohorts. 
+These are discussed in more detail below. 
+Complete documentation of all types and functions in `{pkg}` can be found at
+{haddock-site}
+
+include::src/Features.adoc[leveloffset=+1]
+
+include::src/Cohort.adoc[leveloffset=+1]
+
+== Developer Notes
+
+=== Tests
+
+Modules in the `src/Tests` directory mirror the modules in the `src` directory.
+Be careful if you have both files open at the same time!

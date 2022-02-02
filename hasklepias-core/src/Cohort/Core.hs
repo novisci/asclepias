@@ -11,7 +11,6 @@ Maintainer  : bsaul@novisci.com
 
 module Cohort.Core
   ( Subject(..)
-  , SubjectID
   , ObsID
   , Population(..)
   , ObsUnit(..)
@@ -81,24 +80,18 @@ import           GHC.Generics                   ( Generic )
 import           GHC.Num                        ( Natural )
 import           GHC.Show                       ( Show(..) )
 import           Safe                           ( headMay )
-import           Test.Tasty.Ingredients.ConsoleReporter
-                                                ( Statistics(statFailures) )
 
-
--- | A subject identifier. Currently, simply @Text@.
-type SubjectID = Text
 
 -- | An observational unit identifier. Currently, simply @Text@.
--- type ObsID = Text
-newtype ObsID = MkObsID (SubjectID, Natural)
+newtype ObsID = MkObsID (Text, Natural)
   deriving (Eq, Show, Generic)
 
 -- | Smart constructor for @'ObsID'@.
-makeObsID :: Natural -> SubjectID -> ObsID
+makeObsID :: Natural -> Text -> ObsID
 makeObsID = (flip . curry) MkObsID
 
 -- | A subject is just a pair of @ID@ and data.
-newtype Subject d = MkSubject (SubjectID, d)
+newtype Subject d = MkSubject (Text, d)
     deriving (Eq, Show, Generic)
 
 instance Functor Subject where

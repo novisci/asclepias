@@ -72,7 +72,9 @@ import           Data.Functor.Contravariant     ( Contravariant(contramap)
                                                 )
 import           Data.Maybe                     ( Maybe(..) )
 import           Data.Monoid                    ( Monoid(..) )
-import           Data.Ord                       ( Ord )
+import           Data.Ord                       ( Ord(..)
+                                                , Ordering(..)
+                                                )
 import           Data.Semigroup                 ( Semigroup(..) )
 import           Data.Set                       ( Set
                                                 , fromList
@@ -161,13 +163,23 @@ newtype Event d c a = MkEvent ( PairedInterval (Context d c) a )
 {- end::eventType[] -}
   deriving (Eq, Show, Generic)
 
-
 instance (Ord a) => Intervallic (Event d c) a where
   getInterval (MkEvent x) = getInterval x
   setInterval (MkEvent x) y = MkEvent $ setInterval x y
 
 instance Ord c => HasConcept (Event d c a) c where
   hasConcept e = hasConcept (getContext e)
+
+instance (Ord a, Ord c, Eq d) => Ord (Event d c a) where
+  {-|
+  Events are first ordered by their intervals.
+  In the case two intervals are equal, 
+  the event are ordered by their concepts.
+  -}
+  compare x y = case ic of
+    EQ -> ic
+    _  -> compare (getConcepts $ getContext x) (getConcepts $ getContext y)
+    where ic = compare (getInterval x) (getInterval y)
 
 instance (NFData a, NFData d, NFData c) => NFData (Event d c a)
 instance (Binary d, Binary c, Binary a) => Binary (Event d c a)
@@ -290,7 +302,7 @@ unpackConcept = into
 Concepts inherit the monoidal properties of 'Set', by 'Data.Set.union'.
 -}
 newtype Concepts c = MkConcepts ( Set ( Concept c ) )
-    deriving (Eq, Show, Generic)
+    deriving (Eq, Show, Ord, Generic)
 
 instance NFData c => NFData (Concepts c)
 instance Binary c => Binary (Concepts c)
@@ -390,7 +402,7 @@ instance (Ord a) => EventPredicate (Interval a) d c a where
 data SubjectID =
     SubjectIDText T.Text
   | SubjectIDInteger Integer
-  deriving (Eq, Show, Generic)
+  deriving (Eq, Show, Ord, Generic)
 
 instance Binary SubjectID
 instance NFData SubjectID

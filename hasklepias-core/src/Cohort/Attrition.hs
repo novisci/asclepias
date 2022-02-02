@@ -76,7 +76,7 @@ setAttrLevlToMap x =
   fromList $ (\(MkAttritionLevel l c) -> (l, c)) <$> toList x
 
 -- | Takes a Map with keys of @'CohortStatus'@ and @Natural@ values (counts of each
---   status) into a set of @'AtttritionLevel'@.
+--   status) into a set of @'AttritionLevel'@.
 mapToSetAttrLevel :: Map.Map CohortStatus Natural -> Set.Set AttritionLevel
 mapToSetAttrLevel x = fromList $ uncurry MkAttritionLevel <$> toList x
 

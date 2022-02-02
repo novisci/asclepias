@@ -44,9 +44,6 @@ module Hasklepias.Reexports
   , module Data.Traversable
   , module Data.Tuple
   , module Data.Tuple.Curry
-  , module IntervalAlgebra
-  , module IntervalAlgebra.IntervalUtilities
-  , module IntervalAlgebra.PairedInterval
   , module Lens.Micro
   , module Safe
   , module Flow
@@ -209,9 +206,6 @@ import safe      Witherable                     ( Filterable(filter)
                                                 )
 
 
-import safe      IntervalAlgebra
-import safe      IntervalAlgebra.IntervalUtilities
-import safe      IntervalAlgebra.PairedInterval
 import safe      Lens.Micro                     ( (^?) )
 
 

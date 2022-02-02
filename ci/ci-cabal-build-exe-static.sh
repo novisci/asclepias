@@ -13,10 +13,15 @@
 # 2. name of the executable component within the package to build
 # 3. directory in which to place the result
 
+# Ensure we have at least three positional arguments
+if [ -z "$3" ]; then
+    1>&2 echo 'error: expects 3 positional arguments'
+    exit 1
+fi
+
 PKG=$1
 COMPONENT=$2
 VERSION=$(./scripts/get-version-from-cabal.sh "${PKG}"/"${PKG}".cabal)
-EXE="$(./scripts/create-executable-build-path.sh "$PKG" "$VERSION" "$PKG")"
 INSTALLDIR=$3
 ARCH=$(uname -m)
 SYS=$(uname -s | tr '[:upper:]' '[:lower:]')
@@ -33,19 +38,22 @@ cabal build "${PKG}":exe:"${COMPONENT}" \
    --enable-executable-static
    # --constraint='text +integer-simple' \
    # --constraint='cryptonite -integer-gmp' \
+[ $? ] || exit 1
 
-strip "$EXE"
+EXE="$(./scripts/create-executable-build-path.sh "$PKG" "$VERSION" "$PKG")"
+strip "$EXE" || exit 1
+
 if ! file "$EXE" | grep 'statically linked'; then
     1>&2 echo 'error: the following file is not statically linked:'
     1>&2 echo "$EXE"
     exit 1
 fi
 
-cp "$EXE" "${INSTALLDIR}"/"${NAME}"
+cp "$EXE" "${INSTALLDIR}"/"${NAME}" || exit 1
 
-tar -czvf "$BUNDLE" "${INSTALLDIR}"/"${NAME}"
+tar -czvf "$BUNDLE" "${INSTALLDIR}"/"${NAME}" || exit 1
 
-mv "$BUNDLE" "$INSTALLDIR"/"${BUNDLE}"
+mv "$BUNDLE" "$INSTALLDIR"/"${BUNDLE}" || exit 1
 
 echo "$VERSION" >"${INSTALLDIR}"/"${COMPONENT}".version
 echo "$NAME" >"${INSTALLDIR}"/"${COMPONENT}".name

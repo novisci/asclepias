@@ -25,12 +25,14 @@ BUNDLE=${NAME}.tar.gz
 
 mkdir -p "$INSTALLDIR"
 
+# The commented-out constraints were at one point necessary, but now lead to an
+# error for recent builds (as of 2022-02-01 - DP)
 cabal build "${PKG}":exe:"${COMPONENT}" \
    -j \
    -O2 \
-   --constraint='text +integer-simple' \
-   --constraint='cryptonite -integer-gmp' \
-   --enable-executable-static \
+   --enable-executable-static
+   # --constraint='text +integer-simple' \
+   # --constraint='cryptonite -integer-gmp' \
 
 strip "$EXE"
 

@@ -5,9 +5,11 @@ Copyright   : (c) NoviSci, Inc 2020
 License     : BSD3
 Maintainer  : bsaul@novisci.com
 -}
-{-# LANGUAGE NoImplicitPrelude #-}
+-- {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE TypeApplications #-}
+
 
 module Hasklepias.MakeApp
   ( CohortApp(..)
@@ -17,36 +19,24 @@ module Hasklepias.MakeApp
   , runAppWithLocation
   ) where
 
-import           Control.Applicative            ( Applicative )
-import           Control.Monad                  ( (=<<)
-                                                , Functor(fmap)
-                                                , Monad(..)
-                                                )
+
+import           Cohort
 import           Data.Aeson                     ( FromJSON
                                                 , ToJSON(..)
                                                 , decode
                                                 , encode
                                                 )
 import           Data.Bifunctor                 ( Bifunctor(second) )
-import           Data.Function                  ( ($)
-                                                , (.)
-                                                )
+import           Data.List                      ( sort )
 import           Data.Map.Strict                ( fromList
                                                 , toList
                                                 )
-import           Data.Maybe                     ( Maybe(..) )
 import           Data.Monoid                    ( Monoid(mconcat) )
-import           Data.String                    ( String )
-import           Data.Tuple                     ( fst
-                                                , snd
+import           Data.Text                      ( Text
+                                                , pack
                                                 )
-import           GHC.IO                         ( FilePath
-                                                , IO
-                                                )
-import           GHC.Show                       ( Show(show) )
-
-import           Cohort
-import           EventData                      ( Events )
+import           EventDataTheory         hiding ( (<|>) )
+import           GHC.Num                        ( Natural )
 import           IntervalAlgebra                ( IntervalSizeable )
 
 import           Colog.Core                     ( (<&)
@@ -64,16 +54,29 @@ import qualified Data.ByteString.Lazy.Char8    as C
                                                 , putStrLn
                                                 , toStrict
                                                 )
+import qualified Data.Map.Strict               as M
+                                                ( fromListWith
+                                                , toList
+                                                )
 import           Data.Semigroup                 ( Semigroup((<>)) )
+import           GHC.Generics                   ( Generic )
 import           Hasklepias.AppUtilities
 import           Options.Applicative
-
-
+import           Type.Reflection                ( Typeable )
+import           Witch                          ( into )
 
 data MakeCohort = MakeCohort
   { input  :: Input
   , output :: Output
   }
+
+mapIntoPop
+  :: (Ord a, Ord c, Eq d)
+  => [(SubjectID, Event d c a)]
+  -> Population [Event d c a]
+mapIntoPop l = MkPopulation $ fmap
+  (\(id, es) -> MkSubject (into @Text id, sort es)) -- TODO: is there a way to avoid the sort?
+  (M.toList $ M.fromListWith (++) (fmap (fmap pure) l))
 
 mainOptions :: Parser MakeCohort
 mainOptions =
@@ -88,17 +91,26 @@ makeAppArgs name version = Options.Applicative.info
 
 -- | Creates a cohort builder function
 makeCohortBuilder
-  :: ( FromJSON a
+  :: ( Show d
+     , Eq d
+     , Generic d
+     , FromJSON d
+     , Show c
+     , Eq c
+     , Ord c
+     , Typeable c
+     , FromJSON c
+     , FromJSON a
      , Show a
      , IntervalSizeable a b
      , ToJSON d0
      , ShapeCohort d0
      , Monad m
      )
-  => CohortSetSpec (Events a) d0 i a
-  -> m (B.ByteString -> m ([SubjectParseError], CohortSet d0))
+  => CohortSetSpec [Event d c a] d0 i a
+  -> m (B.ByteString -> m ([LineParseError], CohortSet d0))
 makeCohortBuilder specs =
-  pure (pure . second (evalCohortSet specs) . parsePopulationLines)
+  pure (pure . second (evalCohortSet specs . mapIntoPop) . parseEventLinesL)
 
 reshapeCohortSet :: (Cohort d0 -> CohortJSON) -> CohortSet d0 -> CohortSetJSON
 reshapeCohortSet g x =
@@ -107,16 +119,16 @@ reshapeCohortSet g x =
 shapeOutput
   :: (Monad m, ShapeCohort d0)
   => (Cohort d0 -> CohortJSON)
-  -> m ([SubjectParseError], CohortSet d0)
-  -> m ([SubjectParseError], CohortSetJSON)
+  -> m ([LineParseError], CohortSet d0)
+  -> m ([LineParseError], CohortSetJSON)
 shapeOutput shape = fmap (fmap (reshapeCohortSet shape))
 
 -- logging based on example here:
 -- https://github.com/kowainik/co-log/blob/main/co-log/tutorials/Main.hs
-parseErrorL :: LogAction IO SubjectParseError
+parseErrorL :: LogAction IO LineParseError
 parseErrorL = logPrintStderr
 
-logParseErrors :: [SubjectParseError] -> IO ()
+logParseErrors :: [LineParseError] -> IO ()
 logParseErrors x = mconcat $ fmap (parseErrorL <&) x
 
 -- | Type containing the cohort app
@@ -124,11 +136,25 @@ newtype CohortApp m = MkCohortApp { runCohortApp :: Maybe Location -> m B.ByteSt
 
 -- | Make a command line cohort building application.
 makeCohortApp
-  :: (FromJSON a, Show a, IntervalSizeable a b, ToJSON d0, ShapeCohort d0)
+  :: ( Show d
+     , Eq d
+     , Generic d
+     , FromJSON d
+     , Show c
+     , Eq c
+     , Ord c
+     , Typeable c
+     , FromJSON c
+     , FromJSON a
+     , Show a
+     , IntervalSizeable a b
+     , ToJSON d0
+     , ShapeCohort d0
+     )
   => String  -- ^ cohort name
   -> String  -- ^ app version
   -> (Cohort d0 -> CohortJSON) -- ^ a function which specifies the output shape
-  -> CohortSetSpec (Events a) d0 i a  -- ^ a list of cohort specifications
+  -> CohortSetSpec [Event d c a] d0 i a  -- ^ a list of cohort specifications
   -> CohortApp IO
 makeCohortApp name version shape spec = MkCohortApp $ \l -> do
   options <- execParser (makeAppArgs name version)

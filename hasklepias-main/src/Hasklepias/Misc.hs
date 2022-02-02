@@ -46,11 +46,11 @@ module Hasklepias.Misc
 
 import           Control.Applicative
 import           Data.Time
-import           IntervalAlgebra 
 import           Features.Compose               ( Definition
                                                 , Feature
                                                 )
 import           GHC.Generics                   ( Generic )
+import           IntervalAlgebra
 import           Stype.Numeric.Censored         ( MaybeCensored(..) )
 import           Stype.Numeric.Continuous       ( EventTime )
 import qualified Witherable                    as W

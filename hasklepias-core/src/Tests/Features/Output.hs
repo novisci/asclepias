@@ -3,37 +3,17 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
-module Features.OutputSpec
-  ( spec
+module Tests.Features.Output
+  ( tests
   ) where
 
 import           Data.Aeson                     ( encode )
 import qualified Data.ByteString.Lazy          as B
 import           Data.Maybe
-import           Data.Time                     as DT
-import           EventData
-import           EventData.Context
-import           EventData.Domain
 import           Features
-import           Hasklepias.FeatureEvents
-import           IntervalAlgebra
-import           Test.Hspec                     ( Spec
-                                                , it
-                                                , shouldBe
-                                                )
+import           Test.Tasty
+import           Test.Tasty.HUnit
 
-
-ex1 :: Events Int
-ex1 =
-  [ event
-      (beginerval 10 0)
-      (context (UnimplementedDomain ()) (packConcepts ["enrollment"]) Nothing)
-  ]
-
-index :: (Ord a) => Events a -> FeatureData (Interval a)
-index es = case firstConceptOccurrence ["enrollment"] es of
-  Nothing -> featureDataL (Other "No Enrollment")
-  Just x  -> pure (getInterval x)
 
 dummy :: Feature "dummy" Bool
 dummy = pure True
@@ -48,17 +28,12 @@ dummy2 = pure True
 instance HasAttributes "dummy2" Bool where
   getAttributes x = emptyAttributes
 
-spec :: Spec
-spec = do
-  it "an Int event is parsed correctly"
-    $          encode (index ex1)
-    `shouldBe` "{\"begin\":0,\"end\":10}"
-
-  -- TODO: these are failing in CI because the `type' field is sorting to after
-  --       
-  it "dummy encodes correctly"
-    $ encode dummy
-    `shouldBe` "{\
+tests :: TestTree
+tests = testGroup
+  "Unit tests on features outputs as JSON"
+  [ testCase "dummy encodes correctly"
+  $ encode dummy
+  @?= "{\
         \\"attrs\":{\
             \\"getDerivation\":\"a description\",\
             \\"getLongLabel\":\"longer label...\",\
@@ -69,10 +44,9 @@ spec = do
         \\"name\":\"dummy\",\
         \\"type\":\"Bool\"\
         \}"
-
-  it "dummy2 encodes correctly"
-    $ encode dummy2
-    `shouldBe` "{\
+  , testCase "dummy2 encodes correctly"
+  $ encode dummy2
+  @?= "{\
         \\"attrs\":{\
             \\"getDerivation\":\"\",\
             \\"getLongLabel\":\"\",\
@@ -83,3 +57,4 @@ spec = do
         \\"name\":\"dummy2\",\
         \\"type\":\"Bool\"\
         \}"
+  ]

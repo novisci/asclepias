@@ -85,6 +85,9 @@ import           Data.Functor                   ( Functor(fmap) )
 import           Data.Ord                       ( (<=)
                                                 , Ord
                                                 )
+import           GHC.Generics                   ( Generic )
+import           GHC.Num                        ( Num((+)) )
+import           GHC.Show                       ( Show )
 import           IntervalAlgebra                ( Interval
                                                 , IntervalSizeable(..)
                                                 , Intervallic(..)
@@ -95,9 +98,6 @@ import           IntervalAlgebra                ( Interval
                                                 , enderval
                                                 , extenterval
                                                 )
-import           GHC.Generics                   ( Generic )
-import           GHC.Num                        ( Num((+)) )
-import           GHC.Show                       ( Show )
 
 {-| A type to contain baseline intervals. See the 'Baseline' typeclass for methods
 to create values of this type.

@@ -16,13 +16,12 @@ module Hasklepias.MakeFilterApp
   , FilterApp
   ) where
 
-import           Cohort.Core                    ( SubjectID )
 import           Control.Applicative            ( (<**>)
                                                 , Alternative((<|>))
                                                 , Applicative(liftA2)
                                                 )
 import           Control.Monad                  ( join )
-import           EventData                      ( Event )
+import           EventDataTheory         hiding ( (<|>) )
 import           IntervalAlgebra                ( IntervalSizeable )
 
 
@@ -41,6 +40,7 @@ import qualified Data.ByteString.Char8         as C
 import qualified Data.Conduit.Combinators      as CC
 import           Data.Maybe                     ( fromMaybe )
 import           Data.Monoid                    ( Any(Any, getAny) )
+import           Data.Text                      ( Text )
 import           Data.Vector                    ( (!) )
 
 import           Colog.Core                     ( (<&)
@@ -50,7 +50,8 @@ import           Colog.Core                     ( (<&)
 import           Hasklepias.AppUtilities
 import           Options.Applicative
 
-
+import           GHC.Generics                   ( Generic )
+import           Type.Reflection                ( Typeable )
 
 -- Container for app options
 newtype FilterAppOpts = FilterAppOpts
@@ -73,7 +74,7 @@ makeAppArgs name = Options.Applicative.info
   (fullDesc <> progDesc desc <> header ("Filter events for " <> name))
 
 -- A type to hold a subject ID
-newtype HoldID = MkID SubjectID deriving (Eq, Show)
+newtype HoldID = MkID Text deriving (Eq, Show)
 instance FromJSON HoldID where
   parseJSON = withArray "Event" $ \a -> do
     id <- parseJSON (a ! 0)
@@ -105,8 +106,8 @@ instance Semigroup FilterState where
 -- Initialize a FilterState using a given parser and predicate function.
 initFilterState
   :: (Show a, FromJSON a, IntervalSizeable a b)
-  => (C.ByteString -> Maybe (Event a)) -- ^ Event parser
-  -> (Event a -> Bool) -- ^ Predicate on events
+  => (C.ByteString -> Maybe (Event d c a)) -- ^ Event parser
+  -> (Event d c a -> Bool) -- ^ Predicate on events
   -> C.ByteString -- ^ the data to (attempt to) parse into an event
   -> FilterState
 initFilterState f p x = FilterState (id, b, x)
@@ -136,14 +137,27 @@ fscIO x y = do
 -- here. Their data is accumulated but not output (if it needs to be) by this 
 -- Conduit.
 prefilterC
-  :: (IntervalSizeable a b, FromJSON a, Show a, Monad m)
-  => (Event a -> Bool)
+  :: ( Show d
+     , Eq d
+     , Generic d
+     , FromJSON d
+     , Show c
+     , Eq c
+     , Ord c
+     , Typeable c
+     , FromJSON c
+     , FromJSON a
+     , Show a
+     , IntervalSizeable a b
+     , Monad m
+     )
+  => (Event d c a -> Bool)
   -> C.ByteString
-  -> ConduitM i c m (Maybe (IO FilterState))
+  -> ConduitM i g m (Maybe (IO FilterState))
 prefilterC p x =
   yield x
     .| CC.linesUnboundedAscii
-    .| mapC (pure . initFilterState decodeStrict' p)
+    .| mapC (pure . initFilterState (fmap snd . decodeEventStrict') p)
     .| CC.foldl1 fscIO
 
 -- | Type containing the filter app
@@ -158,12 +172,12 @@ desc =
   \Lines that fail to parse as an `Event` do not satisfy the predicate, but are not \
   \dropped from the output. In other words, all of a subject's data is returned in \
   \the same order as the input, provided that at least one line successfully parses \
-  \into an Event and satisfies the predicate."
+  \into an Event d c and satisfies the predicate."
 
 {- | 
 Create a application that filters event data with two arguments: 
   * a string for the name of the application (e.g. the project ID)
-  * a predicate function of type @Event a -> Bool@. 
+  * a predicate function of type @Event d c a -> Bool@. 
 
 The application takes event data formatted as [`ndjson`](http://ndjson.org/)
 (i.e. one event per line). The application returns the event data filtered to
@@ -176,9 +190,21 @@ the same order as the input, provided that at least one line successfully parses
 into an `Event` and satisfies the predicate. 
 -}
 makeFilterApp
-  :: (Show a, FromJSON a, IntervalSizeable a b)
+  :: ( Show d
+     , Eq d
+     , Generic d
+     , FromJSON d
+     , Show c
+     , Eq c
+     , Ord c
+     , Typeable c
+     , FromJSON c
+     , FromJSON a
+     , Show a
+     , IntervalSizeable a b
+     )
   => String -- ^ name of the app (e.g. a project's id)
-  -> (Event a -> Bool) -- ^ predicate to evaluate for each event
+  -> (Event d c a -> Bool) -- ^ predicate to evaluate for each event
   -> FilterApp IO
 makeFilterApp name predicate = MkFilterApp $ \l -> do
   options <- execParser (makeAppArgs name)

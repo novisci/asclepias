@@ -67,8 +67,8 @@ based on a provided function,
 with the provided concepts. 
 
 For example,
-see 'firstConceptOccurrence' and
-'lastConceptOccurrence'.
+see 'firstOccurrenceOfConcept' and
+'lastOccurrenceOfConcept'.
 -}
 findOccurrenceOfEvent
   :: (W.Filterable f)
@@ -81,7 +81,7 @@ findOccurrenceOfEvent f p = f . filterEvents p
 {-|
 Finds the *first* occurrence of an 'Event' with at least one of the concepts
 if one exists.
-Assumes the input 'Events' are appropriately sorted.
+Assumes the input events are appropriately sorted.
 -}
 firstOccurrenceOfConcept
   :: (W.Witherable f, Ord c) => [c] -> f (Event d c a) -> Maybe (Event d c a)
@@ -91,7 +91,7 @@ firstOccurrenceOfConcept x =
 {-|
 Finds the *last* occurrence of an 'Event' with at least one of the concepts
 if one exists.
-Assumes the input 'Events' list are appropriately sorted.
+Assumes the input events list are appropriately sorted.
 -}
 lastOccurrenceOfConcept
   :: (W.Witherable f, Ord c) => [c] -> f (Event d c a) -> Maybe (Event d c a)

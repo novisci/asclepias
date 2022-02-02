@@ -1,8 +1,8 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE DataKinds #-}
 
-module Cohort.CoreSpec
-  ( spec
+module Tests.Cohort.Core
+  ( tests
   ) where
 
 import           Cohort
@@ -13,15 +13,9 @@ import           Data.Set                       ( empty
                                                 )
 import           Features
 import           IntervalAlgebra
-import           Test.Hspec                     ( Spec
-                                                , describe
-                                                , it
-                                                , pending
-                                                , shouldBe
-                                                )
+import           Test.Tasty
+import           Test.Tasty.HUnit
 
-
--- data Feat1
 
 d1 :: Definition (Feature "feat" Int -> Feature "feat1" Bool)
 d1 = defineA
@@ -75,35 +69,10 @@ testOut = MkCohort
     ]
   )
 
-testAttr1 :: AttritionInfo
-testAttr1 = MkAttritionInfo 2 $ fromList
-  [ MkAttritionLevel SubjectHasNoIndex         0
-  , MkAttritionLevel (ExcludedBy (1, "feat2")) 1
-  , MkAttritionLevel Included                  1
+tests :: TestTree
+tests = testGroup
+  "Unit tests on Cohort.Core"
+  [ testCase "testCohort evaluates to testOut"
+    $   evalCohort testCohort testPopulation
+    @?= testOut
   ]
-
-testAttr2 :: AttritionInfo
-testAttr2 = MkAttritionInfo 5 $ fromList
-  [ MkAttritionLevel SubjectHasNoIndex         0
-  , MkAttritionLevel (ExcludedBy (1, "feat2")) 3
-  , MkAttritionLevel Included                  2
-  ]
-
-testAttr1p2 :: AttritionInfo
-testAttr1p2 = MkAttritionInfo 7 $ fromList
-  [ MkAttritionLevel SubjectHasNoIndex         0
-  , MkAttritionLevel (ExcludedBy (1, "feat2")) 4
-  , MkAttritionLevel Included                  3
-  ]
-
--- evalCohort testCohort testPopulation
-spec :: Spec
-spec = do
-
-  describe "checking evaluation of a cohort" $ do
-    it "testCohort evaluates to testOut"
-      $          evalCohort testCohort testPopulation
-      `shouldBe` testOut
-
-  describe "checking semigroup of attrition" $ do
-    it "testAttr1 <> testAttr2" $ testAttr1 <> testAttr2 `shouldBe` testAttr1p2

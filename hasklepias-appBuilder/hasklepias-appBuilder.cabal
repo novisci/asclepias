@@ -29,7 +29,7 @@ library
       src
   build-depends:
     -- Internal packages
-      event-data-model
+      event-data-theory
     , hasklepias-core
 
     -- External packages
@@ -50,4 +50,5 @@ library
     , optparse-applicative == 0.16.1.0
     , text == 1.2.4.1
     , vector == 0.12.2.0
+    , witch >= 1.0
   default-language: Haskell2010

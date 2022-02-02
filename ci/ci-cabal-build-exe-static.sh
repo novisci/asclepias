@@ -21,8 +21,9 @@ fi
 
 PKG=$1
 COMPONENT=$2
-VERSION=$(./scripts/get-version-from-cabal.sh "${PKG}"/"${PKG}".cabal)
 INSTALLDIR=$3
+
+VERSION=$(./scripts/get-version-from-cabal.sh "${PKG}"/"${PKG}".cabal)
 ARCH=$(uname -m)
 SYS=$(uname -s | tr '[:upper:]' '[:lower:]')
 NAME=${COMPONENT}-${VERSION}-${ARCH}-${SYS}

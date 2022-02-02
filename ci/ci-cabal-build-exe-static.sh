@@ -46,6 +46,7 @@ EXE="$(./scripts/create-executable-build-path.sh "$PKG" "$VERSION" "$PKG")"
 
 # Remove symbols from the executable
 strip "$EXE" || exit 1
+apt install -y file  # TODO: remove this once `file` makes it into the Haskell docker container
 if ! file "$EXE" | grep 'statically linked'; then
     1>&2 echo 'error: the following file is not statically linked:'
     1>&2 echo "$EXE"

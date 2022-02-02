@@ -6,7 +6,6 @@ License     : BSD3
 Maintainer  : bsaul@novisci.com
 -}
 -- {-# OPTIONS_HADDOCK hide #-}
--- {-# LANGUAGE Safe #-}
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE LambdaCase #-}

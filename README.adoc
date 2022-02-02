@@ -28,6 +28,10 @@ include::docs/roadmap.adoc[leveloffset=+2]
 
 include::event-data-theory/README.adoc[leveloffset=+2]
 
+include::hasklepias-core/src/Features.adoc[leveloffset=+2]
+
+include::hasklepias-core/src/Cohort.adoc[leveloffset=+2]
+
 == Tools
 
 include::cohort-collector/README.adoc[leveloffset=+2]

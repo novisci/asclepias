@@ -31,6 +31,7 @@ docker-build-musl:
  rules:
   - if: '$PARENT_CI_PIPELINE_SOURCE == "merge_request_event" || $PARENT_CI_PIPELINE_SOURCE == "push"'
     changes: ["**/*.cabal", "cabal.project", "ci/ci-docker-build.sh", "ci/dockerHasklepias"]
+  - if: '$CI_COMMIT_MESSAGE =~ /-docker/'
  script:
     - ./ci/ci-docker-build.sh $MAINVERSION hasklepias-build-musl musl-haskell $GHC
 
@@ -52,6 +53,7 @@ build-cohort-collector-static:
         - "cohort-collector/**/*.hs"
         - "hasklepias-appBuilder/**/*.hs"
         - "hasklepias-core/**/*.hs"
+        - "ci/ci-cabal-build-exe-static.sh"
   image: registry.novisci.com/nsstat/asclepias/hasklepias-build-musl:${MAINVERSION}
   artifacts:
     name: "${CI_JOB_NAME}-${CI_COMMIT_SHORT_SHA}"

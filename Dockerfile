@@ -11,3 +11,5 @@ COPY stype/stype.cabal stype/stype.cabal
 
 RUN cabal update
 RUN cabal build all --only-dependencies
+
+RUN apt install -y file

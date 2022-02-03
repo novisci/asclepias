@@ -74,6 +74,7 @@ build-documentation-site: # EXPERIMENTAL!
        - docs-site/build/site
 
 upload-documentation-site: # EXPERIMENTAL!
+# TODO: update to nsbuild once image is available
   image: registry.novisci.com/nsstat/statocker/aws 
   stage : deploy
   needs:
@@ -83,7 +84,7 @@ upload-documentation-site: # EXPERIMENTAL!
     DOCSPATH: doc-sandbox
   script: 
     - | 
-      aws s3 cp \
+      aws s3 sync \
         docs-site/build/site \
         s3://$(< ci/downloads_path)"$DOCSPATH" \
         --acl public-read

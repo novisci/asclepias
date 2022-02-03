@@ -1,0 +1,6 @@
+name: asclepias
+title: Asclepias 
+version: 0.24.0
+# prerelease: -beta.1
+nav:
+- modules/ROOT/nav.adoc

@@ -22,3 +22,5 @@ doc/manual.html
 dist-newstyle*
 install*
 builds*
+docs-site/build*
+docs-site/node_modules*

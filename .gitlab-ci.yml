@@ -62,3 +62,12 @@ trigger-static-build:
 #   coverage: '/\d+\% top-level/'
 #   script:
 #     - cat coverage-report.txt
+
+documentation-site: # EXPERIMENTAL!
+  image : antora/antora:3.0.1
+  stage : build
+  script: 
+     - cd docs-site
+     - npx antora --fetch antora-playbook.yml
+  artifacts: 
+     paths: docs-site/build/site

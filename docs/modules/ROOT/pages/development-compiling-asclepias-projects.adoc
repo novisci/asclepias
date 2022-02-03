@@ -144,9 +144,9 @@ where test failure with a non-zero exit code when run.
 [source,conf]
 ----
 cabal-version:  2.2
-include::../hasklepias-main/hasklepias-main.cabal[tag=devel-docs-package-properties]
+include::example$hasklepias-main.cabal[tag=devel-docs-package-properties]
 
-include::../hasklepias-main/hasklepias-main.cabal[tag=devel-docs-components]
+include::example$hasklepias-main.cabal[tag=devel-docs-components]
 ----
 
 == Compiling asclepias packages

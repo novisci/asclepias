@@ -15,7 +15,7 @@ variables:
 stages:
   - prep
   - build
-  # - coverage
+  - deploy
 
 build_vars:
   stage: prep
@@ -63,7 +63,7 @@ trigger-static-build:
 #   script:
 #     - cat coverage-report.txt
 
-documentation-site: # EXPERIMENTAL!
+build-documentation-site: # EXPERIMENTAL!
   image : antora/antora:3.0.1
   stage : build
   script: 
@@ -72,3 +72,18 @@ documentation-site: # EXPERIMENTAL!
   artifacts: 
      paths: 
        - docs-site/build/site
+
+upload-documentation-site: # EXPERIMENTAL!
+  image: registry.novisci.com/nsstat/nsbuild/aws 
+  stage : deploy
+  needs:
+    - job: build-documentation-site
+      artifacts: true
+  variables:
+    DOCSPATH: doc-sandbox
+  script: 
+    - | 
+      aws s3 cp \
+        docs-site/build/site \
+        s3://$(< ci/downloads_path)"$DOCSPATH" \
+        --acl public-read

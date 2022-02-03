@@ -185,6 +185,20 @@ type MomentOfOccurrence = PairedInterval P0059Reasons Integer
 -- | Syonym for 'CensoringReason' for this study
 type P0059Reasons = CensoringReason CensorReason OutcomeReason
 
+-- | A type synonym for the return type for outcomes
+type OType = CensoredOccurrence CensorReason OutcomeReason Integer
+
+-- | Data structure containing the censored times for each of the 6 comparison groups.
+data P0059Outcome = MkP0059Outcome
+  { noInit       :: OType
+  , init0to30    :: OType
+  , init31to90   :: OType
+  , init91to180  :: OType
+  , init181to365 :: OType
+  , init366to540 :: OType
+  }
+  deriving (Eq, Generic)
+
 -- Hasklepias.Misc
 -- | Sum type for possible censoring and outcome reasons, including administrative
 --   censoring.
@@ -310,9 +324,9 @@ In the example of P0059 above, the project itself defined the key types of `Cens
 It's not clear what the best way is to facilitate or eliminate that need.
 
 == Benefits of the `asclepias` type system
-// TODO flesh out
+The upside here is easier to summarize but not meant to seem less important.
 
 === Facilitates generic programming
-e.g. perhaps we can write a typeclass for conversions of `CensoredOccurence` to an internal `hygiea` test type. This would place some burden on programmers to do the actual mapping of project-specific outcome types to testable types, in a structured way. We could provide some generic implementations or at a minimum some helper functions to facilitate that.
+We can, for example, write a typeclass for conversions of `CensoredOccurence` to an internal `hygiea` test type. This would place some burden on programmers to do the actual mapping of project-specific outcome types to testable types, in a structured way. We could provide some generic implementations or at a minimum some helper functions to facilitate that.
 
 

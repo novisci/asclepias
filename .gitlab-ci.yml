@@ -74,7 +74,7 @@ build-documentation-site: # EXPERIMENTAL!
        - docs-site/build/site
 
 upload-documentation-site: # EXPERIMENTAL!
-  image: registry.novisci.com/nsstat/nsbuild/aws 
+  image: registry.novisci.com/nsstat/statocker/aws 
   stage : deploy
   needs:
     - job: build-documentation-site

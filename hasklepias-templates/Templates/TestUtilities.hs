@@ -26,6 +26,9 @@ module Templates.TestUtilities
 import           Cohort.Index
 
 
+-- #endif
+import           Data.Text                      ( Text )
+import           Data.Tuple.Curry
 -- TODO: find a better way to handle this import and/or figure out how use
 --       gcc on a mac on the haskell c-preprocessor without phutzing with a lot
 --       different settings.
@@ -35,17 +38,16 @@ import           Cohort.Index
 -- import           GHC.Tuple (Solo (Solo))
 -- #else
 import           Data.Tuple.Solo
--- #endif
 import           EventData
-import           Features.Core               ( Define(..)
+import           EventDataTheory
+import           Features.Core                  ( Define(..)
                                                 , Definition(..)
                                                 , F
                                                 , Feature
                                                 , eval
                                                 )
-import           Hasklepias.Misc
-import           Hasklepias.Reexports
-import           Hasklepias.ReexportsUnsafe
+import           Test.Tasty
+import           Test.Tasty.HUnit
 
 {-
   a just few utilities for constructing intervals/events

@@ -63,7 +63,7 @@ import           Data.Text                      ( Text
 import           Data.Tuple                     ( fst
                                                 , snd
                                                 )
-import           Features.Core               ( Feature
+import           Features.Core                  ( Feature
                                                 , FeatureN(..)
                                                 , getFeatureData
                                                 , nameFeature

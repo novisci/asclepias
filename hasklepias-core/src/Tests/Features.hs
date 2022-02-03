@@ -3,7 +3,7 @@ module Tests.Features
   ) where
 
 import           Test.Tasty
-import qualified Tests.Features.Core        as C
+import qualified Tests.Features.Core           as C
 import qualified Tests.Features.Output         as O
 
 tests :: TestTree

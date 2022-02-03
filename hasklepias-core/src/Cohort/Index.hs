@@ -49,7 +49,7 @@ import           IntervalAlgebra                ( Interval
 An @Index@ is a wrapper for an @Intervallic@ used to indicate that a particular
 interval is considered an index interval to which other intervals will be compared.
 -}
-newtype Index i a = MkIndex { 
+newtype Index i a = MkIndex {
     getIndex :: i a -- ^ unwrap an `Index` 
   }
   deriving (Eq, Show, Generic)

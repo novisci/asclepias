@@ -21,7 +21,7 @@ import           Data.Typeable                  ( Typeable )
 import           Features.Attributes            ( Attributes
                                                 , HasAttributes(..)
                                                 )
-import           Features.Core               ( Feature
+import           Features.Core                  ( Feature
                                                 , makeFeature
                                                 )
 import           Features.Output                ( OutputShape

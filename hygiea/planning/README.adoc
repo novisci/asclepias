@@ -1,4 +1,5 @@
 = Planning and prototyping for a testing framework in `asclepias`
+See the subdirectory README files for information on work to achieve the goals identified here.
 
 == Goals for planning phase
 The primary goal of the planning phase is to
@@ -29,7 +30,7 @@ Epidemiologists can contribute to the soundness of cohort-building software by s
 ==== Make testing easier for programmers
 In addition to providing a text-based UI, programmers should have tools making it relatively simple to create common tests and eventually to incorporate property testing, additional unit testing, and edge-case analyses.
 
-=== Example
+== Example
 At its core, the testing tool needs to create a logic for parsing:
 
 * a `Hasklepias` type, and possibly project-specific types,
@@ -205,6 +206,13 @@ data P0059Outcome = MkP0059Outcome
 data CensoringReason cr or = AdminCensor | C cr | O or
   deriving (Eq, Show, Generic)
 
+-- | A type to represent censored 'Occurrence'.
+data CensoredOccurrence censors outcomes b = MkCensoredOccurrence
+  { reason :: CensoringReason censors outcomes
+  , time   :: MaybeCensored (EventTime b)
+  }
+  deriving (Eq, Generic)
+
 
 -- Stype.Numeric
 -- this is a GADT: note  the different constructor signatures
@@ -318,6 +326,36 @@ makeOutcomeDefinition cpt outcome = define
 
 Clearly familiarity with `asclepias` is necessary and expected of any project developer, but this level of complexity is in my opinion a substantial impediment to the writing of comprehensive, correct testing procedures for project cohorts. 
 
+==== Following the trail of `expectedExample1`
+Consider only the first element in this record of type `P0059Outcome`, `noInit`, snipped here from the definition of `expectedExample1`:
+
+[source,haskell]
+----
+noInit = MkCensoredOccurrence (C Noncompliance) (RightCensored (mkEventTime (Just 43)))
+----
+
+It has type `OType`, which is an alias defined as
+[source,haskell]
+----
+type OType = CensoredOccurrence CensorReason OutcomeReason Integer
+----
+
+`CensoredOccurence`, from `Hasklepias.Misc`, is defined with constructor `MkCensoredOccurrence` as
+[source,haskell]
+----
+data CensoredOccurrence censors outcomes b = MkCensoredOccurrence
+  { reason :: CensoringReason censors outcomes
+  , time   :: MaybeCensored (EventTime b)
+  }
+  deriving (Eq, Generic)
+----
+
+Consider only the `time` field for `noInit`. It uses the `RightCensored` constructor  of the type `MaybeCensored` from `Hasklepias.Misc`, in the expression `RightCensored (mkEventTime (Just 43))`. 
+
+The `reason` field of `noInit` uses the `CensoringReason` type's `C` constructor, defined in `Hasklepias.Misc`, with inner type `Noncompliance`, a variant of the project-specific type `CensorReason`.
+
+Note that constructing `expectedExample1` directly does not use most of the pass-through types in the chunk above, which instead are used just for the transformation `makeOutcomeDefinition`.  The only project-specific type used in its creation is `CensorReason`.
+
 === Inhomogeneity across projects
 In the example of P0059 above, the project itself defined the key types of `CensorReason` and `Outcome`, which we can only assume will be essential in specifying tests, as they were in the associated rudimentary tabular user interface. The end-user likely will need some access to these types to specify tests appropriately, and to metadata provided by the data pipeline, such as "is_enrollment". 
 
@@ -328,5 +366,3 @@ The upside here is easier to summarize but not meant to seem less important.
 
 === Facilitates generic programming
 We can, for example, write a typeclass for conversions of `CensoredOccurence` to an internal `hygiea` test type. This would place some burden on programmers to do the actual mapping of project-specific outcome types to testable types, in a structured way. We could provide some generic implementations or at a minimum some helper functions to facilitate that.
-
-

@@ -1,0 +1,39 @@
+= A type system for testing cohorts
+
+== What to test?
+Based largely on the test suite for the recent P0059, I see a several categories of items tested:
+
+. `Index` or `IndexSet` creation, intervals or sets of intervals created from `Events`.
+. Inclusion/exclusion logic for cohorts, using the `Status` type from the `Cohort.Criteria` module of `hasklepias-core`.
+. Other direct tests of `Feature`s and `Definitions`.
+. Outcomes
+
+These represent the outputs of tests. In general, `Events` serve as inputs.
+
+== Finding the right level of abstraction
+As noted in the planning `README`, 
+
+. the `Hasklepias` type system is somewhat intricate and can include project-specific types,
+. testable objects likely can use just a small subset of those types
+. key `Hasklepias` types such as `EventTime` are defined in a sufficiently generic way so as to allow for testing a large range of outcome types
+
+A test has three components:
+
+. input type
+. output type
+. transformation from input to output
+
+Therefore, a testing tool's type system should at a minimum provide structure for those three elements. It also should provide a simple way to map relevant types from `Hasklepias` to those elements, and from user input as well. See the Decode directory of this project for comments on the text-based user interface.
+
+=== Golden testing
+Tests will be implemented as golden tests, in which the test routine produces a file to be compared to the 'golden' reference file. The test passes if and only if the two files are identical.
+
+That provides some structure in which to think about the underlying type system of `hygeia`.
+
+=== Input type
+
+
+=== Output type
+
+
+=== Transformations

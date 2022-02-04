@@ -114,6 +114,11 @@ Challenges to achieving the planning phase goals fall into a few categories, wit
 
 Some of those dynamics are not simply downsides but also provide structure that a testing type system can use.
 
+Additional challenges relate to providing a smooth user experience both for programmers and subject-matter experts. These include:
+
+. making relevant project-specific types and labels discoverable to subject-matter experts, for the purpose of properly specifying tests
+. creating a clean interface for programmers, with as little back-end work as possible needed to stand up a test suite that can consume the text-based test configuration
+
 === Complexity of the type system
 Writing the test in the example above, without the tools to be developed for `hygiea`, requires the developer to understand the following code, and in the case of the code from `P0059/plans/Cohort.hs` to be able to write it. This block is not even complete, since for example it does not include the definition of various functions used in `makeOutcomeDefinition`, such as `firstConceptOccurrence` from `Hasklepias.FeatureEvents`.
 
@@ -366,3 +371,46 @@ The upside here is easier to summarize but not meant to seem less important.
 
 === Facilitates generic programming
 We can, for example, write a typeclass for conversions of `CensoredOccurence` to an internal `hygiea` test type. This would place some burden on programmers to do the actual mapping of project-specific outcome types to testable types, in a structured way. We could provide some generic implementations or at a minimum some helper functions to facilitate that.
+
+== Overview of the approach
+
+=== Test data not types
+Consider the testable output given in the example above
+
+[source,haskell]
+----
+noInit = MkCensoredOccurrence (C Noncompliance) (RightCensored (mkEventTime (Just 43)))
+----
+
+The subject-matter expert should care only about the information `Noncompliance`, `RightCensored` and the `EventTime` value `43`. They do not care about the types those values are wrapped in, and it would be a substantial burden to require the user to specify those types in the test specification.
+
+=== Test inputs are `Events`
+The `Events` type `Hasklepias` exports appears to be the essential input for all cohort-generation routines and hence for all outputs we might wish to test. `hygiea` can either create its own representation of `Events`, if necessary, or it can import the `Event` type from the upcoming `event-data-theory` module.
+
+=== Test outputs are some internal `Outcome` type
+The name probably will change. The goal is to have an `Outcome` type that is to `Event` as the `event-data-theory` `Event` type is to project-specific versions.
+
+I would start by making it a wrapper or generalization for `Hasklepias.Misc.CensoredOccurrence`.
+
+=== Require `From` conversions to map between types
+Project programmers must define how project-specific types map to the relevant testable input/output types, by implementing `Witch.From` instances. `hygiea` routines would all have the appropriate `Witch.From` constraints.
+
+At the moment this seems like it would offer the best compromise, despite adding some work for project developers. It
+
+. allows `hygiea` to remain agnostic about the particular types used in a project
+. makes the testing functionality more robust to changes in `asclepias` or in the UI
+. forces developers to define clearly what must be tested, but frees them from the burden of actually defining how tests are run
+. allow the UI to implement its own conversion instances, without caring about how the conversion is done for any given project
+
+=== Provide a `Testable` class for routines mapping inputs to outputs
+The name might change, to disambiguate from `QuickCheck.Testable`.
+
+For example, the class might be defined as 
+
+[source,haskell]
+----
+class (From b (Event a), From d (Outcome c)) => Testable b d | b -> d where
+  genOutcome :: b -> d
+----
+
+For example in the example above, the programmer would then declare an instance of `Testable` by setting `genOutcome = makeOutcomeDefinition`.

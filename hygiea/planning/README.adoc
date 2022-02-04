@@ -405,11 +405,11 @@ At the moment this seems like it would offer the best compromise, despite adding
 === Provide a `Testable` class for routines mapping inputs to outputs
 The name might change, to disambiguate from `QuickCheck.Testable`.
 
-For example, the class might be defined as 
+For example, if the `Input` type is a placeholder for `hygiea`'s `Event` implementation, the class might be defined as 
 
 [source,haskell]
 ----
-class (From b (Event a), From d (Outcome c)) => Testable b d | b -> d where
+class (From b Input, From d Outcome) => Testable b d | b -> d where
   genOutcome :: b -> d
 ----
 

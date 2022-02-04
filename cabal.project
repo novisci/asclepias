@@ -5,4 +5,4 @@ packages: hasklepias-core
         , edm
         , stype
         , maybe-toxic-tutorial
-
+        , hygiea/planning

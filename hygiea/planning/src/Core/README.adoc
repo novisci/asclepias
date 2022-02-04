@@ -8,7 +8,7 @@ Based largely on the test suite for the recent P0059, I see a several categories
 . Other direct tests of `Feature`s and `Definitions`.
 . Outcomes
 
-These represent the outputs of tests. In general, `Events` serve as inputs.
+These represent the outputs of tests. In general, inputs are `Events`.
 
 == Finding the right level of abstraction
 As noted in the planning `README`, 
@@ -18,7 +18,6 @@ As noted in the planning `README`,
 . key `Hasklepias` types such as `EventTime` are defined in a sufficiently generic way so as to allow for testing a large range of outcome types
 
 A test has three components:
-
 . input type
 . output type
 . transformation from input to output
@@ -32,8 +31,6 @@ That provides some structure in which to think about the underlying type system 
 
 === Input type
 
-
 === Output type
-
 
 === Transformations

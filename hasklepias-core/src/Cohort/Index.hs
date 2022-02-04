@@ -11,7 +11,9 @@ Maintainer  : bsaul@novisci.com
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+-- {-# LANGUAGE DataKinds #-}
 
 module Cohort.Index
   (
@@ -45,6 +47,7 @@ import           GHC.Show                       ( Show )
 import           IntervalAlgebra                ( Interval
                                                 , Intervallic(..)
                                                 )
+import           Witch
 {-|
 An @Index@ is a wrapper for an @Intervallic@ used to indicate that a particular
 interval is considered an index interval to which other intervals will be compared.
@@ -73,6 +76,10 @@ instance (Intervallic i a, ToJSON (i a)) => ToJSON (Index i a)
 -- | A type containing (maybe) a @Data.Set.Set@ of indices.
 newtype IndexSet i a = MkIndexSet ( Maybe (Set.Set (Index i a)))
   deriving (Eq, Show, Generic)
+
+instance From (IndexSet i a) (Maybe (Set.Set (Index i a))) where
+instance From (IndexSet i a) (Maybe [Index i a]) where
+  from (MkIndexSet x) = fmap (from @(Set.Set (Index i a))) x
 
 {-|
 Utility for creating an `IndexSet` from a list of `Index`.

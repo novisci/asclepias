@@ -384,33 +384,44 @@ noInit = MkCensoredOccurrence (C Noncompliance) (RightCensored (mkEventTime (Jus
 
 The subject-matter expert should care only about the information `Noncompliance`, `RightCensored` and the `EventTime` value `43`. They do not care about the types those values are wrapped in, and it would be a substantial burden to require the user to specify those types in the test specification.
 
-=== Test inputs are `Events`
-The `Events` type `Hasklepias` exports appears to be the essential input for all cohort-generation routines and hence for all outputs we might wish to test. `hygiea` can either create its own representation of `Events`, if necessary, or it can import the `Event` type from the upcoming `event-data-theory` module.
+=== Golden testing
+Tests will be implemented as golden tests, in which the test routine produces a file to be compared to the 'golden' reference file. The test passes if and only if the two files are identical.
 
-=== Test outputs are some internal `Outcome` type
-The name probably will change. The goal is to have an `Outcome` type that is to `Event` as the `event-data-theory` `Event` type is to project-specific versions.
+That provides some structure in which to think about the underlying type system of `hygeia`.
 
-I would start by making it a wrapper or generalization for `Hasklepias.Misc.CensoredOccurrence`.
+== Finding the right level of abstraction
+A test has three components:
+. input type
+. output type
+. transformation from input to output
 
-=== Require `From` conversions to map between types
-Project programmers must define how project-specific types map to the relevant testable input/output types, by implementing `Witch.From` instances. `hygiea` routines would all have the appropriate `Witch.From` constraints.
+Though input types are more homogeneous, tending to be `Events`, the only type a golden test cares about is the output.
 
-At the moment this seems like it would offer the best compromise, despite adding some work for project developers. It
+An input type need not be a concrete type and can be any type that is converted to the output type.
+
+Therefore, the fundamental object in `hygiea` could be a typeclass
+[source,haskell]
+----
+class (From output OutputData) => Testable input output where
+  toOutput :: input -> output
+----
+
+Note it might need to be renamed to avoid confusion with `QuickCheck.Testable`.
+
+=== Test outputs are an internal, concrete `OutcomeData` type
+Though test inputs need not be concrete types, there are two main reasons why the test output type, call it `OutcomeData`, probably should be. Doing so
+
+1. provides a mechanism by which writers of test config files can specify tests without needing to know implementation details of project-specific types
+2. gives a common structure for golden test file outputs
+
+This certainly should be revisited frequently in the `hygiea` development process, particularly with regard to how and what information on project-specific types should flow to subject-matter experts using the text-base UI.
+
+One possibility for a slightly more advanced application would be for `hygiea` to allow developers to use Dhall to specify the fields that *can* be tested, and to provide that to subject matter experts. That would become the common reference structure for test output, allowing the underlying `OutputData` to be more generic.
+
+=== `Testable` typeclass
+Project programmers must define how project-specific types map to the relevant testable input/output types, by implementing `Witch.From` instances.  At the moment this seems like it would offer the best compromise, despite adding some work for project developers. It
 
 . allows `hygiea` to remain agnostic about the particular types used in a project
 . makes the testing functionality more robust to changes in `asclepias` or in the UI
 . forces developers to define clearly what must be tested, but frees them from the burden of actually defining how tests are run
 . allow the UI to implement its own conversion instances, without caring about how the conversion is done for any given project
-
-=== Provide a `Testable` class for routines mapping inputs to outputs
-The name might change, to disambiguate from `QuickCheck.Testable`.
-
-For example, if the `Input` type is a placeholder for `hygiea`'s `Event` implementation, the class might be defined as 
-
-[source,haskell]
-----
-class (From b Input, From d Outcome) => Testable b d | b -> d where
-  genOutcome :: b -> d
-----
-
-For example in the example above, the programmer would then declare an instance of `Testable` by setting `genOutcome = makeOutcomeDefinition`.

@@ -1,6 +1,6 @@
 module Main where
 
-import qualified Planning
+import qualified Planning.Test
 
 main :: IO ()
 main = do

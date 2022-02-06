@@ -1,6 +1,6 @@
 module Main where
 
-import qualified HygieaPlanning
+import qualified Planning
 
 main :: IO ()
 main = do

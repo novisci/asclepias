@@ -14,5 +14,5 @@ cradle:
       component: "stype"
     - path: "./maybe-toxic-tutorial/"
       component: "maybe-toxic-tutorial"
-    - path: "./hygiea/planning/"
-      component: "hygiea-planning"
+    - path: "./hygiea/"
+      component: "hygiea"

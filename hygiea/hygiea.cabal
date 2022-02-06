@@ -1,12 +1,12 @@
 cabal-version:      2.4
-name:               hygiea-planning
+name:               hygiea
 version:            0.1.0.0
 
 -- A short (one-line) description of the package.
--- synopsis:
+synopsis: Cohort test-building interface for asclepias
 
 -- A longer description of the package.
-description: Hygiea planning phase demo
+-- description: 
 
 -- A URL where users can report bugs.
 -- bug-reports:
@@ -21,13 +21,13 @@ maintainer:         bbrown@targetrwe.com
 -- category:
 extra-source-files:
     CHANGELOG.md
-    README.adoc
+    planning.adoc
 
 library
-    exposed-modules:  Hygiea.Planning
+    exposed-modules:  Planning
 
     -- Modules included in this library but not exported.
-    -- other-modules:
+    other-modules: Planning.Core.Input, Planning.Core.Output
 
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:
@@ -45,7 +45,7 @@ executable planning
     -- other-extensions:
     build-depends:
         base ^>=4.14.2.0,
-        hygiea-planning
+        hygiea
 
     hs-source-dirs:   app
     default-language: Haskell2010

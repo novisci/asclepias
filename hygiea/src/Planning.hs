@@ -1,4 +1,4 @@
-module Planning (module Planning.Core.Input, module Planning.Core.Output) where
+module Planning (module Planning.Input, module Planning.Output) where
 
-import           Planning.Core.Input
-import           Planning.Core.Output
+import           Planning.Core.Input as Planning.Input
+import           Planning.Core.Output as Planning.Output

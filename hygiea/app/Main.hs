@@ -12,7 +12,6 @@ main = do
   output <- parseDhallFile "./hygiea/src/Planning/Examples/example.dhall"
   putStrLn "Parsed from Dhall:"
   print output
-  -- TODO: rework Testable a bit
   let outcomes = T.toOutput inputs :: [ProjectOutcome]
   let result = from outcomes :: OutputData
   putStrLn "Cohort produced:"

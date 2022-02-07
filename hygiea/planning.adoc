@@ -397,7 +397,9 @@ A test has three components:
 
 Though input types are more homogeneous, tending to be `Events`, the only type a golden test cares about is the output.
 
-An input type need not be a concrete type and can be any type that is converted to the output type.
+An input type need not be a concrete type and can be any type that is converted to the output type. 
+
+To clarify: We do need some internal representation of the input, for subject-matter-experts to specify. The generalized `Event` type from the `event-data-theory` work is a good starting point for that representation.
 
 Therefore, the fundamental object in `hygiea` could be a typeclass
 [source,haskell]
@@ -425,3 +427,17 @@ Project programmers must define how project-specific types map to the relevant t
 . makes the testing functionality more robust to changes in `asclepias` or in the UI
 . forces developers to define clearly what must be tested, but frees them from the burden of actually defining how tests are run
 . allow the UI to implement its own conversion instances, without caring about how the conversion is done for any given project
+
+=== Discussion
+From the stat-dev meeting on Feb. 7:
+
+. add an `Input` type to `Hygiea.Planning`, which should mimic the `Event` type
+. `OutputData` should be more general than a simple concrete type
+.. should allow only a rectangular text input to be parsed
+.. API for programmers to define what the rows and columns mean
+.. e.g. a tabular text file (or a dhall file if using that) to specify the project-specific shape of outcomes to be tested, which can then serve as a skeleton for text-based user input
+.. the internal representation should then become a concrete type once the table schema is read
+.. look to support both 'interim' types, e.g. predicate results or covariates, as well as outcomes
+.. P0059 outcomes are more complex than is typical
+. Interest in adding unit tests. Though part of the plan to add these eventually, we should look to provide in the next phase a consistent API for users to write *unit* tests using the same internal representations as for golden tests
+

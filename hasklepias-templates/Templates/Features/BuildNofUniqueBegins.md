@@ -13,8 +13,15 @@ module Templates.Features.BuildNofUniqueBegins
   , buildNofUniqueBeginsTests
   ) where
 
+import           Data.Foldable                     ( toList )
+import           Data.Text                         ( Text )
+import           Flow                              ( (.>) )
+import           GHC.Natural                       ( Natural )
+import           Data.Map.Strict                   as M ( Map, fromList, toList )
+import           Test.Tasty                        ( TestTree )
 import           Templates.FeatureReqs
 import           Templates.Features.BuildNofXBase
+import           Witherable                        ( Witherable )
 ```
 
 ## Usage
@@ -27,19 +34,19 @@ TODO
 buildNofUniqueBegins
   :: (Intervallic i a, IntervalSizeable a b, Witherable container)
   => (Index i a -> AssessmentInterval a) -- ^ function to transform a 'Cohort.Index' to an 'Cohort.AssessmentInterval'
-  -> ComparativePredicateOf2 (AssessmentInterval a) (Event a) -- ^ interval predicate
-  -> Predicate (Event a) -- ^ a predicate on events
+  -> ComparativePredicateOf2 (AssessmentInterval a) (Event ClaimsSchema Text a) -- ^ interval predicate
+  -> Predicate (Event ClaimsSchema Text a) -- ^ a predicate on events
   -> Definition
        (  Feature indexName (Index i a)
-       -> Feature eventsName (container (Event a))
+       -> Feature eventsName (container (Event ClaimsSchema Text a))
        -> Feature varName [(EventTime b, Count)]
        )
 buildNofUniqueBegins = buildNofXBase 
   ( fmap (momentize . getInterval) )
   (  fmap (, 1 :: Natural)
-  .> toList
-  .> mapFromList
-  .> mapToList
+  .> Data.Foldable.toList
+  .> M.fromList
+  .> M.toList
   .> \x -> uncurry zip (fmap (scanl1 (+)) (unzip x)) 
   ) 
   (\window ->
@@ -53,13 +60,13 @@ buildNofUniqueBegins = buildNofXBase
 
 type NofUniqueBeginsArgs
   = ( Index Interval Int -> AssessmentInterval Int
-    , ComparativePredicateOf2 (AssessmentInterval Int) (Event Int)
-    , Predicate (Event Int)
+    , ComparativePredicateOf2 (AssessmentInterval Int) (Event ClaimsSchema Text Int)
+    , Predicate (Event ClaimsSchema Text Int)
     )
 
 type NofUniqueBeginsTestCase
   = TestCase
-      (F "index" (Index Interval Int), F "events" [Event Int])
+      (F "index" (Index Interval Int), F "events" [Event ClaimsSchema Text Int])
       [(EventTime Int, Count)]
       NofUniqueBeginsArgs
 

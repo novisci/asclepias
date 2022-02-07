@@ -7,9 +7,10 @@ module Templates.FeatureReqs
   ( module Cohort
   , module EventData
   , module Features
-  , module Hasklepias.FeatureEvents
-  , module Hasklepias.Reexports
-  , module Hasklepias.ReexportsUnsafe
+  -- , module Hasklepias.FeatureEvents
+  -- , module Hasklepias.Reexports
+  -- , module Hasklepias.ReexportsUnsafe
+  , module EventDataTheory
   , module Stype
   , module Templates.TestUtilities
   ) where
@@ -17,8 +18,9 @@ module Templates.FeatureReqs
 import           Cohort
 import           EventData
 import           Features
-import           Hasklepias.FeatureEvents
-import           Hasklepias.Reexports
-import           Hasklepias.ReexportsUnsafe
+-- import           Hasklepias.FeatureEvents
+-- import           Hasklepias.Reexports
+-- import           Hasklepias.ReexportsUnsafe
+import           EventDataTheory
 import           Stype
 import           Templates.TestUtilities

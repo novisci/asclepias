@@ -4,7 +4,6 @@ Copyright   : (c) NoviSci, Inc 2020
 License     : BSD3
 Maintainer  : bsaul@novisci.com
 -}
-{-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE TupleSections #-}
 
@@ -15,35 +14,16 @@ module Cohort.Attrition
   ) where
 
 import           Cohort.Criteria
-import           Control.Applicative            ( (<$>) )
-import           Data.Eq                        ( Eq )
-import           Data.Function                  ( ($) )
-import           Data.Functor                   ( fmap )
-import           Data.List                      ( length
-                                                , replicate
-                                                , zip
-                                                )
 import           Data.Map.Strict               as Map
                                                 ( Map
                                                 , fromListWith
                                                 , unionsWith
                                                 )
-import           Data.Maybe                     ( Maybe
-                                                , maybe
-                                                )
-import           Data.Monoid                    ( mempty )
-import           Data.Ord                       ( Ord(compare) )
-import           Data.Semigroup                 ( Semigroup((<>)) )
 import qualified Data.Set                      as Set
                                                 ( Set )
-import           Data.Tuple                     ( uncurry )
 import           GHC.Exts                       ( IsList(..) )
 import           GHC.Generics                   ( Generic )
-import           GHC.Int                        ( Int )
-import           GHC.Num                        ( Natural
-                                                , Num((+))
-                                                )
-import           GHC.Show                       ( Show )
+import           GHC.Num                        ( Natural )
 
 -- | A type which collects counts of a 'CohortStatus'
 data AttritionLevel = MkAttritionLevel

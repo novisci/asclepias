@@ -3,8 +3,7 @@ module Tests.Cohort
   ) where
 
 import           Test.Tasty
-import qualified Tests.Cohort.AssessmentIntervals
-                                               as AI
+import qualified Tests.AssessmentIntervals     as AI
 import qualified Tests.Cohort.Attrition        as AT
 
 import qualified Tests.Cohort.Core             as C

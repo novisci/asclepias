@@ -6,13 +6,13 @@ License     : BSD3
 Maintainer  : bsaul@novisci.com
 -}
 -- {-# OPTIONS_HADDOCK hide #-}
-{-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE LambdaCase #-}
 
 module Cohort.Criteria
   ( Criterion
-  , Criteria(..)
+  , Criteria
+  , getCriteria
   , Status(..)
   , CohortStatus(..)
   , criterion
@@ -23,45 +23,19 @@ module Cohort.Criteria
   , checkCohortStatus
   ) where
 
-import           Control.Applicative            ( Applicative(pure) )
-import           Control.Monad                  ( Functor(..) )
 import           Data.Aeson                     ( (.=)
                                                 , ToJSON(..)
                                                 , object
                                                 )
 import           Data.Bifunctor                 ( Bifunctor(second) )
-import           Data.Bool                      ( (&&)
-                                                , Bool(..)
-                                                , not
-                                                , otherwise
-                                                )
-import           Data.Either                    ( Either(..) )
-import           Data.Eq                        ( Eq(..) )
-import           Data.Function                  ( ($)
-                                                , (.)
-                                                , const
-                                                , id
-                                                )
-import           Data.List                      ( (++)
-                                                , find
-                                                )
+import           Data.List                      ( find )
 import qualified Data.List.NonEmpty            as NE
                                                 ( NonEmpty
                                                 , fromList
                                                 , zip
                                                 )
-import           Data.Maybe                     ( Maybe(..)
-                                                , maybe
-                                                )
-import           Data.Ord                       ( Ord(..)
-                                                , Ordering(..)
-                                                )
-import           Data.Semigroup                 ( Semigroup((<>)) )
 import           Data.Text                      ( Text
                                                 , pack
-                                                )
-import           Data.Tuple                     ( fst
-                                                , snd
                                                 )
 import           Features.Core                  ( Feature
                                                 , FeatureN(..)
@@ -69,15 +43,11 @@ import           Features.Core                  ( Feature
                                                 , nameFeature
                                                 )
 import           GHC.Generics                   ( Generic )
-import           GHC.Num                        ( Natural
-                                                , Num((+))
-                                                )
-import           GHC.Show                       ( Show(show) )
+import           GHC.Num                        ( Natural )
 import           GHC.TypeLits                   ( KnownSymbol
                                                 , symbolVal
                                                 )
 
-import           Cohort.Index
 -- | Defines the return type for @'Criterion'@ indicating whether to include or 
 -- exclude a subject.
 data Status = Include | Exclude deriving (Eq, Show, Generic)
@@ -133,9 +103,12 @@ criterion :: (KnownSymbol n) => Feature n Status -> Criterion
 criterion x = MkCriterion (nameFeature x)
 
 -- | A nonempty collection of @'Criterion'@ paired with a @Natural@ number.
-newtype Criteria = MkCriteria {
-    getCriteria :: NE.NonEmpty (Natural, Criterion)
-  } deriving (Eq, Show)
+newtype Criteria = MkCriteria ( NE.NonEmpty (Natural, Criterion) )
+  deriving (Eq, Show)
+
+-- | Unpacks a 'Criteria'.
+getCriteria :: Criteria -> NE.NonEmpty (Natural, Criterion)
+getCriteria (MkCriteria x) = x
 
 -- | Constructs a @'Criteria'@ from a @'NE.NonEmpty'@ collection of @'Criterion'@.
 criteria :: NE.NonEmpty Criterion -> Criteria
@@ -160,24 +133,31 @@ getStatuses :: Criteria -> NE.NonEmpty (Natural, Text, Status)
 getStatuses (MkCriteria x) =
   fmap (\c -> (fst c, (fst . getStatus . snd) c, (snd . getStatus . snd) c)) x
 
--- | An internal function used to @'Data.List.find'@ excluded statuses. Used in
--- 'checkCohortStatus'.
+{-|
+An internal function used to @'Data.List.find'@ excluded statuses. 
+Used in 'checkCohortStatus'
+-}
 findExclude :: Criteria -> Maybe (Natural, Text, Status)
 findExclude x = find (\(_, _, z) -> z == Exclude) (getStatuses x)
 
--- | Converts a subject's @'Criteria'@ to a @'CohortStatus'@. The status is set
--- to @'Included'@ if none of the @'Criterion'@ have a status of @'Exclude'@.
-checkCohortStatus :: Maybe (Index i a) -> Criteria -> CohortStatus
+{-|
+Converts a subject's @'Criteria'@ to a @'CohortStatus'@.
+The status is set to @'Included'@
+if none of the @'Criterion'@ have a status of @'Exclude'@.
+-}
+checkCohortStatus :: Maybe i -> Criteria -> CohortStatus
 checkCohortStatus Nothing _ = SubjectHasNoIndex
 checkCohortStatus (Just index) x =
   maybe Included (\(i, n, _) -> ExcludedBy (i, n)) (findExclude x)
 
--- | Utility to get the name of a @'Criterion'@.
+-- | Utility to get the @Text@ name of a @'Criterion'@.
 getCriterionName :: Criterion -> Text
 getCriterionName (MkCriterion x) = getNameN x
 
--- | Initializes a container of @'CohortStatus'@ from a @'Criteria'@. This can be used
--- to collect generate all the possible Exclusion/Inclusion reasons. 
+{-|
+Initializes a container of @'CohortStatus'@ from a @'Criteria'@. 
+This can be used to generate all the possible Exclusion/Inclusion reasons.
+-}
 initStatusInfo :: Criteria -> NE.NonEmpty CohortStatus
 initStatusInfo (MkCriteria z) =
   fmap (ExcludedBy . Data.Bifunctor.second getCriterionName) z <> pure Included

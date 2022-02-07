@@ -5,267 +5,275 @@ Copyright   : (c) NoviSci, Inc 2020
 License     : BSD3
 Maintainer  : bsaul@novisci.com
 -}
--- {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE TupleSections #-}
 
 module Cohort.Core
-  ( Subject(..)
+  ( Subject
   , ObsID
-  , Population(..)
-  , ObsUnit(..)
-  , CohortData(..)
+  , ObsUnit
+  , Population
+  , CohortData
   , Cohort(..)
   , CohortSpec
   , CohortSetSpec
-  , CohortSet(..)
+  , CohortSet
   , makeObsID
   , specifyCohort
-  , evalCohort
   , getCohortIDs
   , getCohortDataIDs
   , getCohortData
   , getCohortDataData
   , getAttritionInfo
   , makeCohortSpecs
-  , evalCohortSet
-  , getCohortSet
+  , makeCohortEvaluator
+  , makeCohortSetEvaluator
+  , defaultCohortEvalOptions
+  -- , getCohortSet
   ) where
 
 import           Cohort.Attrition
 import           Cohort.Criteria                ( CohortStatus(..)
-                                                , Criteria(getCriteria)
+                                                , Criteria
                                                 , checkCohortStatus
                                                 , initStatusInfo
                                                 )
-import           Cohort.Index
-import           Control.Applicative            ( (<$>)
-                                                , liftA2
-                                                , pure
-                                                )
-import           Control.Monad                  ( (=<<)
-                                                , Functor(fmap)
-                                                , join
-                                                )
+import           Cohort.IndexSet
+import           Control.Applicative            ( liftA2 )
 import           Data.Aeson                     ( FromJSON
                                                 , ToJSON(..)
                                                 )
-import           Data.Foldable                  ( Foldable(length) )
-import           Data.Function                  ( ($)
-                                                , (.)
-                                                , flip
-                                                )
-import           Data.List                      ( zipWith )
+import qualified Data.List.NonEmpty            as NE
 import           Data.Map.Strict               as Map
-                                                ( Map )
-import           Data.Maybe                     ( Maybe(..)
-                                                , catMaybes
-                                                , mapMaybe
+                                                ( Map
+                                                , elems
+                                                , keys
                                                 )
-import           Data.Monoid                    ( mempty )
-import           Data.Ord                       ( Ord(..) )
-import           Data.Semigroup                 ( Semigroup((<>)) )
+import           Data.Maybe                     ( mapMaybe )
+import           Data.Semigroup                 ( sconcat )
 import qualified Data.Set                      as Set
-                                                ( Set
-                                                , toList
-                                                )
-import           Data.Text                      ( Text
-                                                , pack
-                                                )
-import           Data.Traversable               ( sequenceA )
-import           Data.Tuple                     ( curry )
+                                                ( Set )
+import           Data.Text                      ( Text )
 import           GHC.Exts                       ( IsList(..) )
 import           GHC.Generics                   ( Generic )
-import           GHC.Num                        ( Natural )
-import           GHC.Show                       ( Show(..) )
 import           Safe                           ( headMay )
 import           Witch
-
--- | An observational unit identifier. Currently, simply @Text@.
-newtype ObsID = MkObsID (Text, Natural)
+{-|
+An observational unit identifier. 
+The textual representation of a Subject ID,
+plus the 'Index' of the unit.
+-}
+newtype ObsID i = MkObsID (Text, i)
   deriving (Eq, Show, Ord, Generic)
 
+instance From (Text, i) (ObsID i)  where
+instance From (ObsID i) (Text, i) where
+instance From (ObsID i) i where
+  from (MkObsID (x, y)) = y
+
 -- | Smart constructor for @'ObsID'@.
-makeObsID :: Natural -> Text -> ObsID
+makeObsID :: i -> Text -> ObsID i
 makeObsID = (flip . curry) MkObsID
 
--- | A subject is just a pair of a 'Text' ID and data.
+{-|
+A @'Subject'@ may be mapped to zero of more observational units (one per
+@'Index'@ in the @'IndexSet'@).
+-}
+data ObsUnit d i = MkObsUnit
+  { obsID   :: ObsID i
+  , obsData :: d
+  }
+  deriving (Eq, Show, Generic)
+
+instance From (ObsID a, d) (ObsUnit d a)  where
+  from (x, y) = MkObsUnit x y
+
+{-| 
+A subject is just a pair of a 'Text' ID and data.
+-}
 newtype Subject d = MkSubject (Text, d)
     deriving (Eq, Show, Generic)
 
+-- (Internal) Gets the ID out of  a @'Subject'@.
 getSubjectID :: Subject d -> Text
 getSubjectID (MkSubject (x, _)) = x
+
+-- (Internal) Gets the data out of  a @'Subject'@.
+getSubjectData :: Subject d -> d
+getSubjectData (MkSubject (_, x)) = x
 
 instance Functor Subject where
   fmap f (MkSubject (id, x)) = MkSubject (id, f x)
 
 instance (FromJSON d) => FromJSON (Subject d) where
 
--- | A population is a list of @'Subject'@s
+instance From (Text, d) (Subject d) where
+
+
+{-|
+A population is a container of @'Subject'@s.
+Currently, the container is a list.
+-}
 newtype Population d = MkPopulation [Subject d]
     deriving (Eq, Show, Generic)
 
-instance Functor Population where
-  fmap f (MkPopulation x) = MkPopulation (fmap (fmap f) x)
+-- instance Functor Population where
+--   fmap f (MkPopulation x) = MkPopulation (fmap (fmap f) x)
 
 instance (FromJSON d) => FromJSON (Population d) where
 
--- | A @'Subject'@ may be mapped to zero of more observational units (one per
---   @'Index'@ in the @'IndexSet'@).
-data ObsUnit d = MkObsUnit
-  { obsID   :: ObsID
-  , obsData :: d
-  }
-  deriving (Eq, Show, Generic)
+instance From [Subject d] (Population d) where
+instance From (Population d) [Subject d] where
 
-instance Functor ObsUnit where
-  fmap f (MkObsUnit id x) = MkObsUnit id (f x)
-
--- | A container for CohortData
-newtype CohortData d = MkCohortData { getObsData :: [ObsUnit d] }
+{-| 
+A container for CohortData
+-}
+newtype CohortData d a = MkCohortData [ObsUnit d a]
     deriving (Eq, Show, Generic)
 
--- | A cohort is a list of observational units along with @'AttritionInfo'@ 
--- regarding the number of subjects excluded by the @'Criteria'@. 
-newtype Cohort d = MkCohort (AttritionInfo, CohortData d)
+
+instance From [ObsUnit d a] (CohortData d a) where
+
+{-| 
+Acohort is a list of observational units along with @'AttritionInfo'@ 
+regarding the number of subjects excluded by the @'Criteria'@..
+-}
+newtype Cohort d a = MkCohort (Maybe AttritionInfo, CohortData d a)
     deriving (Eq, Show, Generic)
+
+instance From (Cohort d a) (Maybe AttritionInfo, CohortData d a) where
 
 -- | Gets the attrition info from a cohort
-getAttritionInfo :: Cohort d -> AttritionInfo
+getAttritionInfo :: Cohort d a -> Maybe AttritionInfo
 getAttritionInfo (MkCohort (x, _)) = x
 
 -- | Get IDs from 'CohortData'.
-getCohortDataIDs :: CohortData d -> [ObsID]
+getCohortDataIDs :: CohortData d a -> [ObsID a]
 getCohortDataIDs (MkCohortData x) = fmap obsID x
 
 -- | Get IDs from a cohort.
-getCohortIDs :: Cohort d -> [ObsID]
+getCohortIDs :: Cohort d a -> [ObsID a]
 getCohortIDs (MkCohort (_, dat)) = getCohortDataIDs dat
 
 -- | Get data from a cohort.
-getCohortDataData :: CohortData d -> [d]
+getCohortDataData :: CohortData d a -> [d]
 getCohortDataData (MkCohortData x) = fmap obsData x
 
 -- | Get data from a cohort.
-getCohortData :: Cohort d -> [d]
+getCohortData :: Cohort d a -> [d]
 getCohortData (MkCohort (_, dat)) = getCohortDataData dat
 
--- | Unpacks a @'Population'@ to a list of subjects.
-getPopulation :: Population d -> [Subject d]
-getPopulation (MkPopulation x) = x
+{-| 
+A cohort specification consist of three functions: 
 
--- | Gets the data out of  a @'Subject'@.
-getSubjectData :: Subject d -> d
-getSubjectData (MkSubject (_, x)) = x
+TODO
 
--- | A cohort specification consist of two functions: one that transforms a subject's
--- input data into a @'Criteria'@ and another that transforms a subject's input data
--- into the desired return type.
-data CohortSpec d1 d0 i a = MkCohortSpec
-  { runIndices  :: d1 -> IndexSet i a
-  , runCriteria :: Index i a -> d1 -> Criteria
-  , runFeatures :: Index i a -> d1 -> d0
+-}
+data CohortSpec d1 d0 i = MkCohortSpec
+  { runIndices  :: d1 -> IndexSet i
+  , runCriteria :: i -> d1 -> Criteria
+  , runFeatures :: i -> d1 -> d0
   }
 
 -- | Creates a @'CohortSpec'@.
 specifyCohort
-  :: (d1 -> IndexSet i a)
-  -> (Index i a -> d1 -> Criteria)
-  -> (Index i a -> d1 -> d0)
-  -> CohortSpec d1 d0 i a
+  :: (d1 -> IndexSet i)
+  -> (i -> d1 -> Criteria)
+  -> (i -> d1 -> d0)
+  -> CohortSpec d1 d0 i
 specifyCohort = MkCohortSpec
-
-{-|
--}
-data EvaluateFeatures = IncludeFeatures | SkipFeatures
-
-{-|
--}
-data UnitsToEvaluateFeatures = OnAll | OnlyOnIncluded
 
 {-|
 TODO
 -}
-data CohortEvalOptions = MkCohortOptions
-  { unitsToKeep     :: UnitsToEvaluateFeatures
-  , includeFeatures :: EvaluateFeatures
+data EvaluateFeatures =
+    IncludeFeatures -- ^ TODO
+  | SkipFeatures -- ^ TODO
+
+{-|
+TODO
+-}
+data UnitsToEvaluateFeatures =
+    OnAll -- ^ TODO 
+  | OnlyOnIncluded -- ^ TODO
+
+{-|
+TODO
+-}
+data CohortEvalOptions = MkCohortEvalOptions
+  { unitsToEvaluateFeatures :: UnitsToEvaluateFeatures
+  , includeFeatures         :: EvaluateFeatures
   }
 
+{-|
+-}
+defaultCohortEvalOptions :: CohortEvalOptions
+defaultCohortEvalOptions = MkCohortEvalOptions OnlyOnIncluded IncludeFeatures
 
-evalSubjectIndices :: CohortSpec d1 d0 i a -> Subject d1 -> IndexSet i a
-evalSubjectIndices spec = runIndices spec . getSubjectData
-
-evalSubjectCriteria
-  :: CohortSpec d1 d0 i a -> Subject d1 -> Index i a -> Criteria
-evalSubjectCriteria spec = flip (runCriteria spec) . getSubjectData
-
-evalSubjectCohortStatus
-  :: CohortSpec d1 d0 i a -> Subject d1 -> Index i a -> Criteria
-evalSubjectCohortStatus spec = flip (runCriteria spec) . getSubjectData
-
-evalSubjectFeatures :: CohortSpec d1 d0 i a -> Subject d1 -> Index i a -> d0
-evalSubjectFeatures spec = flip (runFeatures spec) . getSubjectData
+{-|
+TODO
+-}
+data EvaluatedSubject d i =
+    SNoIndex Text CohortStatus -- ^ TODO 
+  | SUnits [ (ObsID i, CohortStatus, Maybe d) ] -- ^ TODO
 
 
-evalSubjectStatuses
-  :: forall m d1 d0 i a
-   . (Monad m)
-  => CohortSpec d1 d0 i a
-  -> Subject d1
-  -> m (Map ObsID CohortStatus)
-  -- -> m (Map ObsID CohortStatus)
-evalSubjectStatuses spec x = do
-  let sid = getSubjectID x
-  -- 1. Evaluate indices; convert any indices in set to list
-  let inx = into @(Maybe [Index i a]) $ evalSubjectIndices spec x
+instance From (ObsID i, CohortStatus, Maybe d ) (Maybe (ObsUnit d i)) where
+  from (i, _, Just d ) = Just $ MkObsUnit i d
+  from (_, _, Nothing) = Nothing
 
-  -- 2. In the case that the subject has no indices,
-  --    return one observation.
-  --    In the case the subject has 1 or more indices,
-  --    return a status for each index
-  case inx of
-    Nothing  -> pure $ fromList [(makeObsID 1 sid, SubjectHasNoIndex)]
-    Just ins -> do
-      -- 3. For each index, evaluate criteria
-      let crits = fmap (evalSubjectCriteria spec x) ins
-      -- 4. For each index/criteria evaluate cohort status
-      -- checkCohortStatus has sig:: Maybe (Index a) -> Criteria -> CohortStatus
-      -- Thus use of Just here to lift an Index back into Maybe
-      let stats = zipWith (checkCohortStatus . Just) ins crits
-      pure $ fromList $ liftA2 (\a b -> (makeObsID a sid, b)) [1 ..] stats
+instance From (EvaluatedSubject d i) [ObsUnit d i] where
+  from (SNoIndex _ _) = []
+  from (SUnits x    ) = mapMaybe (into @(Maybe (ObsUnit d i))) x
 
-evalSubject
-  :: forall m d1 d0 i a
+
+{-|
+TODO
+-}
+makeSubjectEvaluator
+  :: forall m d1 d0 i
    . (Monad m)
   => CohortEvalOptions
-  -> CohortSpec d1 d0 i a
-  -> Subject d1
-  -> m [(ObsID, CohortStatus, Maybe (Index i a), Maybe d0)]
-evalSubject opts spec x = do
-  let sid = getSubjectID x
-  -- 1. Evaluate indices; convert any indices in set to list
-  let inx = into @(Maybe [Index i a]) $ evalSubjectIndices spec x
+  -> CohortSpec d1 d0 i
+  -> (Subject d1 -> m (AttritionInfo, EvaluatedSubject d0 i))
+makeSubjectEvaluator opts spec subj = do
+  let sid = getSubjectID subj
+  let sdt = getSubjectData subj
 
-  -- 2. In the case that the subject has no indices,
-  --    return one observation.
-  --    In the case the subject has 1 or more indices,
-  --    return a status for each index
+  -- Evaluate indices; 
+  -- convert any indices in set to list
+  let inx = into @(Maybe [i]) $ runIndices spec sdt
+
+  -- In the case that the subject has no indices,
+  -- return one observation.
+  -- In the case the subject has 1 or more indices,
+  -- return a status for each index
   case inx of
     Nothing ->
-      pure $ pure (makeObsID 1 sid, SubjectHasNoIndex, Nothing, Nothing)
+      pure (measureAttrition Nothing [], SNoIndex sid SubjectHasNoIndex)
     Just ins -> do
-      -- 3. For each index, evaluate criteria
-      let crits         = fmap (evalSubjectCriteria spec x) ins
-      -- 4. For each index/criteria evaluate cohort status
+
+      -- For each index, evaluate criteria
+      let crits         = fmap (flip (runCriteria spec) sdt) ins
+
+      -- For each index/criteria evaluate cohort status
       -- checkCohortStatus has sig:: Maybe (Index a) -> Criteria -> CohortStatus
       -- Thus use of Just here to lift an Index back into Maybe
       let stats         = zipWith (checkCohortStatus . Just) ins crits
 
-      -- 5. Pair up each status with its index for ease of processing later.
-      let statusIndices = liftA2 (,) stats ins
+      -- Pair up each status with its index for ease of processing later.
+      let statusIndices = liftA2 (\x y -> (makeObsID y sid, x)) stats ins
+
+      -- Measure the contribution to attrition for this subject
+      let attrition     = measureAttrition (headMay crits) stats
+
+      -- Create a function which applies a function g
+      -- to the statusIndices and returns the desired result type
+      let doFeatures    = \g -> pure (attrition, SUnits $ fmap g statusIndices)
 
       -- Here we need to handle user options.
       case includeFeatures opts of
@@ -273,143 +281,114 @@ evalSubject opts spec x = do
         -- there are then the user options for which subjects
         -- they would like to keep in the output.
         IncludeFeatures -> do
-          case unitsToKeep opts of
-            -- here the user chooses to evaluate features
-            -- on all observational units that have an index
+
+          -- A function which takes an index and runs the 
+          -- features given the cohort spec and subject's data.
+          let featureRunner = \i -> runFeatures spec i sdt
+
+          case unitsToEvaluateFeatures opts of
+          -- here the user chooses to evaluate features
+          -- on all observational units that have an index
             OnAll -> do
-              let feats =
-                    fmap (\i -> runFeatures spec i (getSubjectData x)) ins
-              pure
-                $   (\a b c d -> (makeObsID a sid, b, Just c, Just d))
-                <$> [1 ..]
-                <*> stats
-                <*> ins
-                <*> feats
+              doFeatures (\x -> tackOn (Just $ featureRunner (from (fst x))) x)
             -- here the user chooses to evaluate features
             -- only on those units whose dispositon is Included
             OnlyOnIncluded -> do
-              let feats = fmap
-                    (\(s, i) -> case s of
-                      Included -> Just $ runFeatures spec i (getSubjectData x)
-                      _        -> Nothing
-                    )
-                    statusIndices
-              pure
-                $   (\a b c d -> (makeObsID a sid, b, Just c, d))
-                <$> [1 ..]
-                <*> stats
-                <*> ins
-                <*> feats
-        -- If the user chooses to skip evaluating features
+              doFeatures
+                (\x -> case snd x of
+                  Included -> tackOn (Just $ featureRunner (from (fst x))) x
+                  _        -> tackOn Nothing x
+                )
+      -- If the user chooses to skip evaluating features
         -- we return Nothing in the data slot.
-        SkipFeatures ->
-          pure
-            $   (\a b c -> (makeObsID a sid, b, Just c, Nothing))
-            <$> [1 ..]
-            <*> stats
-            <*> ins
+        SkipFeatures -> doFeatures (tackOn Nothing)
+  where tackOn z (x, y) = (x, y, z)
 
-
--- subjectIntoObsUnit :: (Functor f) => Subject d1 -> IndexSet i a -> Maybe (f (ObsID, Index i a)) 
--- subjectIntoObsUnit subj indices = fmap 
-
--- internal functions to evalIndices
-evalIndicesOnSubjects
-  :: CohortSpec d1 d0 i a -> Population d1 -> [(IndexSet i a, Subject d1)]
-evalIndicesOnSubjects spec (MkPopulation pop) =
-  fmap (\x -> (runIndices spec (getSubjectData x), x)) pop
-
-data Step1 d i a = MkStep1 (ObsUnit d) (Index i a)
-
-doStep1 :: (IndexSet i a, Subject d1) -> [Maybe (Step1 d1 i a)]
-doStep1 (MkIndexSet indices, MkSubject (id, d)) = case indices of
-  Nothing  -> pure Nothing
-  Just set -> zipWith
-    (\x y -> Just $ MkStep1 (MkObsUnit (makeObsID y id) d) x)
-    (Set.toList set)
-    [1 ..]
-
--- | Evaluates the @'runIndices'@ of a @'CohortSpec'@ on a @'Population'@ to 
--- return a list of @(Index i a, ObsUnit d)@ (one per observational unit). 
-evalIndices :: CohortSpec d1 d0 i a -> Population d1 -> [Maybe (Step1 d1 i a)]
-evalIndices spec x = doStep1 =<< evalIndicesOnSubjects spec x
-
-newtype Step2 d i a = MkStep2 (Criteria, Step1 d i a)
-
--- | Evaluates the @'runCriteria'@ of a @'CohortSpec'@ on a @'Population'@ to 
--- return a list of @(Criteria, Index i a, ObsUnit d1)@. 
-evalCriteria
-  :: CohortSpec d1 d0 i a -> [Maybe (Step1 d1 i a)] -> [Maybe (Step2 d1 i a)]
-evalCriteria spec = fmap
-  (fmap
-    (\(MkStep1 ou i) -> MkStep2 (runCriteria spec i (obsData ou), MkStep1 ou i))
-  )
-
-data Step3 d i a =
-    I1 CohortStatus
-  | I2 CohortStatus (ObsUnit d) (Index i a)
-
-doStep3 :: Maybe (Step2 d i a) -> Step3 d i a
-doStep3 (Just (MkStep2 (c, MkStep1 ou i))) = case (status, i) of
-  (Included, index) -> I2 status ou index
-  _                 -> I1 status
-  where status = checkCohortStatus (Just i) c
-doStep3 Nothing = I1 SubjectHasNoIndex
-
-step3toStatus :: Step3 d i a -> CohortStatus
-step3toStatus (I1 x    ) = x
-step3toStatus (I2 x _ _) = x
-
--- | Convert a list of @(Criteria, Index i a, ObsUnit d)@ into a list of 
---   @(CohortStatus, Index i a, ObsUnit d)@
-evalCohortStatus :: [Maybe (Step2 d i a)] -> [Step3 d i a]
-evalCohortStatus = fmap doStep3
-
--- | Internal function for mapping an @ObsUnit d1@ along with its corresponding 
---   @CohortStatus@ and @Index@ into @Maybe (ObsUnit d0)@. 
-evalFeatures :: (Index i a -> d1 -> d0) -> Step3 d1 i a -> Maybe (ObsUnit d0)
-evalFeatures f x = case x of
-  I2 status obsUnit index -> Just $ fmap (f index) obsUnit
-  _                       -> Nothing
-
--- | The internal function to evaluate a @'CohortSpec'@ on a @'Population'@. 
-evalCohort :: CohortSpec d1 d0 i a -> Population d1 -> Cohort d0
-evalCohort spec pop = MkCohort
-  ( measureAttrition firstCrit statuses
-  , MkCohortData $ mapMaybe (evalFeatures (runFeatures spec)) unitsWithStatus
-  )
- where
-  indices         = evalIndices spec pop
-  unitsWithCrits  = evalCriteria spec indices
-  unitsWithStatus = evalCohortStatus unitsWithCrits
-  firstCrit = (\(MkStep2 (c, _)) -> c) <$> headMay (catMaybes unitsWithCrits)
-  statuses        = step3toStatus <$> unitsWithStatus
-
-{-| A container hold multiple cohorts of the same type. The key is the name of 
-    the cohort; value is a cohort.
+{-| 
+TODO
 -}
-newtype CohortSet d = MkCohortSet (Map Text (Cohort d))
+makePopulationEvaluator
+  :: forall m d1 d0 i
+   . Monad m
+  => CohortEvalOptions
+  -> CohortSpec d1 d0 i
+  -> (  Population d1
+     -> m (Maybe AttritionInfo, [EvaluatedSubject d0 i])
+     )
+makePopulationEvaluator opts spec pop = do
+  let evalSubject = makeSubjectEvaluator opts spec
+  let subjects    = into @[Subject d1] pop
+
+  pure $ (\x -> (fmap sconcat $ NE.nonEmpty $ fst x, snd x))
+    (unzip (evalSubject =<< subjects))
+
+
+
+
+{-| 
+TODO
+-}
+makeCohortEvaluator
+  :: forall m d1 d0 i
+   . Monad m
+  => CohortEvalOptions
+  -> CohortSpec d1 d0 i
+  -> (Population d1 -> m (Cohort d0 i))
+makeCohortEvaluator opts spec pop =
+
+  let evalPopulation = makePopulationEvaluator opts spec
+  in
+    (do
+      ePop <- evalPopulation pop
+      pure $ MkCohort
+        (fst ePop, MkCohortData $ (into @[ObsUnit d0 i]) =<< snd ePop)
+    )
+
+{-| 
+A container hold multiple cohorts of the same type.
+The key is the name of the cohort; value is a cohort.
+-}
+newtype CohortSet d i = MkCohortSet (Map Text (Cohort d i))
   deriving (Eq, Show, Generic)
 
--- | Unwraps a 'CohortSet'.
-getCohortSet :: CohortSet d -> Map Text (Cohort d)
-getCohortSet (MkCohortSet x) = x
+instance From (CohortSet d i) (Map Text (Cohort d i)) where
+-- instance From [(Text, Cohort d i)] (Map Text (Cohort d i)) where
+--   from x = fromList x
 
--- | Key/value pairs of 'CohortSpec's. The keys are the names of the cohorts.
-newtype CohortSetSpec d1 d0 i a = MkCohortSetSpec (Map Text (CohortSpec d1 d0 i a))
+{-| 
+Key/value pairs of 'CohortSpec's. 
+The keys are the names of the cohorts.
+-}
+newtype CohortSetSpec d1 d0 i = MkCohortSetSpec (Map Text (CohortSpec d1 d0 i))
 
--- | Make a set of 'CohortSpec's from list input.
+
+{-| 
+Make a set of 'CohortSpec's from list input.
+-}
 makeCohortSpecs
-  :: [ ( Text
-       , d1 -> IndexSet i a
-       , Index i a -> d1 -> Criteria
-       , Index i a -> d1 -> d0
-       )
-     ]
-  -> CohortSetSpec d1 d0 i a
+  :: [(Text, d1 -> IndexSet i, i -> d1 -> Criteria, i -> d1 -> d0)]
+  -> CohortSetSpec d1 d0 i
 makeCohortSpecs l = MkCohortSetSpec
   $ fromList (fmap (\(n, i, c, f) -> (n, specifyCohort i c f)) l)
 
--- | Evaluates a @'CohortSetSpec'@ on a @'Population'@.
-evalCohortSet :: CohortSetSpec d1 d0 i a -> Population d1 -> CohortSet d0
-evalCohortSet (MkCohortSetSpec s) p = MkCohortSet $ fmap (`evalCohort` p) s
+{-|
+Evaluates a @'CohortSetSpec'@ on a @'Population'@.
+-}
+makeCohortSetEvaluator
+  :: forall m d1 d0 i
+   . Monad m
+  => CohortEvalOptions
+  -> CohortSetSpec d1 d0 i
+  -> Population d1
+  -> m (CohortSet d0 i)
+makeCohortSetEvaluator opts (MkCohortSetSpec specs) pop = do
+  let doCohort = (\s -> makeCohortEvaluator opts s pop)
+  let cohorts  = fmap (\(k, v) -> (k,) =<< doCohort v) (toList specs)
+  pure $ MkCohortSet $ fromList cohorts
+
+
+    -- let doCohorts = fmap (makeCohortEvaluator opts) (elems specs)
+    -- let m = join $ traverse (\f -> f pop) doCohorts
+    -- let z = do into @(Map Text (Cohort d0 i)) $ zip (keys specs) m
+    -- pure $ MkCohortSet z
+

@@ -22,6 +22,7 @@ source-repository head
 
 library
   exposed-modules:
+      AssessmentIntervals
       Features
       Features.Attributes
       Features.Core
@@ -29,19 +30,18 @@ library
       Features.Output
       Features.Featureset
       Cohort
-      Cohort.AssessmentIntervals
       Cohort.Attrition
       Cohort.Core
       Cohort.Output
       Cohort.Criteria
-      Cohort.Index
+      Cohort.IndexSet
       Tests
   other-modules:
+      Tests.AssessmentIntervals
       Tests.Features
       Tests.Features.Core
       Tests.Features.Output
       Tests.Cohort
-      Tests.Cohort.AssessmentIntervals
       Tests.Cohort.Attrition
       Tests.Cohort.Core
       Tests.Cohort.Criteria

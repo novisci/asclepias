@@ -1,5 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE TypeApplications #-}
 
 module Tests.Cohort.Core
   ( tests
@@ -11,11 +12,12 @@ import           Data.Set                       ( empty
                                                 , fromList
                                                 , singleton
                                                 )
+import           Data.Text
 import           Features
 import           IntervalAlgebra
 import           Test.Tasty
 import           Test.Tasty.HUnit
-
+import           Witch
 
 d1 :: Definition (Feature "feat" Int -> Feature "feat1" Bool)
 d1 = defineA
@@ -33,46 +35,53 @@ d3 = define (+ 2)
 
 
 testSubject1 :: Subject Int
-testSubject1 = MkSubject ("1", 0)
+testSubject1 = into ("1" :: Text, 0 :: Int)
 testSubject2 :: Subject Int
-testSubject2 = MkSubject ("2", 54)
+testSubject2 = into ("2" :: Text, 54 :: Int)
 
 testPopulation :: Population Int
-testPopulation = MkPopulation [testSubject1, testSubject2]
+testPopulation = into [testSubject1, testSubject2]
 
 -- create a dummy index
-buildIndices :: Int -> IndexSet Interval Int
-buildIndices i = MkIndexSet $ Just (singleton (makeIndex $ beginerval 1 i))
+buildIndices :: Int -> IndexSet (Interval Int)
+buildIndices i = makeIndexSet [beginerval 1 i]
 
-buildCriteria :: Index Interval Int -> Int -> Criteria
+buildCriteria :: Interval Int -> Int -> Criteria
 buildCriteria _ dat = criteria $ pure (criterion feat1)
   where feat1 = eval d2 $ pure dat
 
 type Features = (Feature "feat1" Bool, Feature "feat3" Int)
-buildFeatures :: Index Interval Int -> Int -> Features
+buildFeatures :: Interval Int -> Int -> Features
 buildFeatures _ dat = (eval d1 input, eval d3 input) where input = pure dat
 
-testCohort :: CohortSpec Int Features Interval Int
+testCohort :: CohortSpec Int Features (Interval Int)
 testCohort = specifyCohort buildIndices buildCriteria buildFeatures
 
-testOut :: Cohort Features
+testFeatures :: (F "feat1" Bool, F "feat3" Int)
+testFeatures =
+  (makeFeature (featureDataR False), makeFeature (featureDataR 56))
+
+b :: ObsID (Interval Int)
+b = makeObsID (beginerval (1 :: Int) 54) "2"
+a :: ObsUnit Features (Interval Int)
+a = from @(ObsID (Interval Int), Features) (b, testFeatures)
+
+
+testOut :: Cohort Features (Interval Int)
 testOut = MkCohort
-  ( MkAttritionInfo 2 $ fromList
+  ( Just $ MkAttritionInfo 2 $ fromList
     [ MkAttritionLevel SubjectHasNoIndex         0
     , MkAttritionLevel (ExcludedBy (1, "feat2")) 1
     , MkAttritionLevel Included                  1
     ]
-  , MkCohortData
-    [ MkObsUnit
-        (makeObsID 1 "2")
-        (makeFeature (featureDataR False), makeFeature (featureDataR 56))
-    ]
+  , into @(CohortData Features (Interval Int)) [a]
   )
 
 tests :: TestTree
 tests = testGroup
   "Unit tests on Cohort.Core"
   [ testCase "testCohort evaluates to testOut"
-    $   evalCohort testCohort testPopulation
-    @?= testOut
+    $   makeCohortEvaluator defaultCohortEvalOptions testCohort testPopulation
+    --    evalCohort testCohort testPopulation
+    @?= pure @[] testOut
   ]

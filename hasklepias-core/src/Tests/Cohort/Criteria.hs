@@ -5,7 +5,6 @@ module Tests.Cohort.Criteria
   ) where
 
 import           Cohort.Criteria
-import           Cohort.Index
 import           Data.List.NonEmpty
 import           Features
 import           IntervalAlgebra
@@ -25,8 +24,8 @@ f4 :: Criterion
 f4 = criterion
   (makeFeature (featureDataL $ Other "something") :: Feature "f4" Status)
 
-index :: Maybe (Index Interval Int)
-index = Just $ makeIndex (beginerval 1 1)
+index :: Maybe (Interval Int)
+index = Just (beginerval 1 1)
 
 tests :: TestTree
 tests = testGroup

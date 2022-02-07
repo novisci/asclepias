@@ -1,7 +1,7 @@
-{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DeriveGeneric         #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 
-module Planning.Output (OutputData(..)) where
+module Planning.Output (OutputData(..), NonNeg) where
 
 import           Data.Ratio
 import           Data.Text
@@ -19,14 +19,17 @@ import           Witch.From
 -- see the Core/README.adoc for a discussion of why i think a concrete data
 -- type, rather than e.g. a heterogeneous list
 
-type NonNeg = Ratio Natural
+-- TODO: placeholder for continuous nonneg
+newtype NonNeg
+  = NonNeg Natural
+  deriving (Eq, Generic, Show)
 
-data OutputData 
-  = MkOutcome
+data OutputData
+  = MkOutputData
       { getData :: [Text]
       , getTime :: NonNeg
       }
-  deriving (Eq, Generic)
+  deriving (Eq, Generic, Show)
 
 -- default conversion
 instance From OutputData OutputData where

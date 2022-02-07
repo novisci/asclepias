@@ -1,7 +1,8 @@
 {-# LANGUAGE DeriveGeneric         #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 
-module Planning.Output (OutputData(..), NonNeg) where
+-- reexport From
+module Planning.Output (OutputData(..), NonNeg(..), From(..)) where
 
 import           Data.Ratio
 import           Data.Text
@@ -26,8 +27,8 @@ newtype NonNeg
 
 data OutputData
   = MkOutputData
-      { getData :: [Text]
-      , getTime :: NonNeg
+      { tags :: [Text]
+      , time :: [NonNeg]
       }
   deriving (Eq, Generic, Show)
 

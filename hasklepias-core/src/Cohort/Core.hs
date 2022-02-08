@@ -61,7 +61,9 @@ import           Data.Text                      ( Text )
 import           GHC.Exts                       ( IsList(..) )
 import           GHC.Generics                   ( Generic )
 import           Safe                           ( headMay )
-import Witch                ( into, From(..) )
+import           Witch                          ( From(..)
+                                                , into
+                                                )
 
 {-|
 An observational unit identifier. 
@@ -207,7 +209,7 @@ data UnitsToEvaluateFeatures =
 TODO
 -}
 data CohortEvalOptions = MkCohortEvalOptions
-  { 
+  {
     -- | TODO
     unitsToEvaluateFeatures :: UnitsToEvaluateFeatures
     -- | TODO
@@ -279,7 +281,7 @@ makeSubjectEvaluator opts spec subj = do
 
       -- Create a function which applies a function g
       -- to the statusIndices and returns the desired result type
-      let doFeatures    = \g -> pure (attrition, SUnits $ fmap g statusIndices)
+      let doFeatures g = pure (attrition, SUnits $ fmap g statusIndices)
 
       -- Here we need to handle user options.
       case includeFeatures opts of
@@ -290,7 +292,7 @@ makeSubjectEvaluator opts spec subj = do
 
           -- A function which takes an index and runs the 
           -- features given the cohort spec and subject's data.
-          let featureRunner = \i -> runFeatures spec i sdt
+          let featureRunner i = runFeatures spec i sdt
 
           case unitsToEvaluateFeatures opts of
           -- here the user chooses to evaluate features
@@ -308,7 +310,6 @@ makeSubjectEvaluator opts spec subj = do
       -- If the user chooses to skip evaluating features
         -- we return Nothing in the data slot.
         SkipFeatures -> doFeatures (tackOn Nothing)
-  
   where tackOn z (x, y) = (x, y, z)
 
 {-| 
@@ -383,6 +384,6 @@ makeCohortSetEvaluator
   -> Population d1
   -> m (CohortSet d0 i)
 makeCohortSetEvaluator opts (MkCohortSetSpec specs) pop = do
-  let doCohort = (\s -> makeCohortEvaluator opts s pop)
-  let cohorts  = fmap (\(k, v) -> (k,) =<< doCohort v) (toList specs)
+  let doCohort s = makeCohortEvaluator opts s pop
+  let cohorts = fmap (\(k, v) -> (k, ) =<< doCohort v) (toList specs)
   pure $ MkCohortSet $ fromList cohorts

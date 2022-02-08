@@ -78,13 +78,14 @@ data MakeCohort = MakeCohort
 TODO
 -}
 collectBySubject :: [(SubjectID, d)] -> [(SubjectID, [d])]
-collectBySubject x = M.toList $ M.fromListWith (++) (fmap (fmap pure) x) 
+collectBySubject x = M.toList $ M.fromListWith (++) (fmap (fmap pure) x)
 
 {-| INTERNAL
 TODO
 -}
 mapIntoPop
-  :: forall d c a .(Ord a, Ord c, Eq d)
+  :: forall d c a
+   . (Ord a, Ord c, Eq d)
   => [(SubjectID, Event d c a)]
   -> Population [Event d c a]
 mapIntoPop l = into $ fmap
@@ -130,21 +131,23 @@ makeCohortBuilder
      )
   => CohortEvalOptions
   -> CohortSetSpec [Event d c a] d0 i
-  -> B.ByteString -> m ([LineParseError], CohortSet d0 i)
+  -> B.ByteString
+  -> m ([LineParseError], CohortSet d0 i)
 makeCohortBuilder opts specs x = do
   -- TODO: clean this up
-  let dat = parseEventLinesL x
-  let err = fst dat
+  let dat          = parseEventLinesL x
+  let err          = fst dat
   let doEvaluation = makeCohortSetEvaluator opts specs
-  let pop = mapIntoPop $ snd dat
-  let res = doEvaluation pop
-  let res2 = (err,) =<< res
+  let pop          = mapIntoPop $ snd dat
+  let res          = doEvaluation pop
+  let res2         = (err, ) =<< res
 
   pure res2
 
 
 
-reshapeCohortSet :: (Cohort d0 i -> CohortJSON) -> CohortSet d0 i -> CohortSetJSON
+reshapeCohortSet
+  :: (Cohort d0 i -> CohortJSON) -> CohortSet d0 i -> CohortSetJSON
 reshapeCohortSet g x =
   MkCohortSetJSON $ fromList $ fmap (fmap g) (toList $ into x)
 

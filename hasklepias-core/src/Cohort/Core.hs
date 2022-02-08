@@ -22,6 +22,7 @@ module Cohort.Core
   , CohortSpec
   , CohortSetSpec
   , CohortSet
+  , CohortEvalOptions
   , makeObsID
   , specifyCohort
   , getCohortIDs
@@ -33,7 +34,6 @@ module Cohort.Core
   , makeCohortEvaluator
   , makeCohortSetEvaluator
   , defaultCohortEvalOptions
-  -- , getCohortSet
   ) where
 
 import           Cohort.Attrition
@@ -61,7 +61,8 @@ import           Data.Text                      ( Text )
 import           GHC.Exts                       ( IsList(..) )
 import           GHC.Generics                   ( Generic )
 import           Safe                           ( headMay )
-import           Witch
+import Witch                ( into, From(..) )
+
 {-|
 An observational unit identifier. 
 The textual representation of a Subject ID,
@@ -80,8 +81,7 @@ makeObsID :: i -> Text -> ObsID i
 makeObsID = (flip . curry) MkObsID
 
 {-|
-A @'Subject'@ may be mapped to zero of more observational units (one per
-@'Index'@ in the @'IndexSet'@).
+A @'Subject'@ may be mapped to zero of more observational units ('ObsUnit').
 -}
 data ObsUnit d i = MkObsUnit
   { obsID   :: ObsID i
@@ -113,7 +113,6 @@ instance (FromJSON d) => FromJSON (Subject d) where
 
 instance From (Text, d) (Subject d) where
 
-
 {-|
 A population is a container of @'Subject'@s.
 Currently, the container is a list.
@@ -121,8 +120,8 @@ Currently, the container is a list.
 newtype Population d = MkPopulation [Subject d]
     deriving (Eq, Show, Generic)
 
--- instance Functor Population where
---   fmap f (MkPopulation x) = MkPopulation (fmap (fmap f) x)
+instance Functor Population where
+  fmap f (MkPopulation x) = MkPopulation (fmap (fmap f) x)
 
 instance (FromJSON d) => FromJSON (Population d) where
 
@@ -135,11 +134,10 @@ A container for CohortData
 newtype CohortData d a = MkCohortData [ObsUnit d a]
     deriving (Eq, Show, Generic)
 
-
 instance From [ObsUnit d a] (CohortData d a) where
 
 {-| 
-Acohort is a list of observational units along with @'AttritionInfo'@ 
+A cohort is a list of observational units along with @'AttritionInfo'@ 
 regarding the number of subjects excluded by the @'Criteria'@..
 -}
 newtype Cohort d a = MkCohort (Maybe AttritionInfo, CohortData d a)
@@ -179,7 +177,9 @@ data CohortSpec d1 d0 i = MkCohortSpec
   , runFeatures :: i -> d1 -> d0
   }
 
--- | Creates a @'CohortSpec'@.
+{-|
+TODO
+-}
 specifyCohort
   :: (d1 -> IndexSet i)
   -> (i -> d1 -> Criteria)
@@ -191,8 +191,10 @@ specifyCohort = MkCohortSpec
 TODO
 -}
 data EvaluateFeatures =
-    IncludeFeatures -- ^ TODO
-  | SkipFeatures -- ^ TODO
+  -- | TODO
+    IncludeFeatures
+  -- | TODO
+  | SkipFeatures
 
 {-|
 TODO
@@ -205,22 +207,27 @@ data UnitsToEvaluateFeatures =
 TODO
 -}
 data CohortEvalOptions = MkCohortEvalOptions
-  { unitsToEvaluateFeatures :: UnitsToEvaluateFeatures
+  { 
+    -- | TODO
+    unitsToEvaluateFeatures :: UnitsToEvaluateFeatures
+    -- | TODO
   , includeFeatures         :: EvaluateFeatures
   }
 
 {-|
+TODO
 -}
 defaultCohortEvalOptions :: CohortEvalOptions
 defaultCohortEvalOptions = MkCohortEvalOptions OnlyOnIncluded IncludeFeatures
 
-{-|
-TODO
+{-
+*INTERNAL*
+
+
 -}
 data EvaluatedSubject d i =
     SNoIndex Text CohortStatus -- ^ TODO 
   | SUnits [ (ObsID i, CohortStatus, Maybe d) ] -- ^ TODO
-
 
 instance From (ObsID i, CohortStatus, Maybe d ) (Maybe (ObsUnit d i)) where
   from (i, _, Just d ) = Just $ MkObsUnit i d
@@ -229,7 +236,6 @@ instance From (ObsID i, CohortStatus, Maybe d ) (Maybe (ObsUnit d i)) where
 instance From (EvaluatedSubject d i) [ObsUnit d i] where
   from (SNoIndex _ _) = []
   from (SUnits x    ) = mapMaybe (into @(Maybe (ObsUnit d i))) x
-
 
 {-|
 TODO
@@ -302,6 +308,7 @@ makeSubjectEvaluator opts spec subj = do
       -- If the user chooses to skip evaluating features
         -- we return Nothing in the data slot.
         SkipFeatures -> doFeatures (tackOn Nothing)
+  
   where tackOn z (x, y) = (x, y, z)
 
 {-| 
@@ -321,9 +328,6 @@ makePopulationEvaluator opts spec pop = do
 
   pure $ (\x -> (fmap sconcat $ NE.nonEmpty $ fst x, snd x))
     (unzip (evalSubject =<< subjects))
-
-
-
 
 {-| 
 TODO
@@ -352,15 +356,12 @@ newtype CohortSet d i = MkCohortSet (Map Text (Cohort d i))
   deriving (Eq, Show, Generic)
 
 instance From (CohortSet d i) (Map Text (Cohort d i)) where
--- instance From [(Text, Cohort d i)] (Map Text (Cohort d i)) where
---   from x = fromList x
 
 {-| 
 Key/value pairs of 'CohortSpec's. 
 The keys are the names of the cohorts.
 -}
 newtype CohortSetSpec d1 d0 i = MkCohortSetSpec (Map Text (CohortSpec d1 d0 i))
-
 
 {-| 
 Make a set of 'CohortSpec's from list input.
@@ -385,10 +386,3 @@ makeCohortSetEvaluator opts (MkCohortSetSpec specs) pop = do
   let doCohort = (\s -> makeCohortEvaluator opts s pop)
   let cohorts  = fmap (\(k, v) -> (k,) =<< doCohort v) (toList specs)
   pure $ MkCohortSet $ fromList cohorts
-
-
-    -- let doCohorts = fmap (makeCohortEvaluator opts) (elems specs)
-    -- let m = join $ traverse (\f -> f pop) doCohorts
-    -- let z = do into @(Map Text (Cohort d0 i)) $ zip (keys specs) m
-    -- pure $ MkCohortSet z
-

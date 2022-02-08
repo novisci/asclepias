@@ -133,19 +133,19 @@ instance From (Population d) [Subject d] where
 {-| 
 A container for CohortData
 -}
-newtype CohortData d a = MkCohortData [ObsUnit d a]
+newtype CohortData d i = MkCohortData [ObsUnit d i]
     deriving (Eq, Show, Generic)
 
-instance From [ObsUnit d a] (CohortData d a) where
+instance From [ObsUnit d i] (CohortData d i) where
 
 {-| 
 A cohort is a list of observational units along with @'AttritionInfo'@ 
 regarding the number of subjects excluded by the @'Criteria'@..
 -}
-newtype Cohort d a = MkCohort (Maybe AttritionInfo, CohortData d a)
+newtype Cohort d i = MkCohort (Maybe AttritionInfo, CohortData d i)
     deriving (Eq, Show, Generic)
 
-instance From (Cohort d a) (Maybe AttritionInfo, CohortData d a) where
+instance From (Cohort d i) (Maybe AttritionInfo, CohortData d i) where
 
 -- | Gets the attrition info from a cohort
 getAttritionInfo :: Cohort d a -> Maybe AttritionInfo

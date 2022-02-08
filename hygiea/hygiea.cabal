@@ -26,6 +26,7 @@ extra-source-files:
 library
     exposed-modules:  
         Planning.Output
+        , Planning.Input
         , Planning.Test
         , Planning.Decode
         , Planning.Examples.Simple

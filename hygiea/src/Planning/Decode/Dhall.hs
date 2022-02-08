@@ -27,15 +27,15 @@ outputDecoder = Dhall.auto
 outputType :: Expr Src Void
 outputType = maximum $ Dhall.expected outputDecoder
 
-outputTypeString :: String
-outputTypeString = show $ pretty outputType
+outputTypeText :: Text
+outputTypeText = Data.Text.pack $ show $ pretty outputType
 
 -- inject this type into a dhall program string
 -- and return parsed Haskell type
 -- TODO: txt might need to be a ref to the dhall input file name
 parseOutputType :: Data.Text.Text -> IO OutputData
 parseOutputType txt = Dhall.input outputDecoder (typedef <> " in " <> txt)
-   where typedef = "let OutputData = " <> Data.Text.pack outputTypeString
+   where typedef = "let OutputData = " <> outputTypeText
 
 parseDhallFile :: String -> IO OutputData
 parseDhallFile f = do

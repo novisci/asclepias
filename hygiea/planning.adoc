@@ -401,37 +401,56 @@ An input type need not be a concrete type and can be any type that is converted 
 
 To clarify: We do need some internal representation of the input, for subject-matter-experts to specify. The generalized `Event` type from the `event-data-theory` work is a good starting point for that representation.
 
-Therefore, the fundamental object in `hygiea` could be a typeclass
+
+=== Core type system
+The type system is split into three chunks: One that 'users' will interact with via text-based files, one that project programmers will see, and one that is internal to `hygiea.`
+
+==== Internal types
+Input and output types each are a list of `Map`s: This is a generic structure for rectangular data shapes, with broad support across various packages. `hygiea` will implement conversions from the programmer-facing types to this type, and will parse text-base input into this type.  `Map` is well-supported in existing packages such as `dhall` and `containers`. It is easy to marshal named data into and out of.
+
+==== Programmer-facing types
+The programmer's primary task is to define the transformation from inputs to outputs that is to be tested. `hygiea` will ask programmers to define conversions to and from the flattened record format and the input and output types associated with testable transformations.
+
+To make their lives easier, it is worth considering whether to ask programmers to implement those conversions to generic types closer to those that might be used in a project, with `hygiea` flattening that generic type to the `[Map]` type at its core. It's not clear what those `asclepias` -like types should be: A good candidate for inputs is the generic `Events` type to be included in the `event-data-theory` module. Outputs to be tested are more heterogeneous, and we might not be able to find a cleaner, simpler  interface than asking programmers to convert the output type to a flat structure directly.
+
+Specifically, programmers would be asked to implement `Witch.From` instances from project types to the internal type. In addition, they will need to specify an instance of a typeclass --- call it `Testable` --- defining how inputs are converted to outputs *in the project-specific types*. 
+
+Supposing the internal input/output types are called `InputData` and `OutputData`, the `Testable` typeclass could be defined as
 [source,haskell]
 ----
-class (From output OutputData) => Testable input output where
+class (From InputData input, From output OutputData) => Testable input output where
   toOutput :: input -> output
 ----
 
+`toOutput` then would be some function, say, building a list of outcomes from a list of events.
+
+`hygiea` will handle marshaling the input data into the project's input type, running the conversion and performing the test.
+
 Note it might need to be renamed to avoid confusion with `QuickCheck.Testable`.
 
-=== Test outputs are an internal, concrete `OutcomeData` type
-Though test inputs need not be concrete types, there are two main reasons why the test output type, call it `OutcomeData`, probably should be. Doing so
+=== Sharing data shape between programmers and users
+Users will specify tests with rectangular text configuration files, but they will not interact with Haskell code. There needs to be some mechanism by which programmers can define what kinds of information columns and rows can hold.
 
-1. provides a mechanism by which writers of test config files can specify tests without needing to know implementation details of project-specific types
-2. gives a common structure for golden test file outputs
+I see two clear ways to do this:
 
-This certainly should be revisited frequently in the `hygiea` development process, particularly with regard to how and what information on project-specific types should flow to subject-matter experts using the text-base UI.
+Programmers could write header-only files, one for the test inputs and one for the outputs, in csv or other tabular format. It would provide a guide for how programmers should implement their conversions to the flattened internal type, and it tells users what information to enter where in the tabular test specification files.
 
-One possibility for a slightly more advanced application would be for `hygiea` to allow developers to use Dhall to specify the fields that *can* be tested, and to provide that to subject matter experts. That would become the common reference structure for test output, allowing the underlying `OutputData` to be more generic.
+Doing so would not easily allow for specifying input types (e.g. dates or integers). To specify what rows represent, the header would need to require an appropriate row id variable.
 
-=== `Testable` typeclass
-Project programmers must define how project-specific types map to the relevant testable input/output types, by implementing `Witch.From` instances.  At the moment this seems like it would offer the best compromise, despite adding some work for project developers. It
+Alternatively, the shape of text input could be set with a simple Dhall record specification. We could lean on the `dhall-csv` package, and on the `dhall` package generally, for all of the architecture needed to interpret such input and incorporate it into a Haskell program.
 
-. allows `hygiea` to remain agnostic about the particular types used in a project
-. makes the testing functionality more robust to changes in `asclepias` or in the UI
-. forces developers to define clearly what must be tested, but frees them from the burden of actually defining how tests are run
-. allow the UI to implement its own conversion instances, without caring about how the conversion is done for any given project
+An example of a dhall shape specification, saved in some project-specific `test-shape.dhall` could be
+[source,dhall]
+----
+{ testType : < Outcome | Covariate | Predicate >, id : Natural, observationType : < Subject | Observation >, start : Integer }
+----
+
+Even something as basic as allowing a sum type probably has great benefit: The user can only specify `Subject` or `Observation` values for the `observationType` field, and other values will create parsing errors before the tests are actually run.
 
 === Discussion
-From the stat-dev meeting on Feb. 7:
+From the stat-dev meeting on Feb. 7. Text above includes some reactions to these comments.
 
-. add an `Input` type to `Hygiea.Planning`, which should mimic the `Event` type
+. add an `Input` type to `Hygiea.Planning`, which is the mechanism by which users of the text interface can supply input data to the tests
 . `OutputData` should be more general than a simple concrete type
 .. should allow only a rectangular text input to be parsed
 .. API for programmers to define what the rows and columns mean
@@ -440,4 +459,4 @@ From the stat-dev meeting on Feb. 7:
 .. look to support both 'interim' types, e.g. predicate results or covariates, as well as outcomes
 .. P0059 outcomes are more complex than is typical
 . Interest in adding unit tests. Though part of the plan to add these eventually, we should look to provide in the next phase a consistent API for users to write *unit* tests using the same internal representations as for golden tests
-
+. Look to support heterogeneity not only in what variables (columns) are provided as test inputs/outputs but also differing notions of what rows represent: subjects, vs. observational units.

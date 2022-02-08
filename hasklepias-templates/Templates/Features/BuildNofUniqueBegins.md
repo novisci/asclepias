@@ -34,11 +34,11 @@ TODO
 buildNofUniqueBegins
   :: (Intervallic i a, IntervalSizeable a b, Witherable container)
   => (Index i a -> AssessmentInterval a) -- ^ function to transform a 'Cohort.Index' to an 'Cohort.AssessmentInterval'
-  -> ComparativePredicateOf2 (AssessmentInterval a) (Event ClaimsSchema Text a) -- ^ interval predicate
-  -> Predicate (Event ClaimsSchema Text a) -- ^ a predicate on events
+  -> ComparativePredicateOf2 (AssessmentInterval a) (Event ClaimsSchema c a) -- ^ interval predicate
+  -> Predicate (Event ClaimsSchema c a) -- ^ a predicate on events
   -> Definition
        (  Feature indexName (Index i a)
-       -> Feature eventsName (container (Event ClaimsSchema Text a))
+       -> Feature eventsName (container (Event ClaimsSchema c a))
        -> Feature varName [(EventTime b, Count)]
        )
 buildNofUniqueBegins = buildNofXBase 

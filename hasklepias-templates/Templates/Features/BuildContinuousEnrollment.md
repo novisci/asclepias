@@ -52,11 +52,11 @@ buildContinuousEnrollment
      , IntervalSizeable a b
      )
   => (Index i0 a -> AssessmentInterval a) -- ^ function which maps index interval to interval in which to assess enrollment
-  -> Predicate (Event ClaimsSchema Text a)  -- ^ The predicate to filter to Enrollment events (e.g. 'FeatureEvents.isEnrollment')
+  -> Predicate (Event ClaimsSchema c a)  -- ^ The predicate to filter to Enrollment events (e.g. 'FeatureEvents.isEnrollment')
   -> b  -- ^ duration of allowable gap between enrollment intervals
   -> Definition
        (  Feature indexName (Index i0 a)
-       -> Feature eventsName (container (Event ClaimsSchema Text a))
+       -> Feature eventsName (container (Event ClaimsSchema c a))
        -> Feature prevName Status
        -> Feature varName Status
        )

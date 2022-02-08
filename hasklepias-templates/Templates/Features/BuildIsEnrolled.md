@@ -31,10 +31,10 @@ buildIsEnrolled
      , Witherable container
      )
   =>
-  Predicate (Event ClaimsSchema Text a) -- ^ The predicate to filter to Enrollment events (e.g. 'FeatureEvents.isEnrollment')
+  Predicate (Event ClaimsSchema c a) -- ^ The predicate to filter to Enrollment events (e.g. 'FeatureEvents.isEnrollment')
   -> Definition
        (  Feature indexName (Index i0 a)
-       -> Feature eventsName (container (Event ClaimsSchema Text a))
+       -> Feature eventsName (container (Event ClaimsSchema c a))
        -> Feature varName Status
        )
 buildIsEnrolled predicate = define
@@ -50,7 +50,7 @@ buildIsEnrolled predicate = define
 
 ```haskell
 type IsEnrolledArgs
-  = ( Solo (Predicate (Event ClaimsSchema Text Int) )) 
+  = ( Solo (Predicate (Event ClaimsSchema Text Int) ))
   -- use of Solo is because buildIsEnrolled takes a single argument and the
   -- Solo is needed to match the Curry constraints in the makeBuilderAssertion
   -- (via makeTestGroup). In the buildIsEnrolledTestCases, the Solo is created 

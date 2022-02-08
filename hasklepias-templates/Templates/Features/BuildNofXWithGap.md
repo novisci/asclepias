@@ -60,11 +60,11 @@ buildNofXWithGap
   -> Natural -- ^ the minimum number of gaps
   -> b -- ^ the minimum duration of a gap
   -> (Index i a -> AssessmentInterval a)
-  -> ComparativePredicateOf2 (AssessmentInterval a) (Event ClaimsSchema Text a)
-  -> Predicate (Event ClaimsSchema Text a)
+  -> ComparativePredicateOf2 (AssessmentInterval a) (Event ClaimsSchema c a)
+  -> Predicate (Event ClaimsSchema c a)
   -> Definition
        (  Feature indexName (Index i a)
-       -> Feature eventsName (container (Event ClaimsSchema Text a))
+       -> Feature eventsName (container (Event ClaimsSchema c a))
        -> Feature varName outputType
        )
 buildNofXWithGap cast nGaps allowableGap = buildNofXBase
@@ -98,11 +98,11 @@ buildNofXWithGapBool
   => Natural -- ^ the minimum number of gaps
   -> b -- ^ the minimum duration of a gap
   -> (Index i a -> AssessmentInterval a)
-  -> ComparativePredicateOf2 (AssessmentInterval a) (Event ClaimsSchema Text a)
-  -> Predicate (Event ClaimsSchema Text a)
+  -> ComparativePredicateOf2 (AssessmentInterval a) (Event ClaimsSchema c a)
+  -> Predicate (Event ClaimsSchema c a)
   -> Definition
        (  Feature indexName (Index i a)
-       -> Feature eventsName (container (Event ClaimsSchema Text a))
+       -> Feature eventsName (container (Event ClaimsSchema c a))
        -> Feature varName Bool
        )
 buildNofXWithGapBool = buildNofXWithGap id
@@ -120,11 +120,11 @@ buildNofXWithGapBinary
   => Natural -- ^ the minimum number of gaps
   -> b -- ^ the minimum duration of a gap
   -> (Index i a -> AssessmentInterval a)
-  -> ComparativePredicateOf2 (AssessmentInterval a) (Event ClaimsSchema Text a)
-  -> Predicate (Event ClaimsSchema Text a)
+  -> ComparativePredicateOf2 (AssessmentInterval a) (Event ClaimsSchema c a)
+  -> Predicate (Event ClaimsSchema c a)
   -> Definition
        (  Feature indexName (Index i a)
-       -> Feature eventsName (container (Event ClaimsSchema Text a))
+       -> Feature eventsName (container (Event ClaimsSchema c a))
        -> Feature varName Binary
        )
 buildNofXWithGapBinary = buildNofXWithGap fromBool

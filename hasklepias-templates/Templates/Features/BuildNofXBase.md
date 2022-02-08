@@ -81,15 +81,15 @@ buildNofXBase
      , Witherable container0
      , Witherable container1
      )
-  => (container0 (Event ClaimsSchema Text a) -> container1 (i1 a)) -- ^ function mapping a container of events to a container of intervallic intervals (which could be events!)
+  => (container0 (Event ClaimsSchema c a) -> container1 (i1 a)) -- ^ function mapping a container of events to a container of intervallic intervals (which could be events!)
   -> (container1 (i1 a) -> t) -- ^ function mapping the processed events to an intermediate type
   -> (AssessmentInterval a -> t -> outputType) -- ^ function casting intermediate type to output type with the option to use the assessment interval
   -> (Index i0 a -> AssessmentInterval a) -- ^ function which maps index interval to interval in which to assess the feature
-  -> ComparativePredicateOf2 (AssessmentInterval a) (Event ClaimsSchema Text a) -- ^ the interval relation of the input events to the assessment interval
-  -> Predicate (Event ClaimsSchema Text a) -- ^ The predicate to filter to Enrollment events (e.g. 'FeatureEvents.isEnrollment')
+  -> ComparativePredicateOf2 (AssessmentInterval a) (Event ClaimsSchema c a) -- ^ the interval relation of the input events to the assessment interval
+  -> Predicate (Event ClaimsSchema c a) -- ^ The predicate to filter to Enrollment events (e.g. 'FeatureEvents.isEnrollment')
   -> Definition
        (  Feature indexName (Index i0 a)
-       -> Feature eventsName (container0 (Event ClaimsSchema Text a))
+       -> Feature eventsName (container0 (Event ClaimsSchema c a))
        -> Feature varName outputType
        )
 buildNofXBase runPreProcess runProcess runPostProcess makeAssessmentInterval relation predicate

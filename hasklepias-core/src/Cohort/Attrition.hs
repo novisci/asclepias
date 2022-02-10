@@ -45,8 +45,8 @@ instance Semigroup AttritionLevel where
 -- | A type which collects the counts of subjects included or excluded.
 data AttritionInfo = MkAttritionInfo
   { totalSubjectsProcessed :: Int
-  , totalUnitsProcessed :: Int
-  , attritionInfo  :: Set.Set AttritionLevel
+  , totalUnitsProcessed    :: Int
+  , attritionInfo          :: Set.Set AttritionLevel
   }
   deriving (Eq, Show, Generic)
 
@@ -88,24 +88,22 @@ if their only 'CohortStatus'is 'SubjectHasNoIndex.
 However, a 'Criteria' is needed to initialize a 'Map.Map CohortStatus Natural'
 with 'initAttritionInfo'.
 -}
-measureSubjectAttrition :: 
-     Maybe Criteria 
-  -> [CohortStatus]
-  -> AttritionInfo
+measureSubjectAttrition :: Maybe Criteria -> [CohortStatus] -> AttritionInfo
 measureSubjectAttrition mcriteria statuses =
-  MkAttritionInfo 
+  MkAttritionInfo
     -- again, function is meant to be used on a single subject, so one
-    1 
+                  1
     -- number of units is number of statuses not equal to SubjectHasNoIndex 
-    (length $ filter (/= SubjectHasNoIndex) statuses)
+                  (length $ filter (/= SubjectHasNoIndex) statuses)
     -- attritionInfo is formed by unioning via a Map in order to 
     -- sum within each CohortStatus
-    $ mapToSetAttrLevel $ unionsWith
-    (+)
-    [ maybe mempty initAttritionInfo mcriteria 
-    , Map.fromListWith (+) $ fmap (, 1) statuses
-    , fromList [(SubjectHasNoIndex, 0)]
-    , fromList [(Included, 0)]
+    $ mapToSetAttrLevel
+    $ unionsWith
+        (+)
+        [ maybe mempty initAttritionInfo mcriteria
+        , Map.fromListWith (+) $ fmap (, 1) statuses
+        , fromList [(SubjectHasNoIndex, 0)]
+        , fromList [(Included, 0)]
       -- including SubjectHasNoIndex and Included for the cases that none of the
       -- evaluated criteria have either of those statuses
-    ]
+        ]

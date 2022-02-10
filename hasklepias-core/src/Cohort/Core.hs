@@ -65,7 +65,7 @@ import           Safe                           ( headMay )
 import           Witch                          ( From(..)
                                                 , into
                                                 )
-import qualified Witherable as W
+import qualified Witherable                    as W
 
 {-|
 An observational unit identifier. 
@@ -273,11 +273,11 @@ data CohortEvalOptions = MkCohortEvalOptions
   {
     -- | Determines whether and how a 'CohortSpec' 'runFeatures' is evaluated.
     --   See 'EvaluateFeatures'.
-    evaluateFeatures         :: EvaluateFeatures
+    evaluateFeatures :: EvaluateFeatures
     -- | Determines which subjects will be evaluated.
     --   See 'SubjectSample'.
-  , sampleSubjects           :: SubjectSample
-  } 
+  , sampleSubjects   :: SubjectSample
+  }
 
 {-|
 The default 'CohortEvalOptions' are:
@@ -300,7 +300,7 @@ to contain a subject's processed data
 before converting the result to observational units for output.
 -}
 data EvaluatedSubject d i =
-    SNoIndex Text CohortStatus 
+    SNoIndex Text CohortStatus
   | SUnits [ (ObsID i, CohortStatus, Maybe d) ]
 
 instance From (ObsID i, CohortStatus, Maybe d ) (Maybe (ObsUnit d i)) where
@@ -371,8 +371,8 @@ makeSubjectEvaluator opts spec subj = do
 
         -- the user chooses to evaluate features
         -- on all observational units that have an index
-        OnAll -> do
-              doFeatures (\x -> tackOn (Just $ featureRunner (from (fst x))) x)
+        OnAll        -> do
+          doFeatures (\x -> tackOn (Just $ featureRunner (from (fst x))) x)
 
         -- the user chooses to evaluate features
         -- only on those units whose dispositon is Included
@@ -400,7 +400,8 @@ makePopulationEvaluator
      )
 makePopulationEvaluator opts spec pop = do
   let evalSubject = makeSubjectEvaluator opts spec
-  let subjects    = into @[Subject d1] (filterPopulation (sampleSubjects opts) pop)
+  let subjects =
+        into @[Subject d1] (filterPopulation (sampleSubjects opts) pop)
 
   pure $ (\x -> (fmap sconcat $ NE.nonEmpty $ fst x, snd x))
     (unzip (evalSubject =<< subjects))

@@ -97,7 +97,6 @@ data CohortDataShape d where
 
 deriving instance Show d => Show (CohortDataShape d)
 
--- TODO: implement Generic and ToJSON instance of CohortDataShape directly.
 -- | Maps CohortDataShape into an Aeson Value. 
 toJSONCohortDataShape :: CohortDataShape shape -> Value
 toJSONCohortDataShape (ColumnWise x) = toJSON x

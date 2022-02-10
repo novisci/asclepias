@@ -168,7 +168,7 @@ washoutDuration = 7
 makeFollowupInterval
   :: (Integral b, Intervallic i a, IntervalSizeable a b)
   => b
-  -> Index i a
+  -> i a
   -> Interval a
 makeFollowupInterval dur index =
   beginerval dur (add washoutDuration (begin index))
@@ -176,7 +176,7 @@ makeFollowupInterval dur index =
 -- | Creates an interval *starting 7 days after the index* and 
 --   ending 'followupDuration' days later.
 followupInterval
-  :: (Integral b, IntervalSizeable a b) => Index Interval a -> Interval a
+  :: (Integral b, IntervalSizeable a b) => Interval a -> Interval a
 followupInterval = makeFollowupInterval 365
 
 {-
@@ -190,11 +190,11 @@ protocol
      , IntervalSizeable a b
      , Filterable container
      )
-  => (Index i2 a -> i0 a)
+  => (i2 a -> i0 a)
     -- ^ Function that maps an index interval to interval during which protocol is evaluated
   -> (i0 a -> container (i1 a) -> ProtocolStatus b)
     -- ^ Function that maps data to a @ProtocolStatus@.
-  -> Index i2 a
+  -> i2 a
   -> container (i1 a)
   -> ProtocolStatus b
 protocol g f i dat = f (g i) (filterConcur (g i) dat)
@@ -233,7 +233,7 @@ protocolNoInit
      , Intervallic i1 a
      , Witherable container
      )
-  => Index i0 a
+  => i0 a
   -> container (i1 a)
   -> ProtocolStatus b
 protocolNoInit = protocol (makeFollowupInterval 365) compliantIfNone
@@ -245,7 +245,7 @@ protocols
      , Intervallic i1 a
      , Witherable container
      )
-  => Index i0 a
+  => i0 a
   -> container (i1 a)
   -> Protocols b
 protocols i e = MkProtocols
@@ -303,7 +303,7 @@ decideOutcome adminTime exposure outcomeTime censorTime = case exposure of
 {-
    Features needed to evaluate censoring and outcome events
 -}
-index :: (Ord a) => Def (F "events" (Events a) -> F "index" (Index Interval a))
+index :: (Ord a) => Def (F "events" (Events a) -> F "index" (Interval a))
 index = defineA
   (makeConceptsFilter ["index"] .> intervals .> headMay .> \case
     Nothing -> makeFeature $ featureDataL (Other "no index")
@@ -313,7 +313,7 @@ index = defineA
 flupEvents
   :: (Integral b, IntervalSizeable a b)
   => Def
-       (  F "index" (Index Interval a)
+       (  F "index" (Interval a)
        -> F "events" (Events a)
        -> F "allFollowupEvents" (Events b)
        )
@@ -334,7 +334,7 @@ death = define (mkEventTime . fmap begin . firstConceptOccurrence ["death"])
 disenrollment
   :: (Integral b, IntervalSizeable a b)
   => Def
-       (  F "index" (Index Interval a)
+       (  F "index" (Interval a)
      -- using all events rather than just follow-up events because enrollment
      -- intervals need to be combined first
        -> F "events" (Events a)
@@ -391,7 +391,7 @@ pcskEvents = define (makeConceptsFilter ["pcsk"])
 pcskProtocols
   :: (Integral b, IntervalSizeable a b)
   => Def
-       (  F "index" (Index Interval a)
+       (  F "index" (Interval a)
        -> F "pcskEvents" (Events a)
        -> F "pcskProtocols" (Protocols b)
        )
@@ -404,7 +404,7 @@ pcskProtocols = define protocols
 makeg
   :: (Integral b, IntervalSizeable a b)
   => b
-  -> Index Interval a
+  -> Interval a
   -> ProtocolStatus b
   -> Occurrence OutcomeReason b
   -> Occurrence CensorReason b
@@ -414,7 +414,7 @@ makeg dur i =
 
 makeNegOutcomes
   :: (Integral b, IntervalSizeable a b)
-  => Index Interval a
+  => Interval a
   -> Protocols b
   -> Occurrence CensorReason b
   -> Occurrence OutcomeReason b
@@ -427,7 +427,7 @@ makeNegOutcomes i (MkProtocols p1 p2 p3 p4 p5) c o = MkNegOutcome
   (makeg 365 i p5 o c)
 
 type OutcomeFeature name a b
-  =  F "index" (Index Interval a)
+  =  F "index" (Interval a)
   -> F "allFollowupEvents" (Events b)
   -> F "pcskProtocols" (Protocols b)
   -> F "censortime" (Occurrence CensorReason b)
@@ -438,7 +438,7 @@ makeOutcomeDefinition
   => [Text]
   -> OutcomeReason
   -> Def
-       (  F "index" (Index Interval a)
+       (  F "index" (Interval a)
        -> F "allFollowupEvents" (Events b)
        -> F "pcskProtocols" (Protocols b)
        -> F "censortime" (Occurrence CensorReason b)

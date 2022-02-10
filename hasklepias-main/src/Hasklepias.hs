@@ -39,7 +39,7 @@ module Hasklepias
     can be found on [hackage](https://hackage.haskell.org/package/interval-algebra).
 
     -}
-  , module Hasklepias.FeatureEvents
+  -- , module Hasklepias.FeatureEvents
   , module Hasklepias.Misc
 
     -- * Specifying and building cohorts
@@ -62,14 +62,14 @@ module Hasklepias
 
 
 import           EventData
-
+import           EventDataTheory
 
 import           Features
 
 import           Cohort
 
 import           Hasklepias.AppUtilities
-import           Hasklepias.FeatureEvents
+-- import           Hasklepias.FeatureEvents
 import           Hasklepias.MakeApp
 import           Hasklepias.MakeFilterApp
 import           Hasklepias.Misc

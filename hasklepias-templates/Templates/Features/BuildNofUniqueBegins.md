@@ -33,11 +33,11 @@ TODO
 ```haskell
 buildNofUniqueBegins
   :: (Intervallic i a, IntervalSizeable a b, Witherable container)
-  => (Index i a -> AssessmentInterval a) -- ^ function to transform a 'Cohort.Index' to an 'Cohort.AssessmentInterval'
+  => (i a -> AssessmentInterval a) -- ^ function to transform a 'Cohort.Index' to an 'Cohort.AssessmentInterval'
   -> ComparativePredicateOf2 (AssessmentInterval a) (Event ClaimsSchema c a) -- ^ interval predicate
   -> Predicate (Event ClaimsSchema c a) -- ^ a predicate on events
   -> Definition
-       (  Feature indexName (Index i a)
+       (  Feature indexName (i a)
        -> Feature eventsName (container (Event ClaimsSchema c a))
        -> Feature varName [(EventTime b, Count)]
        )
@@ -59,14 +59,14 @@ buildNofUniqueBegins = buildNofXBase
 ```haskell
 
 type NofUniqueBeginsArgs
-  = ( Index Interval Int -> AssessmentInterval Int
+  = ( Interval Int -> AssessmentInterval Int
     , ComparativePredicateOf2 (AssessmentInterval Int) (Event ClaimsSchema Text Int)
     , Predicate (Event ClaimsSchema Text Int)
     )
 
 type NofUniqueBeginsTestCase
   = TestCase
-      (F "index" (Index Interval Int), F "events" [Event ClaimsSchema Text Int])
+      (F "index" (Interval Int), F "events" [Event ClaimsSchema Text Int])
       [(EventTime Int, Count)]
       NofUniqueBeginsArgs
 

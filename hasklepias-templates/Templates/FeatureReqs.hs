@@ -4,7 +4,8 @@
 -- {-# OPTIONS_HADDOCK hide #-}
 
 module Templates.FeatureReqs
-  ( module Cohort
+  ( module AssessmentIntervals
+  , module Cohort
   , module EventData
   , module Features
   -- , module Hasklepias.FeatureEvents
@@ -15,6 +16,7 @@ module Templates.FeatureReqs
   , module Templates.TestUtilities
   ) where
 
+import           AssessmentIntervals
 import           Cohort
 import           EventData
 import           Features

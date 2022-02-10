@@ -61,20 +61,21 @@ testFeatures :: (F "feat1" Bool, F "feat3" Int)
 testFeatures =
   (makeFeature (featureDataR False), makeFeature (featureDataR 56))
 
-b :: ObsID (Interval Int)
-b = makeObsID (beginerval (1 :: Int) 54) "2"
-a :: ObsUnit Features (Interval Int)
-a = from @(ObsID (Interval Int), Features) (b, testFeatures)
+anID :: ObsID (Interval Int)
+anID = makeObsID (beginerval (1 :: Int) 54) ("2" :: Text)
+
+aUnit :: ObsUnit Features (Interval Int)
+aUnit = from @(ObsID (Interval Int), Features) (anID, testFeatures)
 
 
 testOut :: Cohort Features (Interval Int)
 testOut = MkCohort
-  ( Just $ MkAttritionInfo 2 $ fromList
+  ( Just $ MkAttritionInfo 2 2 $ fromList
     [ MkAttritionLevel SubjectHasNoIndex         0
     , MkAttritionLevel (ExcludedBy (1, "feat2")) 1
     , MkAttritionLevel Included                  1
     ]
-  , into @(CohortData Features (Interval Int)) [a]
+  , into @(CohortData Features (Interval Int)) [aUnit]
   )
 
 tests :: TestTree

@@ -50,7 +50,7 @@ instance From (IndexSet i) (Maybe [i]) where
   from (MkIndexSet x) = fmap (NEL.toList . Set.toList) x
 
 {-|
-Smart Constructor for creating an `IndexSet` from a list of `Index`.
+Smart Constructor for creating an `IndexSet` from a list of indices.
 -}
 makeIndexSet :: (Ord i) => [i] -> IndexSet i
 makeIndexSet x = MkIndexSet $ fmap Set.fromList (NEL.nonEmpty x)

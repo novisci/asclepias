@@ -28,12 +28,12 @@ The assessment intervals provided are:
   index, while another uses a baseline interval of 90 days before index up
   to 30 days before index.
 * `Followup`: an interval which is 'IntervalAlgebra.startedBy', 
-  'IntervalAlgebra.metBy', or 'IntervalAlgebra.after' an 'Index'. Outcomes
+  'IntervalAlgebra.metBy', or 'IntervalAlgebra.after' an index. Outcomes
   are typically assessed during followup intervals. Similar to 'Baseline',
     a cohort's specification may include multiple followup intervals, 
     as different features may require different followup intervals. 
 
-In future versions, one subject may have multiple values for an 'Index'
+In future versions, one subject may have multiple values for an index
 corresponding to unique 'Cohort.Core.ObsUnit'. That is, there is a 1-to-1 map between 
 index values and observational units, but there may be a 1-to-many map from 
 subjects to indices.
@@ -116,7 +116,7 @@ instance (Ord a) => Intervallic BaselineInterval a where
   setInterval (MkBaselineInterval x) y = MkBaselineInterval (setInterval x y)
 
 {-| 
-Provides functions for creating a 'BaselineInterval' from an 'Index'. The 
+Provides functions for creating a 'BaselineInterval' from an index. The 
 'baseline' function should satify:
 
 [Meets]
@@ -155,31 +155,31 @@ Before
 -}
 class Intervallic i a => Baseline i a where
   -- | Creates a 'BaselineInterval' of the given duration that 'IntervalAlgebra.Meets'
-  -- the 'Index' interval.
+  -- the index interval.
   baseline ::
     ( IntervalSizeable a b) =>
       b -- ^ duration of baseline
-    -> i a -- ^ the 'Index' event
+    -> i a -- ^ the index event
     -> BaselineInterval a
   baseline dur index = MkBaselineInterval (enderval dur (begin index))
 
   -- | Creates a 'BaselineInterval' of the given duration that 'IntervalAlgebra.precedes'
-  -- the 'Index' interval. 
+  -- the index interval. 
   baselineBefore ::
     ( IntervalSizeable a b) =>
        b -- ^ duration to shift back 
     -> b -- ^ duration of baseline
-    -> i a -- ^ the 'Index' event
+    -> i a -- ^ the index event
     -> BaselineInterval a
   baselineBefore shiftBy dur index =
     MkBaselineInterval $ enderval dur (begin (enderval shiftBy (begin  index)))
 
   -- | Creates a 'BaselineInterval' of the given duration that 'IntervalAlgebra.FinishedBy'
-  -- the 'Index' interval. 
+  -- the index interval. 
   baselineFinishedBy ::
     ( IntervalSizeable a b ) =>
        b -- ^ duration of baseline - not including the duration of index
-    -> i a -- ^ the 'Index' event
+    -> i a -- ^ the index event
     -> BaselineInterval a
   baselineFinishedBy dur index =
     MkBaselineInterval (extenterval (enderval dur (begin  index)) (getInterval  index))
@@ -200,7 +200,7 @@ instance (Ord a) => Intervallic FollowupInterval a where
   setInterval (MkFollowupInterval x) y = MkFollowupInterval (setInterval x y)
 
 {-| 
-Provides functions for creating a 'FollowupInterval' from an 'Index'. The 
+Provides functions for creating a 'FollowupInterval' from an index. The 
 'followup' function should satify:
 
 [StartedBy]
@@ -230,7 +230,7 @@ StartedBy
 
 Note the consequence of providing a duration less than or equal to the duration 
 of the index: a 'IntervalAlgebra.moment' is added to the duration, so that the 
-end of the 'FollowupInterval' is greater than the end of the 'Index'.
+end of the 'FollowupInterval' is greater than the end of the index.
 
 >>> import Cohort.Index
 >>> import IntervalAlgebra
@@ -264,7 +264,7 @@ class Intervallic i a => Followup i a where
     ( IntervalSizeable a b
     , Intervallic i a) =>
       b -- ^ duration of followup
-    -> i a -- ^ the 'Index' event
+    -> i a -- ^ the index event
     -> FollowupInterval a
   followup dur index = MkFollowupInterval (beginerval d2 (begin  index))
     where d2 = if dur <= dindex
@@ -276,7 +276,7 @@ class Intervallic i a => Followup i a where
     ( IntervalSizeable a b
     , Intervallic i a) =>
       b -- ^ duration of followup
-    -> i a -- ^ the 'Index' event
+    -> i a -- ^ the index event
     -> FollowupInterval a
   followupMetBy dur index = MkFollowupInterval (beginerval dur (end  index))
 
@@ -285,7 +285,7 @@ class Intervallic i a => Followup i a where
     , Intervallic i a) =>
        b -- ^ duration add between the end of index and begin of followup
     -> b -- ^ duration of followup
-    -> i a -- ^ the 'Index' event
+    -> i a -- ^ the index event
     -> FollowupInterval a
   followupAfter shiftBy dur index =
     MkFollowupInterval $ beginerval dur (end (beginerval shiftBy (end  index)))

@@ -10,7 +10,7 @@ Maintainer  : bsaul@novisci.com
 module Cohort.Attrition
   ( AttritionInfo(..)
   , AttritionLevel(..)
-  , measureAttrition
+  , measureSubjectAttrition
   ) where
 
 import           Cohort.Criteria
@@ -36,7 +36,7 @@ data AttritionLevel = MkAttritionLevel
 instance Ord AttritionLevel where
   compare (MkAttritionLevel l1 _) (MkAttritionLevel l2 _) = compare l1 l2
 
--- | NOTE: the @Semigroup@ instance prefers the 'attritionLevel' from the left,
+-- | NOTE: the @Semigroup@ instance prefers the 'AttritionLevel' from the left,
 --   so be sure that you're combining two of the same level. 
 instance Semigroup AttritionLevel where
   (<>) (MkAttritionLevel l1 c1) (MkAttritionLevel _ c2) =
@@ -44,7 +44,8 @@ instance Semigroup AttritionLevel where
 
 -- | A type which collects the counts of subjects included or excluded.
 data AttritionInfo = MkAttritionInfo
-  { totalProcessed :: Int
+  { totalSubjectsProcessed :: Int
+  , totalUnitsProcessed :: Int
   , attritionInfo  :: Set.Set AttritionLevel
   }
   deriving (Eq, Show, Generic)
@@ -63,8 +64,9 @@ mapToSetAttrLevel x = fromList $ uncurry MkAttritionLevel <$> toList x
 -- | Two @AttritionInfo@ values can be combined, but this meant for combining
 --   attrition info from the same set of @Criteria@.
 instance Semigroup AttritionInfo where
-  (<>) (MkAttritionInfo t1 i1) (MkAttritionInfo t2 i2) = MkAttritionInfo
-    (t1 + t2)
+  (<>) (MkAttritionInfo s1 u1 i1) (MkAttritionInfo s2 u2 i2) = MkAttritionInfo
+    (s1 + s2)
+    (u1 + u2)
     ( mapToSetAttrLevel
     $ unionsWith (+) [setAttrLevlToMap i1, setAttrLevlToMap i2]
     )
@@ -74,15 +76,36 @@ initAttritionInfo :: Criteria -> Map.Map CohortStatus Natural
 initAttritionInfo x = fromList
   $ zip (toList (initStatusInfo x)) (replicate (length (getCriteria x)) 0)
 
--- | Measures @'AttritionInfo'@ from a @'Criteria'@ and a list of @'CohortStatus'@.
-measureAttrition :: Maybe Criteria -> [CohortStatus] -> AttritionInfo
-measureAttrition c l =
-  MkAttritionInfo (length l) $ mapToSetAttrLevel $ unionsWith
+{- |
+Measures @'AttritionInfo'@ from a @'Criteria'@ and a list of @'CohortStatus'@
+**for a single subject**.
+The 'AttritionInfo' across subjects can obtains by summing
+a list of 'AttritionInfo'.
+
+A note on why this function takes 'Maybe Criteria' as input:
+A subject may not have an 'Criteria' 
+if their only 'CohortStatus'is 'SubjectHasNoIndex. 
+However, a 'Criteria' is needed to initialize a 'Map.Map CohortStatus Natural'
+with 'initAttritionInfo'.
+-}
+measureSubjectAttrition :: 
+     Maybe Criteria 
+  -> [CohortStatus]
+  -> AttritionInfo
+measureSubjectAttrition mcriteria statuses =
+  MkAttritionInfo 
+    -- again, function is meant to be used on a single subject, so one
+    1 
+    -- number of units is number of statuses not equal to SubjectHasNoIndex 
+    (length $ filter (/= SubjectHasNoIndex) statuses)
+    -- attritionInfo is formed by unioning via a Map in order to 
+    -- sum within each CohortStatus
+    $ mapToSetAttrLevel $ unionsWith
     (+)
-    [ maybe mempty initAttritionInfo c
-    , Map.fromListWith (+) $ fmap (, 1) l
+    [ maybe mempty initAttritionInfo mcriteria 
+    , Map.fromListWith (+) $ fmap (, 1) statuses
     , fromList [(SubjectHasNoIndex, 0)]
     , fromList [(Included, 0)]
-      -- including SubjectHasNoIndex and Included in the case that none of the
+      -- including SubjectHasNoIndex and Included for the cases that none of the
       -- evaluated criteria have either of those statuses
     ]

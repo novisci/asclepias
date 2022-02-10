@@ -20,12 +20,13 @@ module Hasklepias
     for working with intervals.
     -}
     module EventData
+  , module EventDataTheory
 
     -- * Working with Features
     -- $features
   , module Features
 
-    -- * Feature definition builders 
+    -- * Feature definition builders
     {- | 
     A collection of pre-defined functions which build common feature definitions
     used in epidemiologic cohorts.
@@ -69,7 +70,6 @@ import           Features
 import           Cohort
 
 import           Hasklepias.AppUtilities
--- import           Hasklepias.FeatureEvents
 import           Hasklepias.MakeApp
 import           Hasklepias.MakeFilterApp
 import           Hasklepias.Misc

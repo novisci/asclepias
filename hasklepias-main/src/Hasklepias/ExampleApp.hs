@@ -12,6 +12,10 @@ import           Hasklepias
   Features used by inclusion/exclusion (and possibly other places too)
 -------------------------------------------------------------------------------}
 
+-- | Contructor for multiple events
+newtype Events a = Events [a]
+  deriving (Eq, Ord, Show)
+
 -- | Lift a subject's events in a feature
 featureEvents :: Events Day -> Feature "allEvents" (Events Day)
 featureEvents = pure

@@ -17,6 +17,7 @@ module EventDataTheory.Utilities
   , findOccurrenceOfEvent
   , firstOccurrenceOfConcept
   , lastOccurrenceOfConcept
+  , makeGapsWithinPredicate
   , splitByConcepts
   , filterEvents
   , tallyEvents
@@ -28,6 +29,7 @@ import           Data.Foldable                  ( length
 import           Data.Functor.Contravariant     ( Predicate(..) )
 import           Data.Semigroup
 import           EventDataTheory.Core
+import           IntervalAlgebra
 import           Safe                           ( headMay
                                                 , lastMay
                                                 )
@@ -123,3 +125,21 @@ Tally the number of events in a container satisfying the given predicate.
 tallyEvents
   :: (W.Witherable f) => Predicate (Event d c a) -> f (Event d c a) -> Int
 tallyEvents p = length . filterEvents p
+
+-- | Create a predicate function that checks whether within a provided spanning
+--   interval, are there (e.g. any, all) gaps of (e.g. <, <=, >=, >) a specified
+--   duration among  the input intervals?
+makeGapsWithinPredicate
+  :: ( Monoid (t (Interval a))
+     , Monoid (t (Maybe (Interval a)))
+     , Applicative t
+     , W.Witherable t
+     , IntervalSizeable a b
+     , Intervallic i0 a
+     , IntervalCombinable i1 a
+     )
+  => ((b -> Bool) -> t b -> Bool)
+  -> (b -> b -> Bool)
+  -> (b -> i0 a -> t (i1 a) -> Bool)
+makeGapsWithinPredicate f op gapDuration interval l =
+  maybe False (f (`op` gapDuration) . durations) (gapsWithin interval l)

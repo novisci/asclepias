@@ -34,7 +34,7 @@ followupDuration = CalendarDiffDays 3 0
 
 -- | Calendar indices: first day of each quarter for 2017-2018
 indices :: [Interval Day]
-indices = map (\(y, m) -> makeIndex $ beginerval 0 (fromGregorian y m 1))
+indices = map (\(y, m) -> beginerval 0 (fromGregorian y m 1))
               (allPairs [2017 .. 2018] [1, 4, 7, 10])
 
 {-------------------------------------------------------------------------------
@@ -310,7 +310,6 @@ cohortSpecs = makeCohortSpecs $ map
   )
   indices
 
-
 -- | A function that evaluates all the calendar cohorts for a population
 evalCohorts :: Population [Event ClaimsSchema Text Day] -> CohortSet ClaimsSchema Featureset
 evalCohorts = evalCohortSet cohortSpecs
@@ -402,29 +401,29 @@ makeExpectedFeatures i (b1, b2, b3, b4) = featureset
 expectedFeatures1 :: [Featureset]
 expectedFeatures1 = map
   (uncurry makeExpectedFeatures)
-  [ ( pure $ makeIndex $ beginerval 1 (fromGregorian 2017 4 1)
+  [ ( pure $ beginerval 1 (fromGregorian 2017 4 1)
     , (pure False, pure False, pure False, pure False)
     )
-  , ( pure $ makeIndex $ beginerval 1 (fromGregorian 2017 7 1)
+  , ( pure $ beginerval 1 (fromGregorian 2017 7 1)
     , (pure True, pure False, pure False, pure False)
     )
-  , ( pure $ makeIndex $ beginerval 1 (fromGregorian 2017 10 1)
+  , ( pure $ beginerval 1 (fromGregorian 2017 10 1)
     , (pure True, pure False, pure True, pure False)
     )
   ]
 
-expectedObsUnita :: [ObsUnit Featureset]
+expectedObsUnita :: [ObsUnit ClaimsSchema Featureset]
 expectedObsUnita =
   zipWith MkObsUnit (replicate 5 (makeObsID 1 "a")) expectedFeatures1
 
 makeExpectedCohort
-  :: AttritionInfo -> [ObsUnit Featureset] -> Cohort Featureset
+  :: AttritionInfo -> [ObsUnit ClaimsSchema Featureset] -> Cohort ClaimsSchema Featureset
 makeExpectedCohort a x = MkCohort (a, MkCohortData x)
 
 mkAl :: (CohortStatus, Natural) -> AttritionLevel
 mkAl = uncurry MkAttritionLevel
 
-expectedCohorts :: [Cohort Featureset]
+expectedCohorts :: [Cohort ClaimsSchema Featureset]
 expectedCohorts = zipWith
   (curry MkCohort)
   [ MkAttritionInfo 2 $ setFromList

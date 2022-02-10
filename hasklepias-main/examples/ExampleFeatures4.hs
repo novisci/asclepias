@@ -307,7 +307,7 @@ index :: (Ord a) => Def (F "events" (Events a) -> F "index" (Interval a))
 index = defineA
   (makeConceptsFilter ["index"] .> intervals .> headMay .> \case
     Nothing -> makeFeature $ featureDataL (Other "no index")
-    Just x  -> pure $ makeIndex x
+    Just x  -> pure x
   )
 
 flupEvents

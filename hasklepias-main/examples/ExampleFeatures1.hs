@@ -26,8 +26,7 @@ Index is defined as the first occurrence of an Orca bite.
 defineIndexSet :: Ord a => Events a -> IndexSet Interval a
 defineIndexSet events =
   makeIndexSet
-    $   makeIndex
-    .   getInterval
+    $   getInterval
     <$> makeConceptsFilter ["wasBitByOrca"] events
 
 {-  
@@ -217,7 +216,7 @@ getUnitFeatures index x =
 
 -- just a dummy set for now
 dummyIndex :: Interval Int
-dummyIndex = makeIndex $ beginerval 1 0
+dummyIndex = beginerval 1 0
 
 includeAll :: Interval Int -> Events Int -> Criteria
 includeAll _ _ = criteria $ pure
@@ -229,7 +228,7 @@ testCohortSpec = specifyCohort defineIndexSet includeAll getUnitFeatures
 
 example1results :: MyData
 example1results =
-  ( pure $ makeIndex (beginerval 1 (60 :: Int))
+  ( pure (beginerval 1 (60 :: Int))
   , pure Include
   , pure (True, Just $ beginerval 1 (51 :: Int))
   , pure (False, Nothing)
@@ -244,7 +243,7 @@ exampleFeatures1Spec :: Spec
 exampleFeatures1Spec = do
 
   it "getUnitFeatures from exampleEvents1"
-    $          getUnitFeatures (makeIndex (beginerval 1 60)) exampleEvents1
+    $          getUnitFeatures (beginerval 1 60) exampleEvents1
     `shouldBe` example1results
 
   it "mapping a population to cohort"

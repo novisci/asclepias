@@ -34,11 +34,11 @@ buildContinuousEnrollment
      , Witherable container
      , IntervalSizeable a b
      )
-  => (Index i0 a -> AssessmentInterval a) -- ^ function which maps index interval to interval in which to assess enrollment
+  => (i0 a -> AssessmentInterval a) -- ^ function which maps index interval to interval in which to assess enrollment
   -> Predicate (Event ClaimsSchema c a)  -- ^ The predicate to filter to Enrollment events (e.g. 'FeatureEvents.isEnrollment')
   -> b  -- ^ duration of allowable gap between enrollment intervals
   -> Definition
-       (  Feature indexName (Index i0 a)
+       (  Feature indexName (i0 a)
        -> Feature eventsName (container (Event ClaimsSchema c a))
        -> Feature prevName Status
        -> Feature varName Status
@@ -59,10 +59,10 @@ buildContinuousEnrollment makeAssessmentInterval predicate allowableGap = define
 
 ```haskell
 type ContEnrollArgs
-  = (Index Interval Int -> AssessmentInterval Int, Predicate (Event ClaimsSchema Text Int), Int)
+  = (Interval Int -> AssessmentInterval Int, Predicate (Event ClaimsSchema Text Int), Int)
 
 type ContEnrollTestCase = TestCase
-         ( F "index" (Index Interval Int)
+         ( F "index" (Interval Int)
          , F "events" [Event ClaimsSchema Text Int]
          , F "prev" Status
          )

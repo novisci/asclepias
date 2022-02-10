@@ -22,10 +22,6 @@ module Templates.TestUtilities
   , Solo
   ) where
 
-
-import           Cohort.Index
-
-
 -- #endif
 import           Data.Text                      ( Text )
 import           Data.Tuple.Curry
@@ -107,13 +103,14 @@ makeTestCaseOfIndexAndEvents
   -> [Event ClaimsSchema Text a]
   -> returnType
   -> TestCase
-       (F "index" (Index Interval a), F "events" [Event ClaimsSchema Text a])
+       (F "index" (Interval a), F "events" [Event ClaimsSchema Text a])
        returnType
        bargs
 makeTestCaseOfIndexAndEvents name buildArgs intrvl e = makeTestCase
   name
   buildArgs
-  (pure (makeIndex (readIntervalSafe intrvl)), pure e)
+  -- (pure (makeIndex (readIntervalSafe intrvl)), pure e)
+  (pure (readIntervalSafe intrvl), pure e)
 
 
 makeBuilderAssertion

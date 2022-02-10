@@ -41,11 +41,11 @@ buildNofXOrNofYWithGap
   -> Predicate (Event ClaimsSchema c  a)
   -> Natural -- ^ the minimum number of gaps passed to 'buildNofXWithGap'
   -> b -- ^ the minimum duration of a gap passed to 'buildNofXWithGap'
-  -> (Index i a -> AssessmentInterval a)
+  -> (i a -> AssessmentInterval a)
   -> ComparativePredicateOf2 (AssessmentInterval a) (Event ClaimsSchema c  a)
   -> Predicate (Event ClaimsSchema c  a)
   -> Definition
-       (  Feature indexName (Index i a)
+       (  Feature indexName (i a)
        -> Feature eventsName (container (Event ClaimsSchema c  a))
        -> Feature varName outputType
        )
@@ -70,11 +70,11 @@ buildNofXOrNofYWithGapBool
   -> Predicate (Event ClaimsSchema c  a)
   -> Natural -- ^ the minimum number of gaps passed to 'buildNofXWithGap'
   -> b -- ^ the minimum duration of a gap passed to 'buildNofXWithGap'
-  -> (Index i a -> AssessmentInterval a)
+  -> (i a -> AssessmentInterval a)
   -> ComparativePredicateOf2 (AssessmentInterval a) (Event ClaimsSchema c  a)
   -> Predicate (Event ClaimsSchema c  a)
   -> Definition
-       (  Feature indexName (Index i a)
+       (  Feature indexName (i a)
        -> Feature eventsName (container (Event ClaimsSchema c  a))
        -> Feature varName Bool
        )
@@ -94,11 +94,11 @@ buildNofXOrNofYWithGapBinary
   -> Predicate (Event ClaimsSchema c  a)
   -> Natural -- ^ the minimum number of gaps passed to 'buildNofXWithGap'
   -> b -- ^ the minimum duration of a gap passed to 'buildNofXWithGap'
-  -> (Index i a -> AssessmentInterval a)
+  -> (i a -> AssessmentInterval a)
   -> ComparativePredicateOf2 (AssessmentInterval a) (Event ClaimsSchema c  a)
   -> Predicate (Event ClaimsSchema c  a)
   -> Definition
-       (  Feature indexName (Index i a)
+       (  Feature indexName (i a)
        -> Feature eventsName (container (Event ClaimsSchema c  a))
        -> Feature varName Binary
        )
@@ -115,14 +115,14 @@ type NofXOrNofYWithGapArgs
     , Predicate (Event ClaimsSchema Text  Int)
     , Natural
     , Int
-    , Index Interval Int -> AssessmentInterval Int
+    , Interval Int -> AssessmentInterval Int
     , ComparativePredicateOf2 (AssessmentInterval Int) (Event ClaimsSchema Text  Int)
     , Predicate (Event ClaimsSchema Text  Int)
     )
 
 type NofXOrNofYWithGapTestCase
   = TestCase
-      (F "index" (Index Interval Int), F "events" [Event ClaimsSchema Text  Int])
+      (F "index" (Interval Int), F "events" [Event ClaimsSchema Text  Int])
       Bool
       NofXOrNofYWithGapArgs
 

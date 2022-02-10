@@ -59,11 +59,11 @@ buildNofXWithGap
   => (Bool -> outputType)
   -> Natural -- ^ the minimum number of gaps
   -> b -- ^ the minimum duration of a gap
-  -> (Index i a -> AssessmentInterval a)
+  -> (i a -> AssessmentInterval a)
   -> ComparativePredicateOf2 (AssessmentInterval a) (Event ClaimsSchema c a)
   -> Predicate (Event ClaimsSchema c a)
   -> Definition
-       (  Feature indexName (Index i a)
+       (  Feature indexName (i a)
        -> Feature eventsName (container (Event ClaimsSchema c a))
        -> Feature varName outputType
        )
@@ -97,11 +97,11 @@ buildNofXWithGapBool
      )
   => Natural -- ^ the minimum number of gaps
   -> b -- ^ the minimum duration of a gap
-  -> (Index i a -> AssessmentInterval a)
+  -> (i a -> AssessmentInterval a)
   -> ComparativePredicateOf2 (AssessmentInterval a) (Event ClaimsSchema c a)
   -> Predicate (Event ClaimsSchema c a)
   -> Definition
-       (  Feature indexName (Index i a)
+       (  Feature indexName (i a)
        -> Feature eventsName (container (Event ClaimsSchema c a))
        -> Feature varName Bool
        )
@@ -119,11 +119,11 @@ buildNofXWithGapBinary
      )
   => Natural -- ^ the minimum number of gaps
   -> b -- ^ the minimum duration of a gap
-  -> (Index i a -> AssessmentInterval a)
+  -> (i a -> AssessmentInterval a)
   -> ComparativePredicateOf2 (AssessmentInterval a) (Event ClaimsSchema c a)
   -> Predicate (Event ClaimsSchema c a)
   -> Definition
-       (  Feature indexName (Index i a)
+       (  Feature indexName (i a)
        -> Feature eventsName (container (Event ClaimsSchema c a))
        -> Feature varName Binary
        )
@@ -136,14 +136,14 @@ buildNofXWithGapBinary = buildNofXWithGap fromBool
 type NofXWithGapArgs
   = ( Natural
     , Int
-    , Index Interval Int -> AssessmentInterval Int
+    , Interval Int -> AssessmentInterval Int
     , ComparativePredicateOf2 (AssessmentInterval Int) (Event ClaimsSchema Text Int)
     , Predicate (Event ClaimsSchema Text Int)
     )
 
 type NofXWithGapTestCase
   = TestCase
-      (F "index" (Index Interval Int), F "events" [Event ClaimsSchema Text Int])
+      (F "index" (Interval Int), F "events" [Event ClaimsSchema Text Int])
       Bool
       NofXWithGapArgs
 

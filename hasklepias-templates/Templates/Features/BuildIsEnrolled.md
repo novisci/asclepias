@@ -33,7 +33,7 @@ buildIsEnrolled
   =>
   Predicate (Event ClaimsSchema c a) -- ^ The predicate to filter to Enrollment events (e.g. 'FeatureEvents.isEnrollment')
   -> Definition
-       (  Feature indexName (Index i0 a)
+       (  Feature indexName (i0 a)
        -> Feature eventsName (container (Event ClaimsSchema c a))
        -> Feature varName Status
        )
@@ -58,7 +58,7 @@ type IsEnrolledArgs
 
 type IsEnrolledTestCase = 
   TestCase
-         (F "index" (Index Interval Int), F "events" [Event ClaimsSchema Text Int])
+         (F "index" (Interval Int), F "events" [Event ClaimsSchema Text Int])
          Status
          IsEnrolledArgs
 ```

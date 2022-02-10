@@ -137,7 +137,7 @@ The 'baselineFinishedBy' function should satisfy:
 
 >>> import Cohort.Index
 >>> import IntervalAlgebra
->>> x = makeIndex (beginerval 1 10)
+>>> x = (beginerval 1 10)
 >>> b =baseline 10 x
 >>> b
 >>> relate b x
@@ -146,7 +146,7 @@ Meets
 
 >>> import Cohort.Index
 >>> import IntervalAlgebra
->>> x = makeIndex (beginerval 1 10)
+>>> x = (beginerval 1 10)
 >>> b = baselineBefore 2 4 x
 >>> b
 >>> relate b x
@@ -221,7 +221,7 @@ The 'followupAfter' function should satisfy:
 
 >>> import Cohort.Index
 >>> import IntervalAlgebra
->>> x = makeIndex (beginerval 1 10)
+>>> x = (beginerval 1 10)
 >>> f = followup 10 x
 >>> f
 >>> relate f x
@@ -234,7 +234,7 @@ end of the 'FollowupInterval' is greater than the end of the index.
 
 >>> import Cohort.Index
 >>> import IntervalAlgebra
->>> x = makeIndex (beginerval 1 10)
+>>> x = (beginerval 1 10)
 >>> f = followup 1 x
 >>> f
 >>> relate f x
@@ -243,7 +243,7 @@ StartedBy
 
 >>> import Cohort.Index
 >>> import IntervalAlgebra
->>> x = makeIndex (beginerval 1 10)
+>>> x = (beginerval 1 10)
 >>> f = followupMetBy 9 x
 >>> f
 >>> relate f x
@@ -252,7 +252,7 @@ MetBy
 
 >>> import Cohort.Index
 >>> import IntervalAlgebra
->>> x = makeIndex (beginerval 1 10)
+>>> x = (beginerval 1 10)
 >>> f = followupAfter 1 9 x
 >>> f
 >>> relate f x
@@ -313,7 +313,7 @@ instance Functor AssessmentInterval where
 -- | Creates an 'AssessmentInterval' using the 'baseline' function. 
 -- 
 -- >>> import Cohort.Index
--- >>> x = makeIndex $ beginerval 1 10
+-- >>> x = $ beginerval 1 10
 -- >>> makeBaselineFromIndex 10 x
 -- Bl (MkBaselineInterval (0, 10))
 --
@@ -324,7 +324,7 @@ makeBaselineFromIndex dur index = Bl (baseline dur index)
 -- | Creates an 'AssessmentInterval' using the 'baselineBefore' function. 
 -- 
 -- >>> import Cohort.Index
--- >>> x = makeIndex $ beginerval 1 10
+-- >>> x = $ beginerval 1 10
 -- >>> makeBaselineBeforeIndex 2 10 x
 -- Bl (MkBaselineInterval (-2, 8))
 --
@@ -340,7 +340,7 @@ makeBaselineBeforeIndex shiftBy dur index =
 -- | Creates an 'AssessmentInterval' using the 'baselineFinishedBy' function. 
 -- 
 -- >>> import Cohort.Index
--- >>> x = makeIndex $ beginerval 1 10
+-- >>> x = $ beginerval 1 10
 -- >>> makeBaselineFinishedByndex 10 x
 -- Bl (MkBaselineInterval (0, 11))
 --
@@ -351,7 +351,7 @@ makeBaselineFinishedByIndex dur index = Bl (baselineFinishedBy dur index)
 -- | Creates an 'AssessmentInterval' using the 'followup' function. 
 -- 
 -- >>> import Cohort.Index
--- >>> x = makeIndex $ beginerval 1 10
+-- >>> x = $ beginerval 1 10
 -- >>> makeFollowupFromIndex 10 x
 -- Fl (MkFollowupInterval (10, 20))
 --
@@ -362,7 +362,7 @@ makeFollowupFromIndex dur index = Fl (followup dur index)
 -- | Creates an 'AssessmentInterval' using the 'followupMetBy' function. 
 -- 
 -- >>> import Cohort.Index
--- >>> x = makeIndex $ beginerval 1 10
+-- >>> x = $ beginerval 1 10
 -- >>> makeFollowupMeetingIndex 10 x
 -- Fl (MkFollowupInterval (11, 21))
 --
@@ -373,7 +373,7 @@ makeFollowupMeetingIndex dur index = Fl (followupMetBy dur index)
 -- | Creates an 'AssessmentInterval' using the 'followupAfter' function. 
 -- 
 -- >>> import Cohort.Index
--- >>> x = makeIndex $ beginerval 1 10
+-- >>> x = $ beginerval 1 10
 -- >>> makeFollowupAfterIndex 10 10 x
 -- Fl (MkFollowupInterval (21, 31))
 --

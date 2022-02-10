@@ -109,7 +109,7 @@ makeTestCaseOfIndexAndEvents
 makeTestCaseOfIndexAndEvents name buildArgs intrvl e = makeTestCase
   name
   buildArgs
-  -- (pure (makeIndex (readIntervalSafe intrvl)), pure e)
+  -- (pure (readIntervalSafe intrvl), pure e)
   (pure (readIntervalSafe intrvl), pure e)
 
 

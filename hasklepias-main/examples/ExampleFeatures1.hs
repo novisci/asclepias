@@ -36,10 +36,10 @@ index. Here, baseline is defined as function that takes a filtration function
 as an argument, so that the baseline FeatureData can be used to filter events
 based on different predicate functions.
 -}
-bline :: (IntervalSizeable a b) => Index Interval a -> AssessmentInterval a
+bline :: (IntervalSizeable a b) => Interval a -> AssessmentInterval a
 bline = makeBaselineFromIndex 60
 
-flwup :: (IntervalSizeable a b) => Index Interval a -> AssessmentInterval a
+flwup :: (IntervalSizeable a b) => Interval a -> AssessmentInterval a
 flwup = makeFollowupFromIndex 30
 
 {-
@@ -184,7 +184,7 @@ discontinuationDef = define discontinuation
 -}
 
 type MyData
-  = ( Feature "index" (Index Interval Int)
+  = ( Feature "index" (Interval Int)
     , Feature "enrolled" Status
     , Feature "duck history" (Bool, Maybe (Interval Int))
     , Feature "macaw history" (Bool, Maybe (Interval Int))
@@ -194,7 +194,7 @@ type MyData
     , Feature "discontinuation" (Maybe (Int, Int))
     )
 
-getUnitFeatures :: Index Interval Int -> Events Int -> MyData
+getUnitFeatures :: Interval Int -> Events Int -> MyData
 getUnitFeatures index x =
   ( idx
   , eval
@@ -216,10 +216,10 @@ getUnitFeatures index x =
   fl  = fmap flwup idx
 
 -- just a dummy set for now
-dummyIndex :: Index Interval Int
+dummyIndex :: Interval Int
 dummyIndex = makeIndex $ beginerval 1 0
 
-includeAll :: Index Interval Int -> Events Int -> Criteria
+includeAll :: Interval Int -> Events Int -> Criteria
 includeAll _ _ = criteria $ pure
   (criterion (makeFeature (featureDataR Include) :: Feature "includeAll" Status)
   )

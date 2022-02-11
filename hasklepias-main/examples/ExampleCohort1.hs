@@ -101,7 +101,7 @@ medHx cpt = define
   (\index events ->
     (  events
       |> getBaselineConcur index
-      |> makeConceptsFilter cpt
+      |> filterEvents (containsConcepts cpt)
       |> combineIntervals
       |> durations
       |> any (>= 90)
@@ -135,7 +135,7 @@ age
 age = defineA
   (\index events ->
     events
-      |> makeConceptsFilter ["is_birth_year"]
+      |> filterEvents (containsConcepts ["is_birth_year"])
       |> viewBirthYears
       |> headMay
       |> fmap (\y -> fromGregorian y 1 7)  -- Use July 1 YEAR as birthdate
@@ -154,7 +154,7 @@ deathDay
        -> Feature "deathDay" (Maybe (Interval Day))
        )
 deathDay = define
-  (\events -> events |> makeConceptsFilter ["is_death"] |> intervals |> headMay)
+  (\events -> events |> filterEvents (containsConcepts ["is_death"]) |> intervals |> headMay)
 
 {-------------------------------------------------------------------------------
   Inclusion/Exclusion features 
@@ -164,7 +164,7 @@ deathDay = define
 critFemale
   :: Definition (Feature "allEvents" [Event ClaimsSchema Text Day] -> Feature "isFemale" Status)
 critFemale = define
-  (\events -> events |> makeConceptsFilter ["is_female"] |> headMay |> \case
+  (\events -> events |> filterEvents (containsConcepts ["is_female"]) |> headMay |> \case
     Nothing -> Exclude
     Just _  -> Include
   )

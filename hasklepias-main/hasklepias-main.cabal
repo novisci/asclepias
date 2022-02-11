@@ -69,7 +69,8 @@ test-suite examples
   hs-source-dirs:
       examples
   build-depends:
-      hasklepias-main
+      event-data-theory
+    , hasklepias-main
     , hasklepias-core
     , hspec
     , base >=4.14 && <5

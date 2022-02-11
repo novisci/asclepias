@@ -19,6 +19,7 @@ module ExampleCohort1
 import           AssessmentIntervals
 import           Cohort.Attrition
 import           Hasklepias -- imported for test cases
+import           Witch
 
 {-------------------------------------------------------------------------------
   Constants
@@ -316,9 +317,9 @@ evalCohorts = makeCohortSpecsEvaluator defaultCohortEvalOptions cohortSpecs
   This would generally be in a separate file
 -------------------------------------------------------------------------------}
 m :: Year -> MonthOfYear -> Int -> Integer -> [Text] -> ClaimsSchema -> Event ClaimsSchema Text Day
-m y m d dur c dmn = MkEvent (makePairedInterval c i) where
-  c = MkContext (packConcepts c) dmn Nothing
-  i = beginerval dur (fromGregorian y m d)
+m y m d dur c dmn = event itv ctx where
+  itv = MkContext (packConcepts c) dmn Nothing
+  ctx = beginerval dur (fromGregorian y m d)
 
 testData1 :: [Event ClaimsSchema Text Day]
 testData1 = sort
@@ -340,12 +341,12 @@ testData1 = sort
   , m 2016 1 1 699 ["enrollment"]            (Enrollment emptyEnrollmentFact)
   , m 2018 1 1 30  ["enrollment"]            (Enrollment emptyEnrollmentFact)
   , m 2018 2 1 30  ["enrollment"]            (Enrollment emptyEnrollmentFact)
-  , m 2017 6 5 1   ["is_diabetes_inpatient"] (UnimplementedDomain ())
-  , m 2017 8 1 91  ["is_ppi"]                (UnimplementedDomain ())
+  , m 2017 6 5 1   ["is_diabetes_inpatient"] (Enrollment emptyEnrollmentFact) -- TODO: this used to be `UnimplementedDomain ()`, what should it be now?
+  , m 2017 8 1 91  ["is_ppi"]                (Enrollment emptyEnrollmentFact) -- TODO: this used to be `UnimplementedDomain ()`, what should it be now?
   ]
 
 testSubject1 :: Subject [Event ClaimsSchema Text Day]
-testSubject1 = MkSubject ("a", testData1)
+testSubject1 = into ("a" :: Text, testData1)
 
 testData2 :: [Event ClaimsSchema Text Day]
 testData2 = sort
@@ -370,10 +371,10 @@ testData2 = sort
   ]
 
 testSubject2 :: Subject [Event ClaimsSchema Text Day]
-testSubject2 = MkSubject ("b", testData2)
+testSubject2 = into ("b" :: Text, testData2)
 
 testPop :: Population [Event ClaimsSchema Text Day]
-testPop = MkPopulation [testSubject1, testSubject2]
+testPop = into [testSubject1, testSubject2]
 
 makeExpectedCovariate
   :: (KnownSymbol name) => FeatureData Bool -> Feature name Bool
@@ -411,11 +412,11 @@ expectedFeatures1 = map
 
 expectedObsUnita :: [ObsUnit ClaimsSchema Featureset]
 expectedObsUnita =
-  zipWith MkObsUnit (replicate 5 (makeObsID 1 "a")) expectedFeatures1
+  zipWith (into (replicate 5 (makeObsID 1 "a"))) expectedFeatures1
 
 makeExpectedCohort
   :: AttritionInfo -> [ObsUnit ClaimsSchema Featureset] -> Cohort ClaimsSchema Featureset
-makeExpectedCohort a x = MkCohort (a, MkCohortData x)
+makeExpectedCohort a x = MkCohort (a, into x)
 
 mkAl :: (CohortStatus, Natural) -> AttritionLevel
 mkAl = uncurry MkAttritionLevel
@@ -496,11 +497,11 @@ expectedCohorts = zipWith
     , mkAl (Included, 0)
     ]
   ]
-  (fmap MkCohortData ([[]] ++ transpose [expectedObsUnita] ++ [[], [], [], []]))
+  (fmap into ([[]] ++ transpose [expectedObsUnita] ++ [[], [], [], []]))
 
 expectedCohortSet :: CohortSet ClaimsSchema Featureset
 expectedCohortSet =
-  MkCohortSet $ mapFromList $ zip (fmap (pack . show) indices) expectedCohorts
+  into $ mapFromList $ zip (fmap (pack . show) indices) expectedCohorts
 
 exampleCohort1tests :: TestTree
 exampleCohort1tests = testGroup

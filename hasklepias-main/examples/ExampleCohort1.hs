@@ -73,7 +73,7 @@ getBaselineConcur index = filterConcur (baselineInterval index)
 
 -- | Defines a feature that returns 'True' ('False' otherwise) if either:
 --   * at least 1 event during the baseline interval has any of the 'cpts1' concepts
---   * there are at least 2 event that have 'cpts2' concepts which have at least
+--   * there are at least 2 events that have 'cpts2' concepts which have at least
 --     7 days between them during the baseline interval
 twoOutOneIn
   :: [Text] -- ^ cpts1
@@ -83,15 +83,8 @@ twoOutOneIn
        -> Feature "allEvents" [Event ClaimsSchema Text Day]
        -> Feature name Bool
        )
-twoOutOneIn cpts1 cpts2 = define
-  (\index events ->
-    atleastNofX 1 cpts1 (getBaselineConcur index events)
-      || (  events
-         |> makeConceptsFilter cpts2
-         |> map toConceptEvent
-         |> anyGapsWithinAtLeastDuration 7 (baselineInterval index)
-         )
-  )
+twoOutOneIn cpts1 cpts2 = buildNofXOrNofYWithGapBool
+    1 (containsConcepts cpts1) 1 7 baselineInterval concur (containsConcepts cpts2)
 
 -- | Defines a feature that returns 'True' ('False' otherwise) if either:
 --   * any events concuring with baseline with concepts in 'cpts' have a 

@@ -2,8 +2,35 @@
 
 ## 0.23.0
 
-* Moves specification of test suite into `src` directly. Also, swaps out `HSpec` framework for `tasty` framework.
-* Removes `FeatureEvents` module. Functions were either removed entirely; moved (and possibly renamed) to `event-data-theory`; or moved to `Haskelpias.Misc`
+* Moves specification of test suite into `src` directly.
+Also, swaps out `HSpec` framework for `tasty` framework.
+* Removes `FeatureEvents` module. Functions were either removed entirely; 
+moved (and possibly renamed) to `event-data-theory`; or moved to `Haskelpias.Misc`
+* The evaluation logic of mapping a `Population` into a `Cohort` is changed completely.
+Previously, a cohort's specification functions where run on all subjects in sequence:
+get all the indices for all subjects,
+get all the criteria for all indices, and so on.
+Now, there is a `makeSubjectEvaluator` function that
+can apply all of a cohort's logic to a single subject,
+then the `makeCohortEvaluator` maps
+over subjects in a population to get the cohort output.
+This approach makes it much easier to reason about the code
+and to parallelize subject processing
+if we want to do that at some point in the future.
+* Adds the `CohortEvalOptions` type which holds
+options that can be passed to the evaluators that modify the evaluation logic,
+such as:
+  * `EvaluateFeatures` which determines whether
+  and how a `CohortSpec`'s `runFeatures` function is evaluated.
+  * `SubjectSample` which determines which subjects will be evaluated.
+  This is can be used to filter to certain subjects, for example.
+* The `AttritionInfo` type now includes both the number of subjects processed
+as well as the number of observational units processed.
+* The `Index` type has been removed altogether.
+Now, an "index" is simply any type that is an instance of `Ord`.
+This includes `Interval`s, for example.
+* The `AssessmentInterval` module is moved out of `Cohort` module
+to the root of the package.
 
 ## 0.22.7
 

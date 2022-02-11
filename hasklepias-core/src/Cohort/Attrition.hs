@@ -11,6 +11,7 @@ module Cohort.Attrition
   ( AttritionInfo(..)
   , AttritionLevel(..)
   , measureSubjectAttrition
+  , makeTestAttritionInfo
   ) where
 
 import           Cohort.Criteria
@@ -107,3 +108,12 @@ measureSubjectAttrition mcriteria statuses =
       -- including SubjectHasNoIndex and Included for the cases that none of the
       -- evaluated criteria have either of those statuses
         ]
+
+
+{- |
+**This function is a convenience function for writing tests**
+-}
+makeTestAttritionInfo
+  :: Int -> Int -> [(CohortStatus, Natural)] -> AttritionInfo
+makeTestAttritionInfo x y z =
+  MkAttritionInfo x y $ fromList (fmap (uncurry MkAttritionLevel) z)

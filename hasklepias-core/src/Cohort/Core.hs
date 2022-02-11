@@ -23,7 +23,9 @@ module Cohort.Core
   , CohortSpec
   , CohortSetSpec
   , CohortSet
-  , CohortEvalOptions
+  , CohortEvalOptions(..)
+  , EvaluateFeatures(..)
+  , SubjectSample(..)
   , makeObsID
   , specifyCohort
   , getCohortIDs
@@ -67,6 +69,42 @@ import           Witch                          ( From(..)
                                                 )
 import qualified Witherable                    as W
 
+
+{-| 
+A subject is just a pair of a 'Text' ID and data.
+-}
+newtype Subject d = MkSubject (Text, d)
+    deriving (Eq, Show, Generic)
+
+-- (Internal) Gets the ID out of  a @'Subject'@.
+getSubjectID :: Subject d -> Text
+getSubjectID (MkSubject (x, _)) = x
+
+-- (Internal) Gets the data out of  a @'Subject'@.
+getSubjectData :: Subject d -> d
+getSubjectData (MkSubject (_, x)) = x
+
+instance Functor Subject where
+  fmap f (MkSubject (id, x)) = MkSubject (id, f x)
+
+instance (FromJSON d) => FromJSON (Subject d)
+instance From (Text, d) (Subject d)
+
+{-|
+A population is a container of @'Subject'@s.
+Currently, the container is a list.
+-}
+newtype Population d = MkPopulation [Subject d]
+    deriving (Eq, Show, Generic)
+
+instance Functor Population where
+  fmap f (MkPopulation x) = MkPopulation (fmap (fmap f) x)
+
+instance (FromJSON d) => FromJSON (Population d) where
+instance From [Subject d] (Population d) where
+instance From (Population d) [Subject d] where
+
+
 {-|
 An observational unit identifier. 
 The textual representation of a Subject ID,
@@ -95,42 +133,6 @@ data ObsUnit d i = MkObsUnit
 
 instance From (ObsID i, d) (ObsUnit d i) where
   from (x, y) = MkObsUnit x y
-
-{-| 
-A subject is just a pair of a 'Text' ID and data.
--}
-newtype Subject d = MkSubject (Text, d)
-    deriving (Eq, Show, Generic)
-
--- (Internal) Gets the ID out of  a @'Subject'@.
-getSubjectID :: Subject d -> Text
-getSubjectID (MkSubject (x, _)) = x
-
--- (Internal) Gets the data out of  a @'Subject'@.
-getSubjectData :: Subject d -> d
-getSubjectData (MkSubject (_, x)) = x
-
-instance Functor Subject where
-  fmap f (MkSubject (id, x)) = MkSubject (id, f x)
-
-instance (FromJSON d) => FromJSON (Subject d)
-
-instance From (Text, d) (Subject d)
-
-{-|
-A population is a container of @'Subject'@s.
-Currently, the container is a list.
--}
-newtype Population d = MkPopulation [Subject d]
-    deriving (Eq, Show, Generic)
-
-instance Functor Population where
-  fmap f (MkPopulation x) = MkPopulation (fmap (fmap f) x)
-
-instance (FromJSON d) => FromJSON (Population d) where
-
-instance From [Subject d] (Population d) where
-instance From (Population d) [Subject d] where
 
 {-| 
 A container for CohortData
@@ -337,8 +339,10 @@ makeSubjectEvaluator opts spec subj = do
   -- In the case the subject has 1 or more indices,
   -- return a status for each index
   case inx of
-    Nothing ->
-      pure (measureSubjectAttrition Nothing [], SNoIndex sid SubjectHasNoIndex)
+    Nothing -> pure
+      ( measureSubjectAttrition Nothing [SubjectHasNoIndex]
+      , SNoIndex sid SubjectHasNoIndex
+      )
     Just ins -> do
 
       -- For each index, evaluate criteria

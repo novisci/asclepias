@@ -1,5 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
-module Planning.Decode.Dhall (parseDhallFile, outputTypeString) where
+module Planning.Decode.Dhall (parseDhallFile, outputTypeText) where
 
 import qualified Data.Text
 import qualified Data.Text.IO         (readFile)

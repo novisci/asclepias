@@ -413,6 +413,8 @@ The programmer's primary task is to define the transformation from inputs to out
 
 To make their lives easier, it is worth considering whether to ask programmers to implement those conversions to generic types closer to those that might be used in a project, with `hygiea` flattening that generic type to the `[Map]` type at its core. It's not clear what those `asclepias` -like types should be: A good candidate for inputs is the generic `Events` type to be included in the `event-data-theory` module. Outputs to be tested are more heterogeneous, and we might not be able to find a cleaner, simpler  interface than asking programmers to convert the output type to a flat structure directly.
 
+Conversions could be made much easier by simply requiring that all values be converted to text. While that would work fine for the golden testing framework, it would not be ideal for unit or property testing, which we hope to include at some point.
+
 Specifically, programmers would be asked to implement `Witch.From` instances from project types to the internal type. In addition, they will need to specify an instance of a typeclass --- call it `Testable` --- defining how inputs are converted to outputs *in the project-specific types*. 
 
 Supposing the internal input/output types are called `InputData` and `OutputData`, the `Testable` typeclass could be defined as

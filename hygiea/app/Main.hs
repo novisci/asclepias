@@ -32,4 +32,5 @@ main = do
   putStrLn "Test consumes the cohortBuilder and the internal input/output maps"
   putStrLn "Is input == output when tested this way?"
   let result = T.testIt @ProjInterval @ProjOccurrence inputDhall outputDhall
+  let result2 = T.testIt @ProjInterval @ProjOccurrence inputDhall outputDhall
   print result

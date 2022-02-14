@@ -406,48 +406,32 @@ To clarify: We do need some internal representation of the input, for subject-ma
 The type system is split into three chunks: One that 'users' will interact with via text-based files, one that project programmers will see, and one that is internal to `hygiea.`
 
 ==== Internal types
-Input and output types each are a list of `Map`s: This is a generic structure for rectangular data shapes, with broad support across various packages. `hygiea` will implement conversions from the programmer-facing types to this type, and will parse text-base input into this type.  `Map` is well-supported in existing packages such as `dhall` and `containers`. It is easy to marshal named data into and out of.
+Input and output types each are a list of `Map`s: This is a generic structure for rectangular data shapes, with broad support across various packages. `hygiea` will parse text-base input into this type, using Dhall. Most likely, it will use dhall-csv to parse rectangular csv data. `hygiea` also will implement conversions from this internal type to standard shapes likely to be used in projects, e.g. `Event`, and will do so leveraging the upcoming `event-data-theory` module.
 
 ==== Programmer-facing types
+If using one of those standard types, project programmers need only declare `ToOutput` instances for the project-specific input and output types to be tested. This instance provides `toOutput`, which is the transformation to be tested. If needed, project programmers can implement their own conversions from the flat `hygiea` `Map` type to their project-specific types.
+
 The programmer's primary task is to define the transformation from inputs to outputs that is to be tested. `hygiea` will ask programmers to define conversions to and from the flattened record format and the input and output types associated with testable transformations.
 
-To make their lives easier, it is worth considering whether to ask programmers to implement those conversions to generic types closer to those that might be used in a project, with `hygiea` flattening that generic type to the `[Map]` type at its core. It's not clear what those `asclepias` -like types should be: A good candidate for inputs is the generic `Events` type to be included in the `event-data-theory` module. Outputs to be tested are more heterogeneous, and we might not be able to find a cleaner, simpler  interface than asking programmers to convert the output type to a flat structure directly.
-
-Conversions could be made much easier by simply requiring that all values be converted to text. While that would work fine for the golden testing framework, it would not be ideal for unit or property testing, which we hope to include at some point.
-
-Specifically, programmers would be asked to implement `Witch.From` instances from project types to the internal type. In addition, they will need to specify an instance of a typeclass --- call it `Testable` --- defining how inputs are converted to outputs *in the project-specific types*. 
-
-Supposing the internal input/output types are called `InputData` and `OutputData`, the `Testable` typeclass could be defined as
-[source,haskell]
-----
-class (From InputData input, From output OutputData) => Testable input output where
-  toOutput :: input -> output
-----
-
-`toOutput` then would be some function, say, building a list of outcomes from a list of events.
-
 `hygiea` will handle marshaling the input data into the project's input type, running the conversion and performing the test.
-
-Note it might need to be renamed to avoid confusion with `QuickCheck.Testable`.
 
 === Sharing data shape between programmers and users
 Users will specify tests with rectangular text configuration files, but they will not interact with Haskell code. There needs to be some mechanism by which programmers can define what kinds of information columns and rows can hold.
 
-I see two clear ways to do this:
+The shape of text input could be set with a simple Dhall record specification. We lean on the `dhall-csv` package, and on the `dhall` package generally, for all of the architecture needed to interpret such input and incorporate it into a Haskell program.
 
-Programmers could write header-only files, one for the test inputs and one for the outputs, in csv or other tabular format. It would provide a guide for how programmers should implement their conversions to the flattened internal type, and it tells users what information to enter where in the tabular test specification files.
-
-Doing so would not easily allow for specifying input types (e.g. dates or integers). To specify what rows represent, the header would need to require an appropriate row id variable.
-
-Alternatively, the shape of text input could be set with a simple Dhall record specification. We could lean on the `dhall-csv` package, and on the `dhall` package generally, for all of the architecture needed to interpret such input and incorporate it into a Haskell program.
-
-An example of a dhall shape specification, saved in some project-specific `test-shape.dhall` could be
+An example of a dhall shape specification is in the `Planning/Examples` source directory:
 [source,dhall]
 ----
-{ testType : < Outcome | Covariate | Predicate >, id : Natural, observationType : < Subject | Observation >, start : Integer }
+{ concepts : Text, facts : Text, begin : Integer, end : Integer }
 ----
 
 Even something as basic as allowing a sum type probably has great benefit: The user can only specify `Subject` or `Observation` values for the `observationType` field, and other values will create parsing errors before the tests are actually run.
+
+=== Costs and benefits of using Dhall
+
+* Dhall does not by default decode `Record` types into haskell `Map` s, with good reason: The field names of the latter are not part of the type, and therefore a decoder needs to build those. See `dhallFromCsv` for a related example of how that is done.
+* `ToDhall` and `FromDhall` 
 
 === Discussion
 From the stat-dev meeting on Feb. 7. Text above includes some reactions to these comments.

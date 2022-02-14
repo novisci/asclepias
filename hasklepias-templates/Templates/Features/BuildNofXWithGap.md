@@ -15,15 +15,8 @@ module Templates.Features.BuildNofXWithGap
   , buildNofXWithGapTests
   ) where
 
-import           Data.Foldable                      ( toList )
-import           Data.Maybe                         ( catMaybes )
-import           Data.Text                          ( Text )
-import           Flow                               ( (.>) )
-import           GHC.Natural                        ( Natural, naturalToInt )
-import           Test.Tasty                         ( TestTree )
-import           Templates.FeatureReqs
+import           Templates.FeatureReqs             as F
 import           Templates.Features.BuildNofXBase
-import           Witherable                         ( Witherable )
 ```
 
 ## Usage
@@ -77,7 +70,7 @@ buildNofXWithGap cast nGaps allowableGap = buildNofXBase
    -- throw away any non-gaps
   .> catMaybes
    -- keep only those gap durations at least the allowableGap
-  .> filter (>= allowableGap)
+  .> F.filter (>= allowableGap)
    -- are there at least as many events as desired?
   .> \x -> length x >= naturalToInt nGaps
   )

@@ -17,12 +17,8 @@ module Templates.Features.BuildNofX
   , buildNofXTests 
   ) where
 
-import           Data.Text                         ( Text )
-import           GHC.Natural                       ( Natural, naturalToInt )
 import           Templates.FeatureReqs
 import           Templates.Features.BuildNofXBase
-import           Test.Tasty                        ( TestTree )
-import           Witherable                        ( Witherable )
 ```
 
 ## Usage

@@ -13,12 +13,8 @@ module Templates.Features.BuildIsEnrolled
   , buildIsEnrolledTests
   ) where
 
-import           Data.Text                         ( Text )
-import           Flow                              ( (.>) )
-import           Templates.FeatureReqs
-import           Test.Tasty                        ( TestTree )
+import           Templates.FeatureReqs             as F
 import           Data.Tuple.Solo -- TODO: remove this import; it's necessary (for some reason for GHC 9.0.1)
-import           Witherable                        ( Witherable, filter )
 ```
 
 ## Definition
@@ -39,7 +35,7 @@ buildIsEnrolled
        )
 buildIsEnrolled predicate = define
   (\index ->
-    Witherable.filter (getPredicate predicate)
+    F.filter (getPredicate predicate)
       .> combineIntervals
       .> any (concur index)
       .> includeIf

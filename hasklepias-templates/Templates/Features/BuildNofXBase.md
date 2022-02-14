@@ -20,11 +20,7 @@ module Templates.Features.BuildNofXBase
   ) where
 
 import           Templates.FeatureReqs
-import           Data.Time                      ( Day )
-import           Data.Text                      ( Text )
-import           Witherable                     ( filter, Witherable )
-import           Flow                           ( (.>) )
-import qualified           EventDataTheory.Utilities      ( (&&&) )
+import           EventDataTheory.Utilities      ( (&&&) )
 ```
 
 ```{r, echo = FALSE }
@@ -98,7 +94,7 @@ buildNofXBase runPreProcess runProcess runPostProcess makeAssessmentInterval rel
       -- filter events to those satisfying both
       -- the given relation to the assessment interval
       -- AND the given predicate
-      Witherable.filter
+      Templates.FeatureReqs.filter
           (getPredicate ((Predicate (relation (makeAssessmentInterval index))) &&& predicate))
       -- run the preprocessing function
         .> runPreProcess

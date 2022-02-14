@@ -15,13 +15,9 @@ module Templates.Features.BuildNofXOrNofYWithGap
   , buildNofXOrNofYWithGapTests
   ) where
 
-import           Data.Text                            ( Text )
-import           GHC.Natural                          ( Natural )
 import           Templates.FeatureReqs
 import           Templates.Features.BuildNofX
 import           Templates.Features.BuildNofXWithGap
-import           Test.Tasty                           ( TestTree )
-import           Witherable                           ( Witherable )
 ```
 
 ## Usage

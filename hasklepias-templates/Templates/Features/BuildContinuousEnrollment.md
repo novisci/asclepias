@@ -11,11 +11,7 @@ module Templates.Features.BuildContinuousEnrollment
   , buildContinuousEnrollmentTests
   ) where
 
-import           Data.Text                      ( Text )
-import           EventDataTheory.Utilities      ( makeGapsWithinPredicate )
-import           Templates.FeatureReqs
-import           Test.Tasty                     ( TestTree )
-import           Witherable                     ( Witherable, filter )
+import           Templates.FeatureReqs             as F
 ```
 
 The following example does blah...
@@ -50,7 +46,7 @@ buildContinuousEnrollment makeAssessmentInterval predicate allowableGap = define
       ((makeGapsWithinPredicate all (<))
         allowableGap
         (makeAssessmentInterval index)
-        (combineIntervals $ Witherable.filter (getPredicate predicate) events)
+        (combineIntervals $ F.filter (getPredicate predicate) events)
       )
   )
 ```

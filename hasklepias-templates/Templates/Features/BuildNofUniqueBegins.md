@@ -13,15 +13,10 @@ module Templates.Features.BuildNofUniqueBegins
   , buildNofUniqueBeginsTests
   ) where
 
-import           Data.Foldable                     ( toList )
-import           Data.Text                         ( Text )
 import           Flow                              ( (.>) )
-import           GHC.Natural                       ( Natural )
 import           Data.Map.Strict                   as M ( Map, fromList, toList )
-import           Test.Tasty                        ( TestTree )
-import           Templates.FeatureReqs
+import           Templates.FeatureReqs             as F
 import           Templates.Features.BuildNofXBase
-import           Witherable                        ( Witherable )
 ```
 
 ## Usage
@@ -44,7 +39,7 @@ buildNofUniqueBegins
 buildNofUniqueBegins = buildNofXBase 
   ( fmap (momentize . getInterval) )
   (  fmap (, 1 :: Natural)
-  .> Data.Foldable.toList
+  .> F.toList
   .> M.fromList
   .> M.toList
   .> \x -> uncurry zip (fmap (scanl1 (+)) (unzip x)) 

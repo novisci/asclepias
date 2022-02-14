@@ -1,0 +1,71 @@
+cabal-version:      2.4
+name:               hygiea
+version:            0.1.0.0
+
+-- A short (one-line) description of the package.
+synopsis: Cohort test-building interface for asclepias
+
+-- A longer description of the package.
+-- description: 
+
+-- A URL where users can report bugs.
+-- bug-reports:
+
+-- The license under which the package is released.
+-- license:
+author:             bbrown
+maintainer:         bbrown@targetrwe.com
+
+-- A copyright notice.
+-- copyright:
+-- category:
+extra-source-files:
+    CHANGELOG.md
+    planning.adoc
+
+library
+    exposed-modules:  
+        Planning.Output
+        , Planning.Input
+        , Planning.Test
+        , Planning.Decode
+        , Planning.Examples.Simple
+        , Planning.Event
+        -- TODO make internal
+        , Map.Internal
+
+    -- Modules included in this library but not exported.
+    other-modules: 
+        Planning.Decode.Dhall
+
+    -- LANGUAGE extensions used by modules in this package.
+    -- other-extensions:
+    build-depends:    
+        base ^>=4.14.2.0
+        , witch ^>=1
+        -- NOTE: edm module fixes interval-algebra version
+        -- though hygiea does not depend on edm at all, cabal seems to think
+        -- its dependencies must be consistent.  
+        , interval-algebra ^>=1.1
+        , containers >=0.6.5
+        , text >=1.2
+        , dhall >=1.40
+        -- hack: latest version of this dhall dependency fails to build
+        , http-client-tls <=0.3.5.3
+    hs-source-dirs:   src
+    default-language: Haskell2010
+
+executable planning
+    main-is:          Main.hs
+
+    -- Modules included in this executable, other than Main.
+    -- other-modules:
+
+    -- LANGUAGE extensions used by modules in this package.
+    -- other-extensions:
+    build-depends:
+        base ^>=4.14.2.0,
+        hygiea
+
+    hs-source-dirs:   app
+    default-language: Haskell2010

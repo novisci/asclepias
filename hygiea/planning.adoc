@@ -429,9 +429,29 @@ An example of a dhall shape specification is in the `Planning/Examples` source d
 Even something as basic as allowing a sum type probably has great benefit: The user can only specify `Subject` or `Observation` values for the `observationType` field, and other values will create parsing errors before the tests are actually run.
 
 === Costs and benefits of using Dhall
+Most of the issues and solutions described here are shared with and inspired by `dhall-csv`. The latter attempts to marshall dhall to record-like text and back. Here I try to marshall dhall to an inhomogeneous Haskell map.  The key difference between `hygiea` 's problems and `dhall-csv` 's is the latter works with a fixed target: the `NamedRecord` type from the csv reader/writer is a `HashMap` with `ByteString` keys and values. Inhomogeneity in the data is resolved by writing a parser from `ByteString` to dhall expressions. 
 
-* Dhall does not by default decode `Record` types into haskell `Map` s, with good reason: The field names of the latter are not part of the type, and therefore a decoder needs to build those. See `dhallFromCsv` for a related example of how that is done.
-* `ToDhall` and `FromDhall` 
+`hygiea` emulates that solution. See 'Inhomogeneous containers'.
+
+
+==== Decoding Maps
+Dhall does not by default decode `Record` types into haskell `Map` s, with good reason: The field names of the latter are not part of the type, and therefore a decoder needs to build those. See `dhallFromCsv` for a related example of how that is done.
+
+==== Inhomogeneous containers
+It's difficult to marshal into inhomogeneous lists or other containers. Again, dhall I think intentionally doesn't want to provide too much flexibility there. `ToDhall` and `FromDhall` methods operate on the type level, rather than by consuming values, so you cannot do something like the following
+
+[source,haskell]
+----
+type MyList = forall v. (FromDhall v) => [v]
+
+instance FromDhall MyList
+----
+
+Deriving `Generic` is a no-go there, so you would need to define the `autoWith` method of `FromDhall`. But you cannot do so because it does not take any arguments of type `MyList`. You might be able to write a custom decoder, but if I recall I ran into type ambiguity issues there that could not be resolved with haskell extensions.
+
+My solution in `hygiea` marshals dhall into `Map Text TestAtomic` (and soon `TestVal` for the value type) where `TestAtomic` is an enum with variants for the particular types `v` I wanted to support. It is easy enough then to write a `FromDhall` instance for `TestAtomic`. That approach takes from dhall's `Expr` enum representing all possible dhall expressions.
+
+I could have also simply written a parser directly from Csv into some container like `Map Text TestAtomic`, but that would amount to re-doing the work of `dhall-csv` rather than using it. Using dhall directly also leaves open the possibility of extending `hygiea` to accept more complex dhall input in the future.
 
 === Discussion
 From the stat-dev meeting on Feb. 7. Text above includes some reactions to these comments.

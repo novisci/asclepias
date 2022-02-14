@@ -4,4 +4,4 @@
 set -e 
 
 find . -name "*.hs" -not -path './dist-newstyle/*' -print0 |
-  xargs brittany -c
+  xargs -0 brittany -c

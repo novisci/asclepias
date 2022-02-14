@@ -114,8 +114,7 @@ measureSubjectAttrition mcriteria statuses =
 **This function is a convenience function for writing tests**
 -}
 makeTestAttritionInfo
-  :: 
-     Int -- ^ count of subjects
+  :: Int -- ^ count of subjects
   -> Int -- ^ count of units 
   -> [(CohortStatus, Natural)] -- ^ list of statuses with counts 
   -> AttritionInfo

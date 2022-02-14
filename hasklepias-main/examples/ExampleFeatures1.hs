@@ -26,7 +26,8 @@ Index is defined as the first occurrence of an Orca bite.
 defineIndexSet :: Ord a => Events a -> IndexSet Interval a
 defineIndexSet events =
   makeIndexSet
-    $   getInterval
+    $   makeIndex
+    .   getInterval
     <$> makeConceptsFilter ["wasBitByOrca"] events
 
 {-  
@@ -35,10 +36,10 @@ index. Here, baseline is defined as function that takes a filtration function
 as an argument, so that the baseline FeatureData can be used to filter events
 based on different predicate functions.
 -}
-bline :: (IntervalSizeable a b) => Interval a -> AssessmentInterval a
+bline :: (IntervalSizeable a b) => Index Interval a -> AssessmentInterval a
 bline = makeBaselineFromIndex 60
 
-flwup :: (IntervalSizeable a b) => Interval a -> AssessmentInterval a
+flwup :: (IntervalSizeable a b) => Index Interval a -> AssessmentInterval a
 flwup = makeFollowupFromIndex 30
 
 {-
@@ -183,7 +184,7 @@ discontinuationDef = define discontinuation
 -}
 
 type MyData
-  = ( Feature "index" (Interval Int)
+  = ( Feature "index" (Index Interval Int)
     , Feature "enrolled" Status
     , Feature "duck history" (Bool, Maybe (Interval Int))
     , Feature "macaw history" (Bool, Maybe (Interval Int))
@@ -193,7 +194,7 @@ type MyData
     , Feature "discontinuation" (Maybe (Int, Int))
     )
 
-getUnitFeatures :: Interval Int -> Events Int -> MyData
+getUnitFeatures :: Index Interval Int -> Events Int -> MyData
 getUnitFeatures index x =
   ( idx
   , eval
@@ -215,10 +216,10 @@ getUnitFeatures index x =
   fl  = fmap flwup idx
 
 -- just a dummy set for now
-dummyIndex :: Interval Int
-dummyIndex = beginerval 1 0
+dummyIndex :: Index Interval Int
+dummyIndex = makeIndex $ beginerval 1 0
 
-includeAll :: Interval Int -> Events Int -> Criteria
+includeAll :: Index Interval Int -> Events Int -> Criteria
 includeAll _ _ = criteria $ pure
   (criterion (makeFeature (featureDataR Include) :: Feature "includeAll" Status)
   )
@@ -228,7 +229,7 @@ testCohortSpec = specifyCohort defineIndexSet includeAll getUnitFeatures
 
 example1results :: MyData
 example1results =
-  ( pure (beginerval 1 (60 :: Int))
+  ( pure $ makeIndex (beginerval 1 (60 :: Int))
   , pure Include
   , pure (True, Just $ beginerval 1 (51 :: Int))
   , pure (False, Nothing)
@@ -243,7 +244,7 @@ exampleFeatures1Spec :: Spec
 exampleFeatures1Spec = do
 
   it "getUnitFeatures from exampleEvents1"
-    $          getUnitFeatures (beginerval 1 60) exampleEvents1
+    $          getUnitFeatures (makeIndex (beginerval 1 60)) exampleEvents1
     `shouldBe` example1results
 
   it "mapping a population to cohort"

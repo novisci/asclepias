@@ -14,7 +14,8 @@ Maintainer  : bsaul@novisci.com
 {-# LANGUAGE FlexibleContexts #-}
 
 module Cohort.Core
-  ( Subject
+  ( SubjID
+  , Subject
   , ObsID
   , ObsUnit
   , Population
@@ -47,6 +48,7 @@ import           Cohort.Criteria                ( CohortStatus(..)
                                                 )
 import           Cohort.IndexSet
 import           Control.Applicative            ( liftA2 )
+import           Control.Monad                  ( replicateM )
 import           Data.Aeson                     ( FromJSON
                                                 , ToJSON(..)
                                                 )
@@ -60,24 +62,46 @@ import           Data.Map.Strict               as Map
 import           Data.Semigroup                 ( sconcat )
 import qualified Data.Set                      as Set
                                                 ( Set )
-import           Data.Text                      ( Text )
+import           Data.Text                      ( Text
+                                                , pack
+                                                )
 import           GHC.Exts                       ( IsList(..) )
 import           GHC.Generics                   ( Generic )
 import           Safe                           ( headMay )
+import           Test.QuickCheck                ( Arbitrary(arbitrary)
+                                                , arbitraryASCIIChar
+                                                )
 import           Witch                          ( From(..)
                                                 , into
+                                                , via
                                                 )
 import qualified Witherable                    as W
 
 
 {-| 
+-}
+newtype SubjID = MkSubjID Text
+  deriving (Eq, Show, Generic)
+
+instance FromJSON SubjID
+instance From Text SubjID
+instance From SubjID Text
+-- | Arbitrary @SubjID@ are simply random strings of 10 characters.
+instance Arbitrary SubjID where
+  arbitrary = into . pack <$> replicateM 10 arbitraryASCIIChar
+
+-- | Smart constructor for @'SubjID'@.
+makeSubjID :: (From t Text) => t -> SubjID
+makeSubjID = MkSubjID . into
+
+{-| 
 A subject is just a pair of a 'Text' ID and data.
 -}
-newtype Subject d = MkSubject (Text, d)
+newtype Subject d = MkSubject (SubjID, d)
     deriving (Eq, Show, Generic)
 
 -- (Internal) Gets the ID out of  a @'Subject'@.
-getSubjectID :: Subject d -> Text
+getSubjectID :: Subject d -> SubjID
 getSubjectID (MkSubject (x, _)) = x
 
 -- (Internal) Gets the data out of  a @'Subject'@.
@@ -89,6 +113,11 @@ instance Functor Subject where
 
 instance (FromJSON d) => FromJSON (Subject d)
 instance From (Text, d) (Subject d)
+instance (Arbitrary d) => Arbitrary (Subject d) where
+  arbitrary = do
+    subjid <- arbitrary
+    dat    <- arbitrary
+    pure $ MkSubject (subjid, dat)
 
 {-|
 A population is a container of @'Subject'@s.
@@ -103,7 +132,8 @@ instance Functor Population where
 instance (FromJSON d) => FromJSON (Population d) where
 instance From [Subject d] (Population d) where
 instance From (Population d) [Subject d] where
-
+instance (Arbitrary d) => Arbitrary (Population d) where
+  arbitrary = MkPopulation <$> arbitrary
 
 {-|
 An observational unit identifier. 
@@ -261,11 +291,11 @@ It's not strictly needed at the moment.
 filterPopulation :: SubjectSample -> Population d -> Population d
 filterPopulation AllSubjects x = x
 filterPopulation (SubjectIncludeList inclusions) (MkPopulation x) =
-  MkPopulation $ W.filter (\x -> getSubjectID x `elem` inclusions) x
+  MkPopulation $ W.filter (\x -> getSubjectID x `elem` fmap into inclusions) x
 filterPopulation (SubjectExludeList exclusions) (MkPopulation x) =
-  MkPopulation $ W.filter (\x -> getSubjectID x `notElem` exclusions) x
+  MkPopulation
+    $ W.filter (\x -> getSubjectID x `notElem` fmap into exclusions) x
 filterPopulation (FirstNSubjects n) (MkPopulation x) = MkPopulation $ take n x
-
 
 {-|
 A type containing the options passed to cohort evaluators
@@ -341,7 +371,7 @@ makeSubjectEvaluator opts spec subj = do
   case inx of
     Nothing -> pure
       ( measureSubjectAttrition Nothing [SubjectHasNoIndex]
-      , SNoIndex sid SubjectHasNoIndex
+      , SNoIndex (into sid) SubjectHasNoIndex
       )
     Just ins -> do
 

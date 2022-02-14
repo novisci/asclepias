@@ -31,6 +31,7 @@ Now, an "index" is simply any type that is an instance of `Ord`.
 This includes `Interval`s, for example.
 * The `AssessmentInterval` module is moved out of `Cohort` module
 to the root of the package.
+* Adds `Arbitrary` instances for `Population` and `Subject`
 
 ## 0.22.7
 

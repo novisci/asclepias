@@ -57,6 +57,7 @@ library
     , interval-algebra >= 1.3
     , microlens == 0.4.12.0
     , nonempty-containers == 0.3.4.4
+    , QuickCheck >= 2.14
     , safe >= 0.3
     , tasty  == 1.4.1
     , tasty-hunit == 0.10.0.3

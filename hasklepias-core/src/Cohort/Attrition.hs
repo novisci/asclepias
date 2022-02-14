@@ -8,8 +8,8 @@ Maintainer  : bsaul@novisci.com
 {-# LANGUAGE TupleSections #-}
 
 module Cohort.Attrition
-  ( AttritionInfo(..)
-  , AttritionLevel(..)
+  ( AttritionInfo
+  , AttritionLevel
   , measureSubjectAttrition
   , makeTestAttritionInfo
   ) where
@@ -114,6 +114,10 @@ measureSubjectAttrition mcriteria statuses =
 **This function is a convenience function for writing tests**
 -}
 makeTestAttritionInfo
-  :: Int -> Int -> [(CohortStatus, Natural)] -> AttritionInfo
+  :: 
+     Int -- ^ count of subjects
+  -> Int -- ^ count of units 
+  -> [(CohortStatus, Natural)] -- ^ list of statuses with counts 
+  -> AttritionInfo
 makeTestAttritionInfo x y z =
   MkAttritionInfo x y $ fromList (fmap (uncurry MkAttritionLevel) z)

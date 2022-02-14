@@ -8,7 +8,6 @@ module Tests.Cohort.Core
   ) where
 
 import           Cohort
-import           Cohort.Attrition
 import           Data.List.NonEmpty             ( NonEmpty(..) )
 import           Data.Set                       ( empty
                                                 , fromList
@@ -36,7 +35,7 @@ c2 = define excludeIf
 
 buildIndices :: SillySubjData -> IndexSet Int
 buildIndices (MkSillySubjData (i, _, _, _)) | i <= 0    = makeIndexSet [i]
-                                             | otherwise = makeIndexSet []
+                                            | otherwise = makeIndexSet []
 
 buildCriteria :: Int -> SillySubjData -> Criteria
 buildCriteria _ (MkSillySubjData (_, b1, b2, _)) =
@@ -148,39 +147,73 @@ tests = testGroup
     [("a", MkSillySubjData (0, False, False, "excluded by crit1"))]
     (makeExpected 1 1 0 1 0 0 [("a", 0, "excluded by crit1")])
   , testCase "3 subjects: all included (default options)" $ makeCase
-    defaultCohortEvalOptions 
+    defaultCohortEvalOptions
     [ ("a", MkSillySubjData (0, True, False, "keep me"))
     , ("b", MkSillySubjData (-1, True, False, "keep me"))
-    , ("c", MkSillySubjData (-2, True, False, "keep me"))]
-    (makeExpected 3 3 0 0 0 3 [("a", 0, "keep me"), ("b", -1, "keep me"), ("c", -2, "keep me")])
-  , testCase "3 subjects: 1 with no index, 2 included (default options)" $ makeCase
-    defaultCohortEvalOptions 
-    [ ("a", MkSillySubjData (1, True, False, "keep me"))
-    , ("b", MkSillySubjData (-1, True, False, "keep me"))
-    , ("c", MkSillySubjData (-2, True, False, "keep me"))]
-    (makeExpected 3 2 1 0 0 2 [("b", -1, "keep me"), ("c", -2, "keep me")])
-  , testCase "3 subjects: 1 exclude by crit1, 1 excluded by crit2, 1 included (default options)" $ makeCase
-    defaultCohortEvalOptions 
-    [ ("a", MkSillySubjData (0, False, False, "excluded by crit1"))
-    , ("b", MkSillySubjData (-1, True, False, "keep me"))
-    , ("c", MkSillySubjData (-2, True, True, "excluded by crit2"))]
-    (makeExpected 3 3 0 1 1 1 [("b", -1, "keep me")])
-  , testCase "3 subjects: 1 exclude by crit, 1 excluded by crit2, 1 included (run features on all)" $ makeCase
-     (MkCohortEvalOptions OnAll AllSubjects) 
-    [ ("a", MkSillySubjData (0, False, False, "excluded by crit1"))
-    , ("b", MkSillySubjData (-1, True, False, "keep me"))
-    , ("c", MkSillySubjData (-2, True, True, "excluded by crit2"))]
-    (makeExpected 3 3 0 1 1 1 [("a", 0, "excluded by crit1"), ("b", -1, "keep me"), ("c", -2, "excluded by crit2")])
-  , testCase "3 subjects: 1 exclude by crit, 1 excluded by crit2, 1 included (take only first2)" $ makeCase
-     (MkCohortEvalOptions OnlyOnIncluded (FirstNSubjects 2)) 
-    [ ("a", MkSillySubjData (0, False, False, "excluded by crit1"))
-    , ("b", MkSillySubjData (-1, True, False, "keep me"))
-    , ("c", MkSillySubjData (-2, True, True, "excluded by crit2"))]
-    (makeExpected 2 2 0 1 0 1 [("b", -1, "keep me")])
-  , testCase "3 subjects: 1 exclude by crit, 1 excluded by crit2, 1 included (exclude the included)" $ makeCase
-     (MkCohortEvalOptions OnlyOnIncluded (SubjectExludeList ["b"])) 
-    [ ("a", MkSillySubjData (0, False, False, "excluded by crit1"))
-    , ("b", MkSillySubjData (-1, True, False, "keep me"))
-    , ("c", MkSillySubjData (-2, True, True, "excluded by crit2"))]
-    (makeExpected 2 2 0 1 1 0 []) 
+    , ("c", MkSillySubjData (-2, True, False, "keep me"))
+    ]
+    (makeExpected
+      3
+      3
+      0
+      0
+      0
+      3
+      [("a", 0, "keep me"), ("b", -1, "keep me"), ("c", -2, "keep me")]
+    )
+  , testCase "3 subjects: 1 with no index, 2 included (default options)"
+    $ makeCase
+        defaultCohortEvalOptions
+        [ ("a", MkSillySubjData (1, True, False, "keep me"))
+        , ("b", MkSillySubjData (-1, True, False, "keep me"))
+        , ("c", MkSillySubjData (-2, True, False, "keep me"))
+        ]
+        (makeExpected 3 2 1 0 0 2 [("b", -1, "keep me"), ("c", -2, "keep me")])
+  , testCase
+      "3 subjects: 1 exclude by crit1, 1 excluded by crit2, 1 included (default options)"
+    $ makeCase
+        defaultCohortEvalOptions
+        [ ("a", MkSillySubjData (0, False, False, "excluded by crit1"))
+        , ("b", MkSillySubjData (-1, True, False, "keep me"))
+        , ("c", MkSillySubjData (-2, True, True, "excluded by crit2"))
+        ]
+        (makeExpected 3 3 0 1 1 1 [("b", -1, "keep me")])
+  , testCase
+      "3 subjects: 1 exclude by crit, 1 excluded by crit2, 1 included (run features on all)"
+    $ makeCase
+        (MkCohortEvalOptions OnAll AllSubjects)
+        [ ("a", MkSillySubjData (0, False, False, "excluded by crit1"))
+        , ("b", MkSillySubjData (-1, True, False, "keep me"))
+        , ("c", MkSillySubjData (-2, True, True, "excluded by crit2"))
+        ]
+        (makeExpected
+          3
+          3
+          0
+          1
+          1
+          1
+          [ ("a", 0 , "excluded by crit1")
+          , ("b", -1, "keep me")
+          , ("c", -2, "excluded by crit2")
+          ]
+        )
+  , testCase
+      "3 subjects: 1 exclude by crit, 1 excluded by crit2, 1 included (take only first2)"
+    $ makeCase
+        (MkCohortEvalOptions OnlyOnIncluded (FirstNSubjects 2))
+        [ ("a", MkSillySubjData (0, False, False, "excluded by crit1"))
+        , ("b", MkSillySubjData (-1, True, False, "keep me"))
+        , ("c", MkSillySubjData (-2, True, True, "excluded by crit2"))
+        ]
+        (makeExpected 2 2 0 1 0 1 [("b", -1, "keep me")])
+  , testCase
+      "3 subjects: 1 exclude by crit, 1 excluded by crit2, 1 included (exclude the included)"
+    $ makeCase
+        (MkCohortEvalOptions OnlyOnIncluded (SubjectExludeList ["b"]))
+        [ ("a", MkSillySubjData (0, False, False, "excluded by crit1"))
+        , ("b", MkSillySubjData (-1, True, False, "keep me"))
+        , ("c", MkSillySubjData (-2, True, True, "excluded by crit2"))
+        ]
+        (makeExpected 2 2 0 1 1 0 [])
   ]

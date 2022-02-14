@@ -30,11 +30,13 @@ library
         , Planning.Test
         , Planning.Decode
         , Planning.Examples.Simple
+        , Planning.Event
+        -- TODO make internal
+        , Map.Internal
 
     -- Modules included in this library but not exported.
     other-modules: 
         Planning.Decode.Dhall
-        , Map.Internal
 
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:

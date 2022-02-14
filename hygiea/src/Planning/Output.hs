@@ -1,8 +1,7 @@
-{-# LANGUAGE DeriveGeneric         #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 
 -- reexport From
-module Planning.Output (OutputData(..), NonNeg(..), From(..)) where
+module Planning.Output where
 
 import           Data.Ratio
 import           Data.Text
@@ -12,25 +11,5 @@ import           Witch.From
 
   {- Output -}
 
--- TODO this should be revisited
-
--- a version of Hasklepias.Misc.CensoredOccurence
--- think of it as bare-bones data, after all is unwrapped and converted to text
-
--- see the Core/README.adoc for a discussion of why i think a concrete data
--- type, rather than e.g. a heterogeneous list
-
--- TODO: placeholder for continuous nonneg
-newtype NonNeg
-  = NonNeg Natural
-  deriving (Eq, Generic, Show)
-
-data OutputData
-  = MkOutputData
-      { tags :: [Text]
-      , time :: [NonNeg]
-      }
-  deriving (Eq, Generic, Show)
-
--- default conversion
-instance From OutputData OutputData where
+-- TODO  might not need an inhomogeneous map type. see Input module for
+-- experiments.

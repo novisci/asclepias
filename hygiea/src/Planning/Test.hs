@@ -4,21 +4,37 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE ConstraintKinds       #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
-module Planning.Test (Testable(..), testIt) where
+{-# LANGUAGE AllowAmbiguousTypes #-}
 
-import Planning.Output
-import Witch.From
+module Planning.Test
+  ( Testable(..)
+  , testIt
+  , ToOutput(..)
+  ) where
 
--- think of this as
--- type ToOutput input output = (From input output, From output OutputData)
--- but we might wish to have a separate implementation for From input output
--- unrelated to testing
-class (From output OutputData) => Testable input output where
+import           Map.Internal
+import           Planning.Input
+import           Planning.Output
+import           Witch.From
+import           Witch.TryFrom
+
+class ToOutput input output where
   toOutput :: input -> output
 
--- A placeholder for a test to show conversion constraints. Plan is to use
--- golden testing with tasty-silver.
-testIt :: forall input output. (Testable input output) => input -> output -> Bool
-testIt ipt opt = actual == expected
-  where expected = from opt :: OutputData
-        actual = from @output (toOutput ipt)
+type Testable input output
+  = ( TryFrom TestMap input
+    , TryFrom TestMap output
+    , ToOutput input output
+    )
+
+-- A placeholder for a test to show how it might work. Plan is to use golden
+-- testing with tasty-silver. Here failure to convert is a test failure (False)
+-- Note we're deferring ambiguity in the constraints to use locations.
+testIt
+  :: forall input output . (Eq output, Testable input output) => TestMap -> TestMap -> Bool
+testIt ipt opt = test expected actual
+ where
+  expected = tryFrom @TestMap @output opt
+  actual   = toOutput <$> tryFrom @TestMap @input ipt
+  test (Right i) (Right o) = i == o
+  test _ _ = False

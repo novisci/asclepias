@@ -31,8 +31,13 @@ import           EventData
 import           EventDataTheory
 import           Features
 import           Flow                           ( (.>) )
-import           GHC.Natural                    ( Natural, naturalToInt )
+import           GHC.Natural                    ( Natural
+                                                , naturalToInt
+                                                )
 import           Stype
 import           Templates.TestUtilities
 import           Test.Tasty                     ( TestTree )
-import           Witherable                as W ( Witherable, filter )
+import           Witherable                    as W
+                                                ( Witherable
+                                                , filter
+                                                )

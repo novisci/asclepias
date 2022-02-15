@@ -51,13 +51,17 @@ import           Test.Tasty.HUnit
 readIntervalSafe :: (Integral b, IntervalSizeable a b) => (a, a) -> Interval a
 readIntervalSafe (b, e) = beginerval (diff e b) b
 
-makeEnrollmentEvent :: (Integral b, IntervalSizeable a b) => (a, a) -> Event ClaimsSchema Text a
+makeEnrollmentEvent
+  :: (Integral b, IntervalSizeable a b) => (a, a) -> Event ClaimsSchema Text a
 makeEnrollmentEvent intrvl = event
   (readIntervalSafe intrvl)
   (MkContext mempty (Enrollment emptyEnrollmentFact) Nothing)
 
 makeEventWithConcepts
-  :: (Integral b, IntervalSizeable a b) => [Text] -> (a, a) -> Event ClaimsSchema Text a
+  :: (Integral b, IntervalSizeable a b)
+  => [Text]
+  -> (a, a)
+  -> Event ClaimsSchema Text a
 makeEventWithConcepts cpts intrvl = event
   (readIntervalSafe intrvl)
   (MkContext (packConcepts cpts) (Enrollment emptyEnrollmentFact) Nothing)
@@ -103,7 +107,9 @@ makeTestCaseOfIndexAndEvents
   -> [Event ClaimsSchema Text a]
   -> returnType
   -> TestCase
-       (F "index" (Interval a), F "events" [Event ClaimsSchema Text a])
+       ( F "index" (Interval a)
+       , F "events" [Event ClaimsSchema Text a]
+       )
        returnType
        bargs
 makeTestCaseOfIndexAndEvents name buildArgs intrvl e = makeTestCase

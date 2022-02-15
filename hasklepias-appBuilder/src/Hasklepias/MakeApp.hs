@@ -130,7 +130,7 @@ makeCohortBuilder
      , Monad m
      )
   => CohortEvalOptions
-  -> CohortSetSpec [Event d c a] d0 i
+  ->  CohortMapSpec [Event d c a] d0 i
   -> B.ByteString
   -> m ([LineParseError], CohortSet d0 i)
 makeCohortBuilder opts specs x = do
@@ -189,7 +189,7 @@ makeCohortApp
   => String  -- ^ cohort name
   -> String  -- ^ app version
   -> (Cohort d0 i -> CohortJSON) -- ^ a function which specifies the output shape
-  -> CohortSetSpec [Event d c a] d0 i  -- ^ a list of cohort specifications
+  ->  CohortMapSpec [Event d c a] d0 i  -- ^ a list of cohort specifications
   -> CohortApp IO
 makeCohortApp name version shape spec = MkCohortApp $ \l -> do
   options <- execParser (makeAppArgs name version)

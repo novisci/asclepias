@@ -24,7 +24,6 @@ module Cohort.Output
   , toJSONCohortDataShape
   ) where
 
-import           Cohort.Attrition
 import           Cohort.Core                    ( Cohort(..)
                                                 , CohortData
                                                 , CohortSet
@@ -35,7 +34,9 @@ import           Cohort.Core                    ( Cohort(..)
                                                 , getCohortDataIDs
                                                 , getCohortIDs
                                                 )
-import           Cohort.Criteria                ( CohortStatus )
+import           Cohort.Criteria                ( AttritionInfo
+                                                , CohortStatus
+                                                )
 import           Data.Aeson                     ( (.=)
                                                 , FromJSON
                                                 , ToJSON(..)
@@ -78,16 +79,6 @@ instance (ToJSON i) => ToJSON (ObsID i) where
 instance (ToJSON d, ToJSON a ) => ToJSON (ObsUnit d a) where
 instance (ToJSON d, ToJSON a) => ToJSON (CohortData d a) where
 instance (ToJSON d, ToJSON a) => ToJSON (Cohort d a) where
-
--- NOTE: The following purposefully use default encodings to make roundtrip easier
---       They can be changed from the default, but be sure that one can go to/from
---       JSON.
-instance ToJSON CohortStatus where
-instance FromJSON CohortStatus where
-instance ToJSON AttritionLevel where
-instance FromJSON AttritionLevel where
-instance ToJSON AttritionInfo where
-instance FromJSON AttritionInfo where
 
 -- | A type used to determine the output shape of a Cohort.
 data CohortDataShape d where

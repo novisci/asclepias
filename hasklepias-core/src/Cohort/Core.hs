@@ -40,11 +40,11 @@ module Cohort.Core
   , defaultCohortEvalOptions
   ) where
 
-import           Cohort.Attrition
-import           Cohort.Criteria                ( CohortStatus(..)
+import           Cohort.Criteria                ( AttritionInfo
+                                                , CohortStatus(..)
                                                 , Criteria
                                                 , checkCohortStatus
-                                                , initStatusInfo
+                                                , measureSubjectAttrition
                                                 )
 import           Cohort.IndexSet
 import           Control.Applicative            ( liftA2 )
@@ -473,7 +473,7 @@ makeCohortEvaluator opts spec pop =
 A container hold multiple cohorts of the same type.
 The key is the name of the cohort; value is a cohort.
 -}
-type CohortSet d i =  Map Text (Cohort d i)
+type CohortSet d i = Map Text (Cohort d i)
 
 {-| 
 Key/value pairs of 'CohortSpec's. 
@@ -487,7 +487,8 @@ Make a set of 'CohortSpec's from list input.
 makeCohortSpecs
   :: [(Text, d1 -> IndexSet i, i -> d1 -> Criteria, i -> d1 -> d0)]
   -> CohortMapSpec d1 d0 i
-makeCohortSpecs l = fromList (fmap (\(n, i, c, f) -> (n, specifyCohort i c f)) l)
+makeCohortSpecs l =
+  fromList (fmap (\(n, i, c, f) -> (n, specifyCohort i c f)) l)
 
 {-|
 Evaluates a @'CohortSetSpec'@ on a @'Population'@

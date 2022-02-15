@@ -30,7 +30,6 @@ library
       Features.Output
       Features.Featureset
       Cohort
-      Cohort.Attrition
       Cohort.Core
       Cohort.Output
       Cohort.Criteria
@@ -42,7 +41,6 @@ library
       Tests.Features.Core
       Tests.Features.Output
       Tests.Cohort
-      Tests.Cohort.Attrition
       Tests.Cohort.Core
       Tests.Cohort.Criteria
       Tests.Cohort.Output

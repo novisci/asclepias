@@ -19,15 +19,12 @@ module Cohort
 
    -- ** Criteria
   , module Cohort.Criteria
-   -- ** Attrition
-  , module Cohort.Attrition
 
    -- ** Cohort I/O
    -- *** Output
   , module Cohort.Output
   ) where
 
-import           Cohort.Attrition
 import           Cohort.Core
 import           Cohort.Criteria
 import           Cohort.IndexSet

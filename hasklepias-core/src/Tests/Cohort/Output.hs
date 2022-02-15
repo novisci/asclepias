@@ -6,7 +6,7 @@ module Tests.Cohort.Output
   ) where
 
 import           Cohort
-import           Cohort.Attrition
+-- import           Cohort.Attrition
 import           Data.Aeson
 import qualified Data.ByteString.Lazy          as B
                                                 ( ByteString )

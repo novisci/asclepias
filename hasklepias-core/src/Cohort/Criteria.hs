@@ -27,7 +27,9 @@ module Cohort.Criteria
 
 import           Data.Aeson                     ( (.=)
                                                 , FromJSON(..)
+                                                , FromJSONKey(..)
                                                 , ToJSON(..)
+                                                , ToJSONKey(..)
                                                 , object
                                                 )
 import           Data.Bifunctor                 ( Bifunctor(second) )
@@ -71,8 +73,11 @@ data CohortStatus =
   | ExcludedBy (Natural, Text)
   | Included
     deriving (Eq, Show, Generic)
+
 instance ToJSON CohortStatus where
 instance FromJSON CohortStatus where
+instance ToJSONKey CohortStatus
+instance FromJSONKey CohortStatus
 
 -- Defines an ordering to put @SubjectHasNoIndex@ first and @Included@ last. 
 -- The @'ExcludedBy'@ are ordered by their number value.
@@ -174,32 +179,6 @@ initStatusInfo :: Criteria -> NE.NonEmpty CohortStatus
 initStatusInfo (MkCriteria z) =
   fmap (ExcludedBy . Data.Bifunctor.second getCriterionName) z <> pure Included
 
--- | A type which collects counts of a 'CohortStatus'
-data AttritionLevel = MkAttritionLevel
-  { attritionLevel :: CohortStatus
-  , attritionCount :: Natural
-  }
-  deriving (Eq, Show, Generic)
-
--- | Ordering of @AttritionLevel@ is based on the value of its 'attritionLevel'. 
-instance Ord AttritionLevel where
-  compare (MkAttritionLevel l1 _) (MkAttritionLevel l2 _) = compare l1 l2
-
-{-
-NOTE: the @Semigroup@ instance prefers the 'AttritionLevel' from the left,
-so be sure that you're combining two of the same level. 
-This is the case if you're combining @AttritionLevel@s
-*within an @AttritionInfo@ created from the same @Criteria@,
-which will be the case when within a cohort. 
-
-See note on @'AttritionInfo'@ for more information
--}
-instance Semigroup AttritionLevel where
-  (<>) (MkAttritionLevel l1 c1) (MkAttritionLevel _ c2) =
-    MkAttritionLevel l1 (c1 + c2)
-
-instance ToJSON AttritionLevel where
-instance FromJSON AttritionLevel where
 
 {- |
 A type which collects the counts of subjects included or excluded.
@@ -207,23 +186,13 @@ A type which collects the counts of subjects included or excluded.
 data AttritionInfo = MkAttritionInfo
   { totalSubjectsProcessed :: Int
   , totalUnitsProcessed    :: Int
-  , attritionInfo          :: Set.Set AttritionLevel
+  , attritionInfo          :: Map CohortStatus Natural
   }
   deriving (Eq, Show, Generic)
 
+
 instance ToJSON AttritionInfo where
 instance FromJSON AttritionInfo where
-
--- | Takes a set of @'AttritionLevel'@ into a Map with keys of @'CohortStatus'@ and 
---   @Natural@ values.
-setAttrLevlToMap :: Set.Set AttritionLevel -> Map.Map CohortStatus Natural
-setAttrLevlToMap x =
-  fromList $ (\(MkAttritionLevel l c) -> (l, c)) <$> toList x
-
--- | Takes a Map with keys of @'CohortStatus'@ and @Natural@ values (counts of each
---   status) into a set of @'AttritionLevel'@.
-mapToSetAttrLevel :: Map.Map CohortStatus Natural -> Set.Set AttritionLevel
-mapToSetAttrLevel x = fromList $ uncurry MkAttritionLevel <$> toList x
 
 {-
 Two @AttritionInfo@ values can be combined,
@@ -237,12 +206,8 @@ then @AttritionInfo@ can be safely combined.
 This will be the case within a cohort. 
 -}
 instance Semigroup AttritionInfo where
-  (<>) (MkAttritionInfo s1 u1 i1) (MkAttritionInfo s2 u2 i2) = MkAttritionInfo
-    (s1 + s2)
-    (u1 + u2)
-    ( mapToSetAttrLevel
-    $ unionsWith (+) [setAttrLevlToMap i1, setAttrLevlToMap i2]
-    )
+  (<>) (MkAttritionInfo s1 u1 i1) (MkAttritionInfo s2 u2 i2) =
+    MkAttritionInfo (s1 + s2) (u1 + u2) (unionsWith (+) [i1, i2])
 
 -- Initializes @AttritionInfo@ from a @'Criteria'@.
 initAttritionInfo :: Criteria -> Map.Map CohortStatus Natural
@@ -262,24 +227,23 @@ However, a 'Criteria' is needed to initialize a 'Map.Map CohortStatus Natural'
 with 'initAttritionInfo'.
 -}
 measureSubjectAttrition :: Maybe Criteria -> [CohortStatus] -> AttritionInfo
-measureSubjectAttrition mcriteria statuses =
-  MkAttritionInfo
+measureSubjectAttrition mcriteria statuses = MkAttritionInfo
     -- again, function is meant to be used on a single subject, so one
-                  1
+  1
     -- number of units is number of statuses not equal to SubjectHasNoIndex 
-                  (length $ filter (/= SubjectHasNoIndex) statuses)
+  (length $ filter (/= SubjectHasNoIndex) statuses)
     -- attritionInfo is formed by unioning via a Map in order to 
     -- sum within each CohortStatus
-    $ mapToSetAttrLevel
-    $ unionsWith
-        (+)
-        [ maybe mempty initAttritionInfo mcriteria
-        , Map.fromListWith (+) $ fmap (, 1) statuses
-        , fromList [(SubjectHasNoIndex, 0)]
-        , fromList [(Included, 0)]
+  (unionsWith
+    (+)
+    [ maybe mempty initAttritionInfo mcriteria
+    , Map.fromListWith (+) $ fmap (, 1) statuses
+    , fromList [(SubjectHasNoIndex, 0)]
+    , fromList [(Included, 0)]
       -- including SubjectHasNoIndex and Included for the cases that none of the
       -- evaluated criteria have either of those statuses
-        ]
+    ]
+  )
 
 {- |
 **This function is a convenience function for writing tests.**
@@ -291,5 +255,4 @@ makeTestAttritionInfo
   -> Int -- ^ count of units 
   -> [(CohortStatus, Natural)] -- ^ list of statuses with counts 
   -> AttritionInfo
-makeTestAttritionInfo x y z =
-  MkAttritionInfo x y $ fromList (fmap (uncurry MkAttritionLevel) z)
+makeTestAttritionInfo x y z = MkAttritionInfo x y $ fromList z

@@ -18,8 +18,6 @@ import           Test.Tasty.HUnit
 attr1 :: Maybe AttritionInfo
 attr1 =
   Just $ makeTestAttritionInfo 2 2 [(ExcludedBy (1, "feat2"), 1), (Included, 1)]
---  MkAttritionInfo 2 2 $ fromList
---   [MkAttritionLevel (ExcludedBy (1, "feat2")) 1, MkAttritionLevel Included 1]
 
 cw1 :: B.ByteString
 cw1 =

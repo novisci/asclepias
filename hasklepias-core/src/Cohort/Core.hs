@@ -22,7 +22,7 @@ module Cohort.Core
   , CohortData
   , Cohort(..)
   , CohortSpec
-  , CohortSetSpec
+  , CohortMapSpec
   , CohortSet
   , CohortEvalOptions(..)
   , EvaluateFeatures(..)
@@ -138,7 +138,9 @@ instance (Arbitrary d) => Arbitrary (Population d) where
 {-|
 An observational unit identifier. 
 The textual representation of a Subject ID,
-plus the index of the unit.
+plus the index of the unit,
+where 'index' is in the temporal sense of epidemiological studies
+and not array indexing as in Ix.
 -}
 newtype ObsID i = MkObsID (Text, i)
   deriving (Eq, Show, Ord, Generic)
@@ -333,9 +335,14 @@ before converting the result to observational units for output.
 -}
 data EvaluatedSubject d i =
     SNoIndex Text CohortStatus
+  -- SUnits contains a list of data for each unit of a subject
+  -- where the data are 
+  --  (unit id, status of the unit, (maybe) units evaluated data) 
   | SUnits [ (ObsID i, CohortStatus, Maybe d) ]
 
 instance From (ObsID i, CohortStatus, Maybe d ) (Maybe (ObsUnit d i)) where
+  -- in the case that a unit's data was not evaluated
+  -- return Nothing to act as as a filter for downtream processes
   from (i, _, Just d ) = Just $ MkObsUnit i d
   from (_, _, Nothing) = Nothing
 
@@ -466,25 +473,21 @@ makeCohortEvaluator opts spec pop =
 A container hold multiple cohorts of the same type.
 The key is the name of the cohort; value is a cohort.
 -}
-newtype CohortSet d i = MkCohortSet (Map Text (Cohort d i))
-  deriving (Eq, Show, Generic)
-
-instance From (CohortSet d i) (Map Text (Cohort d i)) where
+type CohortSet d i =  Map Text (Cohort d i)
 
 {-| 
 Key/value pairs of 'CohortSpec's. 
 The keys are the names of the cohorts.
 -}
-newtype CohortSetSpec d1 d0 i = MkCohortSetSpec (Map Text (CohortSpec d1 d0 i))
+type CohortMapSpec d1 d0 i = Map Text (CohortSpec d1 d0 i)
 
 {-| 
 Make a set of 'CohortSpec's from list input.
 -}
 makeCohortSpecs
   :: [(Text, d1 -> IndexSet i, i -> d1 -> Criteria, i -> d1 -> d0)]
-  -> CohortSetSpec d1 d0 i
-makeCohortSpecs l = MkCohortSetSpec
-  $ fromList (fmap (\(n, i, c, f) -> (n, specifyCohort i c f)) l)
+  -> CohortMapSpec d1 d0 i
+makeCohortSpecs l = fromList (fmap (\(n, i, c, f) -> (n, specifyCohort i c f)) l)
 
 {-|
 Evaluates a @'CohortSetSpec'@ on a @'Population'@
@@ -495,10 +498,10 @@ makeCohortSetEvaluator
   :: forall m d1 d0 i
    . Monad m
   => CohortEvalOptions
-  -> CohortSetSpec d1 d0 i
+  -> CohortMapSpec d1 d0 i
   -> Population d1
   -> m (CohortSet d0 i)
-makeCohortSetEvaluator opts (MkCohortSetSpec specs) pop = do
+makeCohortSetEvaluator opts specs pop = do
   let doCohort s = makeCohortEvaluator opts s pop
   let cohorts = fmap (\(k, v) -> (k, ) =<< doCohort v) (toList specs)
-  pure $ MkCohortSet $ fromList cohorts
+  pure $ fromList cohorts

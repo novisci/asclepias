@@ -78,7 +78,6 @@ instance (ToJSON i) => ToJSON (ObsID i) where
 instance (ToJSON d, ToJSON a ) => ToJSON (ObsUnit d a) where
 instance (ToJSON d, ToJSON a) => ToJSON (CohortData d a) where
 instance (ToJSON d, ToJSON a) => ToJSON (Cohort d a) where
-instance (ToJSON d, ToJSON a ) => ToJSON (CohortSet d a)
 
 -- NOTE: The following purposefully use default encodings to make roundtrip easier
 --       They can be changed from the default, but be sure that one can go to/from

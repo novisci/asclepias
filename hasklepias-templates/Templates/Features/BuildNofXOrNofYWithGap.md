@@ -34,15 +34,15 @@ buildNofXOrNofYWithGap
   => (outputType -> outputType -> outputType) 
   -> (Bool -> outputType)
   -> Natural -- ^ count passed to 'buildNofX'
-  -> Predicate (Event a)
+  -> Predicate (Event ClaimsSchema c a)
   -> Natural -- ^ the minimum number of gaps passed to 'buildNofXWithGap'
   -> b -- ^ the minimum duration of a gap passed to 'buildNofXWithGap'
-  -> (Index i a -> AssessmentInterval a)
-  -> ComparativePredicateOf2 (AssessmentInterval a) (Event a)
-  -> Predicate (Event a)
+  -> (i a -> AssessmentInterval a)
+  -> ComparativePredicateOf2 (AssessmentInterval a) (Event ClaimsSchema c a)
+  -> Predicate (Event ClaimsSchema c a)
   -> Definition
-       (  Feature indexName (Index i a)
-       -> Feature eventsName (container (Event a))
+       (  Feature indexName (i a)
+       -> Feature eventsName (container (Event ClaimsSchema c a))
        -> Feature varName outputType
        )
 buildNofXOrNofYWithGap f cast xCount xPred gapCount gapDuration assess intervalPred yPred = 
@@ -63,15 +63,15 @@ buildNofXOrNofYWithGapBool
      , Witherable container
      )
   => Natural -- ^ count passed to 'buildNofX'
-  -> Predicate (Event a)
+  -> Predicate (Event ClaimsSchema c a)
   -> Natural -- ^ the minimum number of gaps passed to 'buildNofXWithGap'
   -> b -- ^ the minimum duration of a gap passed to 'buildNofXWithGap'
-  -> (Index i a -> AssessmentInterval a)
-  -> ComparativePredicateOf2 (AssessmentInterval a) (Event a)
-  -> Predicate (Event a)
+  -> (i a -> AssessmentInterval a)
+  -> ComparativePredicateOf2 (AssessmentInterval a) (Event ClaimsSchema c a)
+  -> Predicate (Event ClaimsSchema c a)
   -> Definition
-       (  Feature indexName (Index i a)
-       -> Feature eventsName (container (Event a))
+       (  Feature indexName (i a)
+       -> Feature eventsName (container (Event ClaimsSchema c a))
        -> Feature varName Bool
        )
 buildNofXOrNofYWithGapBool = buildNofXOrNofYWithGap (||) id
@@ -87,15 +87,15 @@ buildNofXOrNofYWithGapBinary
      , Witherable container
      )
   => Natural -- ^ count passed to 'buildNofX'
-  -> Predicate (Event a)
+  -> Predicate (Event ClaimsSchema c a)
   -> Natural -- ^ the minimum number of gaps passed to 'buildNofXWithGap'
   -> b -- ^ the minimum duration of a gap passed to 'buildNofXWithGap'
-  -> (Index i a -> AssessmentInterval a)
-  -> ComparativePredicateOf2 (AssessmentInterval a) (Event a)
-  -> Predicate (Event a)
+  -> (i a -> AssessmentInterval a)
+  -> ComparativePredicateOf2 (AssessmentInterval a) (Event ClaimsSchema c a)
+  -> Predicate (Event ClaimsSchema c a)
   -> Definition
-       (  Feature indexName (Index i a)
-       -> Feature eventsName (container (Event a))
+       (  Feature indexName (i a)
+       -> Feature eventsName (container (Event ClaimsSchema c a))
        -> Feature varName Binary
        )
 buildNofXOrNofYWithGapBinary = 
@@ -108,17 +108,17 @@ buildNofXOrNofYWithGapBinary =
 
 type NofXOrNofYWithGapArgs
   = ( Natural
-    , Predicate (Event Int)
+    , Predicate (Event ClaimsSchema Text  Int)
     , Natural
     , Int
-    , Index Interval Int -> AssessmentInterval Int
-    , ComparativePredicateOf2 (AssessmentInterval Int) (Event Int)
-    , Predicate (Event Int)
+    , Interval Int -> AssessmentInterval Int
+    , ComparativePredicateOf2 (AssessmentInterval Int) (Event ClaimsSchema Text  Int)
+    , Predicate (Event ClaimsSchema Text  Int)
     )
 
 type NofXOrNofYWithGapTestCase
   = TestCase
-      (F "index" (Index Interval Int), F "events" [Event Int])
+      (F "index" (Interval Int), F "events" [Event ClaimsSchema Text  Int])
       Bool
       NofXOrNofYWithGapArgs
 
@@ -158,7 +158,7 @@ buildNofXOrNofYWithGapTestCases =
                               <- Enrollment
         |--------------|
       -}
-  , f "False if a no X and Y single event and looking for gap"
+  , f "False if a no X and Y single event ClaimsSchema Text  and looking for gap"
       (1, containsConcepts ["A"], 1, 3, makeBaselineFromIndex 10, concur, isEnrollmentEvent)
       (10, 11)
       [g (8, 9)]

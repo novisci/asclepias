@@ -13,7 +13,7 @@ module Templates.Features.BuildIsEnrolled
   , buildIsEnrolledTests
   ) where
 
-import           Templates.FeatureReqs
+import           Templates.FeatureReqs             as F
 import           Data.Tuple.Solo -- TODO: remove this import; it's necessary (for some reason for GHC 9.0.1)
 ```
 
@@ -27,15 +27,15 @@ buildIsEnrolled
      , Witherable container
      )
   =>
-  Predicate (Event a) -- ^ The predicate to filter to Enrollment events (e.g. 'FeatureEvents.isEnrollment')
+  Predicate (Event ClaimsSchema c a) -- ^ The predicate to filter to Enrollment events (e.g. 'FeatureEvents.isEnrollment')
   -> Definition
-       (  Feature indexName (Index i0 a)
-       -> Feature eventsName (container (Event a))
+       (  Feature indexName (i0 a)
+       -> Feature eventsName (container (Event ClaimsSchema c a))
        -> Feature varName Status
        )
 buildIsEnrolled predicate = define
   (\index ->
-    filter (getPredicate predicate)
+    F.filter (getPredicate predicate)
       .> combineIntervals
       .> any (concur index)
       .> includeIf
@@ -46,7 +46,7 @@ buildIsEnrolled predicate = define
 
 ```haskell
 type IsEnrolledArgs
-  = ( Solo (Predicate (Event Int ) )) 
+  = ( Solo (Predicate (Event ClaimsSchema Text Int) ))
   -- use of Solo is because buildIsEnrolled takes a single argument and the
   -- Solo is needed to match the Curry constraints in the makeBuilderAssertion
   -- (via makeTestGroup). In the buildIsEnrolledTestCases, the Solo is created 
@@ -54,7 +54,7 @@ type IsEnrolledArgs
 
 type IsEnrolledTestCase = 
   TestCase
-         (F "index" (Index Interval Int), F "events" [Event Int])
+         (F "index" (Interval Int), F "events" [Event ClaimsSchema Text Int])
          Status
          IsEnrolledArgs
 ```

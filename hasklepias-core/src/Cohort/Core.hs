@@ -386,7 +386,7 @@ makeSubjectEvaluator opts spec subj = do
       let crits         = fmap (flip (runCriteria spec) sdt) ins
 
       -- For each index/criteria evaluate cohort status
-      -- checkCohortStatus has sig:: Maybe (Index a) -> Criteria -> CohortStatus
+      -- checkCohortStatus has sig:: Maybe a -> Criteria -> CohortStatus
       -- Thus use of Just here to lift an Index back into Maybe
       let stats         = zipWith (checkCohortStatus . Just) ins crits
 
@@ -473,7 +473,7 @@ makeCohortEvaluator opts spec pop =
 A container hold multiple cohorts of the same type.
 The key is the name of the cohort; value is a cohort.
 -}
-type CohortSet d i =  Map Text (Cohort d i)
+type CohortSet d i = Map Text (Cohort d i)
 
 {-| 
 Key/value pairs of 'CohortSpec's. 
@@ -487,7 +487,8 @@ Make a set of 'CohortSpec's from list input.
 makeCohortSpecs
   :: [(Text, d1 -> IndexSet i, i -> d1 -> Criteria, i -> d1 -> d0)]
   -> CohortMapSpec d1 d0 i
-makeCohortSpecs l = fromList (fmap (\(n, i, c, f) -> (n, specifyCohort i c f)) l)
+makeCohortSpecs l =
+  fromList (fmap (\(n, i, c, f) -> (n, specifyCohort i c f)) l)
 
 {-|
 Evaluates a @'CohortSetSpec'@ on a @'Population'@

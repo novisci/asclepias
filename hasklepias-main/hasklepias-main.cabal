@@ -25,39 +25,59 @@ library
       Hasklepias
       Hasklepias.ExampleApp
       Hasklepias.ExampleFilterApp
+      Hasklepias.Misc
+      Hasklepias.Reexports
+      Hasklepias.ReexportsUnsafe
   hs-source-dirs:
       src
   build-depends:
     -- Internal packages
       event-data-model
+    , event-data-theory
     , hasklepias-appBuilder
-    , stype
     , hasklepias-core
     , hasklepias-templates
+    , stype
 
-  default-language: Haskell2010
-
-test-suite examples
-  type: exitcode-stdio-1.0
-  main-is: Main.hs
-  other-modules:
-      ExampleEvents
-      ExampleFeatures1
-      ExampleFeatures2
-      ExampleFeatures3
-      ExampleFeatures4
-      ExampleCohort1
-  hs-source-dirs:
-      examples
-  build-depends:
-      hasklepias-main
-    , hasklepias-core
-    , hspec
+    -- External packages
+    , aeson >= 2.0.2.0
     , base >=4.14 && <5
-    , tasty  == 1.4.1
-    , tasty-hunit == 0.10.0.3
-    , tasty-hspec == 1.2
+    , containers == 0.6.5.1
+    , flow >= 2.0.0.0
+    , generic-lens == 2.2.0.0
+    , microlens == 0.4.12.0
+    , safe >= 0.3
+    , tasty >= 1.4
+    , tasty-hunit >= 0.10
+    , time >= 1.11
+    , text == 1.2.4.1
+    , tuple >= 0.3
+    , witherable == 0.4.1
   default-language: Haskell2010
+
+-- test-suite examples
+--   type: exitcode-stdio-1.0
+--   main-is: Main.hs
+--   other-modules:
+--       ExampleEvents
+--       ExampleFeatures1
+--       ExampleFeatures2
+--       ExampleFeatures3
+--       ExampleFeatures4
+--       ExampleCohort1
+--   hs-source-dirs:
+--       examples
+--   build-depends:
+--       event-data-theory
+--     , hasklepias-main
+--     , hasklepias-core
+--     , hspec
+--     , base >=4.14 && <5
+--     , tasty  == 1.4.1
+--     , tasty-hunit == 0.10.0.3
+--     , tasty-hspec == 1.2
+--     , witch >= 1.0
+--   default-language: Haskell2010
 
 executable exampleApp
   main-is: Main.hs

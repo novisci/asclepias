@@ -157,7 +157,8 @@ pairGaps es = fmap (fmap duration . uncurry (><)) (pairs es)
 -- pairs :: [a] -> [(a, a)]
 -- copied from the hgeometry library
 -- (https://hackage.haskell.org/package/hgeometry-0.12.0.4/docs/src/Data.Geometry.Arrangement.Internal.html#allPairs)
-  where pairs = go
-                where
-                  go []       = []
-                  go (x : xs) = fmap (x, ) xs <> go xs
+ where
+  pairs = go
+   where
+    go []       = []
+    go (x : xs) = fmap (x, ) xs <> go xs

@@ -37,7 +37,6 @@ library
     , hasklepias-appBuilder
     , hasklepias-core
     , hasklepias-templates
-    , interval-algebra
     , stype
 
     -- External packages

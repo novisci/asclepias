@@ -394,6 +394,8 @@ makeSubjectEvaluator opts spec subj = do
       let statusIndices = liftA2 (\x y -> (makeObsID y sid, x)) stats ins
 
       -- Measure the contribution to attrition for this subject
+      -- NOTE: Criteria here is used only to the get the exclusion levels,
+      -- which are the same for any Criteria. Hence only the first is needed.
       let attrition     = measureSubjectAttrition (headMay crits) stats
 
       -- Create a function which applies a function g

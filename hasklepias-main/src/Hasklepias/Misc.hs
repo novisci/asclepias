@@ -41,7 +41,6 @@ module Hasklepias.Misc
 
   -- ** Other
   , computeAgeAt
-  , pairGaps
   ) where
 
 import           Control.Applicative
@@ -162,16 +161,6 @@ pairs = go
  where
   go []       = []
   go (x : xs) = fmap (x, ) xs <> go xs
-
-
--- | Gets the durations of gaps (via 'IntervalAlgebra.(><)') between all pairs 
---   of the input. 
-pairGaps
-  :: (Intervallic i a, IntervalSizeable a b, IntervalCombinable i a)
-  => [i a]
-  -> [Maybe b]
-pairGaps es = fmap (fmap duration . uncurry (><)) (pairs es)
-
 
 -- | Create a predicate function that checks whether within a provided spanning
 --   interval, are there (e.g. any, all) gaps of (e.g. <, <=, >=, >) a specified

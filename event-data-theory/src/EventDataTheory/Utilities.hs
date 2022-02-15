@@ -1,3 +1,4 @@
+{-# LANGUAGE TupleSections #-}
 {-|
 Module      : Misc utilities useful in working with events 
 -}
@@ -21,6 +22,7 @@ module EventDataTheory.Utilities
   , splitByConcepts
   , filterEvents
   , tallyEvents
+  , pairGaps
   ) where
 
 import           Data.Foldable                  ( length
@@ -143,3 +145,19 @@ makeGapsWithinPredicate
   -> (b -> i0 a -> t (i1 a) -> Bool)
 makeGapsWithinPredicate f op gapDuration interval l =
   maybe False (f (`op` gapDuration) . durations) (gapsWithin interval l)
+
+-- | Gets the durations of gaps (via 'IntervalAlgebra.(><)') between all pairs
+--   of the input.
+pairGaps
+  :: (Intervallic i a, IntervalSizeable a b, IntervalCombinable i a)
+  => [i a]
+  -> [Maybe b]
+pairGaps es = fmap (fmap duration . uncurry (><)) (pairs es)
+-- Generate all pair-wise combinations of a single list.
+-- pairs :: [a] -> [(a, a)]
+-- copied from the hgeometry library
+-- (https://hackage.haskell.org/package/hgeometry-0.12.0.4/docs/src/Data.Geometry.Arrangement.Internal.html#allPairs)
+  where pairs = go
+                where
+                  go []       = []
+                  go (x : xs) = fmap (x, ) xs <> go xs

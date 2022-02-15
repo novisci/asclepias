@@ -1,5 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE NoImplicitPrelude #-}
+{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
@@ -12,6 +13,8 @@ import           Hasklepias
 {-------------------------------------------------------------------------------
   Features used by inclusion/exclusion (and possibly other places too)
 -------------------------------------------------------------------------------}
+
+instance ToJSON (Interval Day)
 
 -- | Lift a subject's events in a feature
 featureEvents
@@ -81,7 +84,7 @@ makeFeatureRunner _ events = featureset
 -- | Make a cohort specification set
 -- cohortSpecs :: CohortSetSpec [Event ClaimsSchema Text Day] Featureset (Interval Day)
 cohortSpecs
-  :: CohortSetSpec [Event ClaimsSchema Text Day] Featureset (Interval Day)
+  :: CohortMapSpec [Event ClaimsSchema Text Day] Featureset (Interval Day)
 cohortSpecs = makeCohortSpecs
   [("example", makeIndexRunner, makeCriteriaRunner, makeFeatureRunner)]
 

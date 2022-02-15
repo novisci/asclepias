@@ -48,10 +48,7 @@ testAttr1p2 = makeTestAttritionInfo
 tests :: TestTree
 tests = testGroup
   "Unit tests on Cohort.Criteria"
-  [ testCase "noIndex "
-  $   checkCohortStatus Nothing (criteria $ pure (f1 Include))
-  @?= SubjectHasNoIndex
-  , testCase "include f1"
+  [ testCase "include f1"
   $   checkCohortStatus index (criteria $ pure (f1 Include))
   @?= Included
   , testCase "include f1, f2, f3"

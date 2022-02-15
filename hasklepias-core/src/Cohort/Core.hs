@@ -388,7 +388,7 @@ makeSubjectEvaluator opts spec subj = do
       -- For each index/criteria evaluate cohort status
       -- checkCohortStatus has sig:: Maybe (Index a) -> Criteria -> CohortStatus
       -- Thus use of Just here to lift an Index back into Maybe
-      let stats         = zipWith (checkCohortStatus . Just) ins crits
+      let stats         = zipWith checkCohortStatus ins crits
 
       -- Pair up each status with its index for ease of processing later.
       let statusIndices = liftA2 (\x y -> (makeObsID y sid, x)) stats ins

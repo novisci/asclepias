@@ -5,11 +5,11 @@ Copyright   : (c) NoviSci, Inc 2020
 License     : BSD3
 Maintainer  : bsaul@novisci.com
 -}
--- {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE TypeApplications #-}
-
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TupleSections #-}
 
 module Hasklepias.MakeApp
   ( CohortApp(..)
@@ -65,31 +65,53 @@ import           Options.Applicative
 import           Type.Reflection                ( Typeable )
 import           Witch                          ( into )
 
+{-| INTERNAL
+TODO
+-}
 data MakeCohort = MakeCohort
   { input  :: Input
   , output :: Output
   }
 
+
+{-| INTERNAL
+TODO
+-}
+collectBySubject :: [(SubjectID, d)] -> [(SubjectID, [d])]
+collectBySubject x = M.toList $ M.fromListWith (++) (fmap (fmap pure) x)
+
+{-| INTERNAL
+TODO
+-}
 mapIntoPop
-  :: (Ord a, Ord c, Eq d)
+  :: forall d c a
+   . (Ord a, Ord c, Eq d)
   => [(SubjectID, Event d c a)]
   -> Population [Event d c a]
-mapIntoPop l = MkPopulation $ fmap
-  (\(id, es) -> MkSubject (into @Text id, sort es)) -- TODO: is there a way to avoid the sort?
-  (M.toList $ M.fromListWith (++) (fmap (fmap pure) l))
+mapIntoPop l = into $ fmap
+  (\(id, es) -> into @(Subject [Event d c a]) (into @Text id, sort es)) -- TODO: is there a way to avoid the sort?
+  (collectBySubject l)
 
+{-| INTERNAL
+TODO
+-}
 mainOptions :: Parser MakeCohort
 mainOptions =
   MakeCohort
     <$> (fileInput <|> s3Input <|> stdInput)
     <*> (fileOutput <|> s3Output <|> stdOutput)
 
+{-| INTERNAL
+TODO
+-}
 makeAppArgs :: String -> String -> ParserInfo MakeCohort
 makeAppArgs name version = Options.Applicative.info
   (mainOptions <**> helper)
   (fullDesc <> header (name <> " " <> version))
 
--- | Creates a cohort builder function
+{-| INTERNAL
+Creates a cohort builder function
+-}
 makeCohortBuilder
   :: ( Show d
      , Eq d
@@ -104,22 +126,35 @@ makeCohortBuilder
      , Show a
      , IntervalSizeable a b
      , ToJSON d0
-     , ShapeCohort d0
+     , ShapeCohort d0 i
      , Monad m
      )
-  => CohortSetSpec [Event d c a] d0 i a
-  -> m (B.ByteString -> m ([LineParseError], CohortSet d0))
-makeCohortBuilder specs =
-  pure (pure . second (evalCohortSet specs . mapIntoPop) . parseEventLinesL)
+  => CohortEvalOptions
+  -> CohortMapSpec [Event d c a] d0 i
+  -> B.ByteString
+  -> m ([LineParseError], CohortSet d0 i)
+makeCohortBuilder opts specs x = do
+  -- TODO: clean this up
+  let dat          = parseEventLinesL x
+  let err          = fst dat
+  let doEvaluation = makeCohortSpecsEvaluator opts specs
+  let pop          = mapIntoPop $ snd dat
+  let res          = doEvaluation pop
+  let res2         = (err, ) =<< res
 
-reshapeCohortSet :: (Cohort d0 -> CohortJSON) -> CohortSet d0 -> CohortSetJSON
+  pure res2
+
+
+
+reshapeCohortSet
+  :: (Cohort d0 i -> CohortJSON) -> CohortSet d0 i -> CohortSetJSON
 reshapeCohortSet g x =
-  MkCohortSetJSON $ fromList $ fmap (fmap g) (toList $ getCohortSet x)
+  MkCohortSetJSON $ fromList $ fmap (fmap g) (toList $ into x)
 
 shapeOutput
-  :: (Monad m, ShapeCohort d0)
-  => (Cohort d0 -> CohortJSON)
-  -> m ([LineParseError], CohortSet d0)
+  :: (Monad m, ShapeCohort d0 i)
+  => (Cohort d0 i -> CohortJSON)
+  -> m ([LineParseError], CohortSet d0 i)
   -> m ([LineParseError], CohortSetJSON)
 shapeOutput shape = fmap (fmap (reshapeCohortSet shape))
 
@@ -149,19 +184,21 @@ makeCohortApp
      , Show a
      , IntervalSizeable a b
      , ToJSON d0
-     , ShapeCohort d0
+     , ShapeCohort d0 i
      )
   => String  -- ^ cohort name
   -> String  -- ^ app version
-  -> (Cohort d0 -> CohortJSON) -- ^ a function which specifies the output shape
-  -> CohortSetSpec [Event d c a] d0 i a  -- ^ a list of cohort specifications
+  -> (Cohort d0 i -> CohortJSON) -- ^ a function which specifies the output shape
+  -> CohortMapSpec [Event d c a] d0 i  -- ^ a list of cohort specifications
   -> CohortApp IO
 makeCohortApp name version shape spec = MkCohortApp $ \l -> do
   options <- execParser (makeAppArgs name version)
   let errLog = logStringStderr
 
   errLog <& "Creating cohort builder..."
-  app <- makeCohortBuilder spec
+  -- TODO: wire up ability to change evaluation options. 
+  -- For now, set to default.
+  let app = makeCohortBuilder defaultCohortEvalOptions spec
 
   errLog <& "Reading data from stdin..."
   -- TODO: give error if no contents within some amount of time

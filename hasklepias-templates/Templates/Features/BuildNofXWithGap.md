@@ -15,7 +15,7 @@ module Templates.Features.BuildNofXWithGap
   , buildNofXWithGapTests
   ) where
 
-import           Templates.FeatureReqs
+import           Templates.FeatureReqs             as F
 import           Templates.Features.BuildNofXBase
 ```
 
@@ -33,12 +33,12 @@ buildNofXWithGap
   => (Bool -> outputType)
   -> Natural -- ^ the minimum number of gaps
   -> b -- ^ the minimum duration of a gap
-  -> (Index i a -> AssessmentInterval a)
-  -> ComparativePredicateOf2 (AssessmentInterval a) (Event a)
-  -> Predicate (Event a)
+  -> (i a -> AssessmentInterval a)
+  -> ComparativePredicateOf2 (AssessmentInterval a) (Event ClaimsSchema c a)
+  -> Predicate (Event ClaimsSchema c a)
   -> Definition
-       (  Feature indexName (Index i a)
-       -> Feature eventsName (container (Event a))
+       (  Feature indexName (i a)
+       -> Feature eventsName (container (Event ClaimsSchema c a))
        -> Feature varName outputType
        )
 buildNofXWithGap cast nGaps allowableGap = buildNofXBase
@@ -51,7 +51,7 @@ buildNofXWithGap cast nGaps allowableGap = buildNofXBase
    -- throw away any non-gaps
   .> catMaybes
    -- keep only those gap durations at least the allowableGap
-  .> filter (>= allowableGap)
+  .> F.filter (>= allowableGap)
    -- are there at least as many events as desired?
   .> \x -> length x >= naturalToInt nGaps
   )
@@ -71,12 +71,12 @@ buildNofXWithGapBool
      )
   => Natural -- ^ the minimum number of gaps
   -> b -- ^ the minimum duration of a gap
-  -> (Index i a -> AssessmentInterval a)
-  -> ComparativePredicateOf2 (AssessmentInterval a) (Event a)
-  -> Predicate (Event a)
+  -> (i a -> AssessmentInterval a)
+  -> ComparativePredicateOf2 (AssessmentInterval a) (Event ClaimsSchema c a)
+  -> Predicate (Event ClaimsSchema c a)
   -> Definition
-       (  Feature indexName (Index i a)
-       -> Feature eventsName (container (Event a))
+       (  Feature indexName (i a)
+       -> Feature eventsName (container (Event ClaimsSchema c a))
        -> Feature varName Bool
        )
 buildNofXWithGapBool = buildNofXWithGap id
@@ -93,12 +93,12 @@ buildNofXWithGapBinary
      )
   => Natural -- ^ the minimum number of gaps
   -> b -- ^ the minimum duration of a gap
-  -> (Index i a -> AssessmentInterval a)
-  -> ComparativePredicateOf2 (AssessmentInterval a) (Event a)
-  -> Predicate (Event a)
+  -> (i a -> AssessmentInterval a)
+  -> ComparativePredicateOf2 (AssessmentInterval a) (Event ClaimsSchema c a)
+  -> Predicate (Event ClaimsSchema c a)
   -> Definition
-       (  Feature indexName (Index i a)
-       -> Feature eventsName (container (Event a))
+       (  Feature indexName (i a)
+       -> Feature eventsName (container (Event ClaimsSchema c a))
        -> Feature varName Binary
        )
 buildNofXWithGapBinary = buildNofXWithGap fromBool
@@ -110,14 +110,14 @@ buildNofXWithGapBinary = buildNofXWithGap fromBool
 type NofXWithGapArgs
   = ( Natural
     , Int
-    , Index Interval Int -> AssessmentInterval Int
-    , ComparativePredicateOf2 (AssessmentInterval Int) (Event Int)
-    , Predicate (Event Int)
+    , Interval Int -> AssessmentInterval Int
+    , ComparativePredicateOf2 (AssessmentInterval Int) (Event ClaimsSchema Text Int)
+    , Predicate (Event ClaimsSchema Text Int)
     )
 
 type NofXWithGapTestCase
   = TestCase
-      (F "index" (Index Interval Int), F "events" [Event Int])
+      (F "index" (Interval Int), F "events" [Event ClaimsSchema Text Int])
       Bool
       NofXWithGapArgs
 
@@ -157,7 +157,7 @@ buildNofXWithGapTestCases =
                               <- Enrollment
         |--------------|
       -}
-  , f "False if a single event and looking for gap"
+  , f "False if a single event ClaimsSchema Text and looking for gap"
       (1, 3, makeBaselineFromIndex 10, concur, isEnrollmentEvent)
       (10, 11)
       [g (8, 9)]

@@ -41,16 +41,16 @@ module Hasklepias.Misc
 
   -- ** Other
   , computeAgeAt
-  , pairGaps
   ) where
 
 import           Control.Applicative
 import           Data.Time
+-- import           IntervalAlgebra
+import           EventDataTheory
 import           Features.Core                  ( Definition
                                                 , Feature
                                                 )
 import           GHC.Generics                   ( Generic )
-import           IntervalAlgebra
 import           Stype.Numeric.Censored         ( MaybeCensored(..) )
 import           Stype.Numeric.Continuous       ( EventTime )
 import qualified Witherable                    as W
@@ -162,34 +162,6 @@ pairs = go
  where
   go []       = []
   go (x : xs) = fmap (x, ) xs <> go xs
-
-
--- | Gets the durations of gaps (via 'IntervalAlgebra.(><)') between all pairs 
---   of the input. 
-pairGaps
-  :: (Intervallic i a, IntervalSizeable a b, IntervalCombinable i a)
-  => [i a]
-  -> [Maybe b]
-pairGaps es = fmap (fmap duration . uncurry (><)) (pairs es)
-
-
--- | Create a predicate function that checks whether within a provided spanning
---   interval, are there (e.g. any, all) gaps of (e.g. <, <=, >=, >) a specified
---   duration among  the input intervals?
-makeGapsWithinPredicate
-  :: ( Monoid (t (Interval a))
-     , Monoid (t (Maybe (Interval a)))
-     , Applicative t
-     , W.Witherable t
-     , IntervalSizeable a b
-     , Intervallic i0 a
-     , IntervalCombinable i1 a
-     )
-  => ((b -> Bool) -> t b -> Bool)
-  -> (b -> b -> Bool)
-  -> (b -> i0 a -> t (i1 a) -> Bool)
-makeGapsWithinPredicate f op gapDuration interval l =
-  maybe False (f (`op` gapDuration) . durations) (gapsWithin interval l)
 
 -- | Within a provided spanning interval, are there any gaps of at least the
 --   specified duration among the input intervals?

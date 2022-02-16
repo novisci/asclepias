@@ -22,6 +22,7 @@ source-repository head
 
 library
   exposed-modules:
+      AssessmentIntervals
       Features
       Features.Attributes
       Features.Core
@@ -29,20 +30,17 @@ library
       Features.Output
       Features.Featureset
       Cohort
-      Cohort.AssessmentIntervals
-      Cohort.Attrition
       Cohort.Core
       Cohort.Output
       Cohort.Criteria
-      Cohort.Index
+      Cohort.IndexSet
       Tests
   other-modules:
+      Tests.AssessmentIntervals
       Tests.Features
       Tests.Features.Core
       Tests.Features.Output
       Tests.Cohort
-      Tests.Cohort.AssessmentIntervals
-      Tests.Cohort.Attrition
       Tests.Cohort.Core
       Tests.Cohort.Criteria
       Tests.Cohort.Output
@@ -57,12 +55,15 @@ library
     , interval-algebra >= 1.3
     , microlens == 0.4.12.0
     , nonempty-containers == 0.3.4.4
+    , QuickCheck >= 2.14
     , safe >= 0.3
     , tasty  == 1.4.1
     , tasty-hunit == 0.10.0.3
     , tasty-quickcheck == 0.10.2
     , text >= 1.2
     , time >= 1.11
+    , witch >= 1.0
+    , witherable >= 0.4
   default-language: Haskell2010
 
 test-suite hasklepias-core-test

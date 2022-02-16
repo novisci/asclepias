@@ -6,11 +6,12 @@ License     : BSD3
 Maintainer  : bsaul@novisci.com
 -}
 -- {-# OPTIONS_HADDOCK hide #-}
-{-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE DuplicateRecordFields #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE FlexibleInstances #-}
 
 module Cohort.Output
   ( CohortJSON
@@ -23,10 +24,9 @@ module Cohort.Output
   , toJSONCohortDataShape
   ) where
 
-import           Cohort.Attrition
 import           Cohort.Core                    ( Cohort(..)
                                                 , CohortData
-                                                , CohortSet(..)
+                                                , CohortSet
                                                 , ObsID
                                                 , ObsUnit
                                                 , getCohortData
@@ -34,8 +34,9 @@ import           Cohort.Core                    ( Cohort(..)
                                                 , getCohortDataIDs
                                                 , getCohortIDs
                                                 )
-import           Cohort.Criteria                ( CohortStatus )
-import           Control.Applicative            ( (<$>) )
+import           Cohort.Criteria                ( AttritionInfo
+                                                , CohortStatus
+                                                )
 import           Data.Aeson                     ( (.=)
                                                 , FromJSON
                                                 , ToJSON(..)
@@ -43,15 +44,6 @@ import           Data.Aeson                     ( (.=)
                                                 , object
                                                 )
 import           Data.Aeson.Types               ( FromJSON )
-import           Data.Eq                        ( Eq )
-import           Data.Function                  ( ($)
-                                                , (.)
-                                                )
-import           Data.Functor                   ( Functor(fmap) )
-import           Data.List                      ( head
-                                                , zip
-                                                , zipWith
-                                                )
 import           Data.List.NonEmpty            as NE
                                                 ( NonEmpty(..)
                                                 , head
@@ -62,14 +54,8 @@ import           Data.Map.Strict               as Data.Map
                                                 ( Map
                                                 , unionWith
                                                 )
-import           Data.Maybe                     ( Maybe(..)
-                                                , fromMaybe
-                                                , maybe
-                                                , maybeToList
-                                                )
-import           Data.Semigroup                 ( Semigroup(..) )
+import           Data.Maybe                     ( fromMaybe )
 import           Data.Text                      ( Text )
-import           Data.Tuple                     ( uncurry )
 import           Features.Featureset            ( Featureset
                                                 , FeaturesetList
                                                   ( MkFeaturesetList
@@ -85,34 +71,22 @@ import           Features.Output                ( OutputShape
                                                   )
                                                 )
 import           GHC.Generics                   ( Generic )
-import           GHC.Show                       ( Show )
 import           GHC.Types                      ( Type )
 import           Safe                           ( headMay )
 
-instance ToJSON ObsID where
-instance (ToJSON d) => ToJSON (ObsUnit d) where
-instance (ToJSON d) => ToJSON (CohortData d) where
-instance (ToJSON d) => ToJSON (Cohort d) where
-instance (ToJSON d) => ToJSON (CohortSet d)
 
--- NOTE: The following purposefully use default encodings to make roundtrip easier
---       They can be changed from the default, but be sure that one can go to/from
---       JSON.
-instance ToJSON CohortStatus where
-instance FromJSON CohortStatus where
-instance ToJSON AttritionLevel where
-instance FromJSON AttritionLevel where
-instance ToJSON AttritionInfo where
-instance FromJSON AttritionInfo where
+instance (ToJSON i) => ToJSON (ObsID i) where
+instance (ToJSON d, ToJSON a ) => ToJSON (ObsUnit d a) where
+instance (ToJSON d, ToJSON a) => ToJSON (CohortData d a) where
+instance (ToJSON d, ToJSON a) => ToJSON (Cohort d a) where
 
 -- | A type used to determine the output shape of a Cohort.
 data CohortDataShape d where
-  ColumnWise ::(Show a, ToJSON a) => a -> CohortDataShape ColumnWise
-  RowWise ::(Show a, ToJSON a) => a -> CohortDataShape RowWise
+  ColumnWise ::(Show a, ToJSON a) => a -> CohortDataShape (ColumnWise i)
+  RowWise ::(Show a, ToJSON a) => a -> CohortDataShape (RowWise i)
 
 deriving instance Show d => Show (CohortDataShape d)
 
--- TODO: implement Generic and ToJSON instance of CohortDataShape directly.
 -- | Maps CohortDataShape into an Aeson Value. 
 toJSONCohortDataShape :: CohortDataShape shape -> Value
 toJSONCohortDataShape (ColumnWise x) = toJSON x
@@ -159,11 +133,11 @@ instance Semigroup CohortDataShapeJSON where
   (<>) (CW x) (RW y) = CW x
 
 -- | Provides methods for reshaping a 'Cohort.Cohort' to a 'CohortDataShapeJSON'.
-class ShapeCohort d where
-  colWise :: Cohort d -> CohortJSON
-  rowWise :: Cohort d -> CohortJSON
+class ShapeCohort d a where
+  colWise :: Cohort d a -> CohortJSON
+  rowWise :: Cohort d a -> CohortJSON
 
-instance ShapeCohort Featureset  where
+instance (ToJSON i ) => ShapeCohort Featureset i where
   colWise (MkCohort (a, d)) =
     MkCohortJSON (a, CW $ colWiseJson (shapeColumnWise d))
   rowWise (MkCohort (a, d)) =
@@ -171,12 +145,12 @@ instance ShapeCohort Featureset  where
 
 ---- ColumnWise ---- 
 
-data ColumnWise = MkColumnWise [OutputShape Type] -- attributes
-                                                  [ObsID] -- ids
-                                                          [[OutputShape Type]] -- data
+data ColumnWise i = MkColumnWise [OutputShape Type] -- attributes
+                                 [ObsID i] -- ids
+                                 [[OutputShape Type]] -- data
   deriving (Show, Generic)
 
-instance ToJSON ColumnWise where
+instance (ToJSON i ) => ToJSON (ColumnWise i) where
 
 -- | A type to hold 'Cohort' information in a column-wise manner.
 data ColumnWiseJSON = MkColumnWiseJSON
@@ -193,11 +167,11 @@ instance Semigroup ColumnWiseJSON where
   (<>) (MkColumnWiseJSON a1 i1 d1) (MkColumnWiseJSON _ i2 d2) =
     MkColumnWiseJSON a1 (i1 <> i2) (zipWith (<>) d1 d2)
 
-colWiseJson :: ColumnWise -> ColumnWiseJSON
+colWiseJson :: (ToJSON i) => ColumnWise i -> ColumnWiseJSON
 colWiseJson (MkColumnWise a ids cd) =
   MkColumnWiseJSON (fmap toJSON a) (fmap toJSON ids) (fmap (fmap toJSON) cd)
 
-shapeColumnWise :: CohortData Featureset -> ColumnWise
+shapeColumnWise :: CohortData Featureset i -> ColumnWise i
 shapeColumnWise x = MkColumnWise (fromMaybe [] attr)
                                  (getCohortDataIDs x)
                                  (fromMaybe [[]] dat)
@@ -209,17 +183,17 @@ shapeColumnWise x = MkColumnWise (fromMaybe [] attr)
 
 ---- Rowwise ---- 
 
-newtype IDRow = MkIDRow (ObsID, [OutputShape Type])
+newtype IDRow i = MkIDRow (ObsID i, [OutputShape Type])
   deriving ( Show, Generic )
 
-instance ToJSON IDRow where
+instance (ToJSON i) => ToJSON (IDRow i) where
   -- toJSON (MkIDRow x) = object [uncurry (.=) x]
 
-data RowWise = MkRowWise [OutputShape Type] -- attributes
-                                            [IDRow]  -- data
+data RowWise i = MkRowWise [OutputShape Type] -- attributes
+                                              [IDRow i]  -- data
   deriving (Show, Generic)
 
-instance ToJSON RowWise where
+instance (ToJSON i) => ToJSON (RowWise i) where
 
 -- | A type to hold 'Cohort' information in a row-wise manner.
 data RowWiseJSON = MkRowWiseJSON
@@ -233,10 +207,10 @@ instance FromJSON RowWiseJSON
 instance Semigroup RowWiseJSON where
   (<>) (MkRowWiseJSON a1 d1) (MkRowWiseJSON _ d2) = MkRowWiseJSON a1 (d1 <> d2)
 
-rowWiseJson :: RowWise -> RowWiseJSON
+rowWiseJson :: (ToJSON i) => RowWise i -> RowWiseJSON
 rowWiseJson (MkRowWise a rd) = MkRowWiseJSON (fmap toJSON a) (fmap toJSON rd)
 
-shapeRowWise :: CohortData Featureset -> RowWise
+shapeRowWise :: CohortData Featureset i -> RowWise i
 shapeRowWise x = MkRowWise
   (maybe [] (fmap nameAttr . toList . getFeatureset) (headMay cd))
   (fmap MkIDRow (zip ids (fmap (toList . (fmap dataOnly . getFeatureset)) cd)))

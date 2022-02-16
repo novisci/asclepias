@@ -6,7 +6,7 @@ module Tests.Cohort.Output
   ) where
 
 import           Cohort
-import           Cohort.Attrition
+-- import           Cohort.Attrition
 import           Data.Aeson
 import qualified Data.ByteString.Lazy          as B
                                                 ( ByteString )
@@ -16,8 +16,8 @@ import           Test.Tasty
 import           Test.Tasty.HUnit
 
 attr1 :: Maybe AttritionInfo
-attr1 = Just $ MkAttritionInfo 2 $ fromList
-  [MkAttritionLevel (ExcludedBy (1, "feat2")) 1, MkAttritionLevel Included 1]
+attr1 =
+  Just $ makeTestAttritionInfo 2 2 [(ExcludedBy (1, "feat2"), 1), (Included, 1)]
 
 cw1 :: B.ByteString
 cw1 =

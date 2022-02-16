@@ -5,7 +5,6 @@ module Tests.Cohort.Criteria
   ) where
 
 import           Cohort.Criteria
-import           Cohort.Index
 import           Data.List.NonEmpty
 import           Features
 import           IntervalAlgebra
@@ -25,16 +24,31 @@ f4 :: Criterion
 f4 = criterion
   (makeFeature (featureDataL $ Other "something") :: Feature "f4" Status)
 
-index :: Maybe (Index Interval Int)
-index = Just $ makeIndex (beginerval 1 1)
+index :: Maybe (Interval Int)
+index = Just (beginerval 1 1)
+
+testAttr1 :: AttritionInfo
+testAttr1 = makeTestAttritionInfo
+  1
+  2
+  [(SubjectHasNoIndex, 0), (ExcludedBy (1, "feat2"), 1), (Included, 1)]
+
+testAttr2 :: AttritionInfo
+testAttr2 = makeTestAttritionInfo
+  1
+  5
+  [(SubjectHasNoIndex, 0), (ExcludedBy (1, "feat2"), 3), (Included, 2)]
+
+testAttr1p2 :: AttritionInfo
+testAttr1p2 = makeTestAttritionInfo
+  2
+  7
+  [(SubjectHasNoIndex, 0), (ExcludedBy (1, "feat2"), 4), (Included, 3)]
 
 tests :: TestTree
 tests = testGroup
   "Unit tests on Cohort.Criteria"
-  [ testCase "noIndex "
-  $   checkCohortStatus Nothing (criteria $ pure (f1 Include))
-  @?= SubjectHasNoIndex
-  , testCase "include f1"
+  [ testCase "include f1"
   $   checkCohortStatus index (criteria $ pure (f1 Include))
   @?= Included
   , testCase "include f1, f2, f3"
@@ -50,6 +64,10 @@ tests = testGroup
   $   checkCohortStatus index
                         (criteria $ f1 Include :| [f2 Include, f3 Include, f4])
   @?= ExcludedBy (4, "f4")
+  , testCase "semigroup: testAttr1 <> testAttr2"
+  $   testAttr1
+  <>  testAttr2
+  @?= testAttr1p2
   ]
 
 

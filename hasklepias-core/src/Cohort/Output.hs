@@ -96,7 +96,7 @@ toJSONCohortDataShape (RowWise    x) = toJSON x
 A type containing all the information of a 'Cohort' but where the 'CohortData'
 has been reshaped to a 'CohortDataShapeJSON'.
 -}
-newtype CohortJSON = MkCohortJSON (Maybe AttritionInfo, CohortDataShapeJSON)
+newtype CohortJSON = MkCohortJSON (AttritionInfo, CohortDataShapeJSON)
     deriving (Eq, Show, Generic)
 
 instance ToJSON CohortJSON

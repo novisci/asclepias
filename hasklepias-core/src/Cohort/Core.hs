@@ -36,7 +36,7 @@ module Cohort.Core
   , getAttritionInfo
   , makeCohortSpecs
   , makeCohortEvaluator
-  , makeCohortSetEvaluator
+  , makeCohortSpecsEvaluator
   , defaultCohortEvalOptions
   ) where
 
@@ -178,13 +178,13 @@ instance From [ObsUnit d i] (CohortData d i) where
 A cohort is a list of observational units along with @'AttritionInfo'@ 
 regarding the number of subjects excluded by the @'Criteria'@..
 -}
-newtype Cohort d i = MkCohort (Maybe AttritionInfo, CohortData d i)
+newtype Cohort d i = MkCohort (AttritionInfo, CohortData d i)
     deriving (Eq, Show, Generic)
 
-instance From (Cohort d i) (Maybe AttritionInfo, CohortData d i) where
+instance From (Cohort d i) (AttritionInfo, CohortData d i) where
 
 -- | Gets the attrition info from a cohort
-getAttritionInfo :: Cohort d i -> Maybe AttritionInfo
+getAttritionInfo :: Cohort d i -> AttritionInfo
 getAttritionInfo (MkCohort (x, _)) = x
 
 -- | Get IDs from 'CohortData'.
@@ -438,16 +438,13 @@ makePopulationEvaluator
    . Monad m
   => CohortEvalOptions
   -> CohortSpec d1 d0 i
-  -> (  Population d1
-     -> m (Maybe AttritionInfo, [EvaluatedSubject d0 i])
-     )
+  -> (Population d1 -> m (AttritionInfo, [EvaluatedSubject d0 i]))
 makePopulationEvaluator opts spec pop = do
   let evalSubject = makeSubjectEvaluator opts spec
   let subjects =
         into @[Subject d1] (filterPopulation (sampleSubjects opts) pop)
 
-  pure $ (\x -> (fmap sconcat $ NE.nonEmpty $ fst x, snd x))
-    (unzip (evalSubject =<< subjects))
+  pure $ first mconcat (unzip (evalSubject =<< subjects))
 
 {-|
 The function converts 'CohortEvalOptions' and a 'CohortSpec'
@@ -493,18 +490,18 @@ makeCohortSpecs l =
   fromList (fmap (\(n, i, c, f) -> (n, specifyCohort i c f)) l)
 
 {-|
-Evaluates a @'CohortSetSpec'@ on a @'Population'@
+Evaluates a @'CohortMapSpec'@ on a @'Population'@
 by applying the result of 'makeCohortEvaluator'
 to each cohort specifying in the 'CohortSetSpec'.
 -}
-makeCohortSetEvaluator
+makeCohortSpecsEvaluator
   :: forall m d1 d0 i
    . Monad m
   => CohortEvalOptions
   -> CohortMapSpec d1 d0 i
   -> Population d1
   -> m (CohortSet d0 i)
-makeCohortSetEvaluator opts specs pop = do
+makeCohortSpecsEvaluator opts specs pop = do
   let doCohort s = makeCohortEvaluator opts s pop
   let cohorts = fmap (\(k, v) -> (k, ) =<< doCohort v) (toList specs)
   pure $ fromList cohorts

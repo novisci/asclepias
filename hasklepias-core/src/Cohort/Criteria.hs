@@ -44,8 +44,6 @@ import           Data.Map.Strict               as Map
                                                 , fromListWith
                                                 , unionsWith
                                                 )
-import qualified Data.Set                      as Set
-                                                ( Set )
 import           Data.Text                      ( Text
                                                 , pack
                                                 )
@@ -209,6 +207,10 @@ instance Semigroup AttritionInfo where
   (<>) (MkAttritionInfo s1 u1 i1) (MkAttritionInfo s2 u2 i2) =
     MkAttritionInfo (s1 + s2) (u1 + u2) (unionsWith (+) [i1, i2])
 
+instance Monoid AttritionInfo where
+  mempty =
+    MkAttritionInfo 0 0 (fromList [(SubjectHasNoIndex, 0), (Included, 0)])
+
 -- Initializes @AttritionInfo@ from a @'Criteria'@.
 initAttritionInfo :: Criteria -> Map.Map CohortStatus Natural
 initAttritionInfo x = fromList
@@ -238,10 +240,6 @@ measureSubjectAttrition mcriteria statuses = MkAttritionInfo
     (+)
     [ maybe mempty initAttritionInfo mcriteria
     , Map.fromListWith (+) $ fmap (, 1) statuses
-    , fromList [(SubjectHasNoIndex, 0)]
-    , fromList [(Included, 0)]
-      -- including SubjectHasNoIndex and Included for the cases that none of the
-      -- evaluated criteria have either of those statuses
     ]
   )
 

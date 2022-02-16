@@ -65,14 +65,8 @@ makeTestObsUnit :: Text -> Int -> Text -> ObsUnit Text Int
 makeTestObsUnit x y z = into (makeTestObsID x y, z)
 
 makeExpectedAttrition
-  :: Int
-  -> Int
-  -> Natural
-  -> Natural
-  -> Natural
-  -> Natural
-  -> Maybe AttritionInfo
-makeExpectedAttrition a b c d e f = Just $ makeTestAttritionInfo
+  :: Int -> Int -> Natural -> Natural -> Natural -> Natural -> AttritionInfo
+makeExpectedAttrition a b c d e f = makeTestAttritionInfo
   a
   b
   [ (SubjectHasNoIndex      , c)
@@ -113,7 +107,7 @@ tests = testGroup
   [ testCase "no subjects" $ makeCase
     defaultCohortEvalOptions
     []
-    (MkCohort (Nothing, into @(CohortData Text Int) ([] :: [ObsUnit Text Int])))
+    (MkCohort (mempty, into @(CohortData Text Int) ([] :: [ObsUnit Text Int])))
   , testCase "one included subject (default options)" $ makeCase
     defaultCohortEvalOptions
     [("a", MkSillySubjData (0, True, False, "keep me"))]
@@ -122,7 +116,7 @@ tests = testGroup
     defaultCohortEvalOptions
     [("a", MkSillySubjData (1, True, False, "no index"))]
     (MkCohort
-      ( Just $ makeTestAttritionInfo 1 0 [(SubjectHasNoIndex, 1), (Included, 0)]
+      ( makeTestAttritionInfo 1 0 [(SubjectHasNoIndex, 1), (Included, 0)]
       , into @(CohortData Text Int) ([] :: [ObsUnit Text Int])
       )
     )
@@ -141,7 +135,7 @@ tests = testGroup
   , testCase "one included subject (exclude via sample)" $ makeCase
     (MkCohortEvalOptions OnlyOnIncluded (SubjectExludeList ["a"]))
     [("a", MkSillySubjData (0, True, False, "keep me"))]
-    (MkCohort (Nothing, into @(CohortData Text Int) ([] :: [ObsUnit Text Int])))
+    (MkCohort (mempty, into @(CohortData Text Int) ([] :: [ObsUnit Text Int])))
   , testCase "one excluded subject (run features on all)" $ makeCase
     (MkCohortEvalOptions OnAll AllSubjects)
     [("a", MkSillySubjData (0, False, False, "excluded by crit1"))]

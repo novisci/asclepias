@@ -137,7 +137,7 @@ makeCohortBuilder opts specs x = do
   -- TODO: clean this up
   let dat          = parseEventLinesL x
   let err          = fst dat
-  let doEvaluation = makeCohortSetEvaluator opts specs
+  let doEvaluation = makeCohortSpecsEvaluator opts specs
   let pop          = mapIntoPop $ snd dat
   let res          = doEvaluation pop
   let res2         = (err, ) =<< res

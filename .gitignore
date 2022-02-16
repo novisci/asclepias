@@ -22,3 +22,7 @@ doc/manual.html
 dist-newstyle*
 install*
 builds*
+
+# test artifacts
+cohort-collector/test/tests/testcw.json
+cohort-collector/test/tests/testrw.json

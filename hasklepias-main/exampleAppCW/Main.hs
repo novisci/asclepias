@@ -6,7 +6,7 @@ License     : BSD3
 Maintainer  : bsaul@novisci.com
 
 To run as an example: 
-cat hasklepias-main/exampleApp/exampleData.jsonl | cabal exec exampleApp
+cat hasklepias-main/exampleData/exampleData.jsonl | cabal exec exampleApp
 -}
 
 {-# LANGUAGE NoImplicitPrelude #-}

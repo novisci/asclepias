@@ -16,7 +16,6 @@ defined in the
 See the neighboring EventLine module for types and To/FromJSON instances
 designed for the purpose of marshaling data from JSON lines.
 -}
-{-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -49,7 +48,6 @@ module EventDataTheory.Core
   , EventPredicate
   ) where
 
-import           Control.Applicative            ( Applicative(pure) )
 import           Control.DeepSeq                ( NFData )
 import           Control.Monad                  ( Functor(fmap)
                                                 , liftM2
@@ -59,23 +57,9 @@ import           Data.Aeson                     ( FromJSON
                                                 , ToJSON
                                                 )
 import           Data.Binary                    ( Binary )
-import           Data.Bool                      ( Bool )
-import           Data.Eq                        ( Eq )
-import           Data.Foldable                  ( all
-                                                , any
-                                                )
-import           Data.Function                  ( ($)
-                                                , (.)
-                                                )
 import           Data.Functor.Contravariant     ( Contravariant(contramap)
                                                 , Predicate(..)
                                                 )
-import           Data.Maybe                     ( Maybe(..) )
-import           Data.Monoid                    ( Monoid(..) )
-import           Data.Ord                       ( Ord(..)
-                                                , Ordering(..)
-                                                )
-import           Data.Semigroup                 ( Semigroup(..) )
 import           Data.Set                       ( Set
                                                 , fromList
                                                 , map
@@ -84,8 +68,6 @@ import           Data.Set                       ( Set
                                                 )
 import qualified Data.Text                     as T
 import           GHC.Generics                   ( Generic )
-import           GHC.Num                        ( Integer )
-import           GHC.Show                       ( Show(..) )
 import           IntervalAlgebra                ( Interval
                                                 , Intervallic(..)
                                                 , PairedInterval
@@ -188,7 +170,6 @@ instance ( FromJSON b, FromJSON (Interval a) ) => FromJSON (PairedInterval b a)
 instance ( ToJSON b, ToJSON (Interval a) ) => ToJSON (PairedInterval b a)
 instance ( Ord c, FromJSON c, FromJSON d, FromJSON (Interval a) ) => FromJSON (Event d c a)
 instance ( Ord c, ToJSON c, ToJSON d, ToJSON (Interval a) ) => ToJSON (Event d c a)
-
 
 instance ( Arbitrary (Interval a)
           , Arbitrary d, Show d, Eq d, Generic d

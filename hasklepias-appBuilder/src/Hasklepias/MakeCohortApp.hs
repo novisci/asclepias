@@ -11,7 +11,7 @@ Maintainer  : bsaul@novisci.com
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TupleSections #-}
 
-module Hasklepias.MakeApp
+module Hasklepias.MakeCohortApp
   ( CohortApp(..)
   , makeCohortApp
   , shapeOutput
@@ -132,7 +132,7 @@ makeCohortBuilder
   => CohortEvalOptions
   -> CohortMapSpec [Event d c a] d0 i
   -> B.ByteString
-  -> m ([LineParseError], CohortSet d0 i)
+  -> m ([LineParseError], CohortMap d0 i)
 makeCohortBuilder opts specs x = do
   -- TODO: clean this up
   let dat          = parseEventLinesL x
@@ -146,17 +146,17 @@ makeCohortBuilder opts specs x = do
 
 
 
-reshapeCohortSet
-  :: (Cohort d0 i -> CohortJSON) -> CohortSet d0 i -> CohortSetJSON
-reshapeCohortSet g x =
-  MkCohortSetJSON $ fromList $ fmap (fmap g) (toList $ into x)
+reshapeCohortMap
+  :: (Cohort d0 i -> CohortJSON) -> CohortMap d0 i -> CohortMapJSON
+reshapeCohortMap g x =
+  MkCohortMapJSON $ fromList $ fmap (fmap g) (toList $ into x)
 
 shapeOutput
   :: (Monad m, ShapeCohort d0 i)
   => (Cohort d0 i -> CohortJSON)
-  -> m ([LineParseError], CohortSet d0 i)
-  -> m ([LineParseError], CohortSetJSON)
-shapeOutput shape = fmap (fmap (reshapeCohortSet shape))
+  -> m ([LineParseError], CohortMap d0 i)
+  -> m ([LineParseError], CohortMapJSON)
+shapeOutput shape = fmap (fmap (reshapeCohortMap shape))
 
 -- logging based on example here:
 -- https://github.com/kowainik/co-log/blob/main/co-log/tutorials/Main.hs

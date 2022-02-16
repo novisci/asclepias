@@ -23,7 +23,7 @@ source-repository head
 library
   exposed-modules:
       Hasklepias.AppUtilities
-      Hasklepias.MakeApp
+      Hasklepias.MakeCohortApp
       Hasklepias.MakeFilterApp
   hs-source-dirs:
       src

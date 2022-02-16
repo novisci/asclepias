@@ -10,7 +10,7 @@ module CohortCollection
 
 import           Amazonka.Auth
 import           Amazonka.S3
-import           Cohort.Output                  ( CohortSetJSON )
+import           Cohort.Output                  ( CohortMapJSON )
 import           Conduit                        ( (.|)
                                                 , foldMapMC
                                                 , runConduit
@@ -40,7 +40,7 @@ import           Options.Applicative
 import           System.IO                      ( stderr )
 
 
-getCohortData :: Location -> IO (Maybe CohortSetJSON)
+getCohortData :: Location -> IO (Maybe CohortMapJSON)
 getCohortData x = fmap decode (readData x)
 
 getLocations :: Input -> IO [Location]

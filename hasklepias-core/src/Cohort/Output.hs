@@ -15,7 +15,7 @@ Maintainer  : bsaul@novisci.com
 
 module Cohort.Output
   ( CohortJSON
-  , CohortSetJSON(..)
+  , CohortMapJSON(..)
   , CohortDataShape
   , CohortDataShapeJSON(..)
   , ColumnWiseJSON(..)
@@ -26,7 +26,7 @@ module Cohort.Output
 
 import           Cohort.Core                    ( Cohort(..)
                                                 , CohortData
-                                                , CohortSet
+                                                , CohortMap
                                                 , ObsID
                                                 , ObsUnit
                                                 , getCohortData
@@ -106,17 +106,17 @@ instance Semigroup CohortJSON where
   (<>) (MkCohortJSON x) (MkCohortJSON y) = MkCohortJSON (x <> y)
 
 {- | 
-Similar to 'CohortSet', but where the 'Cohort's have been mapped to a 'CohortJSON'.
+Similar to 'CohortMap', but where the 'Cohort's have been mapped to a 'CohortJSON'.
 -}
-newtype CohortSetJSON = MkCohortSetJSON (Map Text CohortJSON)
+newtype CohortMapJSON = MkCohortMapJSON (Map Text CohortJSON)
     deriving (Eq, Show, Generic)
 
-instance ToJSON CohortSetJSON
-instance FromJSON CohortSetJSON
+instance ToJSON CohortMapJSON
+instance FromJSON CohortMapJSON
 
-instance Semigroup CohortSetJSON where
-  (<>) (MkCohortSetJSON x) (MkCohortSetJSON y) =
-    MkCohortSetJSON (unionWith (<>) x y)
+instance Semigroup CohortMapJSON where
+  (<>) (MkCohortMapJSON x) (MkCohortMapJSON y) =
+    MkCohortMapJSON (unionWith (<>) x y)
 
 -- | A type used to represent JSON formats for each shape
 data CohortDataShapeJSON =

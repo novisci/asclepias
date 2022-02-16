@@ -23,7 +23,7 @@ module Cohort.Core
   , Cohort(..)
   , CohortSpec
   , CohortMapSpec
-  , CohortSet
+  , CohortMap
   , CohortEvalOptions(..)
   , EvaluateFeatures(..)
   , SubjectSample(..)
@@ -472,7 +472,7 @@ makeCohortEvaluator opts spec pop =
 A container hold multiple cohorts of the same type.
 The key is the name of the cohort; value is a cohort.
 -}
-type CohortSet d i = Map Text (Cohort d i)
+type CohortMap d i = Map Text (Cohort d i)
 
 {-| 
 Key/value pairs of 'CohortSpec's. 
@@ -492,7 +492,7 @@ makeCohortSpecs l =
 {-|
 Evaluates a @'CohortMapSpec'@ on a @'Population'@
 by applying the result of 'makeCohortEvaluator'
-to each cohort specifying in the 'CohortSetSpec'.
+to each cohort specifying in the 'CohortMapSpec'.
 -}
 makeCohortSpecsEvaluator
   :: forall m d1 d0 i
@@ -500,7 +500,7 @@ makeCohortSpecsEvaluator
   => CohortEvalOptions
   -> CohortMapSpec d1 d0 i
   -> Population d1
-  -> m (CohortSet d0 i)
+  -> m (CohortMap d0 i)
 makeCohortSpecsEvaluator opts specs pop = do
   let doCohort s = makeCohortEvaluator opts s pop
   let cohorts = fmap (\(k, v) -> (k, ) =<< doCohort v) (toList specs)

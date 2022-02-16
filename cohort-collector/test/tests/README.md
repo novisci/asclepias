@@ -3,17 +3,50 @@
 * `rw` = "row-wise"
 * `cw` = "column-wise"
 
+## Running tests locally
+
+Install `cohort-collector`
+(you may need to toggle the overwrite policy if previously installed)
+
+```sh
+cabal install cohort-collector 
+```
+
+```sh
+
+cohort-collector -f cohort-collector/test/tests/manifestcw.txt -d cohort-collector/test/tests/
+```
+
 ## Generating input test files
 
 Test files were produces in the following way:
 
-* The first file (e.g. `testrw1.json`) was generated from the `exampleApp` (with the shape compiled using `rowWise`):
+```sh
+cabal build hasklepias-main
 
 ```sh
-cat exampleApp/exampleData.jsonl | cabal exec exampleApp
+cat hasklepias-main/exampleData/exampleData1.jsonl | cabal exec exampleAppCW > cohort-collector/test/tests/testcw1.json
+cat hasklepias-main/exampleData/exampleData2.jsonl | cabal exec exampleAppCW > cohort-collector/test/tests/testcw2.json
+cat hasklepias-main/exampleData/exampleData3.jsonl | cabal exec exampleAppCW > cohort-collector/test/tests/testcw3.json
 ```
 
-* The remaining files were edited by hand.
+```sh
+cat hasklepias-main/exampleData/exampleData1.jsonl | cabal exec exampleAppRW > cohort-collector/test/tests/testrw1.json
+cat hasklepias-main/exampleData/exampleData2.jsonl | cabal exec exampleAppRW > cohort-collector/test/tests/testrw2.json
+cat hasklepias-main/exampleData/exampleData3.jsonl | cabal exec exampleAppRW > cohort-collector/test/tests/testrw3.json
+```
+
+## Creating golden files
+
+```sh
+cohort-collector -f cohort-collector/test/tests/manifestcw.txt -d cohort-collector/test/tests/ > cohort-collector/test/tests/testcw.golden
+```
+
+```sh
+cohort-collector -f cohort-collector/test/tests/manifestrw.txt -d cohort-collector/test/tests/ > cohort-collector/test/tests/testrw.golden
+```
+
+NOTE: you may need to remove a newline in the produced golden files.
 
 ## Uploading test files to S3
 

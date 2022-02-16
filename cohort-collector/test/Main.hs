@@ -5,7 +5,7 @@ module Main
   ( main
   ) where
 
-import           CohortCollectionTests             
+import           CohortCollectionTests
 
 main :: IO ()
 main = testsMain

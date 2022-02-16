@@ -1,4 +1,6 @@
-module CohortCollectionTests (testsMain) where
+module CohortCollectionTests
+  ( testsMain
+  ) where
 
 import           CohortCollection               ( Location(..)
                                                 , runCollectionApp

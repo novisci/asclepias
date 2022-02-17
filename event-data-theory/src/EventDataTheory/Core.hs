@@ -42,7 +42,7 @@ module EventDataTheory.Core
   , hasAnyConcepts
   , hasAllConcepts
   , liftToEventPredicate
-  , SubjectID
+  , SubjectID(..)
   -- the following names are exported for haddock linking
   , HasConcept
   , EventPredicate

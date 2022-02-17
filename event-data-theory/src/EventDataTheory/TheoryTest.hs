@@ -23,9 +23,7 @@ import           Data.Time                      ( Day
                                                 )
 import           EventDataTheory.Core
 import           EventDataTheory.EventLines
-import           EventDataTheory.Test           ( eventDecodeFailTests
-                                                , eventDecodeTests
-                                                )
+import           EventDataTheory.Test           
 import           EventDataTheory.Utilities
 import           GHC.Generics                   ( Generic )
 import           GHC.Num                        ( Natural )
@@ -66,6 +64,10 @@ instance FromJSON SillySchema where
 
 type SillyEvent1 a = Event SillySchema Text a
 {- end::exampleEvent[] -}
+
+instance ToJSON SillySchema where
+  toJSON = genericToJSON defaultOptions { sumEncoding = UntaggedValue }
+
 
 -- | Just a dummy type to test non-text Concepts
 data SillyConcepts = Mouse | Giraffe | Hornbill
@@ -185,6 +187,11 @@ decodeSillyTests1 :: IO TestTree
 decodeSillyTests1 =
   eventDecodeTests @SillySchema @Text @Day "test/events-day-text-good"
 
+-- | Check that files in test/events-day-text-good successfully parse
+roundtripSillyTests1 :: IO TestTree
+roundtripSillyTests1 =
+  eventLineRoundTripTests @SillySchema @Text @Day "test/events-day-text-good"
+
 -- | Check that files in test/events-day-text-bad successfully fail
 decodeSillyFailTests1 :: IO TestTree
 decodeSillyFailTests1 =
@@ -282,6 +289,7 @@ theoryTests = defaultMain . testGroup "Event Theory tests" =<< sequenceA
   , decodeSillyTests2
   , decodeSillyFailTests1
   , decodeSillyFailTests2
+  , roundtripSillyTests1
   , pure eventIntervalUnitTests
   , pure hasConceptUnitTests
   , pure eventPredicateUnitTests

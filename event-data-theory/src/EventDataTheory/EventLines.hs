@@ -38,6 +38,7 @@ import           Data.Bifunctor
 import qualified Data.ByteString.Char8         as C
 import qualified Data.ByteString.Lazy          as B
 import qualified Data.ByteString.Lazy.Char8    as B
+import Data.Data
 import           Data.Either                    ( Either(..)
                                                 , partitionEithers
                                                 )
@@ -59,6 +60,9 @@ import           IntervalAlgebra                ( Interval
                                                   )
                                                 , beginerval
                                                 , parseInterval
+                                                , begin 
+                                                , end
+                                                , getInterval
                                                 )
 import           Type.Reflection                ( Typeable )
 import           Witch
@@ -73,7 +77,7 @@ See [event data model docs](https://docs.novisci.com/edm-sandbox/latest/index.ht
 'ToJSON' instances are not provided, but may be in the future. 
 -}
 
-data EventLine d c a = MkEventLine Value a (Maybe a) Text [c] (FactsLine d a)
+data EventLine d c a = MkEventLine Value Value Value Value [c] (FactsLine d a)
   deriving (Eq, Show, Generic)
 
 getSubjectID :: EventLine d c a -> SubjectID
@@ -95,6 +99,82 @@ instance (FromJSON a, Show a, IntervalSizeable a b
                , getSource   = source fi
                }
     )
+
+instance (Ord a, ToJSON a, ToJSON c, ToJSON d) => ToJSON (EventLine d c a) where
+    toJSON = genericToJSON defaultOptions { omitNothingFields = True }
+
+
+---
+
+data ParseIntervalOption =
+    AddMoment
+  | DoNotChange
+
+defaultParseIntervalOptions = AddMoment
+
+
+instance (FromJSON a, Show a, IntervalSizeable a b
+         , Show d, Eq d, Generic d, FromJSON d
+         , Show c, Eq c, Ord c, Typeable c, FromJSON c) => TryFrom (EventLine d c a, ParseIntervalOption) (Event d c a) where
+    tryFrom (MkEventLine _ _ _ _ cpts fi, opt) = 
+      _
+--- 
+
+
+
+{-
+INTERNAL
+
+Used in modifyEventLine to
+modfiy a @FactLines@ value with values from a @Context@.
+Only those fields in the context that align with the factsline
+are modified.
+-}
+updateFactsLine :: (Data d') => FactsLine d a -> Context d' c -> FactsLine d' a
+updateFactsLine (MkFactsLine dmn tm _ sid _ vld) x = MkFactsLine {
+    domain = pack $ show $ toConstr (getFacts x)
+  , time   = tm
+  , facts  = getFacts x
+  , patient_id = sid
+  , source = getSource x
+  , valid = vld
+  }
+
+{-
+INTERNAL
+
+Transforms an Eventline via a function 
+that operates on the Context 
+within the Event corresponding to the EventLine.
+
+NOTE
+The function does not operate on the Event itself.
+This is because the common use case
+of marshalling data in via JSON lines 
+tranforms the event's interval 
+(see FromJSON instance for IntervalLine).
+Allowing for the event's interval to be manipulated here
+would make it difficult to reason
+about how intervals would change with repeated
+JSON -> modifyEventLine -> JSON -> modifyEventLine -> ...
+with potential unintended consequences.
+Hence, modify your intervals in some other way.
+
+-}
+modifyEventLine :: forall d d' c c' a b. (FromJSON a, Show a, IntervalSizeable a b
+         , Show d, Eq d, Generic d, FromJSON d
+         , Show c, Eq c, Ord c, Typeable c, FromJSON c, Ord c', Data d') =>
+        (Context d c -> Context d' c') -> EventLine d c a -> EventLine d' c' a
+modifyEventLine g (MkEventLine a b c d e f) = 
+  let ctxt = g (getContext $ into @(Event d c a) (MkEventLine a b c d e f)) in
+    let newFl = updateFactsLine f ctxt in
+      MkEventLine 
+        a
+        b
+        c
+        (domain newFl)
+        (into . getConcepts $ ctxt)
+        newFl
 
 -- | See 'EventLine'.
 data FactsLine d a = MkFactsLine
@@ -119,6 +199,9 @@ instance (FromJSON a, Show a, IntervalSizeable a b
     src <- o .:? "source"
     pure $ MkFactsLine dmn itv fct pid src vld
 
+instance (Ord a, ToJSON a, ToJSON d) => ToJSON (FactsLine d a) where
+      toJSON = genericToJSON defaultOptions { omitNothingFields = True }
+
 
 -- | See 'EventLine'.
 newtype SubjectIDLine = MkSubjectIDLine {getSubjectIDLine  :: SubjectID }
@@ -133,6 +216,11 @@ instance FromJSON SubjectIDLine where
         Left  _ -> fail "SubjectID number is not an integer"
         Right i -> pure $ MkSubjectIDLine $ from @Integer i
       _ -> fail (show z)
+
+instance ToJSON SubjectIDLine where
+  toJSON (MkSubjectIDLine x) = case x of
+    SubjectIDText t -> String t
+    SubjectIDInteger i -> Number (fromInteger i) 
 
 -- | See 'EventLine'
 newtype IntervalLine a = MkIntervalLine { getIntervalLine :: Interval a }
@@ -152,6 +240,9 @@ instance (FromJSON a, Show a, IntervalSizeable a b) => FromJSON (IntervalLine a)
     case ei of
       Left  e -> fail (show e)
       Right i -> pure (MkIntervalLine i)
+
+instance (Ord a, ToJSON a) => ToJSON (IntervalLine a) where
+   toJSON (MkIntervalLine i) = object [ "begin" .= begin i, "end" .= end i]
 
 {-|
 Decode a bytestring corresponding to an 'EventLine' into

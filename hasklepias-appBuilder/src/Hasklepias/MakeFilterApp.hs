@@ -1,5 +1,5 @@
 {-|
-Module      : Hasklepias.MakeApp
+Module      : Hasklepias.MakeFilterApp
 Description : Functions for creating a cohort application
 Copyright   : (c) NoviSci, Inc 2020
 License     : BSD3

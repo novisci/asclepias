@@ -55,7 +55,7 @@ makeEnrollmentEvent
   :: (Integral b, IntervalSizeable a b) => (a, a) -> Event ClaimsSchema Text a
 makeEnrollmentEvent intrvl = event
   (readIntervalSafe intrvl)
-  (MkContext mempty (Enrollment emptyEnrollmentFact) Nothing)
+  (context mempty (Enrollment emptyEnrollmentFact) Nothing)
 
 makeEventWithConcepts
   :: (Integral b, IntervalSizeable a b)
@@ -64,7 +64,7 @@ makeEventWithConcepts
   -> Event ClaimsSchema Text a
 makeEventWithConcepts cpts intrvl = event
   (readIntervalSafe intrvl)
-  (MkContext (packConcepts cpts) (Enrollment emptyEnrollmentFact) Nothing)
+  (context (packConcepts cpts) (Enrollment emptyEnrollmentFact) Nothing)
 
 {-
   types/functions for creating test cases and evaluating them

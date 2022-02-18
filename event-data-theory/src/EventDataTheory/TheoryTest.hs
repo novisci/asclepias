@@ -69,14 +69,6 @@ type SillyEvent1 a = Event SillySchema Text a
 
 instance ToJSON SillySchema where
   toJSON = genericToJSON defaultOptions { sumEncoding = UntaggedValue }
-  --  (defaultOptions
-  --     { sumEncoding = TaggedObject { tagFieldName      = "domain"
-  --                                  , contentsFieldName = "facts"
-  --                                  }
-  --     }
-  --   )
-
-  --
 
 
 -- | Just a dummy type to test non-text Concepts
@@ -254,11 +246,11 @@ testOutput =
     ]
   , [ ( from @Text "abc"
       , event (beginerval 1 (fromGregorian 2020 1 1))
-              (MkContext (into ["someThing" :: Text]) (A 1) Nothing)
+              (context (into ["someThing" :: Text]) (A 1) Nothing)
       )
     , ( from @Text "abc"
       , event (beginerval 2 (fromGregorian 2020 1 5))
-              (MkContext (into ["someThing" :: Text]) C Nothing)
+              (context (into ["someThing" :: Text]) C Nothing)
       )
     ]
   )

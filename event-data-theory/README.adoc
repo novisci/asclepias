@@ -147,7 +147,7 @@ a new model.
 These can be found in the `EventDataTheory.Test` module,
 which is not included in the main set of exported modules.
 
-The `eventDecodeTests` and `eventDecodeFailTests` functions test for
+The `eventDecodeTests` and `eventDecodeFailTests` functions, for example, test for
 successful parsing and successful failed parsing (respectively) 
 of `+EventLine d c a+`
 into the corresponding `+Event d c a+`.

@@ -32,7 +32,10 @@ module EventDataTheory.Core
   , Source(..)
   , Concept
   , Concepts
-  , Context(..)
+  , Context
+  , getFacts
+  , getSource
+  , getConcepts
   , context
   , toConcepts
   , packConcept
@@ -84,7 +87,6 @@ import           IntervalAlgebra                ( Interval
                                                 )
 import           Test.QuickCheck                ( Arbitrary(arbitrary) )
 import           Type.Reflection                ( Typeable )
-
 import           Witch                          ( From(..)
                                                 , into
                                                 , via
@@ -265,6 +267,7 @@ instance ( Arbitrary d, Show d, Eq d, Generic d
       Arbitrary (Context d c) where
   arbitrary = liftM3 MkContext arbitrary arbitrary (pure Nothing)
 
+-- | Smart constructor for a 'Context',
 context
   :: (Show d, Eq d, Generic d, Show c, Eq c, Ord c, Typeable c)
   => Concepts c
@@ -464,6 +467,10 @@ operating on some component of an 'Event'
 into a function on an 'Event'. 
 -}
 class EventFunction f d d' c c' a a' where
+  {-|
+  Lifts a function @@ of a component of an 'Event'
+  to a function on an 'Event'
+  -}
   liftToEventFunction :: (Ord c, Ord c') => f -> Event d c a -> Event d' c' a'
 
 instance EventFunction (c -> c') d d c c' a a where

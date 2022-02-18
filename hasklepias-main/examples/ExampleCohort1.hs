@@ -155,7 +155,7 @@ deathDay
        -> Feature "deathDay" (Maybe (Interval Day))
        )
 deathDay = define
-  (\events -> events |> filterEvents (containsConcepts ["is_death"]) |> intervals |> headMay)
+  (\events -> events |> filterEvents (containsConcepts ["is_death"]) |> fmap getEvent |> intervals |> headMay)
 
 {-------------------------------------------------------------------------------
   Inclusion/Exclusion features 

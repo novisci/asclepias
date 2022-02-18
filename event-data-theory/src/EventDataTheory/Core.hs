@@ -544,5 +544,5 @@ instance ContextFunction (c -> c') d d c c' where
   liftToContextFunction f = bimapContext f id
 
 instance ContextFunction (d -> d') d d' c c where
-  liftToContextFunction f = bimapContext id f
+  liftToContextFunction = bimapContext id 
 

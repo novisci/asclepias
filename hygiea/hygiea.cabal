@@ -50,8 +50,10 @@ library
         , containers >=0.6.5
         , text >=1.2
         , dhall >=1.40
-        -- hack: latest version of this dhall dependency fails to build
+        , dhall-csv >=1
+        -- TODO hack: latest version of this dhall dependency fails to build
         , http-client-tls <=0.3.5.3
+        , cassava >=0.5.2
     hs-source-dirs:   src
     default-language: Haskell2010
 

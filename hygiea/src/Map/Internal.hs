@@ -119,6 +119,10 @@ decodeMapSchema decodeVal schema = Decoder extractOut expectedOut
   extractOut expr = Dhall.typeError expectedOut expr
   expectedOut = pure schema
 
+-- TODO for v implementing FromDhall
+decodeMapSchemaAuto :: (Dhall.FromDhall v) => DhallExpr -> Decoder (Map v)
+decodeMapSchemaAuto = decodeMapSchema Dhall.auto
+
 -- TODO Input/Output naming confusion
 -- NOTE this still requires all inputs to be the same, so the schema must
 -- follow that rule. yuck. this is intended to be used with a type v that wraps

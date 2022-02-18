@@ -13,6 +13,8 @@ Maintainer  : bsaul@novisci.com
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DuplicateRecordFields #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE LambdaCase #-}
 
 module EventDataTheory.EventLines
   ( EventLine
@@ -25,20 +27,23 @@ module EventDataTheory.EventLines
   , decodeEventStrict
   , decodeEventStrict'
   , LineParseError
+  , ParseEventLineOption(..)
+  , defaultParseEventLineOption
+  , modifyEventLine
 
   -- for internal use; 
   , SubjectIDLine
   , FactsLine
-  , IntervalLine
+  , TimeLine
   ) where
 
-import           Control.Monad                  ( MonadFail(fail) )
+import           Control.Exception
 import           Data.Aeson
 import           Data.Bifunctor
 import qualified Data.ByteString.Char8         as C
 import qualified Data.ByteString.Lazy          as B
 import qualified Data.ByteString.Lazy.Char8    as B
-import Data.Data
+import           Data.Data
 import           Data.Either                    ( Either(..)
                                                 , partitionEithers
                                                 )
@@ -46,7 +51,6 @@ import           Data.Scientific                ( floatingOrInteger )
 import           Data.Text                      ( Text
                                                 , pack
                                                 )
-import           Data.Vector                    ( (!) )
 import           EventDataTheory.Core
 import           GHC.Generics                   ( Generic )
 import           GHC.Num                        ( Integer
@@ -58,18 +62,18 @@ import           IntervalAlgebra                ( Interval
                                                   , diff
                                                   , moment
                                                   )
+                                                , ParseErrorInterval
+                                                , begin
                                                 , beginerval
-                                                , parseInterval
-                                                , begin 
                                                 , end
                                                 , getInterval
+                                                , parseInterval
                                                 )
 import           Type.Reflection                ( Typeable )
 import           Witch
-
 {-|
 At this time, 
-'EventLine', 'FactsLine', 'SubjectIDLine', and 'IntervalLine' are
+'EventLine', 'FactsLine', 'SubjectIDLine', and 'TimeLine' are
 simply wrapper types
 in order to create 'FromJSON' instances which can be used to marshal data from 
 [ndjson](http://ndjson.org/).
@@ -80,106 +84,81 @@ See [event data model docs](https://docs.novisci.com/edm-sandbox/latest/index.ht
 data EventLine d c a = MkEventLine Value Value Value Value [c] (FactsLine d a)
   deriving (Eq, Show, Generic)
 
+instance (FromJSON a, Show a, IntervalSizeable a b
+         , Show d, Eq d, Generic d, FromJSON d
+         , Show c, Eq c, Ord c, Typeable c, FromJSON c)
+          => FromJSON (EventLine d c a)
+
+instance (Ord a, ToJSON a, ToJSON c, ToJSON d) => ToJSON (EventLine d c a)
+
+-- INTERNAL utility for getting subjectID from EventLine
 getSubjectID :: EventLine d c a -> SubjectID
 getSubjectID (MkEventLine _ _ _ _ _ fcts) =
   (getSubjectIDLine . patient_id) fcts
 
-instance (FromJSON a, Show a, IntervalSizeable a b
-         , Show d, Eq d, Generic d, FromJSON d
-         , Show c, Eq c, Ord c, Typeable c, FromJSON c)
-          => FromJSON (EventLine d c a) where
+-- INTERNAL utility for getting the FactsLine from EventLine
+fctln :: EventLine d c a -> FactsLine d a
+fctln (MkEventLine _ _ _ _ _ x) = x
 
-instance (FromJSON a, Show a, IntervalSizeable a b
-         , Show d, Eq d, Generic d, FromJSON d
-         , Show c, Eq c, Ord c, Typeable c, FromJSON c) => From (EventLine d c a) (Event d c a) where
-  from (MkEventLine _ _ _ _ cpts fi) = event
-    (getIntervalLine $ time fi)
-    (MkContext { getConcepts = from @[c] cpts
-               , getFacts    = facts fi
-               , getSource   = source fi
-               }
-    )
+-- INTERNAL utility for getting concepts from EventLine
+cptsln :: EventLine d c a -> [c]
+cptsln (MkEventLine _ _ _ _ x _) = x
 
-instance (Ord a, ToJSON a, ToJSON c, ToJSON d) => ToJSON (EventLine d c a) where
-    toJSON = genericToJSON defaultOptions { omitNothingFields = True }
-
-
----
-
-data ParseIntervalOption =
-    AddMoment
-  | DoNotChange
-
-defaultParseIntervalOptions = AddMoment
-
-
-instance (FromJSON a, Show a, IntervalSizeable a b
-         , Show d, Eq d, Generic d, FromJSON d
-         , Show c, Eq c, Ord c, Typeable c, FromJSON c) => TryFrom (EventLine d c a, ParseIntervalOption) (Event d c a) where
-    tryFrom (MkEventLine _ _ _ _ cpts fi, opt) = 
-      _
---- 
-
-
-
-{-
-INTERNAL
-
-Used in modifyEventLine to
-modfiy a @FactLines@ value with values from a @Context@.
-Only those fields in the context that align with the factsline
-are modified.
+{-|
+Options for how an 'EventLine' will be parsed into an 'Event'.
 -}
-updateFactsLine :: (Data d') => FactsLine d a -> Context d' c -> FactsLine d' a
-updateFactsLine (MkFactsLine dmn tm _ sid _ vld) x = MkFactsLine {
-    domain = pack $ show $ toConstr (getFacts x)
-  , time   = tm
-  , facts  = getFacts x
-  , patient_id = sid
-  , source = getSource x
-  , valid = vld
-  }
+data ParseEventLineOption =
+  -- | Before trying to 'IntervalAlgebra.parseInterval':
+  --   * If the end of the @TimeLine@ in the @EventLine@ is missing,
+  --   then create the event's interval
+  --   as a moment from the begin of the @TimeLine@.
+  --   * Otherwise, add a moment to the end of the @TimeLine@.
+    AddMomentToTimeEnd
+  -- | Do not modify the @TimeLine@ before
+  --   trying to 'IntervalAlgebra.parseInterval'.
+  | DoNotModifyTime
+  deriving (Show)
 
-{-
-INTERNAL
+-- | The default 'ParseEventLineOption'.
+defaultParseEventLineOption :: ParseEventLineOption
+defaultParseEventLineOption = AddMomentToTimeEnd
 
-Transforms an Eventline via a function 
-that operates on the Context 
-within the Event corresponding to the EventLine.
+instance Exception ParseErrorInterval
 
-NOTE
-The function does not operate on the Event itself.
-This is because the common use case
-of marshalling data in via JSON lines 
-tranforms the event's interval 
-(see FromJSON instance for IntervalLine).
-Allowing for the event's interval to be manipulated here
-would make it difficult to reason
-about how intervals would change with repeated
-JSON -> modifyEventLine -> JSON -> modifyEventLine -> ...
-with potential unintended consequences.
-Hence, modify your intervals in some other way.
-
+{-|
+Try to parse an @'EventLine'@ into an @'Event'@,
+given an 'ParseEventLineOption'. 
 -}
-modifyEventLine :: forall d d' c c' a b. (FromJSON a, Show a, IntervalSizeable a b
-         , Show d, Eq d, Generic d, FromJSON d
-         , Show c, Eq c, Ord c, Typeable c, FromJSON c, Ord c', Data d') =>
-        (Context d c -> Context d' c') -> EventLine d c a -> EventLine d' c' a
-modifyEventLine g (MkEventLine a b c d e f) = 
-  let ctxt = g (getContext $ into @(Event d c a) (MkEventLine a b c d e f)) in
-    let newFl = updateFactsLine f ctxt in
-      MkEventLine 
-        a
-        b
-        c
-        (domain newFl)
-        (into . getConcepts $ ctxt)
-        newFl
+instance (Show a, IntervalSizeable a b
+         , Show d, Eq d, Generic d
+         , Show c, Eq c, Ord c, Typeable c) =>
+         TryFrom (EventLine d c a, ParseEventLineOption) (Event d c a) where
+  tryFrom x = do
+    let fcts = (fctln . fst) x
+    let i    = time fcts
+    let cpts = (cptsln . fst) x
+    let toEvent = \case
+          Left  err  -> Left $ TryFromException x (Just $ toException err)
+          Right itrv -> Right
+            $ event itrv (context (from @[c] cpts) (facts fcts) (source fcts))
+    case snd x of
+      AddMomentToTimeEnd -> do
+        let ei = parseInterval
+              (timeBegin i)
+              (maybe (add (moment @a) (timeBegin i))
+                     (add (moment @a))
+                     (timeEnd i)
+              )
+        toEvent ei
+      DoNotModifyTime -> do
+        case timeEnd i of
+          Nothing -> Left $ TryFromException x Nothing
+          Just z  -> toEvent (parseInterval (timeBegin i) z)
 
 -- | See 'EventLine'.
 data FactsLine d a = MkFactsLine
   { domain     :: Text
-  , time       :: IntervalLine a
+  , time       :: TimeLine a
   , facts      :: d
   , patient_id :: SubjectIDLine
   , source     :: Maybe Source
@@ -200,8 +179,7 @@ instance (FromJSON a, Show a, IntervalSizeable a b
     pure $ MkFactsLine dmn itv fct pid src vld
 
 instance (Ord a, ToJSON a, ToJSON d) => ToJSON (FactsLine d a) where
-      toJSON = genericToJSON defaultOptions { omitNothingFields = True }
-
+  toJSON = genericToJSON defaultOptions { omitNothingFields = True }
 
 -- | See 'EventLine'.
 newtype SubjectIDLine = MkSubjectIDLine {getSubjectIDLine  :: SubjectID }
@@ -218,31 +196,25 @@ instance FromJSON SubjectIDLine where
       _ -> fail (show z)
 
 instance ToJSON SubjectIDLine where
-  toJSON (MkSubjectIDLine x) = case x of
-    SubjectIDText t -> String t
-    SubjectIDInteger i -> Number (fromInteger i) 
-
+  toJSON (MkSubjectIDLine x) = into x
+  
 -- | See 'EventLine'
-newtype IntervalLine a = MkIntervalLine { getIntervalLine :: Interval a }
+data TimeLine a = MkTimeLine
+  { timeBegin :: a
+  , timeEnd   :: Maybe a
+  }
   deriving (Eq, Show)
 
-{-|
-Parses the @time@ JSON object.
-NOTE: a @'moment is always added to the 'IntervalAlgebra.Core.end'.
-Moreover, in the case that the end is missing, a moment is created.
--}
-instance (FromJSON a, Show a, IntervalSizeable a b) => FromJSON (IntervalLine a) where
+instance (FromJSON a, Show a, IntervalSizeable a b) => FromJSON (TimeLine a) where
   parseJSON = withObject "Time" $ \o -> do
     b <- o .: "begin"
     e <- o .:? "end"
-    let e2 = maybe (add (moment @a) b) (add (moment @a)) e
-    let ei = parseInterval b e2
-    case ei of
-      Left  e -> fail (show e)
-      Right i -> pure (MkIntervalLine i)
+    pure (MkTimeLine b e)
 
-instance (Ord a, ToJSON a) => ToJSON (IntervalLine a) where
-   toJSON (MkIntervalLine i) = object [ "begin" .= begin i, "end" .= end i]
+instance (Ord a, ToJSON a) => ToJSON (TimeLine a) where
+  toJSON (MkTimeLine b e) = case e of
+    Nothing -> object ["begin" .= b]
+    Just x  -> object ["begin" .= b, "end" .= x]
 
 {-|
 Decode a bytestring corresponding to an 'EventLine' into
@@ -258,20 +230,23 @@ eitherDecodeEvent, eitherDecodeEvent'
    . ( Show d
      , Eq d
      , Generic d
+     , Typeable d
      , FromJSON d
      , Show c
      , Eq c
      , Ord c
      , Typeable c
      , FromJSON c
+     , Typeable a
      , FromJSON a
      , Show a
      , IntervalSizeable a b
      )
-  => B.ByteString
+  => ParseEventLineOption
+  -> B.ByteString
   -> Either String (SubjectID, Event d c a)
-eitherDecodeEvent = makeEventDecoder eitherDecode
-eitherDecodeEvent' = makeEventDecoder eitherDecode'
+eitherDecodeEvent opt = makeEventDecoder show opt eitherDecode
+eitherDecodeEvent' opt = makeEventDecoder show opt eitherDecode'
 
 {-|
 Decode a bytestring corresponding to an 'EventLine' into
@@ -288,19 +263,22 @@ decodeEvent, decodeEvent'
      , Eq d
      , Generic d
      , FromJSON d
+     , Typeable d
      , Show c
      , Eq c
      , Ord c
      , Typeable c
      , FromJSON c
+     , Typeable a
      , FromJSON a
      , Show a
      , IntervalSizeable a b
      )
-  => B.ByteString
+  => ParseEventLineOption
+  -> B.ByteString
   -> Maybe (SubjectID, Event d c a)
-decodeEvent' = makeEventDecoder decode'
-decodeEvent = makeEventDecoder decode
+decodeEvent opt x = rightToMaybe $ eitherDecodeEvent opt x
+decodeEvent' opt x = rightToMaybe $ eitherDecodeEvent' opt x
 
 {-|
 Decode a strict bytestring corresponding to an 'EventLine' into
@@ -317,57 +295,85 @@ decodeEventStrict, decodeEventStrict'
      , Eq d
      , Generic d
      , FromJSON d
+     , Typeable d
      , Show c
      , Eq c
      , Ord c
      , Typeable c
      , FromJSON c
      , FromJSON a
+     , Typeable a
      , Show a
      , IntervalSizeable a b
      )
-  => C.ByteString
+  => ParseEventLineOption
+  -> C.ByteString
   -> Maybe (SubjectID, Event d c a)
-decodeEventStrict = makeEventDecoderStrict decodeStrict
-decodeEventStrict' = makeEventDecoderStrict decodeStrict'
+decodeEventStrict opt x =
+  rightToMaybe $ makeEventDecoderStrict show opt eitherDecodeStrict x
+decodeEventStrict' opt x =
+  rightToMaybe $ makeEventDecoderStrict show opt eitherDecodeStrict' x
 
 makeEventDecoder
-  :: ( Show d
+  :: forall d c a b e
+   . ( Show d
      , Eq d
      , Generic d
+     , Typeable d
      , FromJSON d
      , Show c
      , Eq c
      , Ord c
      , Typeable c
      , FromJSON c
+     , Typeable a
      , FromJSON a
      , Show a
      , IntervalSizeable a b
-     , Functor f
      )
-  => (B.ByteString -> f (EventLine d c a))
-  -> (B.ByteString -> f (SubjectID, Event d c a))
-makeEventDecoder f = fmap (\x -> (getSubjectID x, into x)) . f
+  => (  TryFromException (EventLine d c a, ParseEventLineOption) (Event d c a)
+     -> e
+     )
+  -> ParseEventLineOption
+  -> (B.ByteString -> Either e (EventLine d c a))
+  -> (B.ByteString -> Either e (SubjectID, Event d c a))
+makeEventDecoder g opt f x = do
+  eline <- f x
+  tryev <- first g $ tryInto @(Event d c a) (eline, opt)
+  pure (getSubjectID eline, tryev)
 
 makeEventDecoderStrict
-  :: ( Show d
+  :: forall d c a b e
+   . ( Show d
      , Eq d
      , Generic d
+     , Typeable d
      , FromJSON d
      , Show c
      , Eq c
      , Ord c
      , Typeable c
      , FromJSON c
+     , Typeable a
      , FromJSON a
      , Show a
      , IntervalSizeable a b
-     , Functor f
      )
-  => (C.ByteString -> f (EventLine d c a))
-  -> (C.ByteString -> f (SubjectID, Event d c a))
-makeEventDecoderStrict f = fmap (\x -> (getSubjectID x, into x)) . f
+  => (  TryFromException (EventLine d c a, ParseEventLineOption) (Event d c a)
+     -> e
+     )
+  -> ParseEventLineOption
+  -> (C.ByteString -> Either e (EventLine d c a))
+  -> (C.ByteString -> Either e (SubjectID, Event d c a))
+makeEventDecoderStrict g opt f x = do
+  eline <- f x
+  tryev <- first g $ tryInto @(Event d c a) (eline, opt)
+  pure (getSubjectID eline, tryev)
+
+-- INTERNAL utlity for transforming an @Either@ into a @Maybe@
+rightToMaybe :: Either b a -> Maybe a
+rightToMaybe (Left  _) = Nothing
+rightToMaybe (Right x) = Just x
 
 {-| 
 Contains the line number and error message of any parsing errors.
@@ -377,7 +383,6 @@ newtype LineParseError = MkLineParseError (Natural, String)
 
 -- providing a From instance making LineParseError values in the tests
 instance From (Natural, String) LineParseError where
-
 
 -- internal for create line parsers
 makeLineParser
@@ -421,18 +426,108 @@ parseEventLinesL, parseEventLinesL'
    . ( Show d
      , Eq d
      , Generic d
+     , Typeable d
      , FromJSON d
      , Show c
      , Eq c
      , Ord c
      , Typeable c
      , FromJSON c
+     , Typeable a
      , FromJSON a
      , Show a
      , IntervalSizeable a b
      )
-  => B.ByteString
+  => ParseEventLineOption
+  -> B.ByteString
   -> ([LineParseError], [(SubjectID, Event d c a)])
-parseEventLinesL = makeLineParser eitherDecodeEvent
-parseEventLinesL' = makeLineParser eitherDecodeEvent'
+parseEventLinesL opt = makeLineParser (eitherDecodeEvent opt)
+parseEventLinesL' opt = makeLineParser (eitherDecodeEvent' opt)
 
+{-------------------------------------------------------------------------------
+Transforming event lines
+-------------------------------------------------------------------------------}
+{-
+INTERNAL
+
+Used in modifyEventLine to
+modfiy a @FactLines@ value with values from a @Context@.
+Only those fields in the context that align with the factsline
+are modified.
+-}
+updateFactsLine :: (Data d') => FactsLine d a -> Context d' c -> FactsLine d' a
+updateFactsLine (MkFactsLine dmn tm _ sid _ vld) x = MkFactsLine
+  { domain     = pack $ show $ toConstr (getFacts x)
+  , time       = tm
+  , facts      = getFacts x
+  , patient_id = sid
+  , source     = getSource x
+  , valid      = vld
+  }
+
+{-
+INTERNAL
+
+Transforms an Eventline via a function 
+that operates on the Context 
+within the Event corresponding to the EventLine.
+-}
+modifyEventLineContext
+  :: forall d d' c c' a b e
+   . ( FromJSON a
+     , Show a
+     , IntervalSizeable a b
+     , Typeable a
+     , Show d
+     , Eq d
+     , Generic d
+     , FromJSON d
+     , Typeable d
+     , Show c
+     , Eq c
+     , Ord c
+     , Typeable c
+     , FromJSON c
+     , Ord c'
+     , Data d'
+     )
+  => ParseEventLineOption
+  -> (Context d c -> Context d' c')
+  -> EventLine d c a
+  -> Either String (EventLine d' c' a)
+modifyEventLineContext opt g (MkEventLine a b c d e f) = do
+  ev <- first show $ tryInto @(Event d c a) (MkEventLine a b c d e f, opt)
+  let ctxt  = g (getContext ev)
+  let newFl = updateFactsLine f ctxt
+  pure $ MkEventLine a b c d (into . getConcepts $ ctxt) newFl
+
+{-|
+-}
+modifyEventLine
+  :: forall d d' c c' a b m
+   . ( FromJSON a
+     , Show a
+     , IntervalSizeable a b
+     , FromJSON c
+     , FromJSON d
+     , Typeable a
+     , Show d
+     , Eq d
+     , Generic d
+     , FromJSON d
+     , Typeable d
+     , Show c
+     , Eq c
+     , Ord c
+     , Typeable c
+     , FromJSON c
+     , Ord c'
+     , Data d'
+     )
+  => ParseEventLineOption
+  -> (Context d c -> Context d' c')
+  -> B.ByteString
+  -> Either String (EventLine d' c' a)
+modifyEventLine opt f x =
+  let el = eitherDecode @(EventLine d c a) x
+  in modifyEventLineContext opt f =<< el

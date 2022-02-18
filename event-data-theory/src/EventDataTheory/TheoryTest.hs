@@ -8,12 +8,14 @@ Description : An internal module for testing event data theory functions
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE DeriveDataTypeable #-}
 module EventDataTheory.TheoryTest
   ( theoryTests
   ) where
 
 import           Data.Aeson
 import qualified Data.ByteString.Lazy          as B
+import Data.Data
 import           Data.Functor.Contravariant     ( Predicate(..) )
 import           Data.List                      ( sort )
 import           Data.Maybe                     ( isNothing )
@@ -23,7 +25,7 @@ import           Data.Time                      ( Day
                                                 )
 import           EventDataTheory.Core
 import           EventDataTheory.EventLines
-import           EventDataTheory.Test           
+import           EventDataTheory.Test
 import           EventDataTheory.Utilities
 import           GHC.Generics                   ( Generic )
 import           GHC.Num                        ( Natural )
@@ -51,7 +53,7 @@ data SillySchema =
   | B Text
   | C
   | D
-  deriving (Show, Eq, Generic)
+  deriving (Show, Eq, Generic, Data)
 
 instance FromJSON SillySchema where
   parseJSON = genericParseJSON
@@ -67,6 +69,14 @@ type SillyEvent1 a = Event SillySchema Text a
 
 instance ToJSON SillySchema where
   toJSON = genericToJSON defaultOptions { sumEncoding = UntaggedValue }
+  --  (defaultOptions
+  --     { sumEncoding = TaggedObject { tagFieldName      = "domain"
+  --                                  , contentsFieldName = "facts"
+  --                                  }
+  --     }
+  --   )
+
+  --
 
 
 -- | Just a dummy type to test non-text Concepts
@@ -78,19 +88,13 @@ instance FromJSON SillyConcepts
 type SillyEvent2 a = Event SillySchema SillyConcepts a
 
 c1 :: Context SillySchema Text
-c1 = MkContext { getConcepts = into (["this", "that"] :: [Text])
-               , getFacts    = A 1
-               , getSource   = Nothing
-               }
+c1 = context (into (["this", "that"] :: [Text])) (A 1) Nothing
 
 e1 :: SillyEvent1 Int
 e1 = event (beginerval 2 1) c1
 
 c2 :: Context SillySchema Text
-c2 = MkContext { getConcepts = into (["this", "another"] :: [Text])
-               , getFacts    = A 1
-               , getSource   = Nothing
-               }
+c2 = context (into (["this", "another"] :: [Text])) (A 1) Nothing
 
 e2 :: SillyEvent1 Int
 e2 = event (beginerval 4 3) c2
@@ -192,6 +196,11 @@ roundtripSillyTests1 :: IO TestTree
 roundtripSillyTests1 =
   eventLineRoundTripTests @SillySchema @Text @Day "test/events-day-text-good"
 
+-- | Check that files in test/events-day-text-good successfully parse
+modifySillyTests1 :: IO TestTree
+modifySillyTests1 =
+  eventLineModifyTests @SillySchema @Text @Day "test/events-day-text-good"
+
 -- | Check that files in test/events-day-text-bad successfully fail
 decodeSillyFailTests1 :: IO TestTree
 decodeSillyFailTests1 =
@@ -258,7 +267,8 @@ parserUnitTests :: TestTree
 parserUnitTests = testGroup
   "Unit tests of EventLines parsers"
   [ testCase "with valid inputs"
-    $   parseEventLinesL @SillySchema @Text @Day testInput
+    $   parseEventLinesL @SillySchema @Text @Day defaultParseEventLineOption
+                                                 testInput
     @?= testOutput
   ]
 
@@ -290,6 +300,7 @@ theoryTests = defaultMain . testGroup "Event Theory tests" =<< sequenceA
   , decodeSillyFailTests1
   , decodeSillyFailTests2
   , roundtripSillyTests1
+  , modifySillyTests1 
   , pure eventIntervalUnitTests
   , pure hasConceptUnitTests
   , pure eventPredicateUnitTests

@@ -33,6 +33,7 @@ module EventDataTheory.Core
   , Concept
   , Concepts
   , Context(..)
+  , context
   , toConcepts
   , packConcept
   , unpackConcept
@@ -41,21 +42,28 @@ module EventDataTheory.Core
   , hasConcept
   , hasAnyConcepts
   , hasAllConcepts
+  , addConcepts
   , liftToEventPredicate
-  , SubjectID(..)
+  , liftToEventFunction
+  , trimapEvent
+  , bimapContext
+  , mapConcepts
+  , dropSource
+  , SubjectID
   -- the following names are exported for haddock linking
   , HasConcept
   , EventPredicate
   ) where
 
 import           Control.DeepSeq                ( NFData )
-import           Control.Monad                  ( Functor(fmap)
-                                                , liftM2
+import           Control.Monad                  ( liftM2
                                                 , liftM3
                                                 )
 import           Data.Aeson                     ( FromJSON
                                                 , ToJSON
+                                                , Value(String, Number)
                                                 )
+import Data.Bifunctor ( Bifunctor(..) )
 import           Data.Binary                    ( Binary )
 import           Data.Functor.Contravariant     ( Contravariant(contramap)
                                                 , Predicate(..)
@@ -194,6 +202,18 @@ getEvent (MkEvent x) = x
 getContext :: Event d c a -> Context d c
 getContext = getPairData . getEvent
 
+{-|
+Apply a three functions to as 'Event':
+
+1. a function transforming the interval
+2. a function transforming the facts
+3. a function transforming the concepts
+
+See also: 'bimapContext', 'mapConcepts'.
+-}
+trimapEvent :: (Ord c1, Ord c2) => (a1 -> a2) -> (c1 -> c2) -> (d1 -> d2) -> Event d1 c1 a1 -> Event d2 c2 a2
+trimapEvent g f h (MkEvent x) = MkEvent $ bimap (bimapContext f h) g x
+
 {- |
 A 'Context' contains information about what ocurred during an 'Event's interval.
 This information is carried in context's @concepts@ and/or @facts@.
@@ -225,7 +245,6 @@ data Context d c = MkContext
   {- end::contextType[] -}
   deriving (Eq, Show, Generic)
 
-
 instance Ord c => HasConcept (Context d c) c where
   hasConcept c = hasConcept (getConcepts c)
 
@@ -240,7 +259,36 @@ instance ( Arbitrary d, Show d, Eq d, Generic d
       Arbitrary (Context d c) where
   arbitrary = liftM3 MkContext arbitrary arbitrary (pure Nothing)
 
-{- |
+context
+  :: (Show d, Eq d, Generic d, Show c, Eq c, Ord c, Typeable c)
+  => Concepts c
+  -> d
+  -> Maybe Source
+  -> Context d c
+context = MkContext
+
+{-|
+Apply a two functions to a 'Context':
+
+1. a function transforming the concepts
+2. a function transforming the facts
+
+This function is simiilar in flavor to 'Data.Bifunctor.bimap'.
+But @Context@ is not a 'Data.Bifunctor.Bifunctor'.
+The underlying type of @Concepts@ is 'Data.Set.Set',
+which is not a 'Functor' 
+due to the @Set@ 'Ord' constraints.
+-}
+bimapContext :: (Ord c1, Ord c2) => (c1 -> c2) -> (d1 -> d2) -> Context d1 c1 -> Context d2 c2
+bimapContext  g f (MkContext cpts fcts src) = MkContext (mapConcepts g cpts) (f fcts) src
+
+{-|
+Turn the 'Source' within a 'Context' to 'Nothing'.
+-}
+dropSource :: Context d c -> Context d c
+dropSource (MkContext cpts fcts _) = MkContext cpts fcts Nothing
+
+{-|
 A source may be used to record the provenance of an event from some database.
 This data is sometimes useful for debugging.
 We generally discourage using @Source@ information in defining features.
@@ -262,6 +310,8 @@ instance ToJSON Source
 -- | A @Concept@ is simply a tag or label for an 'Event'.
 newtype Concept c = MkConcept c deriving (Eq, Ord, Show, Generic)
 
+instance Functor Concept where
+  fmap f (MkConcept x) = MkConcept (f x)
 instance NFData c => NFData (Concept c)
 instance Binary c => Binary (Concept c)
 instance FromJSON c => FromJSON (Concept c)
@@ -327,6 +377,23 @@ unpackConcepts = from
 toConcepts :: (Ord c) => Set (Concept c) -> Concepts c
 toConcepts = from
 
+-- | A utility for adding concepts to a 'Concepts' from a list.
+addConcepts :: (Ord c) => [c] -> Concepts c -> Concepts c
+addConcepts x cpts = into x <> cpts
+
+{-|
+Apply a function to each 'Concept'
+within a 'Concepts' set.
+
+NOTE: 
+@Concepts@ are not a 'Functor'.
+The underlying type of @Concepts@ is 'Data.Set.Set',
+which is not a 'Functor' 
+due to the @Set@ 'Ord' constraints.
+-}
+mapConcepts :: (Ord c1, Ord c2) => (c1 -> c2) -> Concepts c1 -> Concepts c2
+mapConcepts f (MkConcepts x) = MkConcepts (Data.Set.map (fmap f) x)
+
 {-| 
 The 'HasConcept' typeclass provides predicate functions
 for determining whether an @a@ contains a concept.
@@ -379,6 +446,26 @@ instance EventPredicate (Maybe Source) d c a where
 instance (Ord a) => EventPredicate (Interval a) d c a where
   liftToEventPredicate = contramap getInterval
 
+{-|
+Provides a common interface to lift a function
+operating on some component of an 'Event'
+into a function on an 'Event'. 
+-}
+class EventFunction f d d' c c' a a' where
+  liftToEventFunction :: (Ord c, Ord c') => f -> Event d c a -> Event d' c' a'
+
+instance EventFunction (c -> c') d d c c' a a where
+  liftToEventFunction f = trimapEvent id f id
+
+instance EventFunction (d -> d') d d' c c a a where
+  liftToEventFunction = trimapEvent id id
+
+instance EventFunction (Context d c -> Context d' c') d d' c c' a a where
+  liftToEventFunction f (MkEvent x) = MkEvent $ first f x
+
+instance EventFunction (a -> a') d d c c a a' where
+  liftToEventFunction f = trimapEvent f id id
+
 -- | Contains a subject identifier
 data SubjectID =
     SubjectIDText T.Text
@@ -392,6 +479,9 @@ instance ToJSON SubjectID
 instance From SubjectID T.Text where
   from (SubjectIDText    x) = x
   from (SubjectIDInteger x) = T.pack $ show x
+instance From SubjectID Data.Aeson.Value where
+  from (SubjectIDText    x) = String x
+  from (SubjectIDInteger x) = Number (fromInteger x)
 instance From Integer SubjectID where
   from = SubjectIDInteger
 instance From T.Text SubjectID where

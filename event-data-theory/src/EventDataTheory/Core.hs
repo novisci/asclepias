@@ -246,8 +246,11 @@ which carries information about the provenance of the data.
 -}
 {- tag::contextType[] -}
 data Context d c = MkContext
-  { getConcepts :: Concepts c -- <1>
+  { -- | the 'Concepts' of a @Context@
+    getConcepts :: Concepts c -- <1>
+    -- | the facts of a @Context@.  
   , getFacts    :: d -- <2>
+    -- | the 'Source' of @Context@
   , getSource   :: Maybe Source -- <3>
   }
   {- end::contextType[] -}
@@ -413,7 +416,7 @@ mapConcepts f (MkConcepts x) = MkConcepts (Data.Set.map (fmap f) x)
 The 'HasConcept' typeclass provides predicate functions
 for determining whether an @a@ contains a concept.
 
-This class is only used in this 'Core' module
+This class is only used in this 'EventDataTheory.Core' module
 for the purposes of having a single @hasConcept@ function
 that works on 'Concepts', 'Context', or 'Event' data.
 -}
@@ -438,6 +441,10 @@ of an 'Event' to a 'Predicate (Event d c a)'.
 For example, if @x@ is a 'Predicate' on some 'Context d c',
 @liftToEventPredicate x@ yields a @Predicate (Event d c a)@, 
 thus the predicate then also be applied to @Event@s.
+
+This class is only used in this 'EventDataTheory.Core' module
+for the purposes of having a single @liftToEventPredicate@ function
+that works on 'Concepts', 'Context', or 'Event' data.
 -}
 class EventPredicate element d c a where
   {-|
@@ -465,6 +472,10 @@ instance (Ord a) => EventPredicate (Interval a) d c a where
 Provides a common interface to lift a function
 operating on some component of an 'Event'
 into a function on an 'Event'. 
+
+This class is only used in this 'EventDataTheory.Core' module
+for the purposes of having a single @liftToEventFunction@ function
+that works on 'Concepts', 'Context', or 'Event' data.
 -}
 class EventFunction f d d' c c' a a' where
   {-|

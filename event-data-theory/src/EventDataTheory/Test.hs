@@ -71,7 +71,7 @@ createDecodeSmokeTest testf decoder testFile = do
 
 {-|
 Creates a group of tests 
-using 'createDecodeSmokeTestDecode'
+using 'createDecodeSmokeTest'
 from all the files 
 in given directory
 with given file extensions.

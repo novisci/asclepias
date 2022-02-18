@@ -39,9 +39,7 @@ import           Test.Tasty                     ( TestTree
                                                 , defaultMain
                                                 , testGroup
                                                 )
-import           Test.Tasty.HUnit               ( (@?=)
-                                                , testCase
-                                                )
+import           Test.Tasty.HUnit
 import           Witch                          ( from
                                                 , into
                                                 )
@@ -264,6 +262,44 @@ parserUnitTests = testGroup
     @?= testOutput
   ]
 
+-- | Unit tests on Core utilities
+singleEventGoodIn :: B.ByteString
+singleEventGoodIn =
+  "[\"abc\",\"2020-01-01\",\"2020-01-02\",\"A\",\
+      \[],\
+      \{\"domain\":\"A\",\
+      \ \"patient_id\":\"abc\",\
+      \ \"facts\":1,\
+      \ \"time\":{\"begin\":\"2020-01-01\",\"end\":\"2020-01-01\"}}]"
+
+singleEventGoodOut :: B.ByteString
+singleEventGoodOut =
+  "[\"abc\",\"2020-01-01\",\"2020-01-02\",\"A\",\
+      \[\"bar\",\"foo\"],\
+      \{\"domain\":\"A\",\
+      \\"facts\":1,\
+      \\"patient_id\":\"abc\",\
+      \\"time\":{\"begin\":\"2020-01-01\",\"end\":\"2020-01-01\"}}]"
+
+testAddConceptViaEventLine :: IO ()
+testAddConceptViaEventLine =
+  let x = modifyEventLineWithContext @SillySchema @SillySchema @Text @Text @Day
+        defaultParseEventLineOption
+        (liftToContextFunction $ addConcepts ["foo", "bar" :: Text])
+        singleEventGoodIn
+  in  case x of
+        Left  s -> assertFailure s
+        Right e -> encode e @?= singleEventGoodOut
+
+-- | Unit tests on utilities
+coreUtilitiesUnitTests :: TestTree
+coreUtilitiesUnitTests = testGroup
+  "Unit tests on Core utilities"
+  [ testCase "check that concepts are added as expected"
+             testAddConceptViaEventLine
+  ]
+
+
 -- | Unit tests on utilities
 utilitiesUnitTests :: TestTree
 utilitiesUnitTests = testGroup
@@ -293,6 +329,7 @@ theoryTests = defaultMain . testGroup "Event Theory tests" =<< sequenceA
   , decodeSillyFailTests2
   , roundtripSillyTests1
   , modifySillyTests1
+  , pure coreUtilitiesUnitTests
   , pure eventIntervalUnitTests
   , pure hasConceptUnitTests
   , pure eventPredicateUnitTests

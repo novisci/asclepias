@@ -4,7 +4,6 @@ Description : Defines FromJSON instances for Events.
 License     : BSD3
 Maintainer  : bsaul@novisci.com
 -}
--- {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeApplications #-}
@@ -29,7 +28,7 @@ module EventDataTheory.EventLines
   , LineParseError
   , ParseEventLineOption(..)
   , defaultParseEventLineOption
-  , modifyEventLine
+  , modifyEventLineWithContext
 
   -- for internal use; 
   , SubjectIDLine
@@ -450,8 +449,8 @@ Transforming event lines
 {-
 INTERNAL
 
-Used in modifyEventLine to
-modfiy a @FactLines@ value with values from a @Context@.
+Modify a @FactLines@ value with values from a @Context@.
+The @TimeLine@ value IS NOT changed.
 Only those fields in the context that align with the factsline
 are modified.
 -}
@@ -468,11 +467,56 @@ updateFactsLine (MkFactsLine dmn tm _ sid _ vld) x = MkFactsLine
 {-
 INTERNAL
 
+Modify a @FactLines@ value with values from a @Context@.
+The @TimeLine@ value IS NOT changed
+based on the provided interval.
+Only those fields in the context that align with the factsline
+are modified.
+-}
+updateFactsLineWithInterval
+  :: (Data d', Ord a')
+  => FactsLine d a
+  -> Context d' c
+  -> Interval a'
+  -> FactsLine d' a'
+updateFactsLineWithInterval (MkFactsLine _ _ _ sid _ vld) x i = MkFactsLine
+  { domain     = pack $ show $ toConstr (getFacts x)
+  , time       = MkTimeLine (begin i) (Just $ end i)
+  , facts      = getFacts x
+  , patient_id = sid
+  , source     = getSource x
+  , valid      = vld
+  }
+
+{-
+INTERNAL
+
+Modifies data in an @EventLine@
+from data in an @Event@.
+-}
+updateEventLineFromEvent
+  :: (Data d', Ord a', ToJSON a', Ord c')
+  => EventLine d c a
+  -> Event d' c' a'
+  -> EventLine d' c' a'
+updateEventLineFromEvent (MkEventLine _ _ _ _ _ f) x =
+  let ctxt = getContext x
+  in  let i = getInterval x
+      in  MkEventLine (toJSON (patient_id f))
+                      (toJSON (begin i))
+                      (toJSON (Just . end $ i))
+                      (toJSON (show . toConstr . getFacts $ ctxt))
+                      (into (getConcepts ctxt))
+                      (updateFactsLineWithInterval f ctxt i)
+
+{-
+INTERNAL
+
 Transforms an Eventline via a function 
 that operates on the Context 
 within the Event corresponding to the EventLine.
 -}
-modifyEventLineContext
+eitherModifyEventLineFromContext
   :: forall d d' c c' a b e
    . ( FromJSON a
      , Show a
@@ -495,15 +539,64 @@ modifyEventLineContext
   -> (Context d c -> Context d' c')
   -> EventLine d c a
   -> Either String (EventLine d' c' a)
-modifyEventLineContext opt g (MkEventLine a b c d e f) = do
+eitherModifyEventLineFromContext opt g (MkEventLine a b c d e f) = do
   ev <- first show $ tryInto @(Event d c a) (MkEventLine a b c d e f, opt)
   let ctxt  = g (getContext ev)
   let newFl = updateFactsLine f ctxt
   pure $ MkEventLine a b c d (into . getConcepts $ ctxt) newFl
 
-{-|
+{-
+TODO
 -}
-modifyEventLine
+eitherModifyEventLineFromEvent
+  :: forall d d' c c' a a' b e
+   . ( FromJSON a
+     , Show a
+     , IntervalSizeable a b
+     , Typeable a
+     , Show d
+     , Eq d
+     , Generic d
+     , FromJSON d
+     , Typeable d
+     , Show c
+     , Eq c
+     , Ord c
+     , Typeable c
+     , FromJSON c
+     , Ord a'
+     , ToJSON a'
+     , Ord c'
+     , Data d'
+     )
+  => ParseEventLineOption
+  -> (Event d c a -> Event d' c' a')
+  -> EventLine d c a
+  -> Either String (EventLine d' c' a')
+eitherModifyEventLineFromEvent opt g x = do
+  ev1 <- first show $ tryInto @(Event d c a) (x, opt)
+  let ev2 = g ev1
+  pure $ updateEventLineFromEvent x ev2
+
+
+{-|
+This function:
+
+* parses a JSON bytestring into an 'EventLine'
+* modifies the data in the 'EventLine'
+that corresponds to an 'Event' 'Context'
+using the supplied function
+
+The function may fail and return an error message
+if either the JSON parsing fails 
+or the 'EventLine' -> 'Event' tranformation fails.
+
+This function does not modify the time information in the 'EventLine',
+nor any of the first four elements of the 'EventLine'.
+
+See 'modifyEventLineWithEvent' for a function that can also modify the interval. 
+-}
+modifyEventLineWithContext
   :: forall d d' c c' a b m
    . ( FromJSON a
      , Show a
@@ -528,6 +621,61 @@ modifyEventLine
   -> (Context d c -> Context d' c')
   -> B.ByteString
   -> Either String (EventLine d' c' a)
-modifyEventLine opt f x =
+modifyEventLineWithContext opt f x =
   let el = eitherDecode @(EventLine d c a) x
-  in  modifyEventLineContext opt f =<< el
+  in  eitherModifyEventLineFromContext opt f =<< el
+
+{-
+NOT EXPORTED AT THIS TIME
+HERE FOR FURTHER CONSIDERATION
+
+This function:
+
+* parses a JSON bytestring into an 'EventLine'
+* modifies the data in the 'EventLine'
+that corresponds to an 'Event'
+using the supplied function
+
+The function may fail and return an error message
+if either the JSON parsing fails 
+or the 'EventLine' -> 'Event' tranformation fails.
+
+This function may modify time information in the 'EventLine',
+thus cannot be used to roundtrip to/from JSON isomorphically.
+For example, if the end of an interval is missing in the input JSON,
+the output will contain an interval end if the 'AddMomentToTimeEnd'
+parse option was used.
+
+Therefore, USER BEWARE.
+
+-}
+modifyEventLineWithEvent
+  :: forall d d' c c' a a' b m
+   . ( FromJSON a
+     , Show a
+     , IntervalSizeable a b
+     , FromJSON c
+     , FromJSON d
+     , Typeable a
+     , Show d
+     , Eq d
+     , Generic d
+     , FromJSON d
+     , Typeable d
+     , Show c
+     , Eq c
+     , Ord c
+     , Typeable c
+     , FromJSON c
+     , Ord a'
+     , ToJSON a'
+     , Ord c'
+     , Data d'
+     )
+  => ParseEventLineOption
+  -> (Event d c a -> Event d' c' a')
+  -> B.ByteString
+  -> Either String (EventLine d' c' a')
+modifyEventLineWithEvent opt f x =
+  let el = eitherDecode @(EventLine d c a) x
+  in  eitherModifyEventLineFromEvent opt f =<< el

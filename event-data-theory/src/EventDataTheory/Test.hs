@@ -255,8 +255,8 @@ which decodes the contents of a file.
 
 The test passes if:
   * the file decodes into an 'EventLine'
-  * the result can be pased through 'modifyEventLine' using the identity function
-    without modifying the result.
+  * the result can be passed through 'modifyEventLineWithContext'
+    using the identity function without modifying the result.
 -}
 createModifyEventLineTest
   :: forall d c a b
@@ -289,8 +289,11 @@ createModifyEventLineTest testFile = do
       Nothing ->
         assertFailure ("failed to parse contents of " <> takeBaseName testFile)
       Just el -> do
-        let d2 =
-              modifyEventLine @d @d @c @c @a defaultParseEventLineOption id x
+        let
+          d2 = modifyEventLineWithContext @d @d @c @c @a
+            defaultParseEventLineOption
+            id
+            x
         case d2 of
           Left  s   -> assertFailure s
           Right el' -> el @?= el'
@@ -308,6 +311,7 @@ createModifyEventLineTestGroup
   :: forall d c a b
    . ( FromJSON a
      , Show a
+     , ToJSON a
      , IntervalSizeable a b
      , FromJSON c
      , FromJSON d
@@ -341,10 +345,9 @@ for all files ending in '.jsonl'.
 Each file should contain 1 line containing 1 event.
 
 Tests pass if:
-  * a file decodes into an 'EventLine'
-  * the result can be pased through 'modifyEventLine' 
-    using the identity function
-    without modifying the result. 
+  * the file decodes into an 'EventLine'
+  * the result can be passed through 'modifyEventLineWithContext'
+    using the identity function without modifying the result.
 
 NOTE: 
 Concepts need to be ordered within the JSON files.
@@ -356,6 +359,7 @@ eventLineModifyTests
   :: forall d c a b
    . ( FromJSON a
      , Show a
+     , ToJSON a
      , IntervalSizeable a b
      , FromJSON c
      , FromJSON d

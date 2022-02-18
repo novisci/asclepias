@@ -48,6 +48,7 @@ module EventDataTheory.Core
   , addConcepts
   , liftToEventPredicate
   , liftToEventFunction
+  , liftToContextFunction
   , trimapEvent
   , bimapContext
   , mapConcepts
@@ -435,6 +436,27 @@ hasAnyConcepts x = any (\c -> x `hasConcept` c)
 hasAllConcepts :: HasConcept a c => a -> [c] -> Bool
 hasAllConcepts x = all (\c -> x `hasConcept` c)
 
+-- | Contains a subject identifier
+data SubjectID =
+    SubjectIDText T.Text
+  | SubjectIDInteger Integer
+  deriving (Eq, Show, Ord, Generic)
+
+instance Binary SubjectID
+instance NFData SubjectID
+instance FromJSON SubjectID
+instance ToJSON SubjectID
+instance From SubjectID T.Text where
+  from (SubjectIDText    x) = x
+  from (SubjectIDInteger x) = T.pack $ show x
+instance From SubjectID Data.Aeson.Value where
+  from (SubjectIDText    x) = String x
+  from (SubjectIDInteger x) = Number (fromInteger x)
+instance From Integer SubjectID where
+  from = SubjectIDInteger
+instance From T.Text SubjectID where
+  from = SubjectIDText
+
 {-|
 Provides a common interface to lift a 'Predicate' on some component
 of an 'Event' to a 'Predicate (Event d c a)'.
@@ -496,23 +518,31 @@ instance EventFunction (Context d c -> Context d' c') d d' c c' a a where
 instance EventFunction (a -> a') d d c c a a' where
   liftToEventFunction f = trimapEvent f id id
 
--- | Contains a subject identifier
-data SubjectID =
-    SubjectIDText T.Text
-  | SubjectIDInteger Integer
-  deriving (Eq, Show, Ord, Generic)
+{-|
+Provides a common interface to lift a function
+operating on some component of an 'Context'
+into a function on an 'Context'. 
 
-instance Binary SubjectID
-instance NFData SubjectID
-instance FromJSON SubjectID
-instance ToJSON SubjectID
-instance From SubjectID T.Text where
-  from (SubjectIDText    x) = x
-  from (SubjectIDInteger x) = T.pack $ show x
-instance From SubjectID Data.Aeson.Value where
-  from (SubjectIDText    x) = String x
-  from (SubjectIDInteger x) = Number (fromInteger x)
-instance From Integer SubjectID where
-  from = SubjectIDInteger
-instance From T.Text SubjectID where
-  from = SubjectIDText
+This class is only used in this 'EventDataTheory.Core' module
+for the purposes of having a single @liftToEventFunction@ function
+that works on 'Concepts', 'Context', or 'Event' data.
+-}
+-- NOTE: this kind of constraint solving could probably be done
+-- using the Select monad from Control.Monad.Trans.Select
+-- but it's not clear that would add anything other than additional deps.
+class ContextFunction f d d' c c' where
+  {-|
+  Lifts a function @f@ of a component of an 'Context'
+  to a function on an 'Context'
+  -}
+  liftToContextFunction :: (Ord c, Ord c') => f -> Context d c -> Context d' c'
+
+instance ContextFunction (Concepts c -> Concepts c') d d c c' where
+  liftToContextFunction f (MkContext x y z) = MkContext (f x) y z
+
+instance ContextFunction (c -> c') d d c c' where
+  liftToContextFunction f = bimapContext f id
+
+instance ContextFunction (d -> d') d d' c c where
+  liftToContextFunction f = bimapContext id f
+

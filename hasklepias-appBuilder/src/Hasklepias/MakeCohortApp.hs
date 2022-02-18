@@ -137,7 +137,7 @@ makeCohortBuilder
   -> m ([LineParseError], CohortMap d0 i)
 makeCohortBuilder opts specs x = do
   -- TODO: clean this up
-  let dat          = parseEventLinesL defaultParseEventLineOption x
+  let dat = parseEventLinesL defaultParseEventLineOption x
   let err          = fst dat
   let doEvaluation = makeCohortSpecsEvaluator opts specs
   let pop          = mapIntoPop $ snd dat

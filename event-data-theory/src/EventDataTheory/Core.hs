@@ -61,9 +61,9 @@ import           Control.Monad                  ( liftM2
                                                 )
 import           Data.Aeson                     ( FromJSON
                                                 , ToJSON
-                                                , Value(String, Number)
+                                                , Value(Number, String)
                                                 )
-import Data.Bifunctor ( Bifunctor(..) )
+import           Data.Bifunctor                 ( Bifunctor(..) )
 import           Data.Binary                    ( Binary )
 import           Data.Functor.Contravariant     ( Contravariant(contramap)
                                                 , Predicate(..)
@@ -211,7 +211,13 @@ Apply a three functions to as 'Event':
 
 See also: 'bimapContext', 'mapConcepts'.
 -}
-trimapEvent :: (Ord c1, Ord c2) => (a1 -> a2) -> (c1 -> c2) -> (d1 -> d2) -> Event d1 c1 a1 -> Event d2 c2 a2
+trimapEvent
+  :: (Ord c1, Ord c2)
+  => (a1 -> a2)
+  -> (c1 -> c2)
+  -> (d1 -> d2)
+  -> Event d1 c1 a1
+  -> Event d2 c2 a2
 trimapEvent g f h (MkEvent x) = MkEvent $ bimap (bimapContext f h) g x
 
 {- |
@@ -279,8 +285,14 @@ The underlying type of @Concepts@ is 'Data.Set.Set',
 which is not a 'Functor' 
 due to the @Set@ 'Ord' constraints.
 -}
-bimapContext :: (Ord c1, Ord c2) => (c1 -> c2) -> (d1 -> d2) -> Context d1 c1 -> Context d2 c2
-bimapContext  g f (MkContext cpts fcts src) = MkContext (mapConcepts g cpts) (f fcts) src
+bimapContext
+  :: (Ord c1, Ord c2)
+  => (c1 -> c2)
+  -> (d1 -> d2)
+  -> Context d1 c1
+  -> Context d2 c2
+bimapContext g f (MkContext cpts fcts src) =
+  MkContext (mapConcepts g cpts) (f fcts) src
 
 {-|
 Turn the 'Source' within a 'Context' to 'Nothing'.

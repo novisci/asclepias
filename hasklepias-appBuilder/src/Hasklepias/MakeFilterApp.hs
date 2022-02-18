@@ -159,7 +159,12 @@ prefilterC
 prefilterC p x =
   yield x
     .| CC.linesUnboundedAscii
-    .| mapC (pure . initFilterState (fmap snd . decodeEventStrict' defaultParseEventLineOption) p)
+    .| mapC
+         ( pure
+         . initFilterState
+             (fmap snd . decodeEventStrict' defaultParseEventLineOption)
+             p
+         )
     .| CC.foldl1 fscIO
 
 -- | Type containing the filter app

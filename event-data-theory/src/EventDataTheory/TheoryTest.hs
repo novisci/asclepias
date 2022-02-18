@@ -15,7 +15,7 @@ module EventDataTheory.TheoryTest
 
 import           Data.Aeson
 import qualified Data.ByteString.Lazy          as B
-import Data.Data
+import           Data.Data
 import           Data.Functor.Contravariant     ( Predicate(..) )
 import           Data.List                      ( sort )
 import           Data.Maybe                     ( isNothing )
@@ -300,7 +300,7 @@ theoryTests = defaultMain . testGroup "Event Theory tests" =<< sequenceA
   , decodeSillyFailTests1
   , decodeSillyFailTests2
   , roundtripSillyTests1
-  , modifySillyTests1 
+  , modifySillyTests1
   , pure eventIntervalUnitTests
   , pure hasConceptUnitTests
   , pure eventPredicateUnitTests

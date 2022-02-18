@@ -99,7 +99,13 @@ accessorUnitTests = testGroup
   , testCase "viewBenefits on enrollment event"
   $   fmap
         viewBenefits
-        (sequenceA [snd <$> decodeEvent @ClaimsSchema @Text @Int defaultParseEventLineOption enrollEvent])
+        (sequenceA
+          [ snd
+              <$> decodeEvent @ClaimsSchema @Text @Int
+                    defaultParseEventLineOption
+                    enrollEvent
+          ]
+        )
   @?= Just ["PPO"]
   ]
 

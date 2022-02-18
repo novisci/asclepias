@@ -25,7 +25,7 @@ import           Data.Aeson                     ( FromJSON
                                                 )
 import qualified Data.ByteString.Lazy          as B
 import qualified Data.ByteString.Lazy.Char8    as B
-import Data.Data
+import           Data.Data
 import           Data.Either                    ( fromLeft
                                                 , isLeft
                                                 , isRight
@@ -47,7 +47,7 @@ import           Test.Tasty                     ( TestName
                                                 , TestTree
                                                 , testGroup
                                                 )
-import           Test.Tasty.HUnit               
+import           Test.Tasty.HUnit
 import           Test.Tasty.Silver              ( findByExtension )
 import           Type.Reflection                ( Typeable )
 
@@ -259,7 +259,7 @@ The test passes if:
     without modifying the result.
 -}
 createModifyEventLineTest
-  ::  forall d c a b
+  :: forall d c a b
    . ( FromJSON a
      , Show a
      , IntervalSizeable a b
@@ -284,13 +284,16 @@ createModifyEventLineTest testFile = do
   x <- B.readFile testFile
   let d1 = decode' @(EventLine d c a) x
 
-  let res = case d1 of 
-        Nothing -> assertFailure ("failed to parse contents of " <> takeBaseName testFile)
-        Just el -> do
-          let d2 = modifyEventLine @d @d @c @c @a defaultParseEventLineOption id x
-          case d2 of
-            Left s -> assertFailure s
-            Right el' -> el @?= el'
+  let
+    res = case d1 of
+      Nothing ->
+        assertFailure ("failed to parse contents of " <> takeBaseName testFile)
+      Just el -> do
+        let d2 =
+              modifyEventLine @d @d @c @c @a defaultParseEventLineOption id x
+        case d2 of
+          Left  s   -> assertFailure s
+          Right el' -> el @?= el'
   pure $ testCase (takeBaseName testFile) res
 
 
@@ -371,11 +374,10 @@ eventLineModifyTests
      )
   => FilePath
   -> IO TestTree
-eventLineModifyTests dir =
-  createModifyEventLineTestGroup @d @c @a 
-    (  "Checking that .jsonl files in "
-    <> dir
-    <> " are not modified by modifyEventLine with the id function"
-    )
-    [".jsonl"]
-    dir
+eventLineModifyTests dir = createModifyEventLineTestGroup @d @c @a
+  (  "Checking that .jsonl files in "
+  <> dir
+  <> " are not modified by modifyEventLine with the id function"
+  )
+  [".jsonl"]
+  dir

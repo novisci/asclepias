@@ -197,7 +197,7 @@ instance FromJSON SubjectIDLine where
 
 instance ToJSON SubjectIDLine where
   toJSON (MkSubjectIDLine x) = into x
-  
+
 -- | See 'EventLine'
 data TimeLine a = MkTimeLine
   { timeBegin :: a
@@ -530,4 +530,4 @@ modifyEventLine
   -> Either String (EventLine d' c' a)
 modifyEventLine opt f x =
   let el = eitherDecode @(EventLine d c a) x
-  in modifyEventLineContext opt f =<< el
+  in  modifyEventLineContext opt f =<< el

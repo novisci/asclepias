@@ -190,11 +190,9 @@ instance ( Arbitrary (Interval a)
 
 -- | A smart constructor for 'Event d c a's.
 event
-  :: (Show d, Eq d, Generic d, Show c, Eq c, Ord c, Typeable c)
+  :: (Generic d, Ord c, Typeable c)
   -- Text is not Generic; but c should at least be Typeable
-  => Interval a
-  -> Context d c
-  -> Event d c a
+                                    => Interval a -> Context d c -> Event d c a
 event i c = MkEvent (makePairedInterval c i)
 
 -- | Unpack an 'Event' from its constructor.
@@ -273,7 +271,7 @@ instance ( Arbitrary d, Show d, Eq d, Generic d
 
 -- | Smart constructor for a 'Context',
 context
-  :: (Show d, Eq d, Generic d, Show c, Eq c, Ord c, Typeable c)
+  :: (Generic d, Ord c, Typeable c)
   => Concepts c
   -> d
   -> Maybe Source

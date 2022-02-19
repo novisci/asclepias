@@ -128,9 +128,12 @@ instance Exception ParseErrorInterval
 Try to parse an @'EventLine'@ into an @'Event'@,
 given an 'ParseEventLineOption'. 
 -}
-instance (Show a, IntervalSizeable a b
-         , Show d, Eq d, Generic d
-         , Show c, Eq c, Ord c, Typeable c) =>
+instance (
+  Show a
+  , IntervalSizeable a b
+         , Generic d
+         , Ord c, Typeable c
+         ) =>
          TryFrom (EventLine d c a, ParseEventLineOption) (Event d c a) where
   tryFrom x = do
     let fcts = (fctln . fst) x
@@ -226,19 +229,18 @@ for discusson of json vs json'.
 -}
 eitherDecodeEvent, eitherDecodeEvent'
   :: forall d c a b
-   . ( Show d
+   . ( Generic d
      , Eq d
-     , Generic d
-     , Typeable d
-     , FromJSON d
-     , Show c
-     , Eq c
      , Ord c
-     , Typeable c
-     , FromJSON c
      , Typeable a
+     , Typeable c
+     , Typeable d
      , FromJSON a
+     , FromJSON c
+     , FromJSON d
      , Show a
+     , Show c
+     , Show d
      , IntervalSizeable a b
      )
   => ParseEventLineOption
@@ -258,19 +260,18 @@ for discusson of json vs json'.
 -}
 decodeEvent, decodeEvent'
   :: forall d c a b
-   . ( Show d
+   . ( Generic d
      , Eq d
-     , Generic d
-     , FromJSON d
-     , Typeable d
-     , Show c
-     , Eq c
      , Ord c
-     , Typeable c
-     , FromJSON c
      , Typeable a
+     , Typeable c
+     , Typeable d
      , FromJSON a
+     , FromJSON c
+     , FromJSON d
      , Show a
+     , Show c
+     , Show d
      , IntervalSizeable a b
      )
   => ParseEventLineOption
@@ -290,19 +291,18 @@ for discusson of json vs json'.
 -}
 decodeEventStrict, decodeEventStrict'
   :: forall d c a b
-   . ( Show d
+   . ( Generic d
      , Eq d
-     , Generic d
-     , FromJSON d
-     , Typeable d
-     , Show c
-     , Eq c
      , Ord c
-     , Typeable c
-     , FromJSON c
-     , FromJSON a
      , Typeable a
+     , Typeable c
+     , Typeable d
+     , FromJSON a
+     , FromJSON c
+     , FromJSON d
      , Show a
+     , Show c
+     , Show d
      , IntervalSizeable a b
      )
   => ParseEventLineOption
@@ -315,21 +315,7 @@ decodeEventStrict' opt x =
 
 makeEventDecoder
   :: forall d c a b e
-   . ( Show d
-     , Eq d
-     , Generic d
-     , Typeable d
-     , FromJSON d
-     , Show c
-     , Eq c
-     , Ord c
-     , Typeable c
-     , FromJSON c
-     , Typeable a
-     , FromJSON a
-     , Show a
-     , IntervalSizeable a b
-     )
+   . (Generic d, Ord c, Typeable c, Show a, IntervalSizeable a b)
   => (  TryFromException (EventLine d c a, ParseEventLineOption) (Event d c a)
      -> e
      )
@@ -343,21 +329,7 @@ makeEventDecoder g opt f x = do
 
 makeEventDecoderStrict
   :: forall d c a b e
-   . ( Show d
-     , Eq d
-     , Generic d
-     , Typeable d
-     , FromJSON d
-     , Show c
-     , Eq c
-     , Ord c
-     , Typeable c
-     , FromJSON c
-     , Typeable a
-     , FromJSON a
-     , Show a
-     , IntervalSizeable a b
-     )
+   . (Generic d, Ord c, Typeable c, Show a, IntervalSizeable a b)
   => (  TryFromException (EventLine d c a, ParseEventLineOption) (Event d c a)
      -> e
      )
@@ -386,17 +358,18 @@ instance From (Natural, String) LineParseError where
 -- internal for create line parsers
 makeLineParser
   :: forall d c a b
-   . ( Show d
+   . ( Generic d
      , Eq d
-     , Generic d
-     , FromJSON d
-     , Show c
-     , Eq c
      , Ord c
+     , Typeable a
      , Typeable c
-     , FromJSON c
+     , Typeable d
      , FromJSON a
+     , FromJSON c
+     , FromJSON d
      , Show a
+     , Show c
+     , Show d
      , IntervalSizeable a b
      )
   => (B.ByteString -> Either String (SubjectID, Event d c a))
@@ -422,19 +395,18 @@ and the second element is a list of successfully parsed (subjectID, event) pairs
 -}
 parseEventLinesL, parseEventLinesL'
   :: forall d c a b
-   . ( Show d
+   . ( Generic d
      , Eq d
-     , Generic d
-     , Typeable d
-     , FromJSON d
-     , Show c
-     , Eq c
      , Ord c
-     , Typeable c
-     , FromJSON c
      , Typeable a
+     , Typeable c
+     , Typeable d
      , FromJSON a
+     , FromJSON c
+     , FromJSON d
      , Show a
+     , Show c
+     , Show d
      , IntervalSizeable a b
      )
   => ParseEventLineOption

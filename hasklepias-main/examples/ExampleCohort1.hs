@@ -16,7 +16,12 @@ Maintainer  : bsaul@novisci.com
 module ExampleCohort1
   ( exampleCohort1tests
   ) where
+<<<<<<< Updated upstream
 import           Cohort.Attrition
+=======
+import           AssessmentIntervals
+-- import           Cohort.Attrition
+>>>>>>> Stashed changes
 import           Hasklepias -- imported for test cases
 {-------------------------------------------------------------------------------
   Constants
@@ -301,7 +306,11 @@ makeFeatureRunner index events = featureset
   ef  = featureEvents events
 
 -- | Make a cohort specification for each calendar time
+<<<<<<< Updated upstream
 cohortSpecs :: CohortSetSpec (Events Day) Featureset Interval Day
+=======
+cohortSpecs :: CohortMapSpec [Event ClaimsSchema Text Day] Featureset (Interval Day)
+>>>>>>> Stashed changes
 cohortSpecs = makeCohortSpecs $ map
   (\x ->
     (pack $ show x, makeIndexRunner x, makeCriteriaRunner, makeFeatureRunner)
@@ -310,8 +319,13 @@ cohortSpecs = makeCohortSpecs $ map
 
 
 -- | A function that evaluates all the calendar cohorts for a population
+<<<<<<< Updated upstream
 evalCohorts :: Population (Events Day) -> CohortSet Featureset
 evalCohorts = evalCohortSet cohortSpecs
+=======
+evalCohorts :: Monad m =>  Population ([Event ClaimsSchema Text Day]) -> m (CohortMap Featureset (Interval Day))
+evalCohorts = makeCohortSpecsEvaluator defaultCohortEvalOptions cohortSpecs
+>>>>>>> Stashed changes
 
 {-------------------------------------------------------------------------------
   Testing 

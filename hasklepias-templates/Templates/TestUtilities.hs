@@ -52,7 +52,9 @@ readIntervalSafe :: (Integral b, IntervalSizeable a b) => (a, a) -> Interval a
 readIntervalSafe (b, e) = beginerval (diff e b) b
 
 makeEnrollmentEvent
-  :: (Integral b, IntervalSizeable a b, Show a) => (a, a) -> Event ClaimsSchema Text a
+  :: (Integral b, IntervalSizeable a b, Show a)
+  => (a, a)
+  -> Event ClaimsSchema Text a
 makeEnrollmentEvent intrvl = event
   (readIntervalSafe intrvl)
   (context mempty (Enrollment emptyEnrollmentFact) Nothing)

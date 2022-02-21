@@ -8,6 +8,7 @@ COPY cohort-collector/cohort-collector.cabal cohort-collector/cohort-collector.c
 COPY edm/edm.cabal edm/edm.cabal
 COPY stype/stype.cabal stype/stype.cabal
 COPY maybe-toxic-tutorial/maybe-toxic-tutorial.cabal maybe-toxic-tutorial/maybe-toxic-tutorial.cabal
+COPY hygiea/hygiea.cabal hygiea/hygiea.cabal
 
 RUN cabal update
 RUN cabal build all --only-dependencies

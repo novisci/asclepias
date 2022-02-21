@@ -41,7 +41,7 @@ library
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:
     build-depends:    
-        base ^>=4.14.2.0
+        base ^>=4.14.1.0
         , witch ^>=1
         -- NOTE: edm module fixes interval-algebra version
         -- though hygiea does not depend on edm at all, cabal seems to think

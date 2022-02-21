@@ -221,12 +221,7 @@ for discusson of json vs json'.
 -}
 eitherDecodeEvent, eitherDecodeEvent'
   :: forall d c a b
-   . ( Eventable d c a
-     , FromJSONEvent d c a
-     , Typeable a
-     , Typeable d
-     , IntervalSizeable a b
-     )
+   . (Eventable d c a, FromJSONEvent d c a, Typeable d, IntervalSizeable a b)
   => ParseEventLineOption
   -> B.ByteString
   -> Either String (SubjectID, Event d c a)
@@ -244,12 +239,7 @@ for discusson of json vs json'.
 -}
 decodeEvent, decodeEvent'
   :: forall d c a b
-   . ( Eventable d c a
-     , FromJSONEvent d c a
-     , Typeable a
-     , Typeable d
-     , IntervalSizeable a b
-     )
+   . (Eventable d c a, FromJSONEvent d c a, Typeable d, IntervalSizeable a b)
   => ParseEventLineOption
   -> B.ByteString
   -> Maybe (SubjectID, Event d c a)
@@ -267,12 +257,7 @@ for discusson of json vs json'.
 -}
 decodeEventStrict, decodeEventStrict'
   :: forall d c a b
-   . ( Eventable d c a
-     , FromJSONEvent d c a
-     , Typeable a
-     , Typeable d
-     , IntervalSizeable a b
-     )
+   . (Eventable d c a, FromJSONEvent d c a, Typeable d, IntervalSizeable a b)
   => ParseEventLineOption
   -> C.ByteString
   -> Maybe (SubjectID, Event d c a)
@@ -326,12 +311,7 @@ instance From (Natural, String) LineParseError where
 -- internal for create line parsers
 makeLineParser
   :: forall d c a b
-   . ( Eventable d c a
-     , FromJSONEvent d c a
-     , Typeable a
-     , Typeable d
-     , IntervalSizeable a b
-     )
+   . (Eventable d c a, FromJSONEvent d c a, Typeable d, IntervalSizeable a b)
   => (B.ByteString -> Either String (SubjectID, Event d c a))
   -> B.ByteString
   -> ([LineParseError], [(SubjectID, Event d c a)])
@@ -355,12 +335,7 @@ and the second element is a list of successfully parsed (subjectID, event) pairs
 -}
 parseEventLinesL, parseEventLinesL'
   :: forall d c a b
-   . ( Eventable d c a
-     , FromJSONEvent d c a
-     , Typeable a
-     , Typeable d
-     , IntervalSizeable a b
-     )
+   . (Eventable d c a, FromJSONEvent d c a, Typeable d, IntervalSizeable a b)
   => ParseEventLineOption
   -> B.ByteString
   -> ([LineParseError], [(SubjectID, Event d c a)])
@@ -445,7 +420,6 @@ eitherModifyEventLineFromContext
    . ( Eventable d c a
      , FromJSONEvent d c a
      , IntervalSizeable a b
-     , Typeable a
      , Typeable d
      , Ord c'
      , Data d'
@@ -469,7 +443,6 @@ eitherModifyEventLineFromEvent
      , Eventable d' c' a'
      , FromJSONEvent d c a
      , IntervalSizeable a b
-     , Typeable a
      , Typeable d
      , ToJSON a'
      , Data d'
@@ -507,7 +480,6 @@ modifyEventLineWithContext
      , FromJSONEvent d c a
      , IntervalSizeable a b
      , Eventable d' c' a
-     , Typeable a
      , Typeable d
      , Data d'
      )
@@ -549,7 +521,6 @@ modifyEventLineWithEvent
      , Eventable d c a
      , Eventable d' c' a'
      , IntervalSizeable a b
-     , Typeable a
      , Typeable d
      , ToJSON a'
      , Data d'

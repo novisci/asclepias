@@ -186,16 +186,23 @@ instance ( ToJSON b, ToJSON (Interval a) ) => ToJSON (PairedInterval b a)
 instance ( Ord c, FromJSON c, FromJSON d, FromJSON (Interval a) ) => FromJSON (Event d c a)
 instance ( Ord c, ToJSON c, ToJSON d, ToJSON (Interval a) ) => ToJSON (Event d c a)
 
-instance ( Arbitrary (Interval a)
-          , Eventable d c a
-          , Arbitrary d, Show d, Eq d
-          , Arbitrary c, Show c, Eq c, Ord c) =>
+instance (  Eventable d c a
+          , Arbitrary d, Arbitrary c, Arbitrary (Interval a)) =>
       Arbitrary (Event d c a) where
   arbitrary = liftM2 event arbitrary arbitrary
 
 -- | A synonym for the minimum set of constraints an event needs on its types.
 type Eventable d c a
-  = (Generic d, Typeable c, Eq d, Ord c, Ord a, Show d, Show c, Show a)
+  = ( Generic d
+    , Typeable c
+    , Typeable a
+    , Eq d
+    , Ord c
+    , Ord a
+    , Show d
+    , Show c
+    , Show a
+    )
   -- Text is not Generic; but c should at least be Typeable
 
 -- | Constraint synonym for @ToJSON@ on an event's component types.

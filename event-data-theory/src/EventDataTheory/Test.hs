@@ -33,7 +33,10 @@ import           Data.Either                    ( fromLeft
 import           Data.Text                      ( Text )
 import           Data.Time                      ( Day )
 import           EventDataTheory.Core           ( Event
+                                                , Eventable
+                                                , FromJSONEvent
                                                 , SubjectID
+                                                , ToJSONEvent
                                                 )
 import           EventDataTheory.EventLines
 import           GHC.Generics                   ( Generic )
@@ -105,21 +108,7 @@ do in fact parse.
 -}
 eventDecodeTests
   :: forall d c a b
-   . ( Show d
-     , Eq d
-     , Generic d
-     , FromJSON d
-     , Typeable d
-     , Show c
-     , Eq c
-     , Ord c
-     , Typeable c
-     , FromJSON c
-     , Typeable a
-     , FromJSON a
-     , Show a
-     , IntervalSizeable a b
-     )
+   . (Eventable d c a, FromJSONEvent d c a, Typeable d, IntervalSizeable a b)
   => FilePath
   -> IO TestTree
 eventDecodeTests dir = createDecodeSmokeTestGroup
@@ -143,21 +132,7 @@ do not in fact parse.
 -}
 eventDecodeFailTests
   :: forall d c a b
-   . ( Show d
-     , Eq d
-     , Generic d
-     , FromJSON d
-     , Typeable d
-     , Show c
-     , Eq c
-     , Ord c
-     , Typeable c
-     , FromJSON c
-     , Typeable a
-     , FromJSON a
-     , Show a
-     , IntervalSizeable a b
-     )
+   . (Eventable d c a, FromJSONEvent d c a, Typeable d, IntervalSizeable a b)
   => FilePath
   -> IO TestTree
 eventDecodeFailTests dir = createDecodeSmokeTestGroup
@@ -221,21 +196,10 @@ do in fact parse.
 -}
 eventLineRoundTripTests
   :: forall d c a b
-   . ( Show d
-     , Eq d
-     , Generic d
-     , FromJSON d
-     , Show c
-     , Eq c
-     , Ord c
-     , Typeable c
-     , FromJSON c
-     , FromJSON a
-     , Show a
+   . ( Eventable d c a
+     , FromJSONEvent d c a
+     , ToJSONEvent d c a
      , IntervalSizeable a b
-     , ToJSON a
-     , ToJSON c
-     , ToJSON d
      )
   => FilePath
   -> IO TestTree
@@ -260,24 +224,7 @@ The test passes if:
 -}
 createModifyEventLineTest
   :: forall d c a b
-   . ( FromJSON a
-     , Show a
-     , IntervalSizeable a b
-     , FromJSON c
-     , FromJSON d
-     , Typeable a
-     , Show d
-     , Eq d
-     , Generic d
-     , FromJSON d
-     , Typeable d
-     , Show c
-     , Eq c
-     , Ord c
-     , Typeable c
-     , FromJSON c
-     , Data d
-     )
+   . (Eventable d c a, FromJSONEvent d c a, Data d, IntervalSizeable a b)
   => FilePath -- ^ path to file to be decoded
   -> IO TestTree
 createModifyEventLineTest testFile = do
@@ -309,25 +256,7 @@ with given file extensions.
 -}
 createModifyEventLineTestGroup
   :: forall d c a b
-   . ( FromJSON a
-     , Show a
-     , ToJSON a
-     , IntervalSizeable a b
-     , FromJSON c
-     , FromJSON d
-     , Typeable a
-     , Show d
-     , Eq d
-     , Generic d
-     , FromJSON d
-     , Typeable d
-     , Show c
-     , Eq c
-     , Ord c
-     , Typeable c
-     , FromJSON c
-     , Data d
-     )
+   . (Eventable d c a, FromJSONEvent d c a, Data d, IntervalSizeable a b)
   => TestName
   -> [FilePath] -- ^ a list of file extensions to find in the provided directory
   -> FilePath -- ^ name of directory containing files to be parsed
@@ -357,25 +286,7 @@ in the result.
 -}
 eventLineModifyTests
   :: forall d c a b
-   . ( FromJSON a
-     , Show a
-     , ToJSON a
-     , IntervalSizeable a b
-     , FromJSON c
-     , FromJSON d
-     , Typeable a
-     , Show d
-     , Eq d
-     , Generic d
-     , FromJSON d
-     , Typeable d
-     , Show c
-     , Eq c
-     , Ord c
-     , Typeable c
-     , FromJSON c
-     , Data d
-     )
+   . (Eventable d c a, FromJSONEvent d c a, Data d, IntervalSizeable a b)
   => FilePath
   -> IO TestTree
 eventLineModifyTests dir = createModifyEventLineTestGroup @d @c @a

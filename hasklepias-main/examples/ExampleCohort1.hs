@@ -513,3 +513,5 @@ exampleCohort1tests = testGroup
         encode (evalCohorts testPop)
     @?= encode expectedCohortSet
   ]
+evalCohorts :: Population [Event ClaimsSchema Text Day] -> IO (CohortMap Featureset (Interval Day))
+evalCohorts = makeCohortSpecsEvaluator defaultCohortEvalOptions cohortSpecs

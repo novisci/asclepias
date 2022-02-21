@@ -250,7 +250,7 @@ exampleFeatures1Spec = do
     $          evalCohort testCohortSpec
                           (MkPopulation [exampleSubject1, exampleSubject2])
     `shouldBe` MkCohort
-                 ( MkAttritionInfo 2 $ setFromList
+                 ( MkAttritionInfo 2 2 setFromList
                    [ MkAttritionLevel SubjectHasNoIndex              1
                    , MkAttritionLevel (ExcludedBy (1, "includeAll")) 0
                    , MkAttritionLevel Included                       1

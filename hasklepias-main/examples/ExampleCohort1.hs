@@ -14,11 +14,12 @@ Maintainer  : bsaul@novisci.com
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 module ExampleCohort1
-  ( exampleCohort1tests
+  ( -- exampleCohort1tests
   ) where
 import           AssessmentIntervals
-import           Cohort.Attrition
+-- import           Cohort.Attrition
 import           Hasklepias -- imported for test cases
+import           Features.Featureable
 import           Witch
 
 {-------------------------------------------------------------------------------
@@ -282,6 +283,10 @@ makeCriteriaRunner index events =
   featInd = pure index
   featEvs = featureEvents events
 
+instance HasAttributes "calendarIndex" (Interval Day) where
+
+instance ToJSON (Interval Day) where
+
 -- | Make a function that runs the features for a calendar index
 makeFeatureRunner :: Interval Day -> [Event ClaimsSchema Text Day] -> Featureset
 makeFeatureRunner index events = featureset
@@ -313,11 +318,11 @@ evalCohorts
 evalCohorts = makeCohortSpecsEvaluator defaultCohortEvalOptions cohortSpecs
 
 {-------------------------------------------------------------------------------
-  Testing 
+  Testing
   This would generally be in a separate file
 -------------------------------------------------------------------------------}
 m :: Year -> MonthOfYear -> Int -> Integer -> [Text] -> ClaimsSchema -> Event ClaimsSchema Text Day
-m y m d dur c dmn = event itv ctx where
+m y m d dur c dmn = event ctx itv where
   itv = MkContext (packConcepts c) dmn Nothing
   ctx = beginerval dur (fromGregorian y m d)
 
@@ -380,8 +385,6 @@ makeExpectedCovariate
   :: (KnownSymbol name) => FeatureData Bool -> Feature name Bool
 makeExpectedCovariate = makeFeature
 
-instance HasAttributes "calendarIndex" (Interval Day) where
-
 makeExpectedFeatures
   :: FeatureData (Interval Day)
   -> (FeatureData Bool, FeatureData Bool, FeatureData Bool, FeatureData Bool)
@@ -412,94 +415,94 @@ expectedFeatures1 = map
 
 expectedObsUnita :: [ObsUnit ClaimsSchema Featureset]
 expectedObsUnita =
-  zipWith (into (replicate 5 (makeObsID 1 "a"))) expectedFeatures1
+  zipWith from (replicate 5 (makeObsID 1 "a")) expectedFeatures1
 
 makeExpectedCohort
   :: AttritionInfo -> [ObsUnit ClaimsSchema Featureset] -> Cohort ClaimsSchema Featureset
 makeExpectedCohort a x = MkCohort (a, into x)
 
-mkAl :: (CohortStatus, Natural) -> AttritionLevel
-mkAl = uncurry MkAttritionLevel
+-- mkAl :: (CohortStatus, Natural) -> AttritionLevel
+-- mkAl = uncurry MkAttritionLevel
 
 expectedCohorts :: [Cohort ClaimsSchema Featureset]
 expectedCohorts = zipWith
   (curry MkCohort)
-  [ MkAttritionInfo 2 $ setFromList
-    [ mkAl (SubjectHasNoIndex, 0)
-    , mkAl (ExcludedBy (1, "isFemale"), 0)
-    , mkAl (ExcludedBy (2, "isOver50"), 1)
-    , mkAl (ExcludedBy (3, "isEnrolled"), 0)
-    , mkAl (ExcludedBy (4, "isContinuousEnrolled"), 1)
-    , mkAl (ExcludedBy (5, "isDead"), 0)
-    , mkAl (Included, 0)
+  [ makeTestAttritionInfo 2 2
+    [ (SubjectHasNoIndex, 0)
+    , (ExcludedBy (1, "isFemale"), 0)
+    , (ExcludedBy (2, "isOver50"), 1)
+    , (ExcludedBy (3, "isEnrolled"), 0)
+    , (ExcludedBy (4, "isContinuousEnrolled"), 1)
+    , (ExcludedBy (5, "isDead"), 0)
+    , (Included, 0)
     ]
-  , MkAttritionInfo 2 $ setFromList
-    [ mkAl (SubjectHasNoIndex, 0)
-    , mkAl (ExcludedBy (1, "isFemale"), 0)
-    , mkAl (ExcludedBy (2, "isOver50"), 1)
-    , mkAl (ExcludedBy (3, "isEnrolled"), 0)
-    , mkAl (ExcludedBy (4, "isContinuousEnrolled"), 0)
-    , mkAl (ExcludedBy (5, "isDead"), 0)
-    , mkAl (Included, 1)
+  , makeTestAttritionInfo 2 2
+    [ (SubjectHasNoIndex, 0)
+    , (ExcludedBy (1, "isFemale"), 0)
+    , (ExcludedBy (2, "isOver50"), 1)
+    , (ExcludedBy (3, "isEnrolled"), 0)
+    , (ExcludedBy (4, "isContinuousEnrolled"), 0)
+    , (ExcludedBy (5, "isDead"), 0)
+    , (Included, 1)
     ]
-  , MkAttritionInfo 2 $ setFromList
-    [ mkAl (SubjectHasNoIndex, 0)
-    , mkAl (ExcludedBy (1, "isFemale"), 0)
-    , mkAl (ExcludedBy (2, "isOver50"), 1)
-    , mkAl (ExcludedBy (3, "isEnrolled"), 0)
-    , mkAl (ExcludedBy (4, "isContinuousEnrolled"), 0)
-    , mkAl (ExcludedBy (5, "isDead"), 0)
-    , mkAl (Included, 1)
+  , makeTestAttritionInfo 2 2
+    [ (SubjectHasNoIndex, 0)
+    , (ExcludedBy (1, "isFemale"), 0)
+    , (ExcludedBy (2, "isOver50"), 1)
+    , (ExcludedBy (3, "isEnrolled"), 0)
+    , (ExcludedBy (4, "isContinuousEnrolled"), 0)
+    , (ExcludedBy (5, "isDead"), 0)
+    , (Included, 1)
     ]
-  , MkAttritionInfo 2 $ setFromList
-    [ mkAl (SubjectHasNoIndex, 0)
-    , mkAl (ExcludedBy (1, "isFemale"), 0)
-    , mkAl (ExcludedBy (2, "isOver50"), 1)
-    , mkAl (ExcludedBy (3, "isEnrolled"), 0)
-    , mkAl (ExcludedBy (4, "isContinuousEnrolled"), 0)
-    , mkAl (ExcludedBy (5, "isDead"), 0)
-    , mkAl (Included, 1)
+  , makeTestAttritionInfo 2 2
+    [ (SubjectHasNoIndex, 0)
+    , (ExcludedBy (1, "isFemale"), 0)
+    , (ExcludedBy (2, "isOver50"), 1)
+    , (ExcludedBy (3, "isEnrolled"), 0)
+    , (ExcludedBy (4, "isContinuousEnrolled"), 0)
+    , (ExcludedBy (5, "isDead"), 0)
+    , (Included, 1)
     ]
-  , MkAttritionInfo 2 $ setFromList
-    [ mkAl (SubjectHasNoIndex, 0)
-    , mkAl (ExcludedBy (1, "isFemale"), 0)
-    , mkAl (ExcludedBy (2, "isOver50"), 1)
-    , mkAl (ExcludedBy (3, "isEnrolled"), 0)
-    , mkAl (ExcludedBy (4, "isContinuousEnrolled"), 1)
-    , mkAl (ExcludedBy (5, "isDead"), 0)
-    , mkAl (Included, 0)
+  , makeTestAttritionInfo 2 2
+    [ (SubjectHasNoIndex, 0)
+    , (ExcludedBy (1, "isFemale"), 0)
+    , (ExcludedBy (2, "isOver50"), 1)
+    , (ExcludedBy (3, "isEnrolled"), 0)
+    , (ExcludedBy (4, "isContinuousEnrolled"), 1)
+    , (ExcludedBy (5, "isDead"), 0)
+    , (Included, 0)
     ]
-  , MkAttritionInfo 2 $ setFromList
-    [ mkAl (SubjectHasNoIndex, 0)
-    , mkAl (ExcludedBy (1, "isFemale"), 0)
-    , mkAl (ExcludedBy (2, "isOver50"), 1)
-    , mkAl (ExcludedBy (3, "isEnrolled"), 1)
-    , mkAl (ExcludedBy (4, "isContinuousEnrolled"), 0)
-    , mkAl (ExcludedBy (5, "isDead"), 0)
-    , mkAl (Included, 0)
+  , makeTestAttritionInfo 2 2
+    [ (SubjectHasNoIndex, 0)
+    , (ExcludedBy (1, "isFemale"), 0)
+    , (ExcludedBy (2, "isOver50"), 1)
+    , (ExcludedBy (3, "isEnrolled"), 1)
+    , (ExcludedBy (4, "isContinuousEnrolled"), 0)
+    , (ExcludedBy (5, "isDead"), 0)
+    , (Included, 0)
     ]
-  , MkAttritionInfo 2 $ setFromList
-    [ mkAl (SubjectHasNoIndex, 0)
-    , mkAl (ExcludedBy (1, "isFemale"), 0)
-    , mkAl (ExcludedBy (2, "isOver50"), 1)
-    , mkAl (ExcludedBy (3, "isEnrolled"), 1)
-    , mkAl (ExcludedBy (4, "isContinuousEnrolled"), 0)
-    , mkAl (ExcludedBy (5, "isDead"), 0)
-    , mkAl (Included, 0)
+  , makeTestAttritionInfo 2 2
+    [ (SubjectHasNoIndex, 0)
+    , (ExcludedBy (1, "isFemale"), 0)
+    , (ExcludedBy (2, "isOver50"), 1)
+    , (ExcludedBy (3, "isEnrolled"), 1)
+    , (ExcludedBy (4, "isContinuousEnrolled"), 0)
+    , (ExcludedBy (5, "isDead"), 0)
+    , (Included, 0)
     ]
-  , MkAttritionInfo 2 $ setFromList
-    [ mkAl (SubjectHasNoIndex, 0)
-    , mkAl (ExcludedBy (1, "isFemale"), 0)
-    , mkAl (ExcludedBy (2, "isOver50"), 1)
-    , mkAl (ExcludedBy (3, "isEnrolled"), 1)
-    , mkAl (ExcludedBy (4, "isContinuousEnrolled"), 0)
-    , mkAl (ExcludedBy (5, "isDead"), 0)
-    , mkAl (Included, 0)
+  , makeTestAttritionInfo 2 2
+    [ (SubjectHasNoIndex, 0)
+    , (ExcludedBy (1, "isFemale"), 0)
+    , (ExcludedBy (2, "isOver50"), 1)
+    , (ExcludedBy (3, "isEnrolled"), 1)
+    , (ExcludedBy (4, "isContinuousEnrolled"), 0)
+    , (ExcludedBy (5, "isDead"), 0)
+    , (Included, 0)
     ]
   ]
   (fmap into ([[]] ++ transpose [expectedObsUnita] ++ [[], [], [], []]))
 
-expectedCohortSet :: CohortSet ClaimsSchema Featureset
+expectedCohortSet :: CohortMap ClaimsSchema Featureset
 expectedCohortSet =
   into $ mapFromList $ zip (fmap (pack . show) indices) expectedCohorts
 
@@ -508,10 +511,8 @@ exampleCohort1tests = testGroup
   "Unit tests for calendar cohorts"
   [ testCase "expected Features for testData1"
     $
-      -- Featureable cannot be tested for equality directly, hence encoding to 
+      -- Featureable cannot be tested for equality directly, hence encoding to
       -- JSON bytestring and testing that for equality
         encode (evalCohorts testPop)
     @?= encode expectedCohortSet
   ]
-evalCohorts :: Population [Event ClaimsSchema Text Day] -> IO (CohortMap Featureset (Interval Day))
-evalCohorts = makeCohortSpecsEvaluator defaultCohortEvalOptions cohortSpecs

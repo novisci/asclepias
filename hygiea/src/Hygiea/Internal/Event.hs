@@ -8,7 +8,7 @@
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
-module Planning.Event where
+module Hygiea.Internal.Event where
 
 import           Control.Applicative
 import           Data.Text                      ( Text )
@@ -18,8 +18,7 @@ import           IntervalAlgebra                ( Interval
                                                 , makePairedInterval
                                                 , parseInterval
                                                 )
-import           Map.Internal
-import           Planning.Input
+import           Hygiea.Map
 import           Witch.From
 import           Witch.TryFrom
 import           Witch.TryFromException
@@ -96,7 +95,30 @@ instance (Show a, Ord a, Atomizable d, Atomizable a, TryFrom TestMap c) => TryFr
     time   = tryFrom input
     err    = TryFromException input Nothing
 
-  {- Messin around -}
+{- UTILITIES -}
+-- TODO surely some of these already exist
+maybeRight :: e -> Maybe a -> Either e a
+maybeRight _   (Just x) = Right x
+maybeRight err Nothing  = Left err
+
+-- see Bifunctor
+mapLeft :: e -> Either a b -> Either e b
+mapLeft err (Left  err') = Left err
+mapLeft _   (Right x   ) = Right x
+
+joinMaybeEither :: e -> Maybe (Either a b) -> Either e b
+joinMaybeEither err (Just x) = mapLeft err x
+joinMaybeEither err Nothing  = Left err
+
+-- collapse nested Either, keeping outer error type but with a possibly new
+-- error
+joinEitherOuter :: e -> Either e (Either a b) -> Either e b
+joinEitherOuter err (Right x) = mapLeft err x
+joinEitherOuter _   (Left  x) = Left x
+
+ {- Messin around -}
+
+  {-
 
 -- Convert to context if input map has atomizable concepts and facts fields
 instance TryFrom Input (Context InputVal InputVal) where
@@ -140,21 +162,4 @@ instance (Show d, Show c, Atomizable d, Atomizable c) => TryFrom (Context d c) (
 --          convert (Left _) = Left err
 --          err = TryFromException input Nothing
 
-{- UTILITIES -}
-maybeRight :: e -> Maybe a -> Either e a
-maybeRight _   (Just x) = Right x
-maybeRight err Nothing  = Left err
-
-mapLeft :: e -> Either a b -> Either e b
-mapLeft err (Left  err') = Left err
-mapLeft _   (Right x   ) = Right x
-
-joinMaybeEither :: e -> Maybe (Either a b) -> Either e b
-joinMaybeEither err (Just x) = mapLeft err x
-joinMaybeEither err Nothing  = Left err
-
--- collapse nested Either, keeping outer error type but with a possibly new
--- error
-joinEitherOuter :: e -> Either e (Either a b) -> Either e b
-joinEitherOuter err (Right x) = mapLeft err x
-joinEitherOuter _   (Left  x) = Left x
+-}

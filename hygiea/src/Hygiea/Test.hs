@@ -6,15 +6,13 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE AllowAmbiguousTypes #-}
 
-module Planning.Test
+module Hygiea.Test
   ( Testable(..)
   , testIt
   , ToOutput(..)
   ) where
 
-import           Map.Internal
-import           Planning.Input
-import           Planning.Output
+import           Hygiea.Map
 import           Witch.From
 import           Witch.TryFrom
 

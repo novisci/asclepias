@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE FlexibleInstances #-}
-module Planning.Examples.Simple where
+module Examples.Simple where
 
 -- NOTE dhall imports are just for this example and not needed for a typical
 -- project
@@ -15,9 +15,9 @@ import           Dhall.Core                     ( Expr(..)
 import qualified Dhall.Map
 import           Dhall.Src                      ( Src )
 import           IntervalAlgebra
-import           Map.Internal
-import           Planning.Event
-import           Planning.Test
+import           Hygiea.Map
+import           Hygiea.Test
+import           Hygiea.EventData
 
   {- Project-specific code
 

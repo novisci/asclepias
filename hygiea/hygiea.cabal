@@ -25,18 +25,16 @@ extra-source-files:
 
 library
     exposed-modules:  
-        Planning.Output
-        , Planning.Input
-        , Planning.Test
-        , Planning.Decode
-        , Planning.Examples.Simple
-        , Planning.Event
-        -- TODO make internal
-        , Map.Internal
+        Hygiea.Map
+        , Hygiea.Test
+        , Hygiea.EventData
 
     -- Modules included in this library but not exported.
     other-modules: 
-        Planning.Decode.Dhall
+        Hygiea.Internal.Map
+        , Hygiea.Internal.Dhall
+        , Hygiea.Internal.Event
+        , Hygiea.Internal.Parse
 
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:

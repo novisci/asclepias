@@ -1,71 +1,121 @@
-{- Internal Map type provides the glue between user input, dhall and project
-    programmer types. Should not be used directly. The goal here is essentially
-    to create a haskell-side version of the csv-side conversions in dhall-csv
-    https://hackage.haskell.org/package/dhall-csv-1.0.1/docs/src/Dhall.CsvToDhall.html
-
-    An alternative would be to use NamedRecord (aliasing HashMap ByteString
-    ByteString) from the cassava package directly, and write some helper types
-    that already implement To/FromNamedRecord. That combined with dhall-csv
-    should give similar results. However, we might lose some type safety on the
-    haskell side, would need to write parsers etc. I'm not sure yet whether
-    that approach or this is better.
-
-    https://hackage.haskell.org/package/cassava-0.5.2.0/docs/Data-Csv.html#t:ToNamedRecord
-    -}
-
-
-{-# LANGUAGE ConstraintKinds #-}
-{-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE TupleSections #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE GADTs #-}
+module Hygiea.Internal.Dhall where
 
-module Map.Internal where
-
-import           Data.Functor.Contravariant     ( contramap )
-import qualified Data.Map.Strict               as SMap
-import           Data.Text                      ( Text
-                                                , pack
-                                                , unpack
-                                                )
-import qualified Data.Text.IO
+import           Data.Csv                       ( NamedRecord )
+import qualified Data.Text
+import qualified Data.Text.IO                   ( readFile )
 import           Data.Void                      ( Void )
 import qualified Dhall
 import qualified Dhall.Core
-import           Dhall.Core                     ( Expr(..) )
+import           Dhall.Core                     ( Expr(..)
+                                                , pretty
+                                                )
+import           Dhall.Csv
+import           Dhall.Csv.Util
+import           Dhall.CsvToDhall
 import qualified Dhall.Map
-import           Dhall.Marshal.Decode           ( Decoder(..)
-                                                , Expector(..)
-                                                )
-import           Dhall.Marshal.Encode           ( Encoder(..)
-                                                , RecordEncoder(..)
-                                                , recordEncoder
-                                                )
-import           Dhall.Src                      ( Src )
-import           GHC.Natural                    ( Natural )
-import           Witch.From
-import           Witch.TryFrom
-import           Witch.TryFromException
+import           Dhall.Marshal.Decode
+import           Dhall.Src
+import qualified GHC.Exts                       ( IsList(..) )
+import           Hygiea.Internal.Atomic
+import           Hygiea.Internal.Map
 
-  {- Map v -}
--- TODO likelike need to injest a *List* of inputs.
--- TODO need to write a conversion for dhall ListLit input from Csv to this
--- format
+   {- UTILS -}
+type DhallExpr = Dhall.Core.Expr Src Void
 
-newtype Map v = Map (SMap.Map Text v) deriving (Show, Eq)
+encoderText :: Dhall.Encoder a -> a -> Text
+encoderText x = Data.Text.pack . show . pretty . Dhall.embed x
 
-instance Functor Map where
-  fmap f (Map x) = Map (fmap f x)
+encoderTypeText :: Dhall.Encoder a -> Text
+encoderTypeText = Data.Text.pack . show . pretty . Dhall.declared
 
-instance Foldable Map where
-  foldMap f (Map x) = foldMap f x
+decoderTypeText :: Dhall.Decoder a -> Text
+decoderTypeText = Data.Text.pack . show . pretty . maximum . Dhall.expected
 
-instance Traversable Map where
-  traverse f (Map x) = Map <$> traverse f x
+-- TODO clean up these parsers a bit depending on need
+parseDhallFileWith
+  :: (Text -> IO (Expr Src Void)) -> FilePath -> IO (Expr Src Void)
+parseDhallFileWith parser file = do
+  x <- Data.Text.IO.readFile file
+  parser x
+
+parseDhallFile :: FilePath -> IO (Expr Src Void)
+parseDhallFile = parseDhallFileWith Dhall.inputExpr
+
+-- alias, fixing Alternative f as Maybe a
+-- TODO i want this to be Either
+tryParseRawInput :: Decoder a -> Expr Src Void -> Maybe a
+tryParseRawInput = Dhall.rawInput
+
+-- inject type a into a dhall program string and return decoded Haskell type
+-- TODO name handling is ham-handed. grab name from the object itself?
+parseDecodeWithType :: Text -> Dhall.Decoder a -> Text -> IO a
+parseDecodeWithType name d program = Dhall.input
+  d
+  (typedef <> " in " <> program)
+  where typedef = "let " <> name <> " = " <> decoderTypeText d
+
+
+  {- CSV -}
+
+
+-- dhallFromCsv converts the list of NamedRecord to a ListLit Nothing (Seq (Expr ...))
+-- Convert ListLit Nothing (Seq a) to [a] by converting Seq to list
+-- TODO Left type other than text
+tryListLitToList
+  :: (Show b)
+  => Either b (Dhall.Core.Expr s a)
+  -> Either Text [Dhall.Core.Expr s a]
+tryListLitToList (Right (ListLit _ s)) = Right $ GHC.Exts.toList s
+tryListLitToList (Right _            ) = Left "Not a ListLit"
+tryListLitToList (Left  err          ) = Left $ Data.Text.pack $ show err
+
+-- parse Csv [NamedRecord] into dhall, then from dhall into a with the provided decoder
+-- TODO there's a better solution to the joinFold. traverse not doing what i expected
+-- TODO better failure handler
+tryParseRecords :: Decoder a -> [NamedRecord] -> Either Text [a]
+tryParseRecords d rs = joinFold (tryParseRawInput d) $ tryListLitToList es
+ where
+  es = Dhall.CsvToDhall.dhallFromCsv Dhall.CsvToDhall.defaultConversion expr rs
+  expr = maximum $ Dhall.expected d
+  joinFold f (Left  err) = Left err
+  joinFold f (Right xs ) = foldr op (Right []) xs
+   where
+    op _ (Left  err) = Left err
+    op z (Right zs ) = case f z of
+      Just zz -> Right (zz : zs)
+      Nothing -> Left "Could not parse all records"
+
+
+-- copy-paste from csv-to-dhall Main
+toCsv :: Bool -> FilePath -> IO [NamedRecord]
+toCsv hasHeader file = do
+  text <- Data.Text.IO.readFile file
+  case Dhall.Csv.Util.decodeCsvDefault hasHeader text of
+    Left  err -> fail err
+    Right csv -> pure csv
+
+  {- ATOMIC -}
+
+instance Dhall.FromDhall TestAtomic where
+  autoWith _ = Decoder extractOut expectedOut
+   where
+    extractOut (Dhall.Core.IntegerLit x) = pure $ TInteger x
+    extractOut (Dhall.Core.NaturalLit x) = pure $ TNatural x
+    extractOut (Dhall.Core.DoubleLit x) =
+      pure $ TDouble $ Dhall.Core.getDhallDouble x
+    extractOut (Dhall.Core.BoolLit x) = pure $ TBool x
+    -- TODO Chunks? look into it. miht need to concat
+    extractOut (Dhall.Core.TextLit (Dhall.Core.Chunks _ x)) = pure $ TText x
+    extractOut expr = Dhall.typeError expectedOut expr
+    -- TODO following from the Result instance, but is it OK in this case?
+    -- I don't understand how the expected argument works, apparantly
+    -- https://hackage.haskell.org/package/dhall-1.40.2/docs/src/Dhall.Marshal.Decode.html#line-366
+    expectedOut = pure "atomic"
+
+
+  {- MAP -}
 
   {- Map v Decoders 
 
@@ -91,7 +141,7 @@ decodeMapWith decodeVal names = Decoder extractOut expectedOut
   extractOut expr = Dhall.typeError expectedOut expr
   expectedOut =
     (Record . Dhall.Map.fromList)
-      .   (\v -> map (, v) names)
+      .   (\v -> Prelude.map (, v) names)
       .   Dhall.Core.makeRecordField
       <$> expected decodeVal
 
@@ -218,116 +268,4 @@ tryInjectMapSchema _ = Left "schema is not a record"
      on types via Decoder 
       -}
 
--- TODO add Date
-data TestAtomic = TInteger Integer
-    | TNatural Natural
-    | TBool Bool
-    | TDouble Double
-    | TText Text
-    deriving (Show, Eq)
 
--- TODO
--- data TestVal = Atomic TestAtomic | Union (Map (Maybe TestAtomic)) deriving (Show, Eq)
-
-  {- Decode -}
-
-instance Dhall.FromDhall TestAtomic where
-  autoWith _ = Decoder extractOut expectedOut
-   where
-    extractOut (Dhall.Core.IntegerLit x) = pure $ TInteger x
-    extractOut (Dhall.Core.NaturalLit x) = pure $ TNatural x
-    extractOut (Dhall.Core.DoubleLit x) =
-      pure $ TDouble $ Dhall.Core.getDhallDouble x
-    extractOut (Dhall.Core.BoolLit x) = pure $ TBool x
-    -- TODO Chunks? look into it. miht need to concat
-    extractOut (Dhall.Core.TextLit (Dhall.Core.Chunks _ x)) = pure $ TText x
-    extractOut expr = Dhall.typeError expectedOut expr
-    -- TODO following from the Result instance, but is it OK in this case?
-    -- I don't understand how the expected argument works, apparantly
-    -- https://hackage.haskell.org/package/dhall-1.40.2/docs/src/Dhall.Marshal.Decode.html#line-366
-    expectedOut = pure "atomic"
-
-
-  {- CONVERSIONS -}
-
--- TODO ways around this tediousness?
-instance From Integer TestAtomic where
-  from = TInteger
-instance From Natural TestAtomic where
-  from = TNatural
-instance From Bool TestAtomic where
-  from = TBool
-instance From Double TestAtomic where
-  from = TDouble
-instance From Text TestAtomic where
-  from = TText
-
-instance TryFrom Integer TestAtomic where
-  tryFrom = Right . from
-instance TryFrom Natural TestAtomic where
-  tryFrom = Right . from
-instance TryFrom Bool TestAtomic where
-  tryFrom = Right . from
-instance TryFrom Double TestAtomic where
-  tryFrom = Right . from
-instance TryFrom Text TestAtomic where
-  tryFrom = Right . from
-
--- TODO i really do not like this. search for a better way of representing a
--- collection of inhomogeneous types that is not Dynamic or an existential
--- type, latter of which doesn't play well with dhall
-instance TryFrom TestAtomic Integer where
-  tryFrom (TInteger x) = Right x
-  tryFrom t = Left (TryFromException t Nothing)
-
-instance TryFrom TestAtomic Natural where
-  tryFrom (TNatural x) = Right x
-  tryFrom t = Left (TryFromException t Nothing)
-
-instance TryFrom TestAtomic Bool where
-  tryFrom (TBool x) = Right x
-  tryFrom t = Left (TryFromException t Nothing)
-
-instance TryFrom TestAtomic Double where
-  tryFrom (TDouble x) = Right x
-  tryFrom t = Left (TryFromException t Nothing)
-
-instance TryFrom TestAtomic Text where
-  tryFrom (TText x) = Right x
-  tryFrom t = Left (TryFromException t Nothing)
-
--- conveniences
-instance From (SMap.Map Text v) (Map v) where
-  from = Map
-instance From (Map v) (SMap.Map Text v) where
-  from (Map x) = x
-
-instance From (Dhall.Map.Map Text v) (Map v) where
-  from = Map . Dhall.Map.toMap
-instance From (Map v) (Dhall.Map.Map Text v) where
-  from (Map x) = Dhall.Map.fromMap x
-
-instance From [(Text, v)] (Map v) where
-  from = fromList
-instance From (Map v) [(Text, v)] where
-  from = toList
-
-  {- UTILS and SYNONYMS -}
-type DhallExpr = Dhall.Core.Expr Src Void
-type TestMap = Map TestAtomic
-type Atomizable v = (TryFrom TestAtomic v, From v TestAtomic)
-
-fromList :: [(Text, v)] -> Map v
-fromList = from . SMap.fromList
-
-toList :: Map v -> [(Text, v)]
-toList = SMap.toList . from
-
-lookup :: Text -> Map v -> Maybe v
-lookup k (Map x) = SMap.lookup k x
-
-insertWith :: (v -> v -> v) -> Text -> v -> Map v -> Map v
-insertWith f k val (Map x) = Map $ SMap.insertWith f k val x
-
-insert :: Text -> v -> Map v -> Map v
-insert = insertWith const

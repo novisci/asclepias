@@ -23,6 +23,7 @@ designed for the purpose of marshaling data from JSON lines.
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DuplicateRecordFields #-}
+{-# LANGUAGE ConstraintKinds #-}
 
 module EventDataTheory.Core
   ( Event
@@ -57,6 +58,9 @@ module EventDataTheory.Core
   -- the following names are exported for haddock linking
   , HasConcept
   , EventPredicate
+  , Eventable
+  , FromJSONEvent
+  , ToJSONEvent
   ) where
 
 import           Control.DeepSeq                ( NFData )
@@ -183,16 +187,25 @@ instance ( Ord c, FromJSON c, FromJSON d, FromJSON (Interval a) ) => FromJSON (E
 instance ( Ord c, ToJSON c, ToJSON d, ToJSON (Interval a) ) => ToJSON (Event d c a)
 
 instance ( Arbitrary (Interval a)
-          , Arbitrary d, Show d, Eq d, Generic d
-          , Arbitrary c, Show c, Eq c, Ord c, Typeable c) =>
+          , Eventable d c a
+          , Arbitrary d, Show d, Eq d
+          , Arbitrary c, Show c, Eq c, Ord c) =>
       Arbitrary (Event d c a) where
   arbitrary = liftM2 event arbitrary arbitrary
 
--- | A smart constructor for 'Event d c a's.
-event
-  :: (Generic d, Ord c, Typeable c)
+-- | A synonym for the minimum set of constraints an event needs on its types.
+type Eventable d c a
+  = (Generic d, Typeable c, Eq d, Ord c, Ord a, Show d, Show c, Show a)
   -- Text is not Generic; but c should at least be Typeable
-                                    => Interval a -> Context d c -> Event d c a
+
+-- | Constraint synonym for @ToJSON@ on an event's component types.
+type ToJSONEvent d c a = (ToJSON d, ToJSON c, ToJSON a)
+
+-- | Constraint synonym for @FromSON@ on an event's component types.
+type FromJSONEvent d c a = (FromJSON d, FromJSON c, FromJSON a)
+
+-- | A smart constructor for 'Event d c a's.
+event :: (Eventable d c a) => Interval a -> Context d c -> Event d c a
 event i c = MkEvent (makePairedInterval c i)
 
 -- | Unpack an 'Event' from its constructor.

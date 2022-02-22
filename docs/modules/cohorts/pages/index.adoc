@@ -1,0 +1,18 @@
+:toc:
+:navtitle: Define cohorts
+= Defining cohorts in asclepias
+
+How to define cohorts...
+
+== Create a cohort from a CSV file
+
+#TODO#
+
+
+== Create a cohort with multiple indices
+
+#TODO#
+
+== Collect attrition info across partitions
+
+#TODO#

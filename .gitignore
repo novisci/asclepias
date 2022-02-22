@@ -20,7 +20,7 @@ cabal.project.local
 doc/manual.html
 .stack-work/
 dist-newstyle*
-install*
-builds*
+install/*
+builds/*
 docs-site/build*
 docs-site/node_modules*

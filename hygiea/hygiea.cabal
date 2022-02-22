@@ -28,15 +28,16 @@ library
         Hygiea.Map
         , Hygiea.Test
         , Hygiea.EventData
-        -- TODO don't expose
+        -- TODO don't expose these
         , Hygiea.Internal.Dhall
+        , Hygiea.Internal.Csv
 
     -- Modules included in this library but not exported.
     other-modules: 
         Hygiea.Internal.Map
         --, Hygiea.Internal.Dhall
         , Hygiea.Internal.Event
-        , Hygiea.Internal.Parse
+        --, Hygiea.Internal.Csv
         , Hygiea.Internal.Atomic
 
     -- LANGUAGE extensions used by modules in this package.

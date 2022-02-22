@@ -21,8 +21,10 @@ data TestAtomic = TInteger Integer
     deriving (Show, Eq)
 
 -- TODO
+-- the difficulty in adding unions will again be that we need access to the
+-- data, in particular the *names* of the variants. therefore we cannot have a
+-- FromDhall instance.
 -- data TestVal = Atomic TestAtomic | Union (Map (Maybe TestAtomic)) deriving (Show, Eq)
-
 
 -- TODO ways around this tediousness?
 instance From Integer TestAtomic where
@@ -48,9 +50,7 @@ instance TryFrom Text TestAtomic where
   tryFrom = Right . from
 
   {- CONVERSIONS -}
--- TODO i really do not like this. search for a better way of representing a
--- collection of inhomogeneous types that is not Dynamic or an existential
--- type, latter of which doesn't play well with dhall
+-- TODO i really do not like this.
 instance TryFrom TestAtomic Integer where
   tryFrom (TInteger x) = Right x
   tryFrom t            = Left (TryFromException t Nothing)

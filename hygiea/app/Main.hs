@@ -7,6 +7,7 @@ import qualified Hygiea.Test as Test
 --import Examples.Simple
 import Hygiea.Map
 import Hygiea.Internal.Dhall
+import Hygiea.Internal.Csv
 
 main :: IO ()
 main = do

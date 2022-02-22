@@ -4,7 +4,7 @@
 
 How to define cohorts...
 
-[Tip]
+[TIP]
 For more explanation on the theory behind cohorts,
 see xref:ROOT:page$theory/theory-of-cohorts.adoc[].
 

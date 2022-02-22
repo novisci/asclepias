@@ -3,7 +3,7 @@
 module Hygiea.Internal.Dhall where
 
 import           Data.Csv                       ( NamedRecord )
-import qualified Data.Text
+import qualified Data.Text as T
 import qualified Data.Text.IO                   ( readFile )
 import           Data.Void                      ( Void )
 import qualified Dhall
@@ -15,7 +15,7 @@ import           Dhall.Csv
 import           Dhall.Csv.Util
 import           Dhall.CsvToDhall
 import qualified Dhall.Map
-import           Dhall.Marshal.Decode
+import qualified Dhall.Marshal.Decode          as Decode
 import           Dhall.Src
 import qualified GHC.Exts                       ( IsList(..) )
 import           Hygiea.Internal.Atomic
@@ -24,18 +24,18 @@ import           Hygiea.Internal.Map
    {- UTILS -}
 type DhallExpr = Dhall.Core.Expr Src Void
 
-encoderText :: Dhall.Encoder a -> a -> Text
-encoderText x = Data.Text.pack . show . pretty . Dhall.embed x
+encoderText :: Dhall.Encoder a -> a -> T.Text
+encoderText x = T.pack . show . pretty . Dhall.embed x
 
-encoderTypeText :: Dhall.Encoder a -> Text
-encoderTypeText = Data.Text.pack . show . pretty . Dhall.declared
+encoderTypeText :: Dhall.Encoder a -> T.Text
+encoderTypeText = T.pack . show . pretty . Dhall.declared
 
-decoderTypeText :: Dhall.Decoder a -> Text
-decoderTypeText = Data.Text.pack . show . pretty . maximum . Dhall.expected
+decoderTypeText :: Dhall.Decoder a -> T.Text
+decoderTypeText = T.pack . show . pretty . maximum . Dhall.expected
 
 -- TODO clean up these parsers a bit depending on need
 parseDhallFileWith
-  :: (Text -> IO (Expr Src Void)) -> FilePath -> IO (Expr Src Void)
+  :: (T.Text -> IO (Expr Src Void)) -> FilePath -> IO (Expr Src Void)
 parseDhallFileWith parser file = do
   x <- Data.Text.IO.readFile file
   parser x
@@ -45,12 +45,12 @@ parseDhallFile = parseDhallFileWith Dhall.inputExpr
 
 -- alias, fixing Alternative f as Maybe a
 -- TODO i want this to be Either
-tryParseRawInput :: Decoder a -> Expr Src Void -> Maybe a
+tryParseRawInput :: Dhall.Decoder a -> Expr Src Void -> Maybe a
 tryParseRawInput = Dhall.rawInput
 
 -- inject type a into a dhall program string and return decoded Haskell type
 -- TODO name handling is ham-handed. grab name from the object itself?
-parseDecodeWithType :: Text -> Dhall.Decoder a -> Text -> IO a
+parseDecodeWithType :: T.Text -> Dhall.Decoder a -> T.Text -> IO a
 parseDecodeWithType name d program = Dhall.input
   d
   (typedef <> " in " <> program)
@@ -66,15 +66,15 @@ parseDecodeWithType name d program = Dhall.input
 tryListLitToList
   :: (Show b)
   => Either b (Dhall.Core.Expr s a)
-  -> Either Text [Dhall.Core.Expr s a]
+  -> Either T.Text [Dhall.Core.Expr s a]
 tryListLitToList (Right (ListLit _ s)) = Right $ GHC.Exts.toList s
 tryListLitToList (Right _            ) = Left "Not a ListLit"
-tryListLitToList (Left  err          ) = Left $ Data.Text.pack $ show err
+tryListLitToList (Left  err          ) = Left $ T.pack $ show err
 
 -- parse Csv [NamedRecord] into dhall, then from dhall into a with the provided decoder
 -- TODO there's a better solution to the joinFold. traverse not doing what i expected
 -- TODO better failure handler
-tryParseRecords :: Decoder a -> [NamedRecord] -> Either Text [a]
+tryParseRecords :: Dhall.Decoder a -> [NamedRecord] -> Either T.Text [a]
 tryParseRecords d rs = joinFold (tryParseRawInput d) $ tryListLitToList es
  where
   es = Dhall.CsvToDhall.dhallFromCsv Dhall.CsvToDhall.defaultConversion expr rs
@@ -99,7 +99,7 @@ toCsv hasHeader file = do
   {- ATOMIC -}
 
 instance Dhall.FromDhall TestAtomic where
-  autoWith _ = Decoder extractOut expectedOut
+  autoWith _ = Dhall.Decoder extractOut expectedOut
    where
     extractOut (Dhall.Core.IntegerLit x) = pure $ TInteger x
     extractOut (Dhall.Core.NaturalLit x) = pure $ TNatural x
@@ -131,24 +131,24 @@ instance Dhall.FromDhall TestAtomic where
 
 -- NOTE: Here you must specify the record names, since 'expected' determines the
 -- shape of the decoded object. failures happen at runtime, as usual for dhall
-decodeMapWith :: Decoder v -> [Text] -> Decoder (Map v)
-decodeMapWith decodeVal names = Decoder extractOut expectedOut
+decodeMapWith :: Dhall.Decoder v -> [T.Text] -> Dhall.Decoder (Map v)
+decodeMapWith decodeVal names = Dhall.Decoder extractOut expectedOut
  where
   extractOut (RecordLit kvs) =
     Map
       .   Dhall.Map.toMap
-      <$> traverse (extract decodeVal . Dhall.Core.recordFieldValue) kvs
+      <$> traverse (Dhall.extract decodeVal . Dhall.Core.recordFieldValue) kvs
   extractOut expr = Dhall.typeError expectedOut expr
   expectedOut =
     (Record . Dhall.Map.fromList)
       .   (\v -> Prelude.map (, v) names)
       .   Dhall.Core.makeRecordField
-      <$> expected decodeVal
+      <$> Dhall.expected decodeVal
 
-decodeMap :: (Dhall.FromDhall v) => [Text] -> Decoder (Map v)
+decodeMap :: (Dhall.FromDhall v) => [T.Text] -> Dhall.Decoder (Map v)
 decodeMap = decodeMapWith Dhall.auto
 
-mapInput :: (Dhall.FromDhall v) => [Text] -> Text -> IO (Map v)
+mapInput :: (Dhall.FromDhall v) => [T.Text] -> T.Text -> IO (Map v)
 mapInput names = Dhall.input (decodeMap names)
 
 -- Alternatively, we can pass an Expr which decodes from the appropriate record type
@@ -159,25 +159,25 @@ mapInput names = Dhall.input (decodeMap names)
 -- TODO failure if schema is not record. right now this is basically OK because
 -- extractOut implicitly requires this, but the dhall error will be confusing.
 -- NOTE: this is awkward because we'd like to grab decodeVal from the schema
-decodeMapSchema :: Decoder v -> DhallExpr -> Decoder (Map v)
-decodeMapSchema decodeVal schema = Decoder extractOut expectedOut
+decodeMapSchema :: Dhall.Decoder v -> DhallExpr -> Dhall.Decoder (Map v)
+decodeMapSchema decodeVal schema = Dhall.Decoder extractOut expectedOut
  where
   extractOut (RecordLit kvs) =
     Map
       .   Dhall.Map.toMap
-      <$> traverse (extract decodeVal . Dhall.Core.recordFieldValue) kvs
+      <$> traverse (Dhall.extract decodeVal . Dhall.Core.recordFieldValue) kvs
   extractOut expr = Dhall.typeError expectedOut expr
   expectedOut = pure schema
 
 -- TODO for v implementing FromDhall
-decodeMapSchemaAuto :: (Dhall.FromDhall v) => DhallExpr -> Decoder (Map v)
+decodeMapSchemaAuto :: (Dhall.FromDhall v) => DhallExpr -> Dhall.Decoder (Map v)
 decodeMapSchemaAuto = decodeMapSchema Dhall.auto
 
 -- TODO Input/Output naming confusion
 -- NOTE this still requires all inputs to be the same, so the schema must
 -- follow that rule. yuck. this is intended to be used with a type v that wraps
 -- various standard types. See the TestVal type.
-mapInputSchema :: (Dhall.FromDhall v) => DhallExpr -> Text -> IO (Map v)
+mapInputSchema :: (Dhall.FromDhall v) => DhallExpr -> T.Text -> IO (Map v)
 mapInputSchema = Dhall.input . decodeMapSchema Dhall.auto
 
   {- Map v Encoders
@@ -191,7 +191,7 @@ mapInputSchema = Dhall.input . decodeMapSchema Dhall.auto
       -}
 
 -- NOTE the names list determines the names of the Record output type
-injectMap :: (Dhall.ToDhall v) => [Text] -> Dhall.Encoder (Map v)
+injectMap :: (Dhall.ToDhall v) => [T.Text] -> Dhall.Encoder (Map v)
 injectMap names = Dhall.Encoder embedOut declaredOut
  where
   embedOut x = Dhall.Core.RecordLit $ embedRecord x
@@ -201,7 +201,7 @@ injectMap names = Dhall.Encoder embedOut declaredOut
       .   Dhall.declared
       <$> encodeTypeRecord
   -- TODO this mess of conversions is because Dhall.Map.Map is not applicative
-  embedRecord (Map x) = Dhall.Map.fromList $ toRecordFieldMap <*> SMap.toList x
+  embedRecord x = Dhall.Map.fromList $ toRecordFieldMap <*> toList x
   -- NOTE intentionally ignoring the input Text labels here
   --toRecordFieldMap :: [(Text, v) -> (Text, Dhall.Core.RecordField Src Void)]
   toRecordFieldMap = map
@@ -210,11 +210,11 @@ injectMap names = Dhall.Encoder embedOut declaredOut
   encodeTypeRecord     = Dhall.Map.fromList encodeTypeRecordList
   encodeTypeRecordList = encodeTypeMapList names
 
-encodeTypeMapList :: (Dhall.ToDhall v) => [Text] -> [(Text, Dhall.Encoder v)]
+encodeTypeMapList :: (Dhall.ToDhall v) => [T.Text] -> [(T.Text, Dhall.Encoder v)]
 encodeTypeMapList = map (, Dhall.inject)
 
 encodeTypeMap
-  :: (Dhall.ToDhall v) => [Text] -> Dhall.Map.Map Text (Dhall.Encoder v)
+  :: (Dhall.ToDhall v) => [T.Text] -> Dhall.Map.Map T.Text (Dhall.Encoder v)
 encodeTypeMap = Dhall.Map.fromList . encodeTypeMapList
 
 -- NOTE: we really do want to fail if the schema is not a Record. Else we might
@@ -223,7 +223,7 @@ encodeTypeMap = Dhall.Map.fromList . encodeTypeMapList
 tryInjectMapSchema
   :: (Dhall.ToDhall v)
   => Dhall.Core.Expr Src Void
-  -> Either Text (Dhall.Encoder (Map v))
+  -> Either T.Text (Dhall.Encoder (Map v))
 tryInjectMapSchema (Dhall.Core.Record m) = Right
   $ Dhall.Encoder embedOut (Dhall.Core.Record m)
  where

@@ -13,12 +13,14 @@ module Hygiea.Internal.Event where
 import           Control.Applicative
 import           Data.Text                      ( Text )
 import           GHC.Generics                   ( Generic )
+import           Hygiea.Internal.Atomic
+import           Hygiea.Map
 import           IntervalAlgebra                ( Interval
                                                 , PairedInterval
                                                 , makePairedInterval
                                                 , parseInterval
                                                 )
-import           Hygiea.Map
+import           Prelude                 hiding ( lookup )
 import           Witch.From
 import           Witch.TryFrom
 import           Witch.TryFromException
@@ -56,8 +58,8 @@ instance (Atomizable d, Atomizable c) => TryFrom TestMap (Context d c) where
                          (joinMaybeEither err concepts)
                          (joinMaybeEither err facts)
    where
-    concepts = tryFrom @TestAtomic @d <$> Map.Internal.lookup "concepts" input
-    facts    = tryFrom @TestAtomic @c <$> Map.Internal.lookup "facts" input
+    concepts = tryFrom @TestAtomic @d <$> lookup "concepts" input
+    facts    = tryFrom @TestAtomic @c <$> lookup "facts" input
     err      = TryFromException input Nothing
 
 instance (Show a, Ord a, Atomizable a, TryFrom TestMap c) => TryFrom TestMap (PairedInterval c a) where
@@ -66,8 +68,8 @@ instance (Show a, Ord a, Atomizable a, TryFrom TestMap c) => TryFrom TestMap (Pa
                          (joinEitherOuter err interval)
    where
     context = tryFrom input
-    b       = tryFrom @TestAtomic @a <$> Map.Internal.lookup "begin" input
-    e       = tryFrom @TestAtomic @a <$> Map.Internal.lookup "end" input
+    b       = tryFrom @TestAtomic @a <$> lookup "begin" input
+    e       = tryFrom @TestAtomic @a <$> lookup "end" input
     interval =
       liftA2 parseInterval (joinMaybeEither err b) (joinMaybeEither err e)
     err = TryFromException input Nothing
@@ -79,8 +81,8 @@ instance (Show a, Ord a, Atomizable d, Atomizable c, Atomizable a) => TryFrom Te
                                      (joinEitherOuter err interval)
    where
     context = tryFrom input
-    b       = tryFrom @TestAtomic @a <$> Map.Internal.lookup "begin" input
-    e       = tryFrom @TestAtomic @a <$> Map.Internal.lookup "end" input
+    b       = tryFrom @TestAtomic @a <$> lookup "begin" input
+    e       = tryFrom @TestAtomic @a <$> lookup "end" input
     interval =
       liftA2 parseInterval (joinMaybeEither err b) (joinMaybeEither err e)
     err = TryFromException input Nothing
@@ -91,7 +93,7 @@ instance (Show a, Ord a, Atomizable d, Atomizable a, TryFrom TestMap c) => TryFr
                          (joinMaybeEither err reason)
                          (mapLeft err time)
    where
-    reason = tryFrom @TestAtomic <$> Map.Internal.lookup "reason" input
+    reason = tryFrom @TestAtomic <$> lookup "reason" input
     time   = tryFrom input
     err    = TryFromException input Nothing
 
@@ -126,8 +128,8 @@ instance TryFrom Input (Context InputVal InputVal) where
                          (maybeRight err concepts)
                          (maybeRight err facts)
    where
-    concepts = Map.Internal.lookup "concepts" input
-    facts    = Map.Internal.lookup "facts" input
+    concepts = lookup "concepts" input
+    facts    = lookup "facts" input
     err      = TryFromException input Nothing
 
 instance (Show d, Show c, Atomizable d, Atomizable c) => From (Context d c) (Context InputVal InputVal) where
@@ -153,8 +155,8 @@ instance (Show d, Show c, Atomizable d, Atomizable c) => TryFrom (Context d c) (
 --  tryFrom input = MkEvent <$> liftA2 makePairedInterval (convert context) (maybeRight err interval)
 --    where context = tryFrom input
 --          interval = do 
---            b <- Map.Internal.lookup "begin" input
---            e <- Map.Internal.lookup "end" input
+--            b <- lookup "begin" input
+--            e <- lookup "end" input
 --            case parseInterval b e of
 --              Right ii -> Just ii
 --              Left _ -> Nothing

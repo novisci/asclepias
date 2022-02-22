@@ -77,6 +77,7 @@ type TestMap = Map TestAtomic
 fromList :: [(Text, v)] -> Map v
 fromList = from . SMap.fromList
 
+-- | Convert @Map Text @v to [(Text, @v)]
 toList :: Map v -> [(Text, v)]
 toList = SMap.toList . from
 

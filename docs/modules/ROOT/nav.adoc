@@ -1,4 +1,3 @@
-.Asclepias
 * xref:introduction.adoc[]
 ** xref:motivation.adoc[]
 ** xref:benefits.adoc[]
@@ -14,6 +13,3 @@
 ** xref:applications:cohort-collector.adoc[] 
 * xref:dev-guide:index.adoc[]
 * xref:theory/index.adoc[]
-
-.Event Data Schemas
-* xref:event-data-schemas:ROOT:page$index.adoc[]

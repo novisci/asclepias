@@ -4,15 +4,22 @@
 
 How to define cohorts...
 
-== Create a cohort from a CSV file
+[Tip]
+For more explanation on the theory behind cohorts,
+see xref::theory/theory-of-cohorts.adoc[].
+
+== Specify a single, basic cohort
 
 #TODO#
-
 
 == Create a cohort with multiple indices
 
 #TODO#
 
 == Collect attrition info across partitions
+
+#TODO#
+
+== Create a cohort application and process in AWS batch
 
 #TODO#

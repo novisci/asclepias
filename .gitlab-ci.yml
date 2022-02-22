@@ -52,6 +52,7 @@ trigger-static-build:
 
 # Trigger the downstream noviverse site to build
 trigger-doc-site:
+  stage: build
   trigger: nsStat/noviverse-site
 
 # # Report the test coverage as described in the following links. If the pipeline

@@ -1,11 +1,12 @@
-:toc:
+:toc: right
 :navtitle: Get started
+
 = Getting Started 
 
-== Installing toolchain
+== Installing the toolchain
 
 #TODO#
 
-== Create a trivial cohort
+== Next Steps 
 
 #TODO#

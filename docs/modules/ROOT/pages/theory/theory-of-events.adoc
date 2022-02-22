@@ -1,6 +1,6 @@
 :navtitle: Event Data Theory
 :description: Explanation and details of Event data theory
-:toc:
+:toc: right
 
 = Event Data Theory
 

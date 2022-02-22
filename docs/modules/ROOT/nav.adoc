@@ -11,8 +11,9 @@
 ** xref:cohorts:templates.adoc[]
 * Applications
 ** xref:applications:cohort-collector.adoc[] 
-* xref:dev-guide:index.adoc[]
 * xref:theory/index.adoc[]
 ** xref:theory/theory-of-cohorts.adoc[]
 ** xref:theory/theory-of-features.adoc[]
 ** xref:theory/theory-of-events.adoc[]
+* xref:dev-guide:index.adoc[]
+* xref:bibliography.adoc[]

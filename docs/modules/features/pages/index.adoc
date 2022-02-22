@@ -3,4 +3,8 @@
 
 = Defining Features in Ascelpias
 
-How to guides...
+#TODO#
+
+[TIP]
+For more explanation on the theory behind features,
+see xref:ROOT:page$theory/theory-of-features.adoc[].

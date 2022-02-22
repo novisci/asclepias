@@ -1,6 +1,6 @@
 :navtitle: Theory of Features 
 :description: Explanation and details of Feature module design
-:toc:
+:toc: right
 
 = Design of Features Module
 

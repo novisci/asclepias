@@ -1,5 +1,5 @@
 :description: This file details how to develop in the asclepias project.
-:toc: 
+:toc: right 
 :source-highlighter: highlightjs
 :navtitle: Developer Guide
 

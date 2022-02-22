@@ -1,6 +1,6 @@
 site:
-  title: Asclepias
-  start_page: asclepias::index.adoc
+  title: NoviSci Documentation Hub 
+  start_page: asclepias::introduction.adoc
 content:
   sources:
   # - url: https://gitlab.com/antora/demo/demo-component-a.git
@@ -10,6 +10,9 @@ content:
   #   start_path: docs
   - url: ../
     start_path: docs
+  - url: https://gitlab+deploy-token-antora-build:gygX8aiMLf6STgwAS-7m@gitlab.novisci.com/nsStat/event-data-model.git
+    start_path: docs
+    branches: [v2.0]
 ui:
   bundle:
     url: https://gitlab.com/antora/antora-ui-default/-/jobs/artifacts/HEAD/raw/build/ui-bundle.zip?job=bundle-stable

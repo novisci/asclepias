@@ -50,6 +50,10 @@ trigger-static-build:
     include: ci/ci-static-build.yml
     strategy: depend
 
+# Trigger the downstream noviverse site to build
+trigger-doc-site:
+  trigger: nsStat/noviverse-site
+
 # # Report the test coverage as described in the following links. If the pipeline
 # # succeeds, the coverage is shown in the merge request widget and in the jobs
 # # table. The coverage is expected to written as an artifact to
@@ -63,28 +67,3 @@ trigger-static-build:
 #   script:
 #     - cat coverage-report.txt
 
-build-documentation-site: # EXPERIMENTAL!
-  image : antora/antora:3.0.1
-  stage : build
-  script: 
-     - cd docs-site
-     - npx antora --fetch antora-playbook.yml
-  artifacts: 
-     paths: 
-       - docs-site/build/site
-
-upload-documentation-site: # EXPERIMENTAL!
-# TODO: update to nsbuild once image is available
-  image: registry.novisci.com/nsstat/statocker/aws 
-  stage : deploy
-  needs:
-    - job: build-documentation-site
-      artifacts: true
-  variables:
-    DOCSPATH: doc-sandbox
-  script: 
-    - | 
-      aws s3 sync \
-        docs-site/build/site \
-        s3://$(< ci/downloads_path)"$DOCSPATH" \
-        --acl public-read

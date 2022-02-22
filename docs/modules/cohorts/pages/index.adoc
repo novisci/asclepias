@@ -6,7 +6,7 @@ How to define cohorts...
 
 [Tip]
 For more explanation on the theory behind cohorts,
-see xref:theory/theory-of-cohorts.adoc[].
+see xref:ROOT:page$theory/theory-of-cohorts.adoc[].
 
 == Specify a single, basic cohort
 

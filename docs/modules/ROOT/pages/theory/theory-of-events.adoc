@@ -1,0 +1,7 @@
+:navtitle: Event Data Theory
+:description: Explanation and details of Event data theory
+:toc:
+
+= Event Data Theory
+
+#TODO#

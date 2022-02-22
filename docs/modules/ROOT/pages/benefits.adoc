@@ -4,7 +4,8 @@
 = Benefits 
 
 Asclepias is a domain specific language and a collection of tools
-for defining cohorts which:
+for defining cohorts.
+Benefits of asclepias include:
 
 Formally defines a cohort:: 
 #TODO: What is a cohort?#

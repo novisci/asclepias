@@ -8,12 +8,14 @@ Description : An internal module for testing event data theory functions
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE DeriveDataTypeable #-}
 module EventDataTheory.TheoryTest
   ( theoryTests
   ) where
 
 import           Data.Aeson
 import qualified Data.ByteString.Lazy          as B
+import           Data.Data
 import           Data.Functor.Contravariant     ( Predicate(..) )
 import           Data.List                      ( sort )
 import           Data.Maybe                     ( isNothing )
@@ -23,9 +25,7 @@ import           Data.Time                      ( Day
                                                 )
 import           EventDataTheory.Core
 import           EventDataTheory.EventLines
-import           EventDataTheory.Test           ( eventDecodeFailTests
-                                                , eventDecodeTests
-                                                )
+import           EventDataTheory.Test
 import           EventDataTheory.Utilities
 import           GHC.Generics                   ( Generic )
 import           GHC.Num                        ( Natural )
@@ -39,9 +39,7 @@ import           Test.Tasty                     ( TestTree
                                                 , defaultMain
                                                 , testGroup
                                                 )
-import           Test.Tasty.HUnit               ( (@?=)
-                                                , testCase
-                                                )
+import           Test.Tasty.HUnit
 import           Witch                          ( from
                                                 , into
                                                 )
@@ -53,7 +51,7 @@ data SillySchema =
   | B Text
   | C
   | D
-  deriving (Show, Eq, Generic)
+  deriving (Show, Eq, Generic, Data)
 
 instance FromJSON SillySchema where
   parseJSON = genericParseJSON
@@ -67,6 +65,10 @@ instance FromJSON SillySchema where
 type SillyEvent1 a = Event SillySchema Text a
 {- end::exampleEvent[] -}
 
+instance ToJSON SillySchema where
+  toJSON = genericToJSON defaultOptions { sumEncoding = UntaggedValue }
+
+
 -- | Just a dummy type to test non-text Concepts
 data SillyConcepts = Mouse | Giraffe | Hornbill
   deriving (Show, Eq, Ord, Generic)
@@ -76,19 +78,13 @@ instance FromJSON SillyConcepts
 type SillyEvent2 a = Event SillySchema SillyConcepts a
 
 c1 :: Context SillySchema Text
-c1 = MkContext { getConcepts = into (["this", "that"] :: [Text])
-               , getFacts    = A 1
-               , getSource   = Nothing
-               }
+c1 = context (into (["this", "that"] :: [Text])) (A 1) Nothing
 
 e1 :: SillyEvent1 Int
 e1 = event (beginerval 2 1) c1
 
 c2 :: Context SillySchema Text
-c2 = MkContext { getConcepts = into (["this", "another"] :: [Text])
-               , getFacts    = A 1
-               , getSource   = Nothing
-               }
+c2 = context (into (["this", "another"] :: [Text])) (A 1) Nothing
 
 e2 :: SillyEvent1 Int
 e2 = event (beginerval 4 3) c2
@@ -185,6 +181,16 @@ decodeSillyTests1 :: IO TestTree
 decodeSillyTests1 =
   eventDecodeTests @SillySchema @Text @Day "test/events-day-text-good"
 
+-- | Check that files in test/events-day-text-good successfully parse
+roundtripSillyTests1 :: IO TestTree
+roundtripSillyTests1 =
+  eventLineRoundTripTests @SillySchema @Text @Day "test/events-day-text-good"
+
+-- | Check that files in test/events-day-text-good successfully parse
+modifySillyTests1 :: IO TestTree
+modifySillyTests1 =
+  eventLineModifyTests @SillySchema @Text @Day "test/events-day-text-good"
+
 -- | Check that files in test/events-day-text-bad successfully fail
 decodeSillyFailTests1 :: IO TestTree
 decodeSillyFailTests1 =
@@ -238,11 +244,11 @@ testOutput =
     ]
   , [ ( from @Text "abc"
       , event (beginerval 1 (fromGregorian 2020 1 1))
-              (MkContext (into ["someThing" :: Text]) (A 1) Nothing)
+              (context (into ["someThing" :: Text]) (A 1) Nothing)
       )
     , ( from @Text "abc"
       , event (beginerval 2 (fromGregorian 2020 1 5))
-              (MkContext (into ["someThing" :: Text]) C Nothing)
+              (context (into ["someThing" :: Text]) C Nothing)
       )
     ]
   )
@@ -251,9 +257,48 @@ parserUnitTests :: TestTree
 parserUnitTests = testGroup
   "Unit tests of EventLines parsers"
   [ testCase "with valid inputs"
-    $   parseEventLinesL @SillySchema @Text @Day testInput
+    $   parseEventLinesL @SillySchema @Text @Day defaultParseEventLineOption
+                                                 testInput
     @?= testOutput
   ]
+
+-- | Unit tests on Core utilities
+singleEventGoodIn :: B.ByteString
+singleEventGoodIn =
+  "[\"abc\",\"2020-01-01\",\"2020-01-02\",\"A\",\
+      \[],\
+      \{\"domain\":\"A\",\
+      \ \"patient_id\":\"abc\",\
+      \ \"facts\":1,\
+      \ \"time\":{\"begin\":\"2020-01-01\",\"end\":\"2020-01-01\"}}]"
+
+singleEventGoodOut :: B.ByteString
+singleEventGoodOut =
+  "[\"abc\",\"2020-01-01\",\"2020-01-02\",\"A\",\
+      \[\"bar\",\"foo\"],\
+      \{\"domain\":\"A\",\
+      \\"facts\":1,\
+      \\"patient_id\":\"abc\",\
+      \\"time\":{\"begin\":\"2020-01-01\",\"end\":\"2020-01-01\"}}]"
+
+testAddConceptViaEventLine :: IO ()
+testAddConceptViaEventLine =
+  let x = modifyEventLineWithContext @SillySchema @SillySchema @Text @Text @Day
+        defaultParseEventLineOption
+        (liftToContextFunction $ addConcepts ["foo", "bar" :: Text])
+        singleEventGoodIn
+  in  case x of
+        Left  s -> assertFailure s
+        Right e -> encode e @?= singleEventGoodOut
+
+-- | Unit tests on utilities
+coreUtilitiesUnitTests :: TestTree
+coreUtilitiesUnitTests = testGroup
+  "Unit tests on Core utilities"
+  [ testCase "check that concepts are added as expected"
+             testAddConceptViaEventLine
+  ]
+
 
 -- | Unit tests on utilities
 utilitiesUnitTests :: TestTree
@@ -282,6 +327,9 @@ theoryTests = defaultMain . testGroup "Event Theory tests" =<< sequenceA
   , decodeSillyTests2
   , decodeSillyFailTests1
   , decodeSillyFailTests2
+  , roundtripSillyTests1
+  , modifySillyTests1
+  , pure coreUtilitiesUnitTests
   , pure eventIntervalUnitTests
   , pure hasConceptUnitTests
   , pure eventPredicateUnitTests

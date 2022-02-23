@@ -44,6 +44,7 @@ import           Features.Core                  ( Define(..)
                                                 )
 import           Test.Tasty
 import           Test.Tasty.HUnit
+import           Type.Reflection                ( Typeable )
 
 {-
   a just few utilities for constructing intervals/events
@@ -52,19 +53,21 @@ readIntervalSafe :: (Integral b, IntervalSizeable a b) => (a, a) -> Interval a
 readIntervalSafe (b, e) = beginerval (diff e b) b
 
 makeEnrollmentEvent
-  :: (Integral b, IntervalSizeable a b) => (a, a) -> Event ClaimsSchema Text a
+  :: (Integral b, IntervalSizeable a b, Typeable a, Show a)
+  => (a, a)
+  -> Event ClaimsSchema Text a
 makeEnrollmentEvent intrvl = event
   (readIntervalSafe intrvl)
-  (MkContext mempty (Enrollment emptyEnrollmentFact) Nothing)
+  (context mempty (Enrollment emptyEnrollmentFact) Nothing)
 
 makeEventWithConcepts
-  :: (Integral b, IntervalSizeable a b)
+  :: (Integral b, IntervalSizeable a b, Typeable a, Show a)
   => [Text]
   -> (a, a)
   -> Event ClaimsSchema Text a
 makeEventWithConcepts cpts intrvl = event
   (readIntervalSafe intrvl)
-  (MkContext (packConcepts cpts) (Enrollment emptyEnrollmentFact) Nothing)
+  (context (packConcepts cpts) (Enrollment emptyEnrollmentFact) Nothing)
 
 {-
   types/functions for creating test cases and evaluating them

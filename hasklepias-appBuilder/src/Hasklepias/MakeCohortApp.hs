@@ -1,5 +1,5 @@
 {-|
-Module      : Hasklepias.MakeApp
+Module      : Hasklepias.MakeCohortApp
 Description : Functions for creating a cohort application
 Copyright   : (c) NoviSci, Inc 2020
 License     : BSD3
@@ -117,12 +117,14 @@ makeCohortBuilder
      , Eq d
      , Generic d
      , FromJSON d
+     , Typeable d
      , Show c
      , Eq c
      , Ord c
      , Typeable c
      , FromJSON c
      , FromJSON a
+     , Typeable a
      , Show a
      , IntervalSizeable a b
      , ToJSON d0
@@ -135,7 +137,7 @@ makeCohortBuilder
   -> m ([LineParseError], CohortMap d0 i)
 makeCohortBuilder opts specs x = do
   -- TODO: clean this up
-  let dat          = parseEventLinesL x
+  let dat = parseEventLinesL defaultParseEventLineOption x
   let err          = fst dat
   let doEvaluation = makeCohortSpecsEvaluator opts specs
   let pop          = mapIntoPop $ snd dat
@@ -175,12 +177,14 @@ makeCohortApp
      , Eq d
      , Generic d
      , FromJSON d
+     , Typeable d
      , Show c
      , Eq c
      , Ord c
      , Typeable c
      , FromJSON c
      , FromJSON a
+     , Typeable a
      , Show a
      , IntervalSizeable a b
      , ToJSON d0

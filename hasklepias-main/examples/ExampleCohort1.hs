@@ -323,7 +323,7 @@ evalCohorts = makeCohortSpecsEvaluator defaultCohortEvalOptions cohortSpecs
 -------------------------------------------------------------------------------}
 m :: Year -> MonthOfYear -> Int -> Integer -> [Text] -> ClaimsSchema -> Event ClaimsSchema Text Day
 m y m d dur c dmn = event ctx itv where
-  itv = MkContext (packConcepts c) dmn Nothing
+  itv = context (packConcepts c) dmn Nothing
   ctx = beginerval dur (fromGregorian y m d)
 
 testData1 :: [Event ClaimsSchema Text Day]
@@ -413,9 +413,11 @@ expectedFeatures1 = map
     )
   ]
 
-expectedObsUnita :: [ObsUnit ClaimsSchema Featureset]
+expectedObsUnita :: [ObsUnit Featureset Int]
 expectedObsUnita =
-  zipWith from (replicate 5 (makeObsID 1 "a")) expectedFeatures1
+  map from pairs where
+  pairs = zip (replicate 5 (makeObsID (1 :: Int) ("a" :: Text))) expectedFeatures1
+
 
 makeExpectedCohort
   :: AttritionInfo -> [ObsUnit ClaimsSchema Featureset] -> Cohort ClaimsSchema Featureset
@@ -424,7 +426,7 @@ makeExpectedCohort a x = MkCohort (a, into x)
 -- mkAl :: (CohortStatus, Natural) -> AttritionLevel
 -- mkAl = uncurry MkAttritionLevel
 
-expectedCohorts :: [Cohort ClaimsSchema Featureset]
+expectedCohorts :: [Cohort Featureset Int]
 expectedCohorts = zipWith
   (curry MkCohort)
   [ makeTestAttritionInfo 2 2
@@ -502,7 +504,7 @@ expectedCohorts = zipWith
   ]
   (fmap into ([[]] ++ transpose [expectedObsUnita] ++ [[], [], [], []]))
 
-expectedCohortSet :: CohortMap ClaimsSchema Featureset
+expectedCohortSet :: CohortMap Featureset Int
 expectedCohortSet =
   into $ mapFromList $ zip (fmap (pack . show) indices) expectedCohorts
 

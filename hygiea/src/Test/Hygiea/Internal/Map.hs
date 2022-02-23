@@ -14,7 +14,7 @@ Maintainer  : bbrown@targetrwe.com
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE GADTs #-}
 
-module Hygiea.Internal.Map where
+module Test.Hygiea.Internal.Map where
 
 import qualified Data.Map.Strict               as SMap
 import           Data.Text                      ( Text
@@ -36,7 +36,7 @@ import           Dhall.Marshal.Encode           ( Encoder(..)
                                                 )
 import           Dhall.Src                      ( Src )
 import           GHC.Natural                    ( Natural )
-import           Hygiea.Internal.Atomic
+import           Test.Hygiea.Internal.Atomic
 import           Witch.From
 import           Witch.TryFrom
 import           Witch.TryFromException
@@ -76,15 +76,12 @@ instance From (Map v) [(Text, v)] where
 -- Data.Map.Strict.Map with Text keys and TestAtomic values.
 type TestMap = Map TestAtomic
 
--- | Construct a @Map from a list of tuples
 fromList :: [(Text, v)] -> Map v
 fromList = from . SMap.fromList
 
--- | Convert @Map Text @v to [(Text, @v)]
 toList :: Map v -> [(Text, v)]
 toList = SMap.toList . from
 
--- | Check for key existence in a @Map
 lookup :: Text -> Map v -> Maybe v
 lookup k (Map x) = SMap.lookup k x
 

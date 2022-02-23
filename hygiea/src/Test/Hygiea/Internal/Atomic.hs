@@ -10,7 +10,7 @@ Maintainer  : bbrown@targetrwe.com
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module Hygiea.Internal.Atomic where
+module Test.Hygiea.Internal.Atomic where
 
 import           Data.Text                      ( Text )
 import qualified Dhall

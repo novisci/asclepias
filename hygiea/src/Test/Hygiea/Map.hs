@@ -1,5 +1,5 @@
 {-# LANGUAGE NoImplicitPrelude #-}
-module Hygiea.Map
+module Test.Hygiea.Map
   ( Map(..)
   , TestMap(..)
   , lookup
@@ -9,11 +9,11 @@ module Hygiea.Map
   , TestAtomic
   ) where
 
-import           Hygiea.Internal.Map            ( Map(..)
+import           Test.Hygiea.Internal.Map       ( Map(..)
                                                 , TestMap(..)
                                                 , fromList
                                                 , lookup
                                                 , toList
                                                 )
 
-import           Hygiea.Internal.Atomic         ( TestAtomic )
+import           Test.Hygiea.Internal.Atomic    ( TestAtomic )

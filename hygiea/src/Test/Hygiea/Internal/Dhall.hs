@@ -1,6 +1,6 @@
 {-# LANGUAGE TupleSections #-}
 {-# LANGUAGE OverloadedStrings #-}
-module Hygiea.Internal.Dhall where
+module Test.Hygiea.Internal.Dhall where
 
 import           Data.Csv                       ( NamedRecord )
 import qualified Data.Text as T
@@ -18,8 +18,8 @@ import qualified Dhall.Map
 import qualified Dhall.Marshal.Decode          as Decode
 import           Dhall.Src
 import qualified GHC.Exts                       ( IsList(..) )
-import           Hygiea.Internal.Atomic
-import           Hygiea.Internal.Map
+import           Test.Hygiea.Internal.Atomic
+import           Test.Hygiea.Internal.Map
 
    {- UTILS -}
 type DhallExpr = Dhall.Core.Expr Src Void

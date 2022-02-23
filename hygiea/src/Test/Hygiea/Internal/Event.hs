@@ -8,13 +8,13 @@
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
-module Hygiea.Internal.Event where
+module Test.Hygiea.Internal.Event where
 
 import           Control.Applicative
 import           Data.Text                      ( Text )
 import           GHC.Generics                   ( Generic )
-import           Hygiea.Internal.Atomic
-import           Hygiea.Map
+import           Test.Hygiea.Internal.Atomic
+import           Test.Hygiea.Map
 import           IntervalAlgebra                ( Interval
                                                 , PairedInterval
                                                 , makePairedInterval

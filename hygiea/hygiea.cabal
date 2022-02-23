@@ -25,20 +25,20 @@ extra-source-files:
 
 library
     exposed-modules:  
-        Hygiea.Map
-        , Hygiea.Test
-        , Hygiea.EventData
+        Test.Hygiea.Map
+        , Test.Hygiea.ToOutput
+        , Test.Hygiea.EventData
         -- TODO don't expose these
-        , Hygiea.Internal.Dhall
-        , Hygiea.Internal.Csv
+        , Test.Hygiea.Internal.Dhall
+        , Test.Hygiea.Internal.Csv
 
     -- Modules included in this library but not exported.
     other-modules: 
-        Hygiea.Internal.Map
+        Test.Hygiea.Internal.Map
         --, Hygiea.Internal.Dhall
-        , Hygiea.Internal.Event
+        , Test.Hygiea.Internal.Event
         --, Hygiea.Internal.Csv
-        , Hygiea.Internal.Atomic
+        , Test.Hygiea.Internal.Atomic
 
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:

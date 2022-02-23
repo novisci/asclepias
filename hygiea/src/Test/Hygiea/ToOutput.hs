@@ -7,13 +7,13 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE AllowAmbiguousTypes #-}
 
-module Hygiea.Test
+module Test.Hygiea.ToOutput
   ( Testable(..)
   , testIt
   , ToOutput(..)
   ) where
 
-import           Hygiea.Map
+import           Test.Hygiea.Map
 import           Witch.From
 import           Witch.TryFrom
 

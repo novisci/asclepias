@@ -1,5 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
-module Hygiea.Internal.Csv where
+module Test.Hygiea.Internal.Csv where
 
 import           Data.Csv                       ( NamedRecord )
 import qualified Data.Text as T
@@ -17,9 +17,9 @@ import qualified Dhall.Map
 import qualified Dhall.Marshal.Decode          as Decode
 import           Dhall.Src
 import qualified GHC.Exts                       ( IsList(..) )
-import           Hygiea.Internal.Atomic
-import           Hygiea.Internal.Map
-import           Hygiea.Internal.Dhall
+import           Test.Hygiea.Internal.Atomic
+import           Test.Hygiea.Internal.Map
+import           Test.Hygiea.Internal.Dhall
 
 -- dhallFromCsv converts the list of NamedRecord to a ListLit Nothing (Seq (Expr ...))
 -- Convert ListLit Nothing (Seq a) to [a] by converting Seq to list

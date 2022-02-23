@@ -3,11 +3,11 @@
 
 module Main where
 
-import qualified Hygiea.Test as Test
+import qualified Test.Hygiea.ToOutput as TO
 --import Examples.Simple
-import Hygiea.Map
-import Hygiea.Internal.Dhall
-import Hygiea.Internal.Csv
+import Test.Hygiea.Map
+import Test.Hygiea.Internal.Dhall
+import Test.Hygiea.Internal.Csv
 
 main :: IO ()
 main = do
@@ -27,6 +27,7 @@ main = do
   let inputDecode = decodeMapSchemaAuto @TestAtomic inputList
   print $ tryParseRecords inputDecode inputCsv
 
+-- TODO add in tests from below
     {- OLD -}
   --putStrLn "Dhall expected"
   --print (dhallExpected inputDecode)

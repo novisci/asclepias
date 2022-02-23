@@ -6,13 +6,37 @@ module Test.Tasty.Hygiea where
 
 import           Data.Proxy
 import           Data.Typeable                  ( Typeable )
+import           Test.Hygiea.HygieaException
+import           Test.Hygiea.Internal.Csv
+import           Test.Hygiea.Internal.Dhall
+import           Test.Hygiea.Map
 import           Test.Hygiea.ToOutput
 import           Test.Tasty.Options             ( IsOption(..)
                                                 , OptionDescription(..)
                                                 , lookupOption
                                                 )
-import           Test.Tasty.Providers           ( IsTest(..), Result(..), testPassed, testFailed )
+import           Test.Tasty.Providers           ( IsTest(..)
+                                                , Result(..)
+                                                , testFailed
+                                                , testPassed
+                                                )
 
+import           Witch.TryFrom
+
+  {- Test constructors -}
+
+-- TODO
+
+
+  {- Internals -}
+
+-- TODO review how collections of inputs and ouputs should be processed
+
+-- | In the return type of processElems.
+data ProcessedElems input output = MkProcessedElems
+  { getInput  :: [input]
+  , getOutput :: [output]
+  }
 
 -- | Structure wrapping a @csvFile@ path, a
 -- corresponding @dhallSchema@ specifying column names
@@ -61,9 +85,55 @@ instance IsOption Framework where
   parseValue "Golden" = Just Golden
   parseValue _        = Nothing
   optionName = return "framework"
-  optionHelp = return "test framework to use, e.g. Golden or Unit"
+  optionHelp = return "test framework to use, e.g. Golden"
 
 -- TODO
 runRoutine :: Framework -> Routine -> IO Result
-runRoutine framewk (Routine input output) = case framewk of 
-                                              Golden -> return $ testPassed "" 
+runRoutine framewk (Routine input output) = case framewk of
+  Golden -> runGolden input output
+
+runGolden
+  :: forall input output
+   . (Testable input output)
+  => RoutineElem input
+  -> RoutineElem output
+  -> IO Result
+runGolden i o = do
+  procData <- processElems i o
+  -- TODO create golden files, run the conversion, run the tests
+
+  return $ testPassed ""
+
+-- | Read csv and schema, parse schema into TestMap and attempt conversion to
+-- input and output types. Fails if any step of the process returns an
+-- exception.
+processElems
+  :: forall input output
+   . (Testable input output)
+  => RoutineElem input
+  -> RoutineElem output
+  -> IO (ProcessedElems input output)
+processElems i o = do
+  -- read schema
+  -- TODO should use parseDhallFileWith and inject List around type, for Csv
+  iSchema <- parseDhallFile $ dhallSchema i
+  oSchema <- parseDhallFile $ dhallSchema o
+  -- read raw Csv
+  iCsv    <- toCsv True $ csvFile i
+  oCsv    <- toCsv True $ csvFile o
+  -- parse Csv into TestMap
+  let iDecoder = decodeMapSchemaAuto @TestAtomic iSchema
+  let iData    = tryParseRecords iDecoder iCsv
+
+  let oDecoder = decodeMapSchemaAuto @TestAtomic oSchema
+  let oData    = tryParseRecords iDecoder oCsv
+  
+  -- NOTE input element failure always takes precedent
+  case (iData, oData) of
+    (Right ii, Right oo) ->
+      case (tryFrom @[TestMap] ii, tryFrom @[TestMap] oo) of
+        (Right iOut, Right oOut) -> return $ MkProcessedElems iOut oOut
+        (Right _   , Left err  ) -> fail $ show $ ConversionException err
+        (Left  err , _         ) -> fail $ show $ ConversionException err
+    (Right _  , Left err) -> fail $ show err
+    (Left  err, _       ) -> fail $ show err

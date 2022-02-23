@@ -13,9 +13,12 @@ Maintainer  : bbrown@targetrwe.com
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE GADTs #-}
+{-# LANGUAGE TypeApplications #-}
 
 module Test.Hygiea.Internal.Map where
 
+import           Data.Bifunctor                 ( first )
+import           Data.Coerce                    ( coerce )
 import qualified Data.Map.Strict               as SMap
 import           Data.Text                      ( Text
                                                 , pack
@@ -69,6 +72,10 @@ instance From [(Text, v)] (Map v) where
   from = fromList
 instance From (Map v) [(Text, v)] where
   from = toList
+
+instance (Traversable t, TryFrom (Map v) a) => TryFrom (t (Map v)) (t a) where
+  tryFrom x =
+    first (\(TryFromException _ e) -> TryFromException x e) $ traverse (tryFrom @(Map v) @a) x
 
   {- UTILS and SYNONYMS -}
 -- | The primary flat structure housing values to be tested and providing the

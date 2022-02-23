@@ -17,33 +17,35 @@ module ExampleEvents
   ) where
 
 import           Hasklepias
+-- import EventData (ClaimsSchema)
+import           Type.Reflection                ( Typeable )
 
-exampleEvents1 :: Events Int
+exampleEvents1 :: [Event ClaimsSchema Text Int]
 exampleEvents1 = toEvents exampleEvents1Data
 
-exampleEvents2 :: Events Int
+exampleEvents2 :: [Event ClaimsSchema Text Int]
 exampleEvents2 = toEvents exampleEvents2Data
 
-exampleEvents3 :: Events Int
+exampleEvents3 :: [Event ClaimsSchema Text Int]
 exampleEvents3 = toEvents exampleEvents3Data
 
-exampleEvents4 :: Events Int
+exampleEvents4 :: [Event ClaimsSchema Text Int]
 exampleEvents4 = toEvents exampleEvents4Data
 
-exampleSubject1 :: Subject (Events Int)
-exampleSubject1 = MkSubject ("a", exampleEvents1)
+exampleSubject1 :: Subject [Event ClaimsSchema Text Int]
+exampleSubject1 = from ("a" :: Text, exampleEvents1)
 
-exampleSubject2 :: Subject (Events Int)
-exampleSubject2 = MkSubject ("b", exampleEvents2)
+exampleSubject2 :: Subject [Event ClaimsSchema Text Int]
+exampleSubject2 = from ("b" :: Text, exampleEvents2)
 
 type EventData a = (a, a, Text)
 
-toEvent :: (IntervalSizeable a a, Show a) => EventData a -> Event a
+toEvent :: (IntervalSizeable a a, Typeable a, Show a) => EventData a -> Event ClaimsSchema Text a
 toEvent x = event
   (beginerval (t1 x) (t2 x))
-  (context (UnimplementedDomain ()) (packConcepts [t3 x]) Nothing)
+  (context (packConcepts [t3 x]) (Enrollment emptyEnrollmentFact) Nothing)  -- TODO: this used to be `UnimplementedDomain ()`, what should it be now?
 
-toEvents :: (Ord a, Show a, IntervalSizeable a a) => [EventData a] -> Events a
+toEvents :: (Ord a, Show a, IntervalSizeable a a, Typeable a) => [EventData a] -> [Event ClaimsSchema Text a]  -- TODO: change this back once the signature for `toEvent` is fixed
 toEvents = sort . map toEvent
 
 t1 :: (a, b, c) -> a

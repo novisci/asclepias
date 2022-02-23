@@ -1,0 +1,25 @@
+:toc:
+:navtitle: Define cohorts
+= Defining cohorts in asclepias
+
+How to define cohorts...
+
+[TIP]
+For more explanation on the theory behind cohorts,
+see xref:ROOT:page$theory/theory-of-cohorts.adoc[].
+
+== Specify a single, basic cohort
+
+#TODO#
+
+== Create a cohort with multiple indices
+
+#TODO#
+
+== Collect attrition info across partitions
+
+#TODO#
+
+== Create a cohort application and process in AWS batch
+
+#TODO#

@@ -18,17 +18,9 @@ include::docs/motivation.adoc[leveloffset=+2]
 
 include::docs/features.adoc[leveloffset=+2]
 
-include::docs/comparison.adoc[leveloffset=+2]
-
-== Design
-
-include::docs/roadmap.adoc[leveloffset=+2]
 
 == Tools
 
-include::cohort-collector/README.adoc[leveloffset=+2]
-
-include::docs/development.adoc[leveloffset=+1]
 
 include::ci/README.adoc[leveloffset=+2]
 

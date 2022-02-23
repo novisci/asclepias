@@ -1,7 +1,7 @@
 :description: The what, why and how of the event-data-theory
 :navtitle: Event Data Theory
 :source-highlighter: highlightjs
-:toc:
+// :toc:
 :interval-algebra-v: 1.3.0
 // TODO: update edm-path to non-sandbox URL
 :edm-path: https://docs.novisci.com/edm-sandbox/latest

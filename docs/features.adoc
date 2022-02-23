@@ -1,7 +1,0 @@
-# Features
-
-#TODO: fill this out#
-
-Type safety:: Prevents many common programming errors
-Template library:: Provides a library of many common feature definitions
-Easily extensible:: Create multiple features and/or cohorts following a common pattern

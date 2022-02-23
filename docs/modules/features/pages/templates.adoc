@@ -1,0 +1,7 @@
+:navtitle: Feature templates
+:description: Reference material for all feature templates
+:toc:
+
+= Feature Definition Templates
+
+This section includes description and usage guides for Feature definition templates.

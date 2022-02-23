@@ -1,3 +1,4 @@
+:navtitle: References
 [bibliography]
 = References
 

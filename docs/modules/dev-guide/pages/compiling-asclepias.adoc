@@ -1,7 +1,7 @@
 :description: Explains the fundamentals of compiling asclepias and its components
 :source-highlighter: highlightjs
 
-= Compiling asclepias projects
+= Compiling asclepias packages 
 
 == asclepias project organization
 
@@ -144,9 +144,9 @@ where test failure with a non-zero exit code when run.
 [source,conf]
 ----
 cabal-version:  2.2
-include::../hasklepias-main/hasklepias-main.cabal[tag=devel-docs-package-properties]
+include::dev-guide:example$hasklepias-main.cabal[tag=devel-docs-package-properties]
 
-include::../hasklepias-main/hasklepias-main.cabal[tag=devel-docs-components]
+include::dev-guide:example$hasklepias-main.cabal[tag=devel-docs-components]
 ----
 
 == Compiling asclepias packages

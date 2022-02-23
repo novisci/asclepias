@@ -28,6 +28,7 @@ library
         Test.Hygiea.Map
         , Test.Hygiea.ToOutput
         , Test.Hygiea.EventData
+        , Test.Hygiea.HygieaException
         , Test.Tasty.Hygiea
         -- TODO don't expose these
         , Test.Hygiea.Internal.Dhall

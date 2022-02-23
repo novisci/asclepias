@@ -1,1 +1,1 @@
-../../../../event-data-theory/README.adoc
+../../../../../event-data-theory/README.adoc

@@ -1,0 +1,32 @@
+:description: This file details how asclepias is versioned 
+:toc: right 
+:source-highlighter: highlightjs:
+:navtitle: Versioning
+:antora-site: https://docs.antora.org/antora/latest
+
+= Versioning asclepias
+
+Asclepias tries to follow
+https://semver.org/[semantic versioning 2.0.0].
+
+[NOTE]
+While each component package of `+asclepias+` has its own version,
+the primary version of `+asclepias+` is the version in `+hasklepias-main+`.
+That is, when we refer to the "version of `+asclepias+`",
+we mean the version number in `+hasklepias-main+`. 
+
+Starting with version `0.24.0`,
+release branches should be named by the version number starting with `v`
+and without the patch number.
+For example, `v0.24` is the release branch for the `0.24` line
+(`0.24.0`, `0.24.1`, etc).
+
+[TIP]
+The `antora-playbook.yml` file in the
+https://gitlab.novisci.com/nsStat/noviverse-site[`noviverse-site` repository]
+determines which branches of `asclepias` are used for the documentation site.
+
+
+[CAUTION]
+Until `+asclepias+` version `1.0` is released,
+no guarantees of backwards-compatability are made. 

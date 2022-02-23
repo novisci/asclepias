@@ -1,0 +1,17 @@
+:navtitle: Introduction
+:haddock-site: #TODO#
+
+= Introduction to Asclepias
+
+This site is the documentation hub for Asclepias,
+a domain specific language for building and analyzing cohorts.
+
+== Where to start
+
+If this is your first time using Asclepias,
+read xref:getting-started.adoc[getting started].
+#TODO add more#
+
+[NOTE]
+Reference information for `+hasklepias+` functions is located 
+link:haddock-site:[here].

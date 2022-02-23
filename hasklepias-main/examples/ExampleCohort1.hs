@@ -21,7 +21,6 @@ import           AssessmentIntervals
 -- import           Cohort.Attrition
 import           Hasklepias -- imported for test cases
 import           Features.Featureable
-import           Witch
 
 {-------------------------------------------------------------------------------
   Constants

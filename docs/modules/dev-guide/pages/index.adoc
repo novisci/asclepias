@@ -30,3 +30,5 @@ include::haskell-module-system.adoc[leveloffset=+1]
 include::interactive-usage-of-ghci.adoc[leveloffset=+1]
 
 include::linting-and-formatting.adoc[leveloffset=+1]
+
+include::versioning.adoc[leveloffset=+1]

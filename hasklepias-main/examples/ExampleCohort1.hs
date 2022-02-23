@@ -13,6 +13,7 @@ Maintainer  : bsaul@novisci.com
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE TypeApplications #-}
 module ExampleCohort1
   ( -- exampleCohort1tests
   ) where
@@ -515,6 +516,6 @@ exampleCohort1tests = testGroup
     $
       -- Featureable cannot be tested for equality directly, hence encoding to
       -- JSON bytestring and testing that for equality
-        encode (evalCohorts testPop)
+        encode (evalCohorts @[] testPop)
     @?= encode expectedCohortSet
   ]

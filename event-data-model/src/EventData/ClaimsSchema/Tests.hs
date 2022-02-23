@@ -26,31 +26,27 @@ import           Test.Tasty.HUnit
 e1 :: Event ClaimsSchema Text Int
 e1 = event
   (beginerval 4 1)
-  (MkContext { getConcepts = packConcepts ["c1", "c2"]
-             , getFacts    = Enrollment (EnrollmentFacts { plan = Nothing })
-             , getSource   = Nothing
-             }
+  (context (packConcepts ["c1", "c2"])
+           (Enrollment (EnrollmentFacts { plan = Nothing }))
+           Nothing
   )
 
 
 e2 :: Event ClaimsSchema Text Int
 e2 = event
   (beginerval 4 2)
-  (MkContext { getConcepts = packConcepts ["c3", "c4"]
-             , getFacts    = Enrollment (EnrollmentFacts { plan = Nothing })
-             , getSource   = Nothing
-             }
+  (context (packConcepts ["c3", "c4"])
+           (Enrollment (EnrollmentFacts { plan = Nothing }))
+           Nothing
   )
 
 e3 :: Event ClaimsSchema Text Int
 e3 = event
   (beginerval 4 2)
-  (MkContext
-    { getConcepts = packConcepts []
-    , getFacts    = Demographics
-                      (DemographicsFacts (DemographicsInfo Gender (Just "F")))
-    , getSource   = Nothing
-    }
+  (context
+    (packConcepts [])
+    (Demographics (DemographicsFacts (DemographicsInfo Gender (Just "F"))))
+    Nothing
   )
 
 demoYear :: ClaimsSchema
@@ -58,13 +54,7 @@ demoYear =
   Demographics $ DemographicsFacts (DemographicsInfo BirthYear (Just "1987"))
 
 e4 :: Event ClaimsSchema Text Int
-e4 = event
-  (beginerval 4 2)
-  (MkContext { getConcepts = packConcepts []
-             , getFacts    = demoYear
-             , getSource   = Nothing
-             }
-  )
+e4 = event (beginerval 4 2) (context (packConcepts []) demoYear Nothing)
 
 enrollEvent :: B.ByteString
 enrollEvent =
@@ -99,7 +89,13 @@ accessorUnitTests = testGroup
   , testCase "viewBenefits on enrollment event"
   $   fmap
         viewBenefits
-        (sequenceA [snd <$> decodeEvent @ClaimsSchema @Text @Int enrollEvent])
+        (sequenceA
+          [ snd
+              <$> decodeEvent @ClaimsSchema @Text @Int
+                    defaultParseEventLineOption
+                    enrollEvent
+          ]
+        )
   @?= Just ["PPO"]
   ]
 

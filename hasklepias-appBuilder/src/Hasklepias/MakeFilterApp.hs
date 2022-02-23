@@ -1,5 +1,5 @@
 {-|
-Module      : Hasklepias.MakeApp
+Module      : Hasklepias.MakeFilterApp
 Description : Functions for creating a cohort application
 Copyright   : (c) NoviSci, Inc 2020
 License     : BSD3
@@ -141,12 +141,14 @@ prefilterC
      , Eq d
      , Generic d
      , FromJSON d
+     , Typeable d
      , Show c
      , Eq c
      , Ord c
      , Typeable c
      , FromJSON c
      , FromJSON a
+     , Typeable a
      , Show a
      , IntervalSizeable a b
      , Monad m
@@ -157,7 +159,12 @@ prefilterC
 prefilterC p x =
   yield x
     .| CC.linesUnboundedAscii
-    .| mapC (pure . initFilterState (fmap snd . decodeEventStrict') p)
+    .| mapC
+         ( pure
+         . initFilterState
+             (fmap snd . decodeEventStrict' defaultParseEventLineOption)
+             p
+         )
     .| CC.foldl1 fscIO
 
 -- | Type containing the filter app
@@ -201,6 +208,8 @@ makeFilterApp
      , FromJSON c
      , FromJSON a
      , Show a
+     , Typeable a
+     , Typeable d
      , IntervalSizeable a b
      )
   => String -- ^ name of the app (e.g. a project's id)

@@ -23,6 +23,7 @@ designed for the purpose of marshaling data from JSON lines.
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DuplicateRecordFields #-}
+{-# LANGUAGE ConstraintKinds #-}
 
 module EventDataTheory.Core
   ( Event
@@ -32,7 +33,11 @@ module EventDataTheory.Core
   , Source(..)
   , Concept
   , Concepts
-  , Context(..)
+  , Context
+  , getFacts
+  , getSource
+  , getConcepts
+  , context
   , toConcepts
   , packConcept
   , unpackConcept
@@ -41,21 +46,32 @@ module EventDataTheory.Core
   , hasConcept
   , hasAnyConcepts
   , hasAllConcepts
+  , addConcepts
   , liftToEventPredicate
+  , liftToEventFunction
+  , liftToContextFunction
+  , trimapEvent
+  , bimapContext
+  , mapConcepts
+  , dropSource
   , SubjectID
   -- the following names are exported for haddock linking
   , HasConcept
   , EventPredicate
+  , Eventable
+  , FromJSONEvent
+  , ToJSONEvent
   ) where
 
 import           Control.DeepSeq                ( NFData )
-import           Control.Monad                  ( Functor(fmap)
-                                                , liftM2
+import           Control.Monad                  ( liftM2
                                                 , liftM3
                                                 )
 import           Data.Aeson                     ( FromJSON
                                                 , ToJSON
+                                                , Value(Number, String)
                                                 )
+import           Data.Bifunctor                 ( Bifunctor(..) )
 import           Data.Binary                    ( Binary )
 import           Data.Functor.Contravariant     ( Contravariant(contramap)
                                                 , Predicate(..)
@@ -76,7 +92,6 @@ import           IntervalAlgebra                ( Interval
                                                 )
 import           Test.QuickCheck                ( Arbitrary(arbitrary) )
 import           Type.Reflection                ( Typeable )
-
 import           Witch                          ( From(..)
                                                 , into
                                                 , via
@@ -171,19 +186,33 @@ instance ( ToJSON b, ToJSON (Interval a) ) => ToJSON (PairedInterval b a)
 instance ( Ord c, FromJSON c, FromJSON d, FromJSON (Interval a) ) => FromJSON (Event d c a)
 instance ( Ord c, ToJSON c, ToJSON d, ToJSON (Interval a) ) => ToJSON (Event d c a)
 
-instance ( Arbitrary (Interval a)
-          , Arbitrary d, Show d, Eq d, Generic d
-          , Arbitrary c, Show c, Eq c, Ord c, Typeable c) =>
+instance (  Eventable d c a
+          , Arbitrary d, Arbitrary c, Arbitrary (Interval a)) =>
       Arbitrary (Event d c a) where
   arbitrary = liftM2 event arbitrary arbitrary
 
--- | A smart constructor for 'Event d c a's.
-event
-  :: (Show d, Eq d, Generic d, Show c, Eq c, Ord c, Typeable c)
+-- | A synonym for the minimum set of constraints an event needs on its types.
+type Eventable d c a
+  = ( Generic d
+    , Typeable c
+    , Typeable a
+    , Eq d
+    , Ord c
+    , Ord a
+    , Show d
+    , Show c
+    , Show a
+    )
   -- Text is not Generic; but c should at least be Typeable
-  => Interval a
-  -> Context d c
-  -> Event d c a
+
+-- | Constraint synonym for @ToJSON@ on an event's component types.
+type ToJSONEvent d c a = (ToJSON d, ToJSON c, ToJSON a)
+
+-- | Constraint synonym for @FromSON@ on an event's component types.
+type FromJSONEvent d c a = (FromJSON d, FromJSON c, FromJSON a)
+
+-- | A smart constructor for 'Event d c a's.
+event :: (Eventable d c a) => Interval a -> Context d c -> Event d c a
 event i c = MkEvent (makePairedInterval c i)
 
 -- | Unpack an 'Event' from its constructor.
@@ -193,6 +222,24 @@ getEvent (MkEvent x) = x
 -- | Get the 'Context' of an 'Event'. 
 getContext :: Event d c a -> Context d c
 getContext = getPairData . getEvent
+
+{-|
+Apply three functions to an 'Event':
+
+1. a function transforming the interval
+2. a function transforming the facts
+3. a function transforming the concepts
+
+See also: 'bimapContext', 'mapConcepts'.
+-}
+trimapEvent
+  :: (Ord c1, Ord c2)
+  => (a1 -> a2)
+  -> (c1 -> c2)
+  -> (d1 -> d2)
+  -> Event d1 c1 a1
+  -> Event d2 c2 a2
+trimapEvent g f h (MkEvent x) = MkEvent $ bimap (bimapContext f h) g x
 
 {- |
 A 'Context' contains information about what ocurred during an 'Event's interval.
@@ -218,13 +265,15 @@ which carries information about the provenance of the data.
 -}
 {- tag::contextType[] -}
 data Context d c = MkContext
-  { getConcepts :: Concepts c -- <1>
+  { -- | the 'Concepts' of a @Context@
+    getConcepts :: Concepts c -- <1>
+    -- | the facts of a @Context@.  
   , getFacts    :: d -- <2>
+    -- | the 'Source' of @Context@
   , getSource   :: Maybe Source -- <3>
   }
   {- end::contextType[] -}
   deriving (Eq, Show, Generic)
-
 
 instance Ord c => HasConcept (Context d c) c where
   hasConcept c = hasConcept (getConcepts c)
@@ -240,7 +289,43 @@ instance ( Arbitrary d, Show d, Eq d, Generic d
       Arbitrary (Context d c) where
   arbitrary = liftM3 MkContext arbitrary arbitrary (pure Nothing)
 
-{- |
+-- | Smart constructor for a 'Context',
+context
+  :: (Generic d, Ord c, Typeable c)
+  => Concepts c
+  -> d
+  -> Maybe Source
+  -> Context d c
+context = MkContext
+
+{-|
+Apply a two functions to a 'Context':
+
+1. a function transforming the concepts
+2. a function transforming the facts
+
+This function is simiilar in flavor to 'Data.Bifunctor.bimap'.
+But @Context@ is not a 'Data.Bifunctor.Bifunctor'.
+The underlying type of @Concepts@ is 'Data.Set.Set',
+which is not a 'Functor' 
+due to the @Set@ 'Ord' constraints.
+-}
+bimapContext
+  :: (Ord c1, Ord c2)
+  => (c1 -> c2)
+  -> (d1 -> d2)
+  -> Context d1 c1
+  -> Context d2 c2
+bimapContext g f (MkContext cpts fcts src) =
+  MkContext (mapConcepts g cpts) (f fcts) src
+
+{-|
+Turn the 'Source' within a 'Context' to 'Nothing'.
+-}
+dropSource :: Context d c -> Context d c
+dropSource (MkContext cpts fcts _) = MkContext cpts fcts Nothing
+
+{-|
 A source may be used to record the provenance of an event from some database.
 This data is sometimes useful for debugging.
 We generally discourage using @Source@ information in defining features.
@@ -262,6 +347,8 @@ instance ToJSON Source
 -- | A @Concept@ is simply a tag or label for an 'Event'.
 newtype Concept c = MkConcept c deriving (Eq, Ord, Show, Generic)
 
+instance Functor Concept where
+  fmap f (MkConcept x) = MkConcept (f x)
 instance NFData c => NFData (Concept c)
 instance Binary c => Binary (Concept c)
 instance FromJSON c => FromJSON (Concept c)
@@ -327,11 +414,28 @@ unpackConcepts = from
 toConcepts :: (Ord c) => Set (Concept c) -> Concepts c
 toConcepts = from
 
+-- | A utility for adding concepts to a 'Concepts' from a list.
+addConcepts :: (Ord c) => [c] -> Concepts c -> Concepts c
+addConcepts x cpts = into x <> cpts
+
+{-|
+Apply a function to each 'Concept'
+within a 'Concepts' set.
+
+NOTE: 
+@Concepts@ are not a 'Functor'.
+The underlying type of @Concepts@ is 'Data.Set.Set',
+which is not a 'Functor' 
+due to the @Set@ 'Ord' constraints.
+-}
+mapConcepts :: (Ord c1, Ord c2) => (c1 -> c2) -> Concepts c1 -> Concepts c2
+mapConcepts f (MkConcepts x) = MkConcepts (Data.Set.map (fmap f) x)
+
 {-| 
 The 'HasConcept' typeclass provides predicate functions
 for determining whether an @a@ contains a concept.
 
-This class is only used in this 'Core' module
+This class is only used in this 'EventDataTheory.Core' module
 for the purposes of having a single @hasConcept@ function
 that works on 'Concepts', 'Context', or 'Event' data.
 -}
@@ -350,12 +454,37 @@ hasAnyConcepts x = any (\c -> x `hasConcept` c)
 hasAllConcepts :: HasConcept a c => a -> [c] -> Bool
 hasAllConcepts x = all (\c -> x `hasConcept` c)
 
+-- | Contains a subject identifier
+data SubjectID =
+    SubjectIDText T.Text
+  | SubjectIDInteger Integer
+  deriving (Eq, Show, Ord, Generic)
+
+instance Binary SubjectID
+instance NFData SubjectID
+instance FromJSON SubjectID
+instance ToJSON SubjectID
+instance From SubjectID T.Text where
+  from (SubjectIDText    x) = x
+  from (SubjectIDInteger x) = T.pack $ show x
+instance From SubjectID Data.Aeson.Value where
+  from (SubjectIDText    x) = String x
+  from (SubjectIDInteger x) = Number (fromInteger x)
+instance From Integer SubjectID where
+  from = SubjectIDInteger
+instance From T.Text SubjectID where
+  from = SubjectIDText
+
 {-|
 Provides a common interface to lift a 'Predicate' on some component
 of an 'Event' to a 'Predicate (Event d c a)'.
 For example, if @x@ is a 'Predicate' on some 'Context d c',
 @liftToEventPredicate x@ yields a @Predicate (Event d c a)@, 
 thus the predicate then also be applied to @Event@s.
+
+This class is only used in this 'EventDataTheory.Core' module
+for the purposes of having a single @liftToEventPredicate@ function
+that works on 'Concepts', 'Context', or 'Event' data.
 -}
 class EventPredicate element d c a where
   {-|
@@ -379,20 +508,59 @@ instance EventPredicate (Maybe Source) d c a where
 instance (Ord a) => EventPredicate (Interval a) d c a where
   liftToEventPredicate = contramap getInterval
 
--- | Contains a subject identifier
-data SubjectID =
-    SubjectIDText T.Text
-  | SubjectIDInteger Integer
-  deriving (Eq, Show, Ord, Generic)
+{-|
+Provides a common interface to lift a function
+operating on some component of an 'Event'
+into a function on an 'Event'. 
 
-instance Binary SubjectID
-instance NFData SubjectID
-instance FromJSON SubjectID
-instance ToJSON SubjectID
-instance From SubjectID T.Text where
-  from (SubjectIDText    x) = x
-  from (SubjectIDInteger x) = T.pack $ show x
-instance From Integer SubjectID where
-  from = SubjectIDInteger
-instance From T.Text SubjectID where
-  from = SubjectIDText
+This class is only used in this 'EventDataTheory.Core' module
+for the purposes of having a single @liftToEventFunction@ function
+that works on 'Concepts', 'Context', or 'Event' data.
+-}
+class EventFunction f d d' c c' a a' where
+  {-|
+  Lifts a function @@ of a component of an 'Event'
+  to a function on an 'Event'
+  -}
+  liftToEventFunction :: (Ord c, Ord c') => f -> Event d c a -> Event d' c' a'
+
+instance EventFunction (c -> c') d d c c' a a where
+  liftToEventFunction f = trimapEvent id f id
+
+instance EventFunction (d -> d') d d' c c a a where
+  liftToEventFunction = trimapEvent id id
+
+instance EventFunction (Context d c -> Context d' c') d d' c c' a a where
+  liftToEventFunction f (MkEvent x) = MkEvent $ first f x
+
+instance EventFunction (a -> a') d d c c a a' where
+  liftToEventFunction f = trimapEvent f id id
+
+{-|
+Provides a common interface to lift a function
+operating on some component of an 'Context'
+into a function on an 'Context'. 
+
+This class is only used in this 'EventDataTheory.Core' module
+for the purposes of having a single @liftToEventFunction@ function
+that works on 'Concepts', 'Context', or 'Event' data.
+-}
+-- NOTE: this kind of constraint solving could probably be done
+-- using the Select monad from Control.Monad.Trans.Select
+-- but it's not clear that would add anything other than additional deps.
+class ContextFunction f d d' c c' where
+  {-|
+  Lifts a function @f@ of a component of an 'Context'
+  to a function on an 'Context'
+  -}
+  liftToContextFunction :: (Ord c, Ord c') => f -> Context d c -> Context d' c'
+
+instance ContextFunction (Concepts c -> Concepts c') d d c c' where
+  liftToContextFunction f (MkContext x y z) = MkContext (f x) y z
+
+instance ContextFunction (c -> c') d d c c' where
+  liftToContextFunction f = bimapContext f id
+
+instance ContextFunction (d -> d') d d' c c where
+  liftToContextFunction = bimapContext id
+

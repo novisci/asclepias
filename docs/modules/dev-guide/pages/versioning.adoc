@@ -27,6 +27,6 @@ https://gitlab.novisci.com/nsStat/noviverse-site[`noviverse-site` repository]
 determines which branches of `asclepias` are used for the documentation site.
 
 
-[WARNING]
+[CAUTION]
 Until `+asclepias+` version `1.0` is released,
 no guarantees of backwards-compatability are made. 

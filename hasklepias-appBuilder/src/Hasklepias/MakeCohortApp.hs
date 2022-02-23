@@ -155,19 +155,9 @@ newtype CohortApp m = MkCohortApp { runCohortApp :: Maybe Location -> m B.ByteSt
 
 -- | Make a command line cohort building application.
 makeCohortApp
-  :: ( Show d
-     , Eq d
-     , Generic d
-     , FromJSON d
+  :: ( Eventable d c a
+     , FromJSONEvent d c a
      , Typeable d
-     , Show c
-     , Eq c
-     , Ord c
-     , Typeable c
-     , FromJSON c
-     , FromJSON a
-     , Typeable a
-     , Show a
      , IntervalSizeable a b
      , ToJSON d0
      , ShapeCohort d0 i

@@ -1,4 +1,3 @@
-{-# LANGUAGE TupleSections #-}
 {-# LANGUAGE OverloadedStrings #-}
 module Hygiea.Internal.Csv where
 
@@ -34,7 +33,6 @@ tryListLitToList (Right _            ) = Left "Not a ListLit"
 tryListLitToList (Left  err          ) = Left $ T.pack $ show err
 
 -- parse Csv [NamedRecord] into dhall, then from dhall into a with the provided decoder
--- TODO there's a better solution to the joinFold. traverse not doing what i expected
 -- TODO better failure handler
 tryParseRecords :: Dhall.Decoder a -> [NamedRecord] -> Either T.Text [a]
 tryParseRecords d rs = joinFold (tryParseRawInput d) $ tryListLitToList es
@@ -57,5 +55,3 @@ toCsv hasHeader file = do
   case Dhall.Csv.Util.decodeCsvDefault hasHeader text of
     Left  err -> fail err
     Right csv -> pure csv
-
-

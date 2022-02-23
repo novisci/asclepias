@@ -1,4 +1,5 @@
--- placeholder for future testing builders and runners
+{-|
+   -}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
@@ -16,9 +17,19 @@ import           Hygiea.Map
 import           Witch.From
 import           Witch.TryFrom
 
+-- | Class defining the conversion from inputs to outputs to be tested. See
+-- Testable.
 class ToOutput input output where
   toOutput :: input -> output
 
+-- | Context synonym for an @input and @output pair that can be constructed
+-- from the general flat TestMap and run through @toOutput. @input is a Haskell
+-- representation of a type serving as input to a function to be tested, given
+-- in @toOutput, and @ouput is the resulting type of the conversion. 
+--
+-- The `TryFrom` instances allow @input and @output to be constructed from
+-- textual input via `TestMap`, rather than having the Haskell programmer
+-- specify them.
 type Testable input output
   = ( TryFrom TestMap input
     , TryFrom TestMap output

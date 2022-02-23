@@ -54,7 +54,6 @@ instance Foldable Map where
 instance Traversable Map where
   traverse f (Map x) = Map <$> traverse f x
 
-  {- Decode -}
 -- conveniences
 instance From (SMap.Map Text v) (Map v) where
   from = Map
@@ -72,8 +71,12 @@ instance From (Map v) [(Text, v)] where
   from = toList
 
   {- UTILS and SYNONYMS -}
+-- | The primary flat structure housing values to be tested and providing the
+-- glue between text input and internal types to be tested. A wrapper for
+-- Data.Map.Strict.Map with Text keys and TestAtomic values.
 type TestMap = Map TestAtomic
 
+-- | Construct a @Map from a list of tuples
 fromList :: [(Text, v)] -> Map v
 fromList = from . SMap.fromList
 
@@ -81,6 +84,7 @@ fromList = from . SMap.fromList
 toList :: Map v -> [(Text, v)]
 toList = SMap.toList . from
 
+-- | Check for key existence in a @Map
 lookup :: Text -> Map v -> Maybe v
 lookup k (Map x) = SMap.lookup k x
 

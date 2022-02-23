@@ -224,7 +224,7 @@ getContext :: Event d c a -> Context d c
 getContext = getPairData . getEvent
 
 {-|
-Apply a three functions to as 'Event':
+Apply three functions to an 'Event':
 
 1. a function transforming the interval
 2. a function transforming the facts

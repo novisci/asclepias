@@ -29,17 +29,16 @@ library
         , Test.Hygiea.ToOutput
         , Test.Hygiea.EventData
         , Test.Hygiea.HygieaException
+        , Test.Hygiea.Parse
         , Test.Tasty.Hygiea
         -- TODO don't expose these
-        , Test.Hygiea.Internal.Dhall
-        , Test.Hygiea.Internal.Csv
 
     -- Modules included in this library but not exported.
     other-modules: 
         Test.Hygiea.Internal.Map
-        --, Hygiea.Internal.Dhall
+        , Test.Hygiea.Internal.Dhall
         , Test.Hygiea.Internal.Event
-        --, Hygiea.Internal.Csv
+        , Test.Hygiea.Internal.Csv
         , Test.Hygiea.Internal.Atomic
 
     -- LANGUAGE extensions used by modules in this package.

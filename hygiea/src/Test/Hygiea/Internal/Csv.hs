@@ -34,7 +34,6 @@ tryListLitToList (Right _            ) = Left $ DecodeException "Not a ListLit"
 tryListLitToList (Left  err          ) = Left $ DecodeException $ T.pack $ show err
 
 -- parse Csv [NamedRecord] into dhall, then from dhall into a with the provided decoder
--- TODO better failure handler
 tryParseRecords :: Dhall.Decoder a -> [NamedRecord] -> Either HygieaException [a]
 tryParseRecords d rs = joinFold (tryParseRawInput d) $ tryListLitToList es
  where
@@ -48,7 +47,6 @@ tryParseRecords d rs = joinFold (tryParseRawInput d) $ tryListLitToList es
       Just zz -> Right (zz : zs)
       Nothing -> Left $ DecodeException "Could not parse all records"
 
-
 -- copy-paste from csv-to-dhall Main
 toCsv :: Bool -> FilePath -> IO [NamedRecord]
 toCsv hasHeader file = do
@@ -56,3 +54,8 @@ toCsv hasHeader file = do
   case Dhall.Csv.Util.decodeCsvDefault hasHeader text of
     Left  err -> fail err
     Right csv -> pure csv
+
+-- | Read csv file with provided schema as @"Dhall.Decoder"@, and decode to
+-- Haskell type.
+tryParseRecordsCsv :: Dhall.Decoder a -> FilePath -> IO (Either HygieaException [a])
+tryParseRecordsCsv d = fmap (tryParseRecords d) . toCsv True

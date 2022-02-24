@@ -7,8 +7,7 @@ module Test.Tasty.Hygiea where
 import           Data.Proxy
 import           Data.Typeable                  ( Typeable )
 import           Test.Hygiea.HygieaException
-import           Test.Hygiea.Internal.Csv
-import           Test.Hygiea.Internal.Dhall
+import           Test.Hygiea.Parse
 import           Test.Hygiea.Map
 import           Test.Hygiea.ToOutput
 import           Test.Tasty.Options             ( IsOption(..)
@@ -69,7 +68,7 @@ instance IsTest Routine where
     runRoutine framewk routine
 
 
--- TODO add IGolden for interactive golden test
+-- TODO add IGolden variant for interactive golden test
 
 -- | Test option controlling what kind of test we want to run. For example, the
 -- @Golden@ variant will build a non-interactive golden test with
@@ -93,8 +92,7 @@ runRoutine framewk (Routine input output) = case framewk of
   Golden -> runGolden input output
 
 runGolden
-  :: forall input output
-   . (Testable input output)
+  :: (Testable input output)
   => RoutineElem input
   -> RoutineElem output
   -> IO Result
@@ -109,8 +107,7 @@ runGolden i o = do
 -- exception. This is the first step of running Hygiea tests using any
 -- framework option.
 processElems
-  :: forall input output
-   . (Testable input output)
+  :: (Testable input output)
   => RoutineElem input
   -> RoutineElem output
   -> IO (ProcessedElems input output)
@@ -119,15 +116,12 @@ processElems i o = do
   -- TODO should use parseDhallFileWith and inject List around type, for Csv
   iSchema <- parseDhallFile $ dhallSchema i
   oSchema <- parseDhallFile $ dhallSchema o
-  -- read raw Csv
-  iCsv    <- toCsv True $ csvFile i
-  oCsv    <- toCsv True $ csvFile o
-  -- parse Csv into TestMap
+  -- build decoders
   let iDecoder = decodeMapSchemaAuto @TestAtomic iSchema
-  let iData    = tryParseRecords iDecoder iCsv
-
   let oDecoder = decodeMapSchemaAuto @TestAtomic oSchema
-  let oData    = tryParseRecords iDecoder oCsv
+  -- parse Csv with decoder into TestMap
+  iData <- tryParseRecordsCsv iDecoder $ csvFile i
+  oData <- tryParseRecordsCsv oDecoder $ csvFile o
   
   -- NOTE input element failure always takes precedent
   case (iData, oData) of

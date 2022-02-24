@@ -6,8 +6,7 @@ module Main where
 import qualified Test.Hygiea.ToOutput as TO
 --import Examples.Simple
 import Test.Hygiea.Map
-import Test.Hygiea.Internal.Dhall
-import Test.Hygiea.Internal.Csv
+import Test.Hygiea.Parse
 
 main :: IO ()
 main = do
@@ -17,15 +16,11 @@ main = do
   inputList <- parseDhallFile "./hygiea/src/Examples/input_list.dhall"
   putStrLn "\nDhall shape from input.dhall for each line of Csv\n"
   print input
-
-  putStrLn "\nRaw csv:\n"
-  inputCsv <- toCsv True "./hygiea/src/Examples/input.csv"
-  print inputCsv
-
-  putStrLn "\nParse internal representation from Csv:\n"
   -- NOTE inputList
+  putStrLn "\nTestMap parsed from Csv with schema\n"
   let inputDecode = decodeMapSchemaAuto @TestAtomic inputList
-  print $ tryParseRecords inputDecode inputCsv
+  recs <-  tryParseRecordsCsv inputDecode "./hygiea/src/Examples/input.csv"
+  print recs
 
 -- TODO add in tests from below
     {- OLD -}

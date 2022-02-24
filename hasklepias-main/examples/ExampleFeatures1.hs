@@ -16,16 +16,17 @@ module ExampleFeatures1
   ( exampleFeatures1Spec
   ) where
 
+import           EventData (containsConcepts)
 import           Hasklepias
 import           Test.Hspec -- imported for test case
 {-
 Index is defined as the first occurrence of an Orca bite.
 -}
-defineIndexSet :: Ord a => [Event ClaimsSchema Text a] -> IndexSet Interval a
+defineIndexSet :: Ord a => [Event ClaimsSchema Text a] -> IndexSet (Interval a)
 defineIndexSet events =
   makeIndexSet
     $   getInterval
-    <$> makeConceptsFilter ["wasBitByOrca"] events
+    <$> filterEvents (containsConcepts ["wasBitByOrca"]) events
 
 {-  
 The baseline interval is the interval (b - 60, b), where b is the begin of 
@@ -221,7 +222,7 @@ includeAll _ _ = criteria $ pure
   (criterion (makeFeature (featureDataR Include) :: Feature "includeAll" Status)
   )
 
-testCohortSpec :: CohortSpec [Event ClaimsSchema Text Int] MyData Interval Int
+testCohortSpec :: CohortSpec [Event ClaimsSchema Text Int] MyData (Interval Int)
 testCohortSpec = specifyCohort defineIndexSet includeAll getUnitFeatures
 
 example1results :: MyData

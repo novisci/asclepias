@@ -10,7 +10,6 @@
    The @Testable@ constraint alias is one every @input@ and @output@ type to be tested should adhere to. It requires types to be convertible from the internal flat csv-like representation, @TestMap@, and to be instances of @ToOutput@.
      -}
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE ConstraintKinds       #-}
 {-# LANGUAGE MultiParamTypeClasses #-}

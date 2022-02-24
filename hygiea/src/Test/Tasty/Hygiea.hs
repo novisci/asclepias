@@ -106,7 +106,8 @@ runGolden i o = do
 
 -- | Read csv and schema, parse schema into TestMap and attempt conversion to
 -- input and output types. Fails if any step of the process returns an
--- exception.
+-- exception. This is the first step of running Hygiea tests using any
+-- framework option.
 processElems
   :: forall input output
    . (Testable input output)

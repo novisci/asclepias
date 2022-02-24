@@ -38,6 +38,8 @@ tryListLitToList (Left  err          ) = Left $ DecodeException $ T.pack $ show 
 -- be a record only, and d provided to create es should be List of records.
 -- It's unclear why providing a List of records to tryParseRecords in the
 -- joinFold works. Follow up.
+--
+-- TODO this conversion generally requires some cleanup.
 
 -- | Parse Csv @[NamedRecord]@ into dhall, then from dhall into a with the
 -- provided decoder. Note @d@ should be from dhall specifying a list of

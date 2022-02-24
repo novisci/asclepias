@@ -6,6 +6,7 @@ module Test.Hygiea.Parse
   , parseDhallFileWith
   ) where
 
+-- TODO remove the first csv import
 import           Test.Hygiea.Internal.Csv       ( tryParseRecordsCsv )
 import           Test.Hygiea.Internal.Dhall     ( decodeMapSchema
                                                 , decodeMapSchemaAuto

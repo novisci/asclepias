@@ -17,8 +17,9 @@ main = do
   putStrLn "\nDhall shape from input.dhall for each line of Csv\n"
   print input
   -- NOTE inputList
-  putStrLn "\nTestMap parsed from Csv with schema\n"
+  
   let inputDecode = decodeMapSchemaAuto @TestAtomic inputList
+  putStrLn "\nTestMap parsed from Csv with schema\n"
   recs <-  tryParseRecordsCsv inputDecode "./hygiea/src/Examples/input.csv"
   print recs
 

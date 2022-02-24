@@ -33,7 +33,16 @@ tryListLitToList (Right (ListLit _ s)) = Right $ GHC.Exts.toList s
 tryListLitToList (Right _            ) = Left $ DecodeException "Not a ListLit"
 tryListLitToList (Left  err          ) = Left $ DecodeException $ T.pack $ show err
 
--- parse Csv [NamedRecord] into dhall, then from dhall into a with the provided decoder
+-- TODO this works when d is created with dhall of the form of a list of
+-- records, even though one might think d provided to tryParseRawInput should
+-- be a record only, and d provided to create es should be List of records.
+-- It's unclear why providing a List of records to tryParseRecords in the
+-- joinFold works. Follow up.
+
+-- | Parse Csv @[NamedRecord]@ into dhall, then from dhall into a with the
+-- provided decoder. Note @d@ should be from dhall specifying a list of
+-- records, ie `List { ... }`, with field names corresponding to the column
+-- names of the csv.
 tryParseRecords :: Dhall.Decoder a -> [NamedRecord] -> Either HygieaException [a]
 tryParseRecords d rs = joinFold (tryParseRawInput d) $ tryListLitToList es
  where
@@ -43,6 +52,8 @@ tryParseRecords d rs = joinFold (tryParseRawInput d) $ tryListLitToList es
   joinFold f (Right xs ) = foldr op (Right []) xs
    where
     op _ (Left  err) = Left err
+    -- TODO tryParseRawInput should return Either HygieaException a rather
+    -- than Maybe a
     op z (Right zs ) = case f z of
       Just zz -> Right (zz : zs)
       Nothing -> Left $ DecodeException "Could not parse all records"
@@ -56,6 +67,10 @@ toCsv hasHeader file = do
     Right csv -> pure csv
 
 -- | Read csv file with provided schema as @"Dhall.Decoder"@, and decode to
--- Haskell type.
+-- Haskell type. Note @d@ should be from dhall specifying a list of
+-- records, ie `List { ... }`, with field names corresponding to the column
+-- names of the csv. The decoder usually would be parsed with
+-- @"Test.Hygiea.Internal.Dhall".parseDhallFile@ or
+-- @"Test.Hygiea.Internal.Dhall".parseDhallFileWith@. 
 tryParseRecordsCsv :: Dhall.Decoder a -> FilePath -> IO (Either HygieaException [a])
 tryParseRecordsCsv d = fmap (tryParseRecords d) . toCsv True

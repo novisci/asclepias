@@ -113,13 +113,13 @@ processElems
   -> IO (ProcessedElems input output)
 processElems i o = do
   -- read schema
-  -- TODO should use parseDhallFileWith and inject List around type, for Csv
   iSchema <- parseDhallFile $ dhallSchema i
   oSchema <- parseDhallFile $ dhallSchema o
   -- build decoders
   let iDecoder = decodeMapSchemaAuto @TestAtomic iSchema
   let oDecoder = decodeMapSchemaAuto @TestAtomic oSchema
   -- parse Csv with decoder into TestMap
+  -- TODO convert map decoder to list of map decoder?
   iData <- tryParseRecordsCsv iDecoder $ csvFile i
   oData <- tryParseRecordsCsv oDecoder $ csvFile o
   

@@ -42,7 +42,7 @@ parseDhallFile :: FilePath -> IO (Expr Src Void)
 parseDhallFile = parseDhallFileWith Dhall.inputExpr
 
 -- alias, fixing Alternative f as Maybe a
--- TODO i want this to be Either
+-- TODO Alternative f should be Either HygieaException
 tryParseRawInput :: Dhall.Decoder a -> Expr Src Void -> Maybe a
 tryParseRawInput = Dhall.rawInput
 

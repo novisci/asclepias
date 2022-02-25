@@ -1,3 +1,9 @@
+{- Internal module to parse csv to dhall to TestMap. It might be cleaner, or at
+    some point necessary, to
+    modify the
+    [dhallFromCsv](https://hackage.haskell.org/package/dhall-csv-1.0.2/docs/src/Dhall.CsvToDhall.html#dhallFromCsv)
+    function for this purpose, rather than using it and modifying the output.
+      -}
 {-# LANGUAGE OverloadedStrings #-}
 module Test.Hygiea.Internal.Csv where
 

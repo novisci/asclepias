@@ -1,3 +1,1 @@
-let input = { concepts : Text, facts : Text, begin : Integer, end : Integer }
-
-in input
+List { concepts : Text, facts : Text, begin : Natural, end : Natural }

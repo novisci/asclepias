@@ -1,3 +1,1 @@
-let output = { reason : Text, concepts : Text, facts : Text, begin : Integer, end : Integer}
-
-in output
+List { reason : Text, concepts : Text, facts : Text, begin : Integer, end : Integer}

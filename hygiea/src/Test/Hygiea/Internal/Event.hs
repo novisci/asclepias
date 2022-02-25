@@ -148,7 +148,6 @@ instance (Show d, Show c, Atomizable d, Atomizable c) => TryFrom (Context d c) (
 --  tryFrom = tryVia @(Context InputVal InputVal)
 
 
-
 -- doesn't compile because Ord is not well-defiend for InputVal
 --instance TryFrom Input (Event InputVal InputVal InputVal) where
 --  -- liftA2 not doing what i want here

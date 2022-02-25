@@ -7,7 +7,7 @@
 
    Of course, if needed programmers could circumvent this intentional limitation by defining newtype wrappers around existing types.
 
-   The @Testable@ constraint alias is one every @input@ and @output@ type to be tested should adhere to. It requires types to be convertible from the internal flat csv-like representation, @TestMap@, and to be instances of @ToOutput@.
+   The @Testable@ constraint alias is one every @input@ and @output@ type to be tested should adhere to. It requires types to be convertible from the internal flat csv-like representation, @[TestMap]@, and to be instances of @ToOutput@.
      -}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ScopedTypeVariables #-}
@@ -29,16 +29,21 @@ import           Witch.TryFrom
 class ToOutput input output where
   toOutput :: input -> output
 
--- | Context synonym for an @input and @output pair that can be constructed
--- from the general flat TestMap and run through @toOutput. @input is a Haskell
+-- TODO: consider generalizing Testable to be generic over Traversable f. 
+
+-- | Context synonym for an @input@ and @output@ pair that can be constructed
+-- from the general flat TestMap and run through @toOutput@. @input@ is a Haskell
 -- representation of a type serving as input to a function to be tested, given
--- in @toOutput, and @ouput is the resulting type of the conversion. 
+-- in @toOutput@, and @ouput@ is the resulting type of the conversion. 
 --
--- The `TryFrom` instances allow @input and @output to be constructed from
--- textual input via `TestMap`, rather than having the Haskell programmer
+-- The @TryFrom@ instances allow @input@ and @output@ to be constructed from
+-- textual input via @[TestMap]@, rather than having the Haskell programmer
 -- specify them.
+--
+-- Note one need only implement @TryFrom TestMap a@ for some @a@, and @TryFrom
+-- [TestMap] [a]@ is provided automatically.
 type Testable input output
-  = ( TryFrom TestMap input
-    , TryFrom TestMap output
+  = ( TryFrom [TestMap] input
+    , TryFrom [TestMap] output
     , ToOutput input output
     )

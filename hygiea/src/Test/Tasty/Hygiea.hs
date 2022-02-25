@@ -1,14 +1,15 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ExistentialQuantification #-}
 {-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 module Test.Tasty.Hygiea where
 
 import           Data.Proxy
 import           Data.Typeable                  ( Typeable )
 import           Test.Hygiea.HygieaException
-import           Test.Hygiea.Parse
 import           Test.Hygiea.Map
+import           Test.Hygiea.Parse
 import           Test.Hygiea.ToOutput
 import           Test.Tasty.Options             ( IsOption(..)
                                                 , OptionDescription(..)
@@ -29,12 +30,11 @@ import           Witch.TryFrom
 
   {- Internals -}
 
--- TODO review how collections of inputs and ouputs should be processed
-
--- | In the return type of processElems.
+-- | In the return type of processElems. Note @input@, @output@ typically are
+-- lists of some unit type that implements @TryFrom TestMap@.
 data ProcessedElems input output = MkProcessedElems
-  { getInput  :: [input]
-  , getOutput :: [output]
+  { getInput  :: input
+  , getOutput :: output
   }
 
 -- | Structure wrapping a @csvFile@ path, a
@@ -92,12 +92,15 @@ runRoutine framewk (Routine input output) = case framewk of
   Golden -> runGolden input output
 
 runGolden
-  :: (Testable input output)
+  :: forall input output
+   . (Testable input output)
   => RoutineElem input
   -> RoutineElem output
   -> IO Result
 runGolden i o = do
   procData <- processElems i o
+  let oExpected = getOutput procData
+  let oActual   = (toOutput @input @output) $ getInput procData
   -- TODO create golden files, run the conversion, run the tests
 
   return $ testPassed ""
@@ -122,7 +125,7 @@ processElems i o = do
   -- TODO convert map decoder to list of map decoder?
   iData <- tryParseRecordsCsv iDecoder $ csvFile i
   oData <- tryParseRecordsCsv oDecoder $ csvFile o
-  
+
   -- NOTE input element failure always takes precedent
   case (iData, oData) of
     (Right ii, Right oo) ->

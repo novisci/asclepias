@@ -73,6 +73,8 @@ instance From [(Text, v)] (Map v) where
 instance From (Map v) [(Text, v)] where
   from = toList
 
+-- | You need only implement TryFrom (Map v) a to get TryFrom instances for
+-- traversables for free.
 instance (Traversable t, TryFrom (Map v) a) => TryFrom (t (Map v)) (t a) where
   tryFrom x =
     first (\(TryFromException _ e) -> TryFromException x e) $ traverse (tryFrom @(Map v) @a) x

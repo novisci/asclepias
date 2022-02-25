@@ -72,7 +72,7 @@ toCsv hasHeader file = do
 -- Haskell type. Note @d@ should be from dhall specifying a list of
 -- records, ie `List { ... }`, with field names corresponding to the column
 -- names of the csv. The decoder usually would be parsed with
--- @"Test.Hygiea.Internal.Dhall".parseDhallFile@ or
--- @"Test.Hygiea.Internal.Dhall".parseDhallFileWith@. 
+-- @parseDhallFile@ or
+-- @parseDhallFileWith@. 
 tryParseRecordsCsv :: Dhall.Decoder a -> FilePath -> IO (Either HygieaException [a])
 tryParseRecordsCsv d = fmap (tryParseRecords d) . toCsv True

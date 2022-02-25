@@ -24,6 +24,9 @@ import           Test.Hygiea.Internal.Map
    {- UTILS -}
 type DhallExpr = Dhall.Core.Expr Src Void
 
+-- TODO useful for creating a custom type injected into the dhall language
+-- parser. see the Dhall tutorial section on substitutions.
+-- https://hackage.haskell.org/package/dhall-1.40.2/docs/Dhall-Tutorial.html#g:24
 encoderText :: Dhall.Encoder a -> a -> T.Text
 encoderText x = T.pack . show . pretty . Dhall.embed x
 
@@ -34,10 +37,16 @@ decoderTypeText :: Dhall.Decoder a -> T.Text
 decoderTypeText = T.pack . show . pretty . maximum . Dhall.expected
 
 -- TODO clean up these parsers a bit depending on need
+
+-- | Parse a .dhall file using a provided parser. This is useful if extending
+-- the Dhall language by first injecting a custom type definition, for example.
+-- See the [Dhall package Tutorial section on
+-- substitutions](https://hackage.haskell.org/package/dhall-1.40.2/docs/Dhall-Tutorial.html#g:24).
 parseDhallFileWith
   :: (T.Text -> IO (Expr Src Void)) -> FilePath -> IO (Expr Src Void)
 parseDhallFileWith parser file = parser =<< Data.Text.IO.readFile file
 
+-- | Parse a .dhall file into an @Expr@ using the Dhall package's @"Dhall".inputExpr@
 parseDhallFile :: FilePath -> IO (Expr Src Void)
 parseDhallFile = parseDhallFileWith Dhall.inputExpr
 
@@ -71,8 +80,8 @@ parseDecodeWithType name d program = Dhall.input
 -- NOTE: Here you must specify the record names, since 'expected' determines the
 -- shape of the decoded object. failures happen at runtime, as usual for dhall
 
--- | Build a @(Decoder (Map v)) provided a decoder for @v and a list of key
--- names for @Map. You should probably use @decodeMapSchema instead.
+-- | Build a @Decoder (Map v)@ provided a decoder for @v@ and a list of key
+-- names for @Map@. You should probably use @decodeMapSchema@ instead.
 decodeMapWith :: Dhall.Decoder v -> [T.Text] -> Dhall.Decoder (Map v)
 decodeMapWith decodeVal names = Dhall.Decoder extractOut expectedOut
  where
@@ -87,9 +96,9 @@ decodeMapWith decodeVal names = Dhall.Decoder extractOut expectedOut
       .   Dhall.Core.makeRecordField
       <$> Dhall.expected decodeVal
 
--- | Build a @(Decoder (Map v)) using the generically derived decoder for @v,
+-- | Build a @Decoder (Map v)@ using the generically derived decoder for @v@,
 -- provided a list of expected keys. You should probably use
--- @decodeMapSchemaAuto instead.
+-- @decodeMapSchemaAuto@ instead.
 decodeMap :: (Dhall.FromDhall v) => [T.Text] -> Dhall.Decoder (Map v)
 decodeMap = decodeMapWith Dhall.auto
 
@@ -105,14 +114,16 @@ mapInput names = Dhall.input (decodeMap names)
 -- See notes in the Atomic module on alternate representations, which would
 -- provide that ability.
 
--- |  Build a @(Decoder (Map v)) using a provided decoder for @v. Unlike with
--- @decodeMapWith, the map key names are provided in a Dhall record schema.
--- This custom decoder is necessary because Dhall by default decodes to @Map
+-- |  Build a @Decoder (Map v)@ using a provided decoder for @v@. Unlike 
+-- @decodeMapWith@, the map key names are provided in a Dhall record schema.
+-- This custom decoder is necessary because Dhall by default decodes to @Map@
 -- for Dhall lists of records with `mapKey` and `mapValue` fields. Here, we use
--- @Map as a container for a more general flat structure with named fields, as
--- one might find in tabular format. As in the `dhall-csv`, the most natural
--- way to specify such a structure in Dhall is via Records. Therefore we write
--- a custom Decoder to a @Map from a Dhall Record.
+-- @Map@ as a container for a more general flat structure with named fields, as
+-- one might find in tabular format. As in the
+-- [dhall-csv](https://hackage.haskell.org/package/dhall-csv) package, the most
+-- natural way to specify such a structure in Dhall is via the @Record@ variant
+-- of an @Expr@. Therefore we write a custom Decoder to a @Map@ from a Dhall
+-- @Record@.
 decodeMapSchema :: Dhall.Decoder v -> DhallExpr -> Dhall.Decoder (Map v)
 decodeMapSchema decodeVal schema = Dhall.Decoder extractOut expectedOut
  where
@@ -123,12 +134,12 @@ decodeMapSchema decodeVal schema = Dhall.Decoder extractOut expectedOut
   extractOut expr = Dhall.typeError expectedOut expr
   expectedOut = pure schema
 
--- | Build a @(Decoder (Map v)) using the generically derived decoder for @v,
+-- | Build a @Decoder (Map v)@ using the generically derived decoder for @v@,
 -- provided a Dhall Record schema.
 decodeMapSchemaAuto :: (Dhall.FromDhall v) => DhallExpr -> Dhall.Decoder (Map v)
 decodeMapSchemaAuto = decodeMapSchema Dhall.auto
 
--- | Decode a @(Map v) from Dhall program text and a Dhall Record schema.
+-- | Decode a @Map v@ from Dhall program text and a Dhall Record schema.
 mapInputSchema :: (Dhall.FromDhall v) => DhallExpr -> T.Text -> IO (Map v)
 mapInputSchema = Dhall.input . decodeMapSchema Dhall.auto
 

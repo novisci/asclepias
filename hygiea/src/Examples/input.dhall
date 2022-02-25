@@ -1,1 +1,1 @@
-List { concepts : Text, facts : Text, begin : Natural, end : Natural }
+List { concepts : Text, facts : Text, begin : Integer, end : Integer }

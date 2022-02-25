@@ -31,7 +31,8 @@ library
         , Test.Hygiea.HygieaException
         , Test.Hygiea.Parse
         , Test.Tasty.Hygiea
-        -- TODO don't expose these
+        -- TODO remove or relocate
+        , Examples.Simple
 
     -- Modules included in this library but not exported.
     other-modules: 
@@ -50,7 +51,7 @@ library
         -- NOTE: edm module fixes interval-algebra version
         -- though hygiea does not depend on edm at all, cabal seems to think
         -- its dependencies must be consistent.  
-        , interval-algebra ^>=1.1
+        , interval-algebra ^>=1.2
         , containers >=0.6.5
         , text >=1.2
         , dhall >=1.40
@@ -75,8 +76,10 @@ executable planning
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:
     build-depends:
-        base ^>=4.14.1.0,
-        hygiea
+        base ^>=4.14.1.0
+        , hygiea
+        -- TODO remove once no longer needed for examples
+        , tasty >= 1.4
 
     hs-source-dirs:   app
     default-language: Haskell2010

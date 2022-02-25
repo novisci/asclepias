@@ -11,16 +11,17 @@
 module Test.Hygiea.Internal.Event where
 
 import           Control.Applicative
+import           Data.Aeson                     ( ToJSON(..) )
 import           Data.Text                      ( Text )
 import           GHC.Generics                   ( Generic )
-import           Test.Hygiea.Internal.Atomic
-import           Test.Hygiea.Map
-import           IntervalAlgebra                ( Interval
-                                                , PairedInterval
+import           IntervalAlgebra                ( Interval(..)
+                                                , PairedInterval(..)
                                                 , makePairedInterval
                                                 , parseInterval
                                                 )
 import           Prelude                 hiding ( lookup )
+import           Test.Hygiea.Internal.Atomic
+import           Test.Hygiea.Map
 import           Witch.From
 import           Witch.TryFrom
 import           Witch.TryFromException
@@ -46,6 +47,13 @@ data CensoredOccurrence d c a = MkCensoredOccurrence
   , time   :: PairedInterval c a
   }
   deriving (Eq, Show, Generic)
+
+-- TODO these are just filling in for IntervalAlgebra, EDM
+instance (ToJSON i) => ToJSON (Interval i)
+instance (ToJSON d, ToJSON i) => ToJSON (PairedInterval d i)
+instance (ToJSON d, ToJSON c) => ToJSON (Context d c)
+instance (ToJSON d, ToJSON c, ToJSON a) => ToJSON (Event d c a)
+instance (ToJSON d, ToJSON c, ToJSON a) => ToJSON (CensoredOccurrence d c a)
 
   {- Pre-built conversions.
 

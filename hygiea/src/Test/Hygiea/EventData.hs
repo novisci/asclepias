@@ -2,8 +2,10 @@
 module Test.Hygiea.EventData
   ( Event(..)
   , Context(..)
+  , CensoredOccurrence(..)
   ) where
 
-import           Test.Hygiea.Internal.Event     ( Context(..)
+import           Test.Hygiea.Internal.Event     ( CensoredOccurrence(..)
+                                                , Context(..)
                                                 , Event(..)
                                                 )

@@ -9,9 +9,14 @@
 {-# LANGUAGE ConstraintKinds #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
-module Test.Tasty.Hygiea where
+module Test.Tasty.Hygiea
+  ( RoutineContext
+  , Routine(..)
+  , RoutineElem(..)
+  , hTest
+  ) where
 
-import           Data.Proxy
+import Data.Proxy
 import           Data.Typeable                  ( Typeable )
 import           Test.Hygiea.HygieaException
 import           Test.Hygiea.Map
@@ -61,6 +66,7 @@ data Routine
   . (RoutineContext input output) =>
     Golden (RoutineElem input) (RoutineElem output)
 
+-- TODO this API is a good source of user error and probably should be changed. 
 
 -- | Structure wrapping a @csvFile@ path, a
 -- corresponding @dhallSchema@ specifying column names
@@ -70,11 +76,11 @@ data Routine
 data RoutineElem a = MkRoutineElem
   { csvFile     :: String
   , dhallSchema :: String
-  , elemType    :: Proxy a
+  , elemType :: Proxy a
   }
   deriving (Show, Eq)
 
--- | TODO
+-- | TODO bad naming
 hTest :: TestName -> Routine -> TestTree
 hTest name (Golden rin rout) = runGolden name rin rout
 
@@ -100,6 +106,8 @@ data ProcessedElems input output = MkProcessedElems
 -- TODO consider whether JSON is the best output format.
 -- TODO we need a file organization/naming convention. For now, just dump
 -- things to where they came from.
+
+-- TODO TODO for some reason golden file does not get produced for inspection
 
 -- | TODO compare with goldenVsFile from tasty-silver
 runGolden

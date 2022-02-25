@@ -1,8 +1,12 @@
-{-| Test.Tasty framework for @Hygiea@. 
+{-| 
+   Test.Tasty tree-builders for @Hygiea@. 
+   
+
   -}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ExistentialQuantification #-}
 {-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE ConstraintKinds #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
 module Test.Tasty.Hygiea where
@@ -19,29 +23,44 @@ import           Test.Tasty.Options             ( IsOption(..)
                                                 )
 import           Test.Tasty.Providers           ( IsTest(..)
                                                 , Result(..)
+                                                , TestName
+                                                , TestTree
                                                 , testFailed
                                                 , testPassed
                                                 )
 
+import           Test.Tasty.Silver.Internal     ( GDiff(..)
+                                                , GShow(..)
+                                                )
+
 import           Data.Aeson                     ( ToJSON(..)
+                                                , encode
                                                 , encodeFile
                                                 )
+import           Data.ByteString.Lazy           ( toStrict )
+import qualified Data.Text                     as T
+import           Data.Text.Encoding             ( decodeUtf8 )
+import qualified Data.Text.IO
 import           System.FilePath                ( replaceExtension )
+import           Test.Tasty.Silver.Advanced     ( goldenTest1 )
 import           Witch.TryFrom
 
-  {- Test constructors -}
+  {- Test constructors and types -}
+-- TODO rethink api here, to make it easier to use.
 
--- TODO
+-- | Context alias for constraints required in testing routines.
+type RoutineContext input output
+  = (ToJSON input, ToJSON output, Testable input output)
 
+-- TODO add Unit and IGolden variants
 
-  {- Internals -}
+-- | A pair of @RoutineElem@ for text-based input and output, used to run
+-- tests. Variants specify in which framework tests should be run.
+data Routine
+  = forall input output
+  . (RoutineContext input output) =>
+    Golden (RoutineElem input) (RoutineElem output)
 
--- | In the return type of processElems. Note @input@, @output@ typically are
--- lists of some unit type that implements @TryFrom [TestMap]@.
-data ProcessedElems input output = MkProcessedElems
-  { getInput  :: input
-  , getOutput :: output
-  }
 
 -- | Structure wrapping a @csvFile@ path, a
 -- corresponding @dhallSchema@ specifying column names
@@ -55,10 +74,138 @@ data RoutineElem a = MkRoutineElem
   }
   deriving (Show, Eq)
 
--- | The test provider structure: a pair of @RoutineElem
--- input@ and @RoutineElem output@ such that @Testable
--- input output@. Note the @ToJSON@ constraint, used for golden testing. The
--- choice of output format might change. In particular, if the output is chosen
+-- | TODO
+hTest :: TestName -> Routine -> TestTree
+hTest name (Golden rin rout) = runGolden name rin rout
+
+  {- Internals -}
+
+-- | In the return type of processElems. Note @input@, @output@ typically are
+-- lists of some unit type that implements @TryFrom [TestMap]@. Carries with it
+-- the Csv file names from which inputs/outputs were built.
+data ProcessedElems input output = MkProcessedElems
+  { getInput  :: input
+  , inputCsv  :: String
+  , getOutput :: output
+  , outputCsv :: String
+  }
+
+
+
+  {- Framework-specific tree-builders -}
+  -- TODO change these from result-builders to tree-builders
+
+  -- GOLDEN
+
+-- TODO consider whether JSON is the best output format.
+-- TODO we need a file organization/naming convention. For now, just dump
+-- things to where they came from.
+
+-- | TODO compare with goldenVsFile from tasty-silver
+runGolden
+  :: forall input output
+   . (RoutineContext input output)
+  => TestName
+  -> RoutineElem input
+  -> RoutineElem output
+  -> TestTree
+runGolden name i o = goldenTest1 name
+                                 expected
+                                 actual
+                                 textLikeDiff
+                                 textLikeShow
+                                 update
+ where
+  procData = processElems i o
+  -- NOTE: failures in generating procData are thrown in processElems,
+  -- which gives richer info than if 'Nothing' were provided for expected
+  expected = fmap (Just . encodeText . getOutput) procData
+  actual   = procData >>= runGoldenActual
+  path     = replaceExtension (csvFile o) "golden"
+  -- TODO any point in re-encoding as utf8 before write?
+  update   = Data.Text.IO.writeFile path
+
+-- | TODO
+runGoldenActual
+  :: forall input output
+   . (RoutineContext input output)
+  => ProcessedElems input output
+  -> IO T.Text
+runGoldenActual procData = do
+  let oActual = (toOutput @input @output) $ getInput procData
+  return $ encodeText oActual
+
+-- | Read csv and schema, parse schema into [TestMap] and attempt conversion to
+-- input and output types. Fails if any step of the process returns an
+-- exception. This is the first step of running Hygiea tests using any
+-- framework option.
+processElems
+  :: (Testable input output)
+  => RoutineElem input
+  -> RoutineElem output
+  -> IO (ProcessedElems input output)
+processElems i o = do
+  -- read schema
+  iSchema <- parseDhallFile $ dhallSchema i
+  oSchema <- parseDhallFile $ dhallSchema o
+  -- build decoders
+  let iDecoder = decodeMapSchemaAuto @TestAtomic iSchema
+  let oDecoder = decodeMapSchemaAuto @TestAtomic oSchema
+  -- parse Csv with decoder into [TestMap]
+  iData <- tryParseRecordsCsv iDecoder $ csvFile i
+  oData <- tryParseRecordsCsv oDecoder $ csvFile o
+
+  -- Convert from [TestMap]
+  -- NOTE input element failure always takes precedent
+  -- in most cases, [TestMap] will be converted to input/output of the form
+  -- [v] for some v.
+  case (iData, oData) of
+    (Right ii, Right oo) ->
+      case (tryFrom @[TestMap] ii, tryFrom @[TestMap] oo) of
+        (Right iOut, Right oOut) ->
+          return $ MkProcessedElems iOut (csvFile i) oOut (csvFile o)
+        (Right _  , Left err) -> fail $ show $ ConversionException err
+        (Left  err, _       ) -> fail $ show $ ConversionException err
+    (Right _  , Left err) -> fail $ show err
+    (Left  err, _       ) -> fail $ show err
+
+
+  {- Utilities -}
+
+-- Write JSON files, or encode as text
+encodeText :: (ToJSON a) => a -> T.Text
+encodeText = decodeUtf8 . toStrict . encode
+
+writeJSONWithExt :: (ToJSON a) => String -> String -> a -> IO ()
+writeJSONWithExt ext path d = do
+  let file = replaceExtension path ext
+  encodeFile file d
+
+-- | Create a JSON golden file from @a@, writing to @path@ with extension
+-- modified to be ".golden."
+writeGoldenFile :: (ToJSON a) => String -> a -> IO ()
+writeGoldenFile = writeJSONWithExt "golden"
+
+-- | Create a JSON golden file from @a@, writing to @path@ with extension
+-- modified to be ".json."
+writeOutputFile :: (ToJSON a) => String -> a -> IO ()
+writeOutputFile = writeJSONWithExt "json"
+
+-- copy-paste from tasty-silver
+textLikeShow :: T.Text -> GShow
+textLikeShow = ShowText
+
+textLikeDiff :: T.Text -> T.Text -> GDiff
+textLikeDiff x y | x == y    = Equal
+                 | otherwise = DiffText Nothing x y
+
+
+  {- OLD EXPERIMENT -}
+
+  -- TODO this is for discussion. remove it.
+
+  {-
+-- | The test provider structure: a pair of @RoutineElem input@ and @RoutineElem output@ such that @Testable input output@. Note the @ToJSON@ constraint, used for golden testing. The choice of output format might change. In particular, if the output is chosen
 -- to be csv of the same format as the expected 'ouptut' provided, then the
 -- 'golden' file need not be written out and the user-provided file can serve
 -- that purpose.
@@ -100,78 +247,4 @@ runRoutine :: Framework -> Routine -> IO Result
 runRoutine framewk (Routine input output) = case framewk of
   Golden -> runGolden input output
 
-runGolden
-  :: forall input output
-   . (ToJSON input, ToJSON output, Testable input output)
-  => RoutineElem input
-  -> RoutineElem output
-  -> IO Result
-runGolden i o = do
-  procData <- processElems i o
-  let oExpected = getOutput procData
-  let oActual   = (toOutput @input @output) $ getInput procData
-
-  -- Write golden and output files, returning file paths
-  fileExpected <- writeGoldenFile o oExpected
-  fileActual   <- writeOutputFile o oActual
-
-  -- TODO run the tests
-
-  return $ testPassed "TODO: this is dummy output. you didn't test anything."
-
--- | Read csv and schema, parse schema into TestMap and attempt conversion to
--- input and output types. Fails if any step of the process returns an
--- exception. This is the first step of running Hygiea tests using any
--- framework option.
-processElems
-  :: (Testable input output)
-  => RoutineElem input
-  -> RoutineElem output
-  -> IO (ProcessedElems input output)
-processElems i o = do
-  -- read schema
-  iSchema <- parseDhallFile $ dhallSchema i
-  oSchema <- parseDhallFile $ dhallSchema o
-  -- build decoders
-  let iDecoder = decodeMapSchemaAuto @TestAtomic iSchema
-  let oDecoder = decodeMapSchemaAuto @TestAtomic oSchema
-  -- parse Csv with decoder into [TestMap]
-  iData <- tryParseRecordsCsv iDecoder $ csvFile i
-  oData <- tryParseRecordsCsv oDecoder $ csvFile o
-
-  -- NOTE input element failure always takes precedent
-  -- in most cases, [TestMap] will be converted to input/output of the form
-  -- [v] for some v.
-  case (iData, oData) of
-    (Right ii, Right oo) ->
-      case (tryFrom @[TestMap] ii, tryFrom @[TestMap] oo) of
-        (Right iOut, Right oOut) -> return $ MkProcessedElems iOut oOut
-        (Right _   , Left err  ) -> fail $ show $ ConversionException err
-        (Left  err , _         ) -> fail $ show $ ConversionException err
-    (Right _  , Left err) -> fail $ show err
-    (Left  err, _       ) -> fail $ show err
-
-
-  {- Utilities -}
-
--- TODO consider whether JSON is the best output format.
---
--- TODO we need a file organization/naming convention. For now, just dump
--- things to where they came from.
-
-writeJSONWithExt :: (ToJSON a) => String -> RoutineElem a -> a -> IO String
-writeJSONWithExt ext elem d = do
-  let file = replaceExtension (csvFile elem) ext
-  encodeFile file d
-  return file
-
--- | Create a JSON golden file from @a@, writing to @RoutineElem a@ @csvFile@
--- field with extension modified to be ".golden." Returns the modified file
--- path.
-writeGoldenFile :: (ToJSON a) => RoutineElem a -> a -> IO String
-writeGoldenFile = writeJSONWithExt "golden"
-
--- | Create a JSON file from @a@, writing to @RoutineElem a@ @csvFile@ field
--- with extension modified to be ".json." Returns the modified file path.
-writeOutputFile :: (ToJSON a) => RoutineElem a -> a -> IO String
-writeOutputFile = writeJSONWithExt "json"
+-}

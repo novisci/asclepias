@@ -74,7 +74,7 @@ data Routine
   . (RoutineContext input output) =>
     Golden (RoutineElem input) (RoutineElem output)
 
--- TODO this API is a good source of user error and probably should be changed. 
+-- TODO this API is a likely source of user error and probably should be changed.
 
 -- | Structure wrapping a @csvFile@ path, a
 -- corresponding @dhallSchema@ specifying column names
@@ -88,7 +88,11 @@ data RoutineElem a = MkRoutineElem
   }
   deriving (Show, Eq)
 
--- | TODO bad naming
+-- TODO lazy and bad function naming
+
+-- | Main point of entry to for tools from @Test.Hygiea@. Converts a @Routine@
+-- specifying a test framework and text configuration file paths to a
+-- @TestTree@, for inclusion in some @Test.Tasty@ runner.
 hTest :: TestName -> Routine -> TestTree
 hTest name (Golden rin rout) = runGolden name rin rout
 
@@ -115,9 +119,10 @@ data ProcessedElems input output = MkProcessedElems
 -- TODO we need a file organization/naming convention. For now, just dump
 -- things to where they came from.
 
--- TODO TODO for some reason golden file does not get produced for inspection
+-- TODO ASAP for some reason golden file does not get produced for inspection
 
--- | TODO compare with goldenVsFile from tasty-silver
+-- | Unexported tree-builder for golden tests, via `tasty-silver`. Compare with
+-- `goldenVsFile`.
 runGolden
   :: forall input output
    . (RoutineContext input output)

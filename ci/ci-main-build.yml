@@ -1,5 +1,4 @@
 # The main build pipeline
-
 stages:
   - prep
   - build

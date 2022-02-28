@@ -9,7 +9,6 @@ Maintainer  : bsaul@novisci.com
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE TupleSections #-}
 
 module Hasklepias.MakeCohortApp
   ( CohortApp(..)
@@ -113,19 +112,9 @@ makeAppArgs name version = Options.Applicative.info
 Creates a cohort builder function
 -}
 makeCohortBuilder
-  :: ( Show d
-     , Eq d
-     , Generic d
-     , FromJSON d
+  :: ( Eventable d c a
+     , FromJSONEvent d c a
      , Typeable d
-     , Show c
-     , Eq c
-     , Ord c
-     , Typeable c
-     , FromJSON c
-     , FromJSON a
-     , Typeable a
-     , Show a
      , IntervalSizeable a b
      , ToJSON d0
      , ShapeCohort d0 i
@@ -136,16 +125,9 @@ makeCohortBuilder
   -> B.ByteString
   -> m ([LineParseError], CohortMap d0 i)
 makeCohortBuilder opts specs x = do
-  -- TODO: clean this up
-  let dat = parseEventLinesL defaultParseEventLineOption x
-  let err          = fst dat
   let doEvaluation = makeCohortSpecsEvaluator opts specs
-  let pop          = mapIntoPop $ snd dat
-  let res          = doEvaluation pop
-  let res2         = (err, ) =<< res
-
-  pure res2
-
+  let dat = second mapIntoPop $ parseEventLinesL defaultParseEventLineOption x
+  pure $ doEvaluation =<< dat
 
 
 reshapeCohortMap
@@ -173,19 +155,9 @@ newtype CohortApp m = MkCohortApp { runCohortApp :: Maybe Location -> m B.ByteSt
 
 -- | Make a command line cohort building application.
 makeCohortApp
-  :: ( Show d
-     , Eq d
-     , Generic d
-     , FromJSON d
+  :: ( Eventable d c a
+     , FromJSONEvent d c a
      , Typeable d
-     , Show c
-     , Eq c
-     , Ord c
-     , Typeable c
-     , FromJSON c
-     , FromJSON a
-     , Typeable a
-     , Show a
      , IntervalSizeable a b
      , ToJSON d0
      , ShapeCohort d0 i

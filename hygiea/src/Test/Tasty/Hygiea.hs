@@ -9,8 +9,8 @@
 
    Initially the thought was to make a `Test.Tasty` provider, but that to be unnecessary and undesireable. See a large comment with example code in that direction at the bottom of this module's source code.
    
-
   -}
+
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE ExistentialQuantification #-}
 {-# LANGUAGE TypeApplications #-}
@@ -49,15 +49,19 @@ import           Data.Aeson                     ( ToJSON(..)
                                                 , encode
                                                 , encodeFile
                                                 )
-import           Data.ByteString.Lazy           ( toStrict )
+import qualified Data.ByteString               as BS
+import qualified Data.ByteString.Lazy          as B
 import qualified Data.Text                     as T
-import           Data.Text.Encoding             ( decodeUtf8 )
+import           Data.Text.Encoding             ( decodeUtf8
+                                                , encodeUtf8
+                                                )
 import qualified Data.Text.IO
 import           System.FilePath                ( replaceExtension )
 import           Test.Tasty.Silver.Advanced     ( goldenTest1 )
 import           Witch.TryFrom
 
   {- Test constructors and types -}
+
 -- TODO rethink api here, to make it easier to use.
 
 -- | Context alias for constraints required in testing routines.
@@ -77,9 +81,9 @@ data Routine
 
 -- | Structure wrapping a @csvFile@ path, a
 -- corresponding @dhallSchema@ specifying column names
--- and types, and @elemType@, a proxy to the Haskell
--- type to which the csv should be converted by way of
--- @[TestMap]@. 
+-- and types. The type to which the csv should be converted by way of
+-- @[TestMap]@ is the phantom @a@, which should be specified using
+-- `TypeApplications`.
 data RoutineElem a = MkRoutineElem
   { csvFile     :: String
   , dhallSchema :: String
@@ -138,13 +142,28 @@ runGolden name i o = goldenTest1 name
   procData = processElems i o
   -- NOTE: failures in generating procData are thrown in processElems,
   -- which gives richer info than if 'Nothing' were provided for expected
-  expected = fmap (Just . encodeText . getOutput) procData
+  expected = procData >>= fmap Just . runGoldenExpected
   actual   = procData >>= runGoldenActual
   path     = replaceExtension (csvFile o) "golden"
-  -- TODO any point in re-encoding as utf8 before write?
-  update   = Data.Text.IO.writeFile path
+  -- NOTE comments about UTF-8
+  -- https://hackage.haskell.org/package/text-2.0/docs/Data-Text-IO.html
+  update   = BS.writeFile path . encodeUtf8
 
--- | TODO
+-- | Convert the expected output in @getOutput@ to @Text@, creating the actual
+-- `.golden` file in the process. Writing out the file is not necessary to run
+-- the test, but it is useful in allowing later inspection.
+runGoldenExpected
+  :: forall input output
+   . (RoutineContext input output)
+  => ProcessedElems input output
+  -> IO T.Text
+runGoldenExpected procData = do
+  let txt = encodeText $ getOutput procData
+  -- NOTE converting to text before writing
+  writeGoldenFile (outputCsv procData) txt
+  return txt
+
+-- | Convert processed @input@ to @output@ via @toOutput@ and encode as JSON. Note the actual @getOutput@ data field from the @ProcessedElems@ is not used here: Only the type @output@ matters, used in the conversion. See @runGoldenExpected@.
 runGoldenActual
   :: forall input output
    . (RoutineContext input output)
@@ -193,7 +212,7 @@ processElems i o = do
 
 -- Write JSON files, or encode as text
 encodeText :: (ToJSON a) => a -> T.Text
-encodeText = decodeUtf8 . toStrict . encode
+encodeText = decodeUtf8 . B.toStrict . encode
 
 writeJSONWithExt :: (ToJSON a) => String -> String -> a -> IO ()
 writeJSONWithExt ext path d = do

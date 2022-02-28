@@ -10,31 +10,27 @@ Maintainer  : bsaul@novisci.com
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE NoImplicitPrelude #-}
 module ExampleFeatures2
-  ( exampleFeatures2Spec
+  ( durationOfHospitalizedAntibiotics
   ) where
 
-import           ExampleEvents
 import           Hasklepias
-import           Test.Hspec
+
+type ConceptEvent a = PairedInterval (Concepts Text) a
+
+toConceptEvent :: (Ord a) => Event ClaimsSchema Text a -> ConceptEvent a
+toConceptEvent x =  makePairedInterval (getConcepts $ getContext x) (getInterval x)
 
 durationOfHospitalizedAntibiotics
-  :: (Show a, IntervalSizeable a b) => Events a -> FeatureData [b]
-durationOfHospitalizedAntibiotics es | null y = featureDataL $ Other "no cases"
-                                     | otherwise = pure $ durations y
- where
-  conceptsText = ["wasHospitalized", "tookAntibiotics"]
-  concepts     = map packConcept conceptsText
-  x            = formMeetingSequence (map (toConceptEventOf concepts) es)
-  y            = filter (\z -> hasAllConcepts (getPairData z) conceptsText) x
-
-
-exampleFeatures2Spec :: Spec
-exampleFeatures2Spec = do
-
-  it "durationOfHospitalizedAntibiotics from exampleEvents1"
-    $          durationOfHospitalizedAntibiotics exampleEvents1
-    `shouldBe` featureDataL (Other "no cases")
-
-  it "durationOfHospitalizedAntibiotics from exampleEvents3"
-    $          durationOfHospitalizedAntibiotics exampleEvents3
-    `shouldBe` pure [3, 2]
+  :: (Show a, IntervalSizeable a b, Ord a) => [Event ClaimsSchema Text a] -> FeatureData [b]
+durationOfHospitalizedAntibiotics =
+     filter (`hasAnyConcepts` cpts)
+  .> fmap toConceptEvent
+  .> \x -> if null x then
+        featureDataL $ Other "no cases"
+      else
+        x
+        |> formMeetingSequence
+        |> filter (\z -> hasAllConcepts (getPairData z) cpts )
+        |> durations
+        |> pure
+  where cpts = ["tookAntibiotics", "wasHospitalized"] :: [Text]

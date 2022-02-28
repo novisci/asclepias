@@ -24,7 +24,6 @@ module Test.Tasty.Hygiea
   , hTest
   ) where
 
-import Data.Proxy
 import           Data.Typeable                  ( Typeable )
 import           Test.Hygiea.HygieaException
 import           Test.Hygiea.Map
@@ -84,7 +83,6 @@ data Routine
 data RoutineElem a = MkRoutineElem
   { csvFile     :: String
   , dhallSchema :: String
-  , elemType :: Proxy a
   }
   deriving (Show, Eq)
 

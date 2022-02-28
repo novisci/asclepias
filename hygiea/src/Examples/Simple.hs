@@ -1,9 +1,9 @@
+{-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE FlexibleInstances #-}
 module Examples.Simple where
 
-import           Data.Proxy
 -- NOTE dhall imports are just for this example and not needed for a typical
 -- project
 import           Data.Text                      ( Text )
@@ -36,29 +36,22 @@ inputDhall, outputDhall :: String
 inputDhall = projPath </> "input.dhall"
 outputDhall = replaceFileName inputCsv "output.dhall"
 
-inputType :: Proxy [ProjEvent]
-inputType = Proxy
-
-outputType :: Proxy [ProjOccurrence]
-outputType = Proxy
-
 myRoutine :: Routine
-myRoutine = Golden (MkRoutineElem inputCsv inputDhall inputType)
-                   (MkRoutineElem outputCsv outputDhall outputType)
+myRoutine = Golden (MkRoutineElem @[ProjEvent] inputCsv inputDhall)
+                   (MkRoutineElem @[ProjOccurrence] outputCsv outputDhall)
 
 badInputCsv, badOutputCsv :: String
 badInputCsv = replaceFileName outputCsv "input_bad.csv"
 badOutputCsv = replaceFileName outputCsv "output_bad.csv"
 
 myBadRoutine :: Routine
-myBadRoutine = Golden (MkRoutineElem inputCsv inputDhall inputType)
-                   (MkRoutineElem badOutputCsv outputDhall outputType)
+myBadRoutine = Golden (MkRoutineElem @[ProjEvent] inputCsv inputDhall)
+                   (MkRoutineElem @[ProjOccurrence] badOutputCsv outputDhall)
 
 myMisspecRoutine :: Routine
-myMisspecRoutine = Golden (MkRoutineElem badInputCsv inputDhall inputType)
-                   (MkRoutineElem outputCsv outputDhall outputType)
+myMisspecRoutine = Golden (MkRoutineElem @[ProjEvent] badInputCsv inputDhall)
+                   (MkRoutineElem @[ProjOccurrence] outputCsv outputDhall)
 
---badCsvCols
   {- Other project code -}
 
 -- cohort builder: just some nonsense

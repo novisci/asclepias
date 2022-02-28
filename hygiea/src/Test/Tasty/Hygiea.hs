@@ -144,6 +144,7 @@ runGolden name i o = goldenTest1 name
   -- which gives richer info than if 'Nothing' were provided for expected
   expected = procData >>= fmap Just . runGoldenExpected
   actual   = procData >>= runGoldenActual
+  -- TODO we're doing this twice. might want to just do it in processElems
   path     = replaceExtension (csvFile o) "golden"
   -- NOTE comments about UTF-8
   -- https://hackage.haskell.org/package/text-2.0/docs/Data-Text-IO.html

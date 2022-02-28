@@ -16,7 +16,7 @@ module ExampleFeatures1
   ( exampleFeatures1Spec
   ) where
 
-import           EventData (containsConcepts)
+import           EventData                      ( containsConcepts )
 import           Hasklepias
 import           Test.Hspec -- imported for test case
 {-
@@ -55,7 +55,10 @@ makeHx cnpts i events =
   where f i = makePairedFilter enclose i (`hasConcepts` cnpts)
 
 duckHx
-  :: (Ord a) => AssessmentInterval a -> [Event ClaimsSchema Text a] -> (Bool, Maybe (Interval a))
+  :: (Ord a)
+  => AssessmentInterval a
+  -> [Event ClaimsSchema Text a]
+  -> (Bool, Maybe (Interval a))
 duckHx = makeHx ["wasBitByDuck", "wasStruckByDuck"]
 
 duckHxDef
@@ -68,7 +71,10 @@ duckHxDef
 duckHxDef = define duckHx
 
 macawHx
-  :: (Ord a) => AssessmentInterval a -> [Event ClaimsSchema Text a] -> (Bool, Maybe (Interval a))
+  :: (Ord a)
+  => AssessmentInterval a
+  -> [Event ClaimsSchema Text a]
+  -> (Bool, Maybe (Interval a))
 macawHx = makeHx ["wasBitByMacaw", "wasStruckByMacaw"]
 
 macawHxDef
@@ -86,7 +92,8 @@ twoXOrOneY x y es = atleastNofX 2 x es || atleastNofX 1 y es
 
 -- | Define an event that identifies whether the subject has two minor or one major
 --   surgery.
-twoMinorOrOneMajor :: (Ord a) => AssessmentInterval a -> [Event ClaimsSchema Text a] -> Bool
+twoMinorOrOneMajor
+  :: (Ord a) => AssessmentInterval a -> [Event ClaimsSchema Text a] -> Bool
 twoMinorOrOneMajor i events =
   twoXOrOneY ["hadMinorSurgery"] ["hadMajorSurgery"] (filterEnclose i events)
 
@@ -102,7 +109,10 @@ twoMinorOrOneMajorDef = define twoMinorOrOneMajor
 -- | Time from end of baseline to end of most recent Antibiotics
 --   with 5 day grace period
 timeSinceLastAntibiotics
-  :: (IntervalSizeable a b) => AssessmentInterval a -> [Event ClaimsSchema Text a] -> Maybe b
+  :: (IntervalSizeable a b)
+  => AssessmentInterval a
+  -> [Event ClaimsSchema Text a]
+  -> Maybe b
 timeSinceLastAntibiotics i =
   lastMay                                 -- want the last one
     . map (max 0 . diff (end i) . end)        -- distances between end of baseline and antibiotic intervals
@@ -150,7 +160,10 @@ so :: Intervallic i a => ComparativePredicateOf1 (i a)
 so = unionPredicates [startedBy, overlappedBy]
 
 discontinuation
-  :: (IntervalSizeable a b) => AssessmentInterval a -> [Event ClaimsSchema Text a] -> Maybe (a, b)
+  :: (IntervalSizeable a b)
+  => AssessmentInterval a
+  -> [Event ClaimsSchema Text a]
+  -> Maybe (a, b)
 discontinuation i events =
   (\x -> Just
       ( begin x       -- we want the begin of this interval 
@@ -222,7 +235,8 @@ includeAll _ _ = criteria $ pure
   (criterion (makeFeature (featureDataR Include) :: Feature "includeAll" Status)
   )
 
-testCohortSpec :: CohortSpec [Event ClaimsSchema Text Int] MyData (Interval Int)
+testCohortSpec
+  :: CohortSpec [Event ClaimsSchema Text Int] MyData (Interval Int)
 testCohortSpec = specifyCohort defineIndexSet includeAll getUnitFeatures
 
 example1results :: MyData
@@ -249,7 +263,10 @@ exampleFeatures1Spec = do
     $          evalCohort testCohortSpec
                           (MkPopulation [exampleSubject1, exampleSubject2])
     `shouldBe` MkCohort
-                 ( MkAttritionInfo 2 2 setFromList
+                 ( MkAttritionInfo
+                   2
+                   2
+                   setFromList
                    [ MkAttritionLevel SubjectHasNoIndex              1
                    , MkAttritionLevel (ExcludedBy (1, "includeAll")) 0
                    , MkAttritionLevel Included                       1

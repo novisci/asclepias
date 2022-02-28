@@ -5,7 +5,8 @@ module Main
 
 import           ExampleCohort1                 ( exampleCohort1tests )
 import           ExampleFeatures1               ( exampleFeatures1Spec )
-import           ExampleFeatures2               ( durationOfHospitalizedAntibiotics )
+import           ExampleFeatures2               ( durationOfHospitalizedAntibiotics
+                                                )
 import           ExampleFeatures3               ( exampleFeatures3Spec )
 import           ExampleFeatures4               ( exampleFeatures4Spec )
 import           Test.Hspec                     ( hspec )

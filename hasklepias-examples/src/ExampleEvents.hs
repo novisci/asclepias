@@ -40,12 +40,18 @@ exampleSubject2 = from ("b" :: Text, exampleEvents2)
 
 type EventData a = (a, a, Text)
 
-toEvent :: (IntervalSizeable a a, Typeable a, Show a) => EventData a -> Event ClaimsSchema Text a
+toEvent
+  :: (IntervalSizeable a a, Typeable a, Show a)
+  => EventData a
+  -> Event ClaimsSchema Text a
 toEvent x = event
   (beginerval (t1 x) (t2 x))
   (context (packConcepts [t3 x]) (Enrollment emptyEnrollmentFact) Nothing)  -- TODO: this used to be `UnimplementedDomain ()`, what should it be now?
 
-toEvents :: (Ord a, Show a, IntervalSizeable a a, Typeable a) => [EventData a] -> [Event ClaimsSchema Text a]  -- TODO: change this back once the signature for `toEvent` is fixed
+toEvents
+  :: (Ord a, Show a, IntervalSizeable a a, Typeable a)
+  => [EventData a]
+  -> [Event ClaimsSchema Text a]  -- TODO: change this back once the signature for `toEvent` is fixed
 toEvents = sort . map toEvent
 
 t1 :: (a, b, c) -> a

@@ -18,9 +18,9 @@ module ExampleCohort1
   ( -- exampleCohort1tests
   ) where
 import           AssessmentIntervals
--- import           Cohort.Attrition
-import           Hasklepias -- imported for test cases
 import           Features.Featureable
+-- import           Cohort.Attrition
+import           Hasklepias  -- imported for test cases
 
 {-------------------------------------------------------------------------------
   Constants
@@ -66,7 +66,10 @@ beforeIndex :: Intervallic i Day => Interval Day -> i Day -> Bool
 beforeIndex = before
 
 -- | Creates a filter for events to those that 'concur' with the baseline interval.
-getBaselineConcur :: Interval Day -> [Event ClaimsSchema Text Day] -> [Event ClaimsSchema Text Day]
+getBaselineConcur
+  :: Interval Day
+  -> [Event ClaimsSchema Text Day]
+  -> [Event ClaimsSchema Text Day]
 getBaselineConcur index = filterConcur (baselineInterval index)
 
 {-------------------------------------------------------------------------------
@@ -85,8 +88,13 @@ twoOutOneIn
        -> Feature "allEvents" [Event ClaimsSchema Text Day]
        -> Feature name Bool
        )
-twoOutOneIn cpts1 cpts2 = buildNofXOrNofYWithGapBool
-    1 (containsConcepts cpts1) 1 7 baselineInterval concur (containsConcepts cpts2)
+twoOutOneIn cpts1 cpts2 = buildNofXOrNofYWithGapBool 1
+                                                     (containsConcepts cpts1)
+                                                     1
+                                                     7
+                                                     baselineInterval
+                                                     concur
+                                                     (containsConcepts cpts2)
 
 -- | Defines a feature that returns 'True' ('False' otherwise) if either:
 --   * any events concuring with baseline with concepts in 'cpts' have a 
@@ -123,7 +131,9 @@ medHx cpt = define
 -------------------------------------------------------------------------------}
 
 -- | Lift a subject's events in a feature
-featureEvents :: [Event ClaimsSchema Text Day] -> Feature "allEvents" [Event ClaimsSchema Text Day]
+featureEvents
+  :: [Event ClaimsSchema Text Day]
+  -> Feature "allEvents" [Event ClaimsSchema Text Day]
 featureEvents = pure
 
 -- | The subject's age at time of index. Returns an error if there no birth year
@@ -156,7 +166,13 @@ deathDay
        -> Feature "deathDay" (Maybe (Interval Day))
        )
 deathDay = define
-  (\events -> events |> filterEvents (containsConcepts ["is_death"]) |> fmap getEvent |> intervals |> headMay)
+  (\events ->
+    events
+      |> filterEvents (containsConcepts ["is_death"])
+      |> fmap getEvent
+      |> intervals
+      |> headMay
+  )
 
 {-------------------------------------------------------------------------------
   Inclusion/Exclusion features 
@@ -164,11 +180,15 @@ deathDay = define
 
 -- | Include the subject if female; Exclude otherwise
 critFemale
-  :: Definition (Feature "allEvents" [Event ClaimsSchema Text Day] -> Feature "isFemale" Status)
+  :: Definition
+       (  Feature "allEvents" [Event ClaimsSchema Text Day]
+       -> Feature "isFemale" Status
+       )
 critFemale = define
-  (\events -> events |> filterEvents (containsConcepts ["is_female"]) |> headMay |> \case
-    Nothing -> Exclude
-    Just _  -> Include
+  (\events ->
+    events |> filterEvents (containsConcepts ["is_female"]) |> headMay |> \case
+      Nothing -> Exclude
+      Just _  -> Include
   )
 
 -- | Include the subject if over 50; Exclude otherwise.
@@ -262,7 +282,8 @@ instance HasAttributes  "glucocorticoids" Bool where
   Cohort Specifications and evaluation
 -------------------------------------------------------------------------------}
 
-makeIndexRunner :: Interval Day -> [Event ClaimsSchema Text Day] -> IndexSet (Interval Day)
+makeIndexRunner
+  :: Interval Day -> [Event ClaimsSchema Text Day] -> IndexSet (Interval Day)
 makeIndexRunner i _ = makeIndexSet [i]
 
 -- | Make a function that runs the criteria for a calendar index
@@ -288,7 +309,8 @@ instance HasAttributes "calendarIndex" (Interval Day) where
 instance ToJSON (Interval Day) where
 
 -- | Make a function that runs the features for a calendar index
-makeFeatureRunner :: Interval Day -> [Event ClaimsSchema Text Day] -> Featureset
+makeFeatureRunner
+  :: Interval Day -> [Event ClaimsSchema Text Day] -> Featureset
 makeFeatureRunner index events = featureset
   (  packFeature idx
   :| [ packFeature $ eval diabetes idx ef
@@ -321,7 +343,14 @@ evalCohorts = makeCohortSpecsEvaluator defaultCohortEvalOptions cohortSpecs
   Testing
   This would generally be in a separate file
 -------------------------------------------------------------------------------}
-m :: Year -> MonthOfYear -> Int -> Integer -> [Text] -> ClaimsSchema -> Event ClaimsSchema Text Day
+m
+  :: Year
+  -> MonthOfYear
+  -> Int
+  -> Integer
+  -> [Text]
+  -> ClaimsSchema
+  -> Event ClaimsSchema Text Day
 m y m d dur c dmn = event ctx itv where
   itv = context (packConcepts c) dmn Nothing
   ctx = beginerval dur (fromGregorian y m d)
@@ -414,13 +443,15 @@ expectedFeatures1 = map
   ]
 
 expectedObsUnita :: [ObsUnit Featureset Int]
-expectedObsUnita =
-  map from pairs where
-  pairs = zip (replicate 5 (makeObsID (1 :: Int) ("a" :: Text))) expectedFeatures1
+expectedObsUnita = map from pairs where
+  pairs =
+    zip (replicate 5 (makeObsID (1 :: Int) ("a" :: Text))) expectedFeatures1
 
 
 makeExpectedCohort
-  :: AttritionInfo -> [ObsUnit ClaimsSchema Featureset] -> Cohort ClaimsSchema Featureset
+  :: AttritionInfo
+  -> [ObsUnit ClaimsSchema Featureset]
+  -> Cohort ClaimsSchema Featureset
 makeExpectedCohort a x = MkCohort (a, into x)
 
 -- mkAl :: (CohortStatus, Natural) -> AttritionLevel
@@ -429,77 +460,93 @@ makeExpectedCohort a x = MkCohort (a, into x)
 expectedCohorts :: [Cohort Featureset Int]
 expectedCohorts = zipWith
   (curry MkCohort)
-  [ makeTestAttritionInfo 2 2
-    [ (SubjectHasNoIndex, 0)
-    , (ExcludedBy (1, "isFemale"), 0)
-    , (ExcludedBy (2, "isOver50"), 1)
-    , (ExcludedBy (3, "isEnrolled"), 0)
+  [ makeTestAttritionInfo
+    2
+    2
+    [ (SubjectHasNoIndex                     , 0)
+    , (ExcludedBy (1, "isFemale")            , 0)
+    , (ExcludedBy (2, "isOver50")            , 1)
+    , (ExcludedBy (3, "isEnrolled")          , 0)
     , (ExcludedBy (4, "isContinuousEnrolled"), 1)
-    , (ExcludedBy (5, "isDead"), 0)
-    , (Included, 0)
+    , (ExcludedBy (5, "isDead")              , 0)
+    , (Included                              , 0)
     ]
-  , makeTestAttritionInfo 2 2
-    [ (SubjectHasNoIndex, 0)
-    , (ExcludedBy (1, "isFemale"), 0)
-    , (ExcludedBy (2, "isOver50"), 1)
-    , (ExcludedBy (3, "isEnrolled"), 0)
+  , makeTestAttritionInfo
+    2
+    2
+    [ (SubjectHasNoIndex                     , 0)
+    , (ExcludedBy (1, "isFemale")            , 0)
+    , (ExcludedBy (2, "isOver50")            , 1)
+    , (ExcludedBy (3, "isEnrolled")          , 0)
     , (ExcludedBy (4, "isContinuousEnrolled"), 0)
-    , (ExcludedBy (5, "isDead"), 0)
-    , (Included, 1)
+    , (ExcludedBy (5, "isDead")              , 0)
+    , (Included                              , 1)
     ]
-  , makeTestAttritionInfo 2 2
-    [ (SubjectHasNoIndex, 0)
-    , (ExcludedBy (1, "isFemale"), 0)
-    , (ExcludedBy (2, "isOver50"), 1)
-    , (ExcludedBy (3, "isEnrolled"), 0)
+  , makeTestAttritionInfo
+    2
+    2
+    [ (SubjectHasNoIndex                     , 0)
+    , (ExcludedBy (1, "isFemale")            , 0)
+    , (ExcludedBy (2, "isOver50")            , 1)
+    , (ExcludedBy (3, "isEnrolled")          , 0)
     , (ExcludedBy (4, "isContinuousEnrolled"), 0)
-    , (ExcludedBy (5, "isDead"), 0)
-    , (Included, 1)
+    , (ExcludedBy (5, "isDead")              , 0)
+    , (Included                              , 1)
     ]
-  , makeTestAttritionInfo 2 2
-    [ (SubjectHasNoIndex, 0)
-    , (ExcludedBy (1, "isFemale"), 0)
-    , (ExcludedBy (2, "isOver50"), 1)
-    , (ExcludedBy (3, "isEnrolled"), 0)
+  , makeTestAttritionInfo
+    2
+    2
+    [ (SubjectHasNoIndex                     , 0)
+    , (ExcludedBy (1, "isFemale")            , 0)
+    , (ExcludedBy (2, "isOver50")            , 1)
+    , (ExcludedBy (3, "isEnrolled")          , 0)
     , (ExcludedBy (4, "isContinuousEnrolled"), 0)
-    , (ExcludedBy (5, "isDead"), 0)
-    , (Included, 1)
+    , (ExcludedBy (5, "isDead")              , 0)
+    , (Included                              , 1)
     ]
-  , makeTestAttritionInfo 2 2
-    [ (SubjectHasNoIndex, 0)
-    , (ExcludedBy (1, "isFemale"), 0)
-    , (ExcludedBy (2, "isOver50"), 1)
-    , (ExcludedBy (3, "isEnrolled"), 0)
+  , makeTestAttritionInfo
+    2
+    2
+    [ (SubjectHasNoIndex                     , 0)
+    , (ExcludedBy (1, "isFemale")            , 0)
+    , (ExcludedBy (2, "isOver50")            , 1)
+    , (ExcludedBy (3, "isEnrolled")          , 0)
     , (ExcludedBy (4, "isContinuousEnrolled"), 1)
-    , (ExcludedBy (5, "isDead"), 0)
-    , (Included, 0)
+    , (ExcludedBy (5, "isDead")              , 0)
+    , (Included                              , 0)
     ]
-  , makeTestAttritionInfo 2 2
-    [ (SubjectHasNoIndex, 0)
-    , (ExcludedBy (1, "isFemale"), 0)
-    , (ExcludedBy (2, "isOver50"), 1)
-    , (ExcludedBy (3, "isEnrolled"), 1)
+  , makeTestAttritionInfo
+    2
+    2
+    [ (SubjectHasNoIndex                     , 0)
+    , (ExcludedBy (1, "isFemale")            , 0)
+    , (ExcludedBy (2, "isOver50")            , 1)
+    , (ExcludedBy (3, "isEnrolled")          , 1)
     , (ExcludedBy (4, "isContinuousEnrolled"), 0)
-    , (ExcludedBy (5, "isDead"), 0)
-    , (Included, 0)
+    , (ExcludedBy (5, "isDead")              , 0)
+    , (Included                              , 0)
     ]
-  , makeTestAttritionInfo 2 2
-    [ (SubjectHasNoIndex, 0)
-    , (ExcludedBy (1, "isFemale"), 0)
-    , (ExcludedBy (2, "isOver50"), 1)
-    , (ExcludedBy (3, "isEnrolled"), 1)
+  , makeTestAttritionInfo
+    2
+    2
+    [ (SubjectHasNoIndex                     , 0)
+    , (ExcludedBy (1, "isFemale")            , 0)
+    , (ExcludedBy (2, "isOver50")            , 1)
+    , (ExcludedBy (3, "isEnrolled")          , 1)
     , (ExcludedBy (4, "isContinuousEnrolled"), 0)
-    , (ExcludedBy (5, "isDead"), 0)
-    , (Included, 0)
+    , (ExcludedBy (5, "isDead")              , 0)
+    , (Included                              , 0)
     ]
-  , makeTestAttritionInfo 2 2
-    [ (SubjectHasNoIndex, 0)
-    , (ExcludedBy (1, "isFemale"), 0)
-    , (ExcludedBy (2, "isOver50"), 1)
-    , (ExcludedBy (3, "isEnrolled"), 1)
+  , makeTestAttritionInfo
+    2
+    2
+    [ (SubjectHasNoIndex                     , 0)
+    , (ExcludedBy (1, "isFemale")            , 0)
+    , (ExcludedBy (2, "isOver50")            , 1)
+    , (ExcludedBy (3, "isEnrolled")          , 1)
     , (ExcludedBy (4, "isContinuousEnrolled"), 0)
-    , (ExcludedBy (5, "isDead"), 0)
-    , (Included, 0)
+    , (ExcludedBy (5, "isDead")              , 0)
+    , (Included                              , 0)
     ]
   ]
   (fmap into ([[]] ++ transpose [expectedObsUnita] ++ [[], [], [], []]))

@@ -34,4 +34,4 @@ include::ci/README.adoc[leveloffset=+2]
 
 
 
-include::docs/bibliography.adoc[leveloffset=+1]
+// include::docs/bibliography.adoc[leveloffset=+1]

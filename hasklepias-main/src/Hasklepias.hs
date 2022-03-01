@@ -61,9 +61,6 @@ module Hasklepias
     -- * Rexported Functions and modules
   , module Hasklepias.Reexports
   , module Hasklepias.ReexportsUnsafe
-
-    -- * For constructing certain abstract datatypes
-  , module Witch
   ) where
 
 import           AssessmentIntervals
@@ -84,7 +81,6 @@ import           Hasklepias.ReexportsUnsafe
 import           Templates.Features
 
 import           Stype
-import           Witch
 
 {- $about
 

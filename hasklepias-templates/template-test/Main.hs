@@ -2,8 +2,7 @@ module Main
   ( main
   ) where
 
-import           Templates.Tests                ( templateTests )
-import           Test.Tasty                     ( defaultMain )
+import           Templates.Tests                ( testsMain )
 
 main :: IO ()
-main = defaultMain templateTests
+main = testsMain

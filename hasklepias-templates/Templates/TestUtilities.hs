@@ -22,10 +22,9 @@ module Templates.TestUtilities
   , Solo
   ) where
 
-
-import           Cohort.Index
-
-
+-- #endif
+import           Data.Text                      ( Text )
+import           Data.Tuple.Curry
 -- TODO: find a better way to handle this import and/or figure out how use
 --       gcc on a mac on the haskell c-preprocessor without phutzing with a lot
 --       different settings.
@@ -35,17 +34,17 @@ import           Cohort.Index
 -- import           GHC.Tuple (Solo (Solo))
 -- #else
 import           Data.Tuple.Solo
--- #endif
 import           EventData
-import           Features.Compose               ( Define(..)
+import           EventDataTheory
+import           Features.Core                  ( Define(..)
                                                 , Definition(..)
                                                 , F
                                                 , Feature
                                                 , eval
                                                 )
-import           Hasklepias.Misc
-import           Hasklepias.Reexports
-import           Hasklepias.ReexportsUnsafe
+import           Test.Tasty
+import           Test.Tasty.HUnit
+import           Type.Reflection                ( Typeable )
 
 {-
   a just few utilities for constructing intervals/events
@@ -53,16 +52,22 @@ import           Hasklepias.ReexportsUnsafe
 readIntervalSafe :: (Integral b, IntervalSizeable a b) => (a, a) -> Interval a
 readIntervalSafe (b, e) = beginerval (diff e b) b
 
-makeEnrollmentEvent :: (Integral b, IntervalSizeable a b) => (a, a) -> Event a
+makeEnrollmentEvent
+  :: (Integral b, IntervalSizeable a b, Typeable a, Show a)
+  => (a, a)
+  -> Event ClaimsSchema Text a
 makeEnrollmentEvent intrvl = event
   (readIntervalSafe intrvl)
-  (context (Enrollment emptyEnrollmentFact) mempty Nothing)
+  (context mempty (Enrollment emptyEnrollmentFact) Nothing)
 
 makeEventWithConcepts
-  :: (Integral b, IntervalSizeable a b) => [Text] -> (a, a) -> Event a
+  :: (Integral b, IntervalSizeable a b, Typeable a, Show a)
+  => [Text]
+  -> (a, a)
+  -> Event ClaimsSchema Text a
 makeEventWithConcepts cpts intrvl = event
   (readIntervalSafe intrvl)
-  (context (Enrollment emptyEnrollmentFact) (packConcepts cpts) Nothing)
+  (context (packConcepts cpts) (Enrollment emptyEnrollmentFact) Nothing)
 
 {-
   types/functions for creating test cases and evaluating them
@@ -102,16 +107,19 @@ makeTestCaseOfIndexAndEvents
   => TestName
   -> bargs
   -> (a, a)
-  -> [Event a]
+  -> [Event ClaimsSchema Text a]
   -> returnType
   -> TestCase
-       (F "index" (Index Interval a), F "events" [Event a])
+       ( F "index" (Interval a)
+       , F "events" [Event ClaimsSchema Text a]
+       )
        returnType
        bargs
 makeTestCaseOfIndexAndEvents name buildArgs intrvl e = makeTestCase
   name
   buildArgs
-  (pure (makeIndex (readIntervalSafe intrvl)), pure e)
+  -- (pure (readIntervalSafe intrvl), pure e)
+  (pure (readIntervalSafe intrvl), pure e)
 
 
 makeBuilderAssertion

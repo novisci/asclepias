@@ -13,11 +13,17 @@
 # 2. name of the executable component within the package to build
 # 3. directory in which to place the result
 
+# Ensure we have exactly three positional arguments
+if [ $# -ne 3 ]; then
+    1>&2 echo 'error: expects 3 positional arguments'
+    exit 1
+fi
+
 PKG=$1
 COMPONENT=$2
-VERSION=$(./scripts/get-version-from-cabal.sh "${PKG}"/"${PKG}".cabal)
-EXE="$(./scripts/create-executable-build-path.sh "$PKG" "$VERSION" "$PKG")"
 INSTALLDIR=$3
+
+VERSION=$(./scripts/get-version-from-cabal.sh "${PKG}"/"${PKG}".cabal)
 ARCH=$(uname -m)
 SYS=$(uname -s | tr '[:upper:]' '[:lower:]')
 NAME=${COMPONENT}-${VERSION}-${ARCH}-${SYS}
@@ -25,20 +31,33 @@ BUNDLE=${NAME}.tar.gz
 
 mkdir -p "$INSTALLDIR"
 
+# The commented-out constraints were at one point necessary, but now lead to an
+# error for recent builds (as of 2022-02-01 - DP)
 cabal build "${PKG}":exe:"${COMPONENT}" \
    -j \
    -O2 \
-   --constraint='text +integer-simple' \
-   --constraint='cryptonite -integer-gmp' \
    --enable-executable-static \
+   || exit 1
+   # --constraint='text +integer-simple' \
+   # --constraint='cryptonite -integer-gmp' \
 
-strip "$EXE"
+# Get the path to the executable
+EXE="$(./scripts/create-executable-build-path.sh "$PKG" "$VERSION" "$PKG")"
 
-cp "$EXE" "${INSTALLDIR}"/"${NAME}"
+# Remove symbols from the executable
+strip "$EXE" || exit 1
+apt install -y file  # TODO: remove this once `file` makes it into the Haskell docker container
+if ! file "$EXE" | grep 'statically linked'; then
+    1>&2 echo 'error: the following file is not statically linked:'
+    1>&2 echo "$EXE"
+    exit 1
+fi
 
-tar -czvf "$BUNDLE" "${INSTALLDIR}"/"${NAME}"
+cp "$EXE" "${INSTALLDIR}"/"${NAME}" || exit 1
 
-mv "$BUNDLE" "$INSTALLDIR"/"${BUNDLE}"
+tar -czvf "$BUNDLE" "${INSTALLDIR}"/"${NAME}" || exit 1
+
+mv "$BUNDLE" "$INSTALLDIR"/"${BUNDLE}" || exit 1
 
 echo "$VERSION" >"${INSTALLDIR}"/"${COMPONENT}".version
 echo "$NAME" >"${INSTALLDIR}"/"${COMPONENT}".name

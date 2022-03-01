@@ -1,0 +1,5 @@
+["d", "2010-01-01", null, "Demographics", ["is_female"], {"patient_id": "d","domain":"Demographics","time":{"begin":"2010-01-01","end":null},"facts" : {"demo" : {"field" : "Gender", "info" : "Female"} } }]
+["d", "2016-01-01", "2017-12-31", "Enrollment", ["enrollment"], {"patient_id": "d","domain" : "Enrollment","facts":{"plan":{"exchange":"None"}},"time":{"begin":"2016-01-01","end":"2017-12-31"}}]
+["d", "2017-08-01", "2017-10-31", "Medication", ["is_ppi"], {"patient_id": "d","domain" : "Medication", "time":{"begin":"2017-08-01","end":"2017-10-31"}}]
+["e", "2018-01-01", "2018-01-31", "Enrollment", ["enrollment"], {"patient_id": "e","domain" : "Enrollment","facts":{"plan":{"exchange":"None"}},"time":{"begin":"2018-01-01","end":"2018-01-31"}}]
+["e", "2018-02-01", "2018-03-03", "Enrollment", ["enrollment"], {"patient_id": "e","domain" : "Enrollment","facts":{"plan":{"exchange":"None"}},"time":{"begin":"2018-02-01","end":"2018-03-03"}}]

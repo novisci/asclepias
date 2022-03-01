@@ -10,7 +10,7 @@ module Main
 import qualified Data.ByteString.Lazy          as B
 import           Hasklepias
 import           Hasklepias.ExampleApp
-import           Hasklepias.MakeApp             ( runApp )
+import           Hasklepias.MakeCohortApp       ( runApp )
 import           Test.Tasty                     ( TestTree
                                                 , defaultMain
                                                 , testGroup

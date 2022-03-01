@@ -1,0 +1,10 @@
+:navtitle: Define features
+:toc:
+
+= Defining Features in Ascelpias
+
+#TODO#
+
+[TIP]
+For more explanation on the theory behind features,
+see xref:ROOT:page$theory/theory-of-features.adoc[].

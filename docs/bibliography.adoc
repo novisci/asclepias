@@ -1,4 +1,0 @@
-[bibliography]
-= References
-
-* [[allen83]] J. F. Allen. Maintaining knowledge about temporal intervals. Communications of the ACM, 26(11), 1983.

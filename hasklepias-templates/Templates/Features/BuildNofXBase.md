@@ -20,6 +20,7 @@ module Templates.Features.BuildNofXBase
   ) where
 
 import           Templates.FeatureReqs
+import           EventDataTheory.Utilities      ( (&&&) )
 ```
 
 ```{r, echo = FALSE }
@@ -36,12 +37,12 @@ The `exampleBuilder` function returns another feature builder that performs this
 
 ```haskell usage
 buildExample :: 
-    (Index Interval Day -> AssessmentInterval Day) 
-  -> ComparativePredicateOf2 (AssessmentInterval Day) (Event Day) 
-  -> Predicate (Event Day)
+    (Interval Day -> AssessmentInterval Day)
+  -> ComparativePredicateOf2 (AssessmentInterval Day) (Event ClaimsSchema Text Day) 
+  -> Predicate (Event ClaimsSchema Text Day)
   -> Definition
-       (  Feature indexName (Index Interval Day)
-       -> Feature eventsName [Event Day]
+       (  Feature indexName (Interval Day)
+       -> Feature eventsName [Event ClaimsSchema Text Day]
        -> Feature varName [Integer]
        )
 buildExample =
@@ -76,15 +77,15 @@ buildNofXBase
      , Witherable container0
      , Witherable container1
      )
-  => (container0 (Event a) -> container1 (i1 a)) -- ^ function mapping a container of events to a container of intervallic intervals (which could be events!)
+  => (container0 (Event ClaimsSchema c a) -> container1 (i1 a)) -- ^ function mapping a container of events to a container of intervallic intervals (which could be events!)
   -> (container1 (i1 a) -> t) -- ^ function mapping the processed events to an intermediate type
   -> (AssessmentInterval a -> t -> outputType) -- ^ function casting intermediate type to output type with the option to use the assessment interval
-  -> (Index i0 a -> AssessmentInterval a) -- ^ function which maps index interval to interval in which to assess the feature
-  -> ComparativePredicateOf2 (AssessmentInterval a) (Event a) -- ^ the interval relation of the input events to the assessment interval
-  -> Predicate (Event a) -- ^ The predicate to filter to Enrollment events (e.g. 'FeatureEvents.isEnrollment')
+  -> (i0 a -> AssessmentInterval a) -- ^ function which maps index interval to interval in which to assess the feature
+  -> ComparativePredicateOf2 (AssessmentInterval a) (Event ClaimsSchema c a) -- ^ the interval relation of the input events to the assessment interval
+  -> Predicate (Event ClaimsSchema c a) -- ^ The predicate to filter to Enrollment events (e.g. 'FeatureEvents.isEnrollment')
   -> Definition
-       (  Feature indexName (Index i0 a)
-       -> Feature eventsName (container0 (Event a))
+       (  Feature indexName (i0 a)
+       -> Feature eventsName (container0 (Event ClaimsSchema c a))
        -> Feature varName outputType
        )
 buildNofXBase runPreProcess runProcess runPostProcess makeAssessmentInterval relation predicate
@@ -93,8 +94,8 @@ buildNofXBase runPreProcess runProcess runPostProcess makeAssessmentInterval rel
       -- filter events to those satisfying both
       -- the given relation to the assessment interval
       -- AND the given predicate
-      filter
-          (relation (makeAssessmentInterval index) &&& getPredicate predicate)
+      Templates.FeatureReqs.filter
+          (getPredicate ((Predicate (relation (makeAssessmentInterval index))) &&& predicate))
       -- run the preprocessing function
         .> runPreProcess
       -- run the processing function

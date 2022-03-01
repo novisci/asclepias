@@ -1,0 +1,3 @@
+:description: The what, why and how of the event-data-theory
+
+include::../docs/modules/ROOT/pages/theory/theory-of-events.adoc[]

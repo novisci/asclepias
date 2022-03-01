@@ -52,7 +52,12 @@ makeHx
   -> (Bool, Maybe (Interval a))
 makeHx cnpts i events =
   (isNotEmpty (f i events), lastMay $ intervals (f i events))
+  -- where f i = makePairedFilter enclose i (`hasConcepts` cnpts)
+  -- where f i = makePairedFilter enclose i (filterEvents (containsConcepts ["is_birth_year"]))
   where f i = makePairedFilter enclose i (`hasConcepts` cnpts)
+        hasConcepts x = any (\c -> x `hasConcept` c)
+        makePairedFilter fi i fc = filter (makePairPredicate fi i fc)
+        makePairPredicate pi i pd x = pi i x && pd (getPairData x)
 
 duckHx
   :: (Ord a)

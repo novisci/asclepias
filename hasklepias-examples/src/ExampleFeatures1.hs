@@ -17,8 +17,9 @@ module ExampleFeatures1
   ) where
 
 import           EventData                      ( containsConcepts )
+import           ExampleEvents
 import           Hasklepias
-import           Test.Hspec -- imported for test case
+import           Test.Hspec  -- imported for test case
 {-
 Index is defined as the first occurrence of an Orca bite.
 -}
@@ -40,6 +41,17 @@ bline = makeBaselineFromIndex 60
 flwup :: (IntervalSizeable a b) => Interval a -> AssessmentInterval a
 flwup = makeFollowupFromIndex 30
 
+-- | Replacement for function of the same name that was disappeared
+-- previously in hasklepias-core FeatureEvents
+-- NOTE tallyEvents and Predicate are new to EDM theory
+atleastNofX :: (Ord c) => Int -> [c] -> [Event d c a] -> Bool
+atleastNofX n xs es = tallyEvents (Predicate (`hasAnyConcepts` xs)) es >= n
+
+-- | Another such function, from that same module
+makeConceptsFilter
+  :: (Filterable f, Ord c) => [c] -> f (Event d c a) -> f (Event d c a)
+makeConceptsFilter cpts = filter (`hasAnyConcepts` cpts)
+
 {-
 Define features that identify whether a subject was bit/struck by a duck and
 bit/struck by a macaw.
@@ -53,11 +65,12 @@ makeHx
 makeHx cnpts i events =
   (isNotEmpty (f i events'), lastMay $ intervals (f i events'))
   -- TODO: find the available functions to replace this mess
-  where f i = makePairedFilter enclose i (`hasConcepts` cnpts)
-        hasConcepts x = any (\c -> x `hasConcept` c)
-        makePairedFilter fi i fc = filter (makePairPredicate fi i fc)
-        makePairPredicate pi i pd x = pi i x && pd (getPairData x)
-        events' = map getEvent events
+  -- NOTE `hasConcepts` moved to EDM theory and renamed as below
+ where
+  f i = makePairedFilter enclose i (`hasAnyConcepts` cnpts)
+  makePairedFilter fi i fc = filter (makePairPredicate fi i fc)
+  makePairPredicate pi i pd x = pi i x && pd (getPairData x)
+  events' = map getEvent events
 
 duckHx
   :: (Ord a)

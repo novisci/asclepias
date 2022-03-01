@@ -43,6 +43,9 @@ module Hasklepias
   -- , module Hasklepias.FeatureEvents
   , module Hasklepias.Misc
 
+    -- * Intervals based on an index
+  , module AssessmentIntervals
+
     -- * Specifying and building cohorts
   , module Cohort
 
@@ -60,7 +63,7 @@ module Hasklepias
   , module Hasklepias.ReexportsUnsafe
   ) where
 
-
+import           AssessmentIntervals
 
 import           EventData
 import           EventDataTheory

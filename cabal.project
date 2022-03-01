@@ -1,5 +1,5 @@
 packages: hasklepias-core
-        -- , hasklepias-examples
+        --, hasklepias-examples
         , hasklepias-main
         , hasklepias-appBuilder
         , hasklepias-templates
@@ -7,6 +7,12 @@ packages: hasklepias-core
         , event-data-theory
         , event-data-model
         , stype
+
+allow-newer:
+  generic-lens-core:text,
+  generic-lens:text,
+  witch:text,
+  ListLike:text
 
 -- For amazonka (temp until amazonka > 2.0 is released to hackage )
 -- Multiple subdirs in a single `source-repository-package` stanza are supported by cabal-install >= 3.2.0.0.

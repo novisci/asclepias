@@ -277,9 +277,11 @@ exampleCohortSpec
 exampleCohortSpec = specifyCohort defineIndexSet includeAll getUnitFeatures
 
 -- NOTE: new to edm theory. note types of cohortspec appearing here
+-- evaluator requires a monad wrapper in return. using either here because IO
+-- has no Eq instance, hence testing doesn't work.
 exampleCohortEvaluator
   :: Population [Event ClaimsSchema Text Int]
-  -> IO (Cohort MyData (Interval Int))
+  -> Either Text (Cohort MyData (Interval Int))
 exampleCohortEvaluator = makeCohortEvaluator exampleEvalOpts exampleCohortSpec
 
 -- NOTE constructor unexported. i do not immediately see another constructor
@@ -297,7 +299,7 @@ exampleFeatures1Spec = do
 -- TODO monad wrapping makes this annoyin to handle
   it "mapping a population to cohort"
     $          exampleCohortEvaluator examplePopulation
-    -- TODO what does this hls warning mean here? complaining about unit test of IO?
+    -- TODO what does this hls warning mean here? 
     `shouldBe` return
                  (MkCohort
                  -- NOTE see note on using the makeTestAttritionInfo function. MkAttritionInfo unexported.

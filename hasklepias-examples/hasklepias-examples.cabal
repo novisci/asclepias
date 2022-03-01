@@ -1,0 +1,67 @@
+cabal-version:  2.2
+name:           hasklepias-examples
+version:        0.24.0
+description:    Please see the README on GitHub at <https://github.com/novisci/asclepias#readme>
+homepage:       https://github.com/novisci/asclepias/#readme
+bug-reports:    https://github.com/novisci/asclepias/issues
+author:         Bradley Saul
+maintainer:     bsaul@novisci.com
+copyright:      NoviSci, Inc
+category:       Data Science
+synopsis:       embedded DSL for defining epidemiologic cohorts
+license:        BSD-3-Clause
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    ChangeLog.md
+
+source-repository head
+  type: git
+  location: https://github.com/novisci/asclepias
+
+library
+  exposed-modules:
+      ExampleEvents
+      ExampleFeatures1
+      ExampleFeatures2
+      ExampleFeatures3
+      ExampleFeatures4
+      ExampleCohort1
+  hs-source-dirs:
+      src
+  build-depends:
+    , event-data-model
+    , event-data-theory
+    , hasklepias-main
+    , hasklepias-core
+    , hspec
+    , base >=4.14 && <5
+    , tasty  == 1.4.1
+    , tasty-hunit == 0.10.0.3
+    , tasty-hspec == 1.2
+  default-language: Haskell2010
+
+-- test-suite examples
+--   type: exitcode-stdio-1.0
+--   main-is: Main.hs
+--   other-modules:
+--       ExampleEvents
+--       ExampleFeatures1
+--       ExampleFeatures2
+--       ExampleFeatures3
+--       ExampleFeatures4
+--       ExampleCohort1
+--   hs-source-dirs:
+--       examples
+--   build-depends:
+--     , event-data-model
+--     , event-data-theory
+--     , hasklepias-main
+--     , hasklepias-core
+--     , hspec
+--     , base >=4.14 && <5
+--     , tasty  == 1.4.1
+--     , tasty-hunit == 0.10.0.3
+--     , tasty-hspec == 1.2
+--   default-language: Haskell2010

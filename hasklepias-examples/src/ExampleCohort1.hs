@@ -13,12 +13,15 @@ Maintainer  : bsaul@novisci.com
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE TypeApplications #-}
 module ExampleCohort1
-  ( exampleCohort1tests
+  ( -- exampleCohort1tests
   ) where
 import           AssessmentIntervals
-import           Cohort.Attrition
-import           Hasklepias -- imported for test cases
+import           Features.Featureable
+-- import           Cohort.Attrition
+import           Hasklepias  -- imported for test cases
+
 {-------------------------------------------------------------------------------
   Constants
 -------------------------------------------------------------------------------}
@@ -32,8 +35,8 @@ followupDuration :: CalendarDiffDays
 followupDuration = CalendarDiffDays 3 0
 
 -- | Calendar indices: first day of each quarter for 2017-2018
-indices :: [Index Interval Day]
-indices = map (\(y, m) -> makeIndex $ beginerval 0 (fromGregorian y m 1))
+indices :: [Interval Day]
+indices = map (\(y, m) -> beginerval 0 (fromGregorian y m 1))
               (allPairs [2017 .. 2018] [1, 4, 7, 10])
 
 {-------------------------------------------------------------------------------
@@ -41,7 +44,7 @@ indices = map (\(y, m) -> makeIndex $ beginerval 0 (fromGregorian y m 1))
 -------------------------------------------------------------------------------}
 
 -- | Creates a baseline interval from index
-baselineInterval :: Index Interval Day -> AssessmentInterval Day
+baselineInterval :: Interval Day -> AssessmentInterval Day
 baselineInterval = makeBaselineFromIndex lookback455
 
 -- | Shifts an interval by a calendar amount
@@ -52,18 +55,21 @@ shiftIntervalDay cd i =
 
 -- | Creates an interval *beginning the same day as the index* and 
 --   ending 'followupDuration' days later.
-followupInterval :: Index Interval Day -> Interval Day
+followupInterval :: Interval Day -> Interval Day
 followupInterval index = beginerval
   (diff (begin index) (end $ shiftIntervalDay followupDuration index))
   (begin index)
 
 
 -- | A predicate function that determines if some interval is before index
-beforeIndex :: Intervallic i Day => Index Interval Day -> i Day -> Bool
+beforeIndex :: Intervallic i Day => Interval Day -> i Day -> Bool
 beforeIndex = before
 
 -- | Creates a filter for events to those that 'concur' with the baseline interval.
-getBaselineConcur :: Index Interval Day -> Events Day -> [Event Day]
+getBaselineConcur
+  :: Interval Day
+  -> [Event ClaimsSchema Text Day]
+  -> [Event ClaimsSchema Text Day]
 getBaselineConcur index = filterConcur (baselineInterval index)
 
 {-------------------------------------------------------------------------------
@@ -72,25 +78,23 @@ getBaselineConcur index = filterConcur (baselineInterval index)
 
 -- | Defines a feature that returns 'True' ('False' otherwise) if either:
 --   * at least 1 event during the baseline interval has any of the 'cpts1' concepts
---   * there are at least 2 event that have 'cpts2' concepts which have at least
+--   * there are at least 2 events that have 'cpts2' concepts which have at least
 --     7 days between them during the baseline interval
 twoOutOneIn
   :: [Text] -- ^ cpts1
   -> [Text] -- ^ cpts2
   -> Definition
-       (  Feature "calendarIndex" (Index Interval Day)
-       -> Feature "allEvents" (Events Day)
+       (  Feature "calendarIndex" (Interval Day)
+       -> Feature "allEvents" [Event ClaimsSchema Text Day]
        -> Feature name Bool
        )
-twoOutOneIn cpts1 cpts2 = define
-  (\index events ->
-    atleastNofX 1 cpts1 (getBaselineConcur index events)
-      || (  events
-         |> makeConceptsFilter cpts2
-         |> map toConceptEvent
-         |> anyGapsWithinAtLeastDuration 7 (baselineInterval index)
-         )
-  )
+twoOutOneIn cpts1 cpts2 = buildNofXOrNofYWithGapBool 1
+                                                     (containsConcepts cpts1)
+                                                     1
+                                                     7
+                                                     baselineInterval
+                                                     concur
+                                                     (containsConcepts cpts2)
 
 -- | Defines a feature that returns 'True' ('False' otherwise) if either:
 --   * any events concuring with baseline with concepts in 'cpts' have a 
@@ -99,15 +103,15 @@ twoOutOneIn cpts1 cpts2 = define
 medHx
   :: [Text]
   -> Definition
-       (  Feature "calendarIndex" (Index Interval Day)
-       -> Feature "allEvents" (Events Day)
+       (  Feature "calendarIndex" (Interval Day)
+       -> Feature "allEvents" [Event ClaimsSchema Text Day]
        -> Feature name Bool
        )
 medHx cpt = define
   (\index events ->
     (  events
       |> getBaselineConcur index
-      |> makeConceptsFilter cpt
+      |> filterEvents (containsConcepts cpt)
       |> combineIntervals
       |> durations
       |> any (>= 90)
@@ -127,21 +131,23 @@ medHx cpt = define
 -------------------------------------------------------------------------------}
 
 -- | Lift a subject's events in a feature
-featureEvents :: Events Day -> Feature "allEvents" (Events Day)
+featureEvents
+  :: [Event ClaimsSchema Text Day]
+  -> Feature "allEvents" [Event ClaimsSchema Text Day]
 featureEvents = pure
 
 -- | The subject's age at time of index. Returns an error if there no birth year
 --   records.
 age
   :: Definition
-       (  Feature "calendarIndex" (Index Interval Day)
-       -> Feature "allEvents" (Events Day)
+       (  Feature "calendarIndex" (Interval Day)
+       -> Feature "allEvents" [Event ClaimsSchema Text Day]
        -> Feature "age" Integer
        )
 age = defineA
   (\index events ->
     events
-      |> makeConceptsFilter ["is_birth_year"]
+      |> filterEvents (containsConcepts ["is_birth_year"])
       |> viewBirthYears
       |> headMay
       |> fmap (\y -> fromGregorian y 1 7)  -- Use July 1 YEAR as birthdate
@@ -156,11 +162,17 @@ age = defineA
 --   are no death records.
 deathDay
   :: Definition
-       (  Feature "allEvents" (Events Day)
+       (  Feature "allEvents" [Event ClaimsSchema Text Day]
        -> Feature "deathDay" (Maybe (Interval Day))
        )
 deathDay = define
-  (\events -> events |> makeConceptsFilter ["is_death"] |> intervals |> headMay)
+  (\events ->
+    events
+      |> filterEvents (containsConcepts ["is_death"])
+      |> fmap getEvent
+      |> intervals
+      |> headMay
+  )
 
 {-------------------------------------------------------------------------------
   Inclusion/Exclusion features 
@@ -168,11 +180,15 @@ deathDay = define
 
 -- | Include the subject if female; Exclude otherwise
 critFemale
-  :: Definition (Feature "allEvents" (Events Day) -> Feature "isFemale" Status)
+  :: Definition
+       (  Feature "allEvents" [Event ClaimsSchema Text Day]
+       -> Feature "isFemale" Status
+       )
 critFemale = define
-  (\events -> events |> makeConceptsFilter ["is_female"] |> headMay |> \case
-    Nothing -> Exclude
-    Just _  -> Include
+  (\events ->
+    events |> filterEvents (containsConcepts ["is_female"]) |> headMay |> \case
+      Nothing -> Exclude
+      Just _  -> Include
   )
 
 -- | Include the subject if over 50; Exclude otherwise.
@@ -182,8 +198,8 @@ critOver50 = define (includeIf . (>= 50))
 -- | Include the subject if she has an enrollment interval concurring with index.
 critEnrolled
   :: Definition
-       (  Feature "calendarIndex" (Index Interval Day)
-       -> Feature "allEvents" [Event Day]
+       (  Feature "calendarIndex" (Interval Day)
+       -> Feature "allEvents" [Event ClaimsSchema Text Day]
        -> Feature "isEnrolled" Status
        )
 critEnrolled = buildIsEnrolled isEnrollmentEvent
@@ -194,8 +210,8 @@ critEnrolled = buildIsEnrolled isEnrollmentEvent
 --       are less than 30 days
 critEnrolled455
   :: Definition
-       (  Feature "calendarIndex" (Index Interval Day)
-       -> Feature "allEvents" [Event Day]
+       (  Feature "calendarIndex" (Interval Day)
+       -> Feature "allEvents" [Event ClaimsSchema Text Day]
        -> Feature "isEnrolled" Status
        -> Feature "isContinuousEnrolled" Status
        )
@@ -205,7 +221,7 @@ critEnrolled455 =
 -- | Exclude if the subject is dead before the time of index.
 critDead
   :: Definition
-       (  Feature "calendarIndex" (Index Interval Day)
+       (  Feature "calendarIndex" (Interval Day)
        -> Feature "deathDay" (Maybe (Interval Day))
        -> Feature "isDead" Status
        )
@@ -222,8 +238,8 @@ critDead = define
 
 type BoolFeatDef n
   = Definition
-      (  Feature "calendarIndex" (Index Interval Day)
-      -> Feature "allEvents" (Events Day)
+      (  Feature "calendarIndex" (Interval Day)
+      -> Feature "allEvents" [Event ClaimsSchema Text Day]
       -> Feature n Bool
       )
 
@@ -266,11 +282,12 @@ instance HasAttributes  "glucocorticoids" Bool where
   Cohort Specifications and evaluation
 -------------------------------------------------------------------------------}
 
-makeIndexRunner :: Index Interval Day -> Events Day -> IndexSet Interval Day
+makeIndexRunner
+  :: Interval Day -> [Event ClaimsSchema Text Day] -> IndexSet (Interval Day)
 makeIndexRunner i _ = makeIndexSet [i]
 
 -- | Make a function that runs the criteria for a calendar index
-makeCriteriaRunner :: Index Interval Day -> Events Day -> Criteria
+makeCriteriaRunner :: Interval Day -> [Event ClaimsSchema Text Day] -> Criteria
 makeCriteriaRunner index events =
   criteria
     $  criterion crit1
@@ -287,8 +304,13 @@ makeCriteriaRunner index events =
   featInd = pure index
   featEvs = featureEvents events
 
+instance HasAttributes "calendarIndex" (Interval Day) where
+
+instance ToJSON (Interval Day) where
+
 -- | Make a function that runs the features for a calendar index
-makeFeatureRunner :: Index Interval Day -> Events Day -> Featureset
+makeFeatureRunner
+  :: Interval Day -> [Event ClaimsSchema Text Day] -> Featureset
 makeFeatureRunner index events = featureset
   (  packFeature idx
   :| [ packFeature $ eval diabetes idx ef
@@ -310,7 +332,6 @@ cohortSpecs = makeCohortSpecs $ map
   )
   indices
 
-
 -- | A function that evaluates all the calendar cohorts for a population
 evalCohorts
   :: Monad m
@@ -319,14 +340,22 @@ evalCohorts
 evalCohorts = makeCohortSpecsEvaluator defaultCohortEvalOptions cohortSpecs
 
 {-------------------------------------------------------------------------------
-  Testing 
+  Testing
   This would generally be in a separate file
 -------------------------------------------------------------------------------}
-m :: Year -> MonthOfYear -> Int -> Integer -> [Text] -> Domain -> Event Day
-m y m d dur c dmn = event (beginerval dur (fromGregorian y m d))
-                          (context dmn (packConcepts c) Nothing)
+m
+  :: Year
+  -> MonthOfYear
+  -> Int
+  -> Integer
+  -> [Text]
+  -> ClaimsSchema
+  -> Event ClaimsSchema Text Day
+m y m d dur c dmn = event ctx itv where
+  itv = context (packConcepts c) dmn Nothing
+  ctx = beginerval dur (fromGregorian y m d)
 
-testData1 :: Events Day
+testData1 :: [Event ClaimsSchema Text Day]
 testData1 = sort
   [ m
     2010
@@ -346,14 +375,14 @@ testData1 = sort
   , m 2016 1 1 699 ["enrollment"]            (Enrollment emptyEnrollmentFact)
   , m 2018 1 1 30  ["enrollment"]            (Enrollment emptyEnrollmentFact)
   , m 2018 2 1 30  ["enrollment"]            (Enrollment emptyEnrollmentFact)
-  , m 2017 6 5 1   ["is_diabetes_inpatient"] (UnimplementedDomain ())
-  , m 2017 8 1 91  ["is_ppi"]                (UnimplementedDomain ())
+  , m 2017 6 5 1   ["is_diabetes_inpatient"] (Enrollment emptyEnrollmentFact) -- TODO: this used to be `UnimplementedDomain ()`, what should it be now?
+  , m 2017 8 1 91  ["is_ppi"]                (Enrollment emptyEnrollmentFact) -- TODO: this used to be `UnimplementedDomain ()`, what should it be now?
   ]
 
-testSubject1 :: Subject (Events Day)
-testSubject1 = MkSubject ("a", testData1)
+testSubject1 :: Subject [Event ClaimsSchema Text Day]
+testSubject1 = into ("a" :: Text, testData1)
 
-testData2 :: Events Day
+testData2 :: [Event ClaimsSchema Text Day]
 testData2 = sort
   [ m
     2010
@@ -375,24 +404,22 @@ testData2 = sort
   , m 2018 2 1 30  ["enrollment"] (Enrollment emptyEnrollmentFact)
   ]
 
-testSubject2 :: Subject (Events Day)
-testSubject2 = MkSubject ("b", testData2)
+testSubject2 :: Subject [Event ClaimsSchema Text Day]
+testSubject2 = into ("b" :: Text, testData2)
 
-testPop :: Population (Events Day)
-testPop = MkPopulation [testSubject1, testSubject2]
+testPop :: Population [Event ClaimsSchema Text Day]
+testPop = into [testSubject1, testSubject2]
 
 makeExpectedCovariate
   :: (KnownSymbol name) => FeatureData Bool -> Feature name Bool
 makeExpectedCovariate = makeFeature
 
-instance HasAttributes "calendarIndex" (Index Interval Day) where
-
 makeExpectedFeatures
-  :: FeatureData (Index Interval Day)
+  :: FeatureData (Interval Day)
   -> (FeatureData Bool, FeatureData Bool, FeatureData Bool, FeatureData Bool)
   -> Featureset
 makeExpectedFeatures i (b1, b2, b3, b4) = featureset
-  (  packFeature (makeFeature i :: Feature "calendarIndex" (Index Interval Day))
+  (  packFeature (makeFeature i :: Feature "calendarIndex" (Interval Day))
   :| [ packFeature (makeExpectedCovariate b1 :: Feature "diabetes" Bool)
      , packFeature (makeExpectedCovariate b2 :: Feature "ckd" Bool)
      , packFeature (makeExpectedCovariate b3 :: Feature "ppi" Bool)
@@ -404,117 +431,137 @@ makeExpectedFeatures i (b1, b2, b3, b4) = featureset
 expectedFeatures1 :: [Featureset]
 expectedFeatures1 = map
   (uncurry makeExpectedFeatures)
-  [ ( pure $ makeIndex $ beginerval 1 (fromGregorian 2017 4 1)
+  [ ( pure $ beginerval 1 (fromGregorian 2017 4 1)
     , (pure False, pure False, pure False, pure False)
     )
-  , ( pure $ makeIndex $ beginerval 1 (fromGregorian 2017 7 1)
+  , ( pure $ beginerval 1 (fromGregorian 2017 7 1)
     , (pure True, pure False, pure False, pure False)
     )
-  , ( pure $ makeIndex $ beginerval 1 (fromGregorian 2017 10 1)
+  , ( pure $ beginerval 1 (fromGregorian 2017 10 1)
     , (pure True, pure False, pure True, pure False)
     )
   ]
 
-expectedObsUnita :: [ObsUnit Featureset]
-expectedObsUnita =
-  zipWith MkObsUnit (replicate 5 (makeObsID 1 "a")) expectedFeatures1
+expectedObsUnita :: [ObsUnit Featureset Int]
+expectedObsUnita = map from pairs where
+  pairs =
+    zip (replicate 5 (makeObsID (1 :: Int) ("a" :: Text))) expectedFeatures1
+
 
 makeExpectedCohort
-  :: AttritionInfo -> [ObsUnit Featureset] -> Cohort Featureset
-makeExpectedCohort a x = MkCohort (a, MkCohortData x)
+  :: AttritionInfo
+  -> [ObsUnit ClaimsSchema Featureset]
+  -> Cohort ClaimsSchema Featureset
+makeExpectedCohort a x = MkCohort (a, into x)
 
-mkAl :: (CohortStatus, Natural) -> AttritionLevel
-mkAl = uncurry MkAttritionLevel
+-- mkAl :: (CohortStatus, Natural) -> AttritionLevel
+-- mkAl = uncurry MkAttritionLevel
 
-expectedCohorts :: [Cohort Featureset]
+expectedCohorts :: [Cohort Featureset Int]
 expectedCohorts = zipWith
   (curry MkCohort)
-  [ MkAttritionInfo 2 $ setFromList
-    [ mkAl (SubjectHasNoIndex, 0)
-    , mkAl (ExcludedBy (1, "isFemale"), 0)
-    , mkAl (ExcludedBy (2, "isOver50"), 1)
-    , mkAl (ExcludedBy (3, "isEnrolled"), 0)
-    , mkAl (ExcludedBy (4, "isContinuousEnrolled"), 1)
-    , mkAl (ExcludedBy (5, "isDead"), 0)
-    , mkAl (Included, 0)
+  [ makeTestAttritionInfo
+    2
+    2
+    [ (SubjectHasNoIndex                     , 0)
+    , (ExcludedBy (1, "isFemale")            , 0)
+    , (ExcludedBy (2, "isOver50")            , 1)
+    , (ExcludedBy (3, "isEnrolled")          , 0)
+    , (ExcludedBy (4, "isContinuousEnrolled"), 1)
+    , (ExcludedBy (5, "isDead")              , 0)
+    , (Included                              , 0)
     ]
-  , MkAttritionInfo 2 $ setFromList
-    [ mkAl (SubjectHasNoIndex, 0)
-    , mkAl (ExcludedBy (1, "isFemale"), 0)
-    , mkAl (ExcludedBy (2, "isOver50"), 1)
-    , mkAl (ExcludedBy (3, "isEnrolled"), 0)
-    , mkAl (ExcludedBy (4, "isContinuousEnrolled"), 0)
-    , mkAl (ExcludedBy (5, "isDead"), 0)
-    , mkAl (Included, 1)
+  , makeTestAttritionInfo
+    2
+    2
+    [ (SubjectHasNoIndex                     , 0)
+    , (ExcludedBy (1, "isFemale")            , 0)
+    , (ExcludedBy (2, "isOver50")            , 1)
+    , (ExcludedBy (3, "isEnrolled")          , 0)
+    , (ExcludedBy (4, "isContinuousEnrolled"), 0)
+    , (ExcludedBy (5, "isDead")              , 0)
+    , (Included                              , 1)
     ]
-  , MkAttritionInfo 2 $ setFromList
-    [ mkAl (SubjectHasNoIndex, 0)
-    , mkAl (ExcludedBy (1, "isFemale"), 0)
-    , mkAl (ExcludedBy (2, "isOver50"), 1)
-    , mkAl (ExcludedBy (3, "isEnrolled"), 0)
-    , mkAl (ExcludedBy (4, "isContinuousEnrolled"), 0)
-    , mkAl (ExcludedBy (5, "isDead"), 0)
-    , mkAl (Included, 1)
+  , makeTestAttritionInfo
+    2
+    2
+    [ (SubjectHasNoIndex                     , 0)
+    , (ExcludedBy (1, "isFemale")            , 0)
+    , (ExcludedBy (2, "isOver50")            , 1)
+    , (ExcludedBy (3, "isEnrolled")          , 0)
+    , (ExcludedBy (4, "isContinuousEnrolled"), 0)
+    , (ExcludedBy (5, "isDead")              , 0)
+    , (Included                              , 1)
     ]
-  , MkAttritionInfo 2 $ setFromList
-    [ mkAl (SubjectHasNoIndex, 0)
-    , mkAl (ExcludedBy (1, "isFemale"), 0)
-    , mkAl (ExcludedBy (2, "isOver50"), 1)
-    , mkAl (ExcludedBy (3, "isEnrolled"), 0)
-    , mkAl (ExcludedBy (4, "isContinuousEnrolled"), 0)
-    , mkAl (ExcludedBy (5, "isDead"), 0)
-    , mkAl (Included, 1)
+  , makeTestAttritionInfo
+    2
+    2
+    [ (SubjectHasNoIndex                     , 0)
+    , (ExcludedBy (1, "isFemale")            , 0)
+    , (ExcludedBy (2, "isOver50")            , 1)
+    , (ExcludedBy (3, "isEnrolled")          , 0)
+    , (ExcludedBy (4, "isContinuousEnrolled"), 0)
+    , (ExcludedBy (5, "isDead")              , 0)
+    , (Included                              , 1)
     ]
-  , MkAttritionInfo 2 $ setFromList
-    [ mkAl (SubjectHasNoIndex, 0)
-    , mkAl (ExcludedBy (1, "isFemale"), 0)
-    , mkAl (ExcludedBy (2, "isOver50"), 1)
-    , mkAl (ExcludedBy (3, "isEnrolled"), 0)
-    , mkAl (ExcludedBy (4, "isContinuousEnrolled"), 1)
-    , mkAl (ExcludedBy (5, "isDead"), 0)
-    , mkAl (Included, 0)
+  , makeTestAttritionInfo
+    2
+    2
+    [ (SubjectHasNoIndex                     , 0)
+    , (ExcludedBy (1, "isFemale")            , 0)
+    , (ExcludedBy (2, "isOver50")            , 1)
+    , (ExcludedBy (3, "isEnrolled")          , 0)
+    , (ExcludedBy (4, "isContinuousEnrolled"), 1)
+    , (ExcludedBy (5, "isDead")              , 0)
+    , (Included                              , 0)
     ]
-  , MkAttritionInfo 2 $ setFromList
-    [ mkAl (SubjectHasNoIndex, 0)
-    , mkAl (ExcludedBy (1, "isFemale"), 0)
-    , mkAl (ExcludedBy (2, "isOver50"), 1)
-    , mkAl (ExcludedBy (3, "isEnrolled"), 1)
-    , mkAl (ExcludedBy (4, "isContinuousEnrolled"), 0)
-    , mkAl (ExcludedBy (5, "isDead"), 0)
-    , mkAl (Included, 0)
+  , makeTestAttritionInfo
+    2
+    2
+    [ (SubjectHasNoIndex                     , 0)
+    , (ExcludedBy (1, "isFemale")            , 0)
+    , (ExcludedBy (2, "isOver50")            , 1)
+    , (ExcludedBy (3, "isEnrolled")          , 1)
+    , (ExcludedBy (4, "isContinuousEnrolled"), 0)
+    , (ExcludedBy (5, "isDead")              , 0)
+    , (Included                              , 0)
     ]
-  , MkAttritionInfo 2 $ setFromList
-    [ mkAl (SubjectHasNoIndex, 0)
-    , mkAl (ExcludedBy (1, "isFemale"), 0)
-    , mkAl (ExcludedBy (2, "isOver50"), 1)
-    , mkAl (ExcludedBy (3, "isEnrolled"), 1)
-    , mkAl (ExcludedBy (4, "isContinuousEnrolled"), 0)
-    , mkAl (ExcludedBy (5, "isDead"), 0)
-    , mkAl (Included, 0)
+  , makeTestAttritionInfo
+    2
+    2
+    [ (SubjectHasNoIndex                     , 0)
+    , (ExcludedBy (1, "isFemale")            , 0)
+    , (ExcludedBy (2, "isOver50")            , 1)
+    , (ExcludedBy (3, "isEnrolled")          , 1)
+    , (ExcludedBy (4, "isContinuousEnrolled"), 0)
+    , (ExcludedBy (5, "isDead")              , 0)
+    , (Included                              , 0)
     ]
-  , MkAttritionInfo 2 $ setFromList
-    [ mkAl (SubjectHasNoIndex, 0)
-    , mkAl (ExcludedBy (1, "isFemale"), 0)
-    , mkAl (ExcludedBy (2, "isOver50"), 1)
-    , mkAl (ExcludedBy (3, "isEnrolled"), 1)
-    , mkAl (ExcludedBy (4, "isContinuousEnrolled"), 0)
-    , mkAl (ExcludedBy (5, "isDead"), 0)
-    , mkAl (Included, 0)
+  , makeTestAttritionInfo
+    2
+    2
+    [ (SubjectHasNoIndex                     , 0)
+    , (ExcludedBy (1, "isFemale")            , 0)
+    , (ExcludedBy (2, "isOver50")            , 1)
+    , (ExcludedBy (3, "isEnrolled")          , 1)
+    , (ExcludedBy (4, "isContinuousEnrolled"), 0)
+    , (ExcludedBy (5, "isDead")              , 0)
+    , (Included                              , 0)
     ]
   ]
-  (fmap MkCohortData ([[]] ++ transpose [expectedObsUnita] ++ [[], [], [], []]))
+  (fmap into ([[]] ++ transpose [expectedObsUnita] ++ [[], [], [], []]))
 
-expectedCohortSet :: CohortSet Featureset
+expectedCohortSet :: CohortMap Featureset Int
 expectedCohortSet =
-  MkCohortSet $ mapFromList $ zip (fmap (pack . show) indices) expectedCohorts
+  into $ mapFromList $ zip (fmap (pack . show) indices) expectedCohorts
 
 exampleCohort1tests :: TestTree
 exampleCohort1tests = testGroup
   "Unit tests for calendar cohorts"
   [ testCase "expected Features for testData1"
     $
-      -- Featureable cannot be tested for equality directly, hence encoding to 
+      -- Featureable cannot be tested for equality directly, hence encoding to
       -- JSON bytestring and testing that for equality
-        encode (evalCohorts testPop)
+        encode (evalCohorts @[] testPop)
     @?= encode expectedCohortSet
   ]

@@ -181,10 +181,12 @@ instance (Ord a, Ord c, Eq d) => Ord (Event d c a) where
 instance (NFData a, NFData d, NFData c) => NFData (Event d c a)
 instance (Binary d, Binary c, Binary a) => Binary (Event d c a)
 -- See NOTE at top of module regarding To/FromJSON instances
-instance ( FromJSON b, FromJSON (Interval a) ) => FromJSON (PairedInterval b a)
-instance ( ToJSON b, ToJSON (Interval a) ) => ToJSON (PairedInterval b a)
-instance ( Ord c, FromJSON c, FromJSON d, FromJSON (Interval a) ) => FromJSON (Event d c a)
-instance ( Ord c, ToJSON c, ToJSON d, ToJSON (Interval a) ) => ToJSON (Event d c a)
+instance ( FromJSON a ) => FromJSON (Interval a)
+instance ( ToJSON a ) => ToJSON (Interval a)
+instance ( FromJSON b, FromJSON a ) => FromJSON (PairedInterval b a)
+instance ( ToJSON b, ToJSON a ) => ToJSON (PairedInterval b a)
+instance ( Ord c, FromJSON c, FromJSON d, FromJSON a ) => FromJSON (Event d c a)
+instance ( Ord c, ToJSON c, ToJSON d, ToJSON a ) => ToJSON (Event d c a)
 
 instance (  Eventable d c a
           , Arbitrary d, Arbitrary c, Arbitrary (Interval a)) =>

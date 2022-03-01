@@ -19,6 +19,7 @@ module Hasklepias.ReexportsUnsafe
   , module Lens
   , module Test.Tasty
   , module Test.Tasty.HUnit
+  , module Witch
   , naturalToInt
   ) where
 
@@ -41,6 +42,7 @@ import           GHC.Num                        ( fromInteger )
 import           Test.Tasty              hiding ( after )
 import           Test.Tasty.HUnit
 
+import           Witch
 
 naturalToInt :: Natural -> Int
 naturalToInt = fromInteger . naturalToInteger

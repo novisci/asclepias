@@ -2,6 +2,8 @@ cradle:
   cabal:
     - path: "./hasklepias-core/"
       component: "hasklepias-core"
+    - path: "./hasklepias-examples/"
+      component: "hasklepias-examples"
     - path: "./hasklepias-main/"
       component: "hasklepias-main"
     - path: "./hasklepias-appBuilder/"

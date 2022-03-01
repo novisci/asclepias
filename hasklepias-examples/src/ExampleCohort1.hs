@@ -306,8 +306,6 @@ makeCriteriaRunner index events =
 
 instance HasAttributes "calendarIndex" (Interval Day) where
 
-instance ToJSON (Interval Day) where
-
 -- | Make a function that runs the features for a calendar index
 makeFeatureRunner
   :: Interval Day -> [Event ClaimsSchema Text Day] -> Featureset

@@ -12,6 +12,7 @@ Maintainer  : bsaul@novisci.com
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE TypeApplications #-}
 module ExampleFeatures1
   ( exampleFeatures1Spec
   ) where
@@ -253,9 +254,6 @@ includeAll _ _ = criteria $ pure
   (criterion (makeFeature (featureDataR Include) :: Feature "includeAll" Status)
   )
 
-testCohortSpec
-  :: CohortSpec [Event ClaimsSchema Text Int] MyData (Interval Int)
-testCohortSpec = specifyCohort defineIndexSet includeAll getUnitFeatures
 
 example1results :: MyData
 example1results =
@@ -269,6 +267,25 @@ example1results =
   , pure $ Just (78, 18)
   )
 
+-- NOTE: CohortEvalOptions new to EDM theory
+exampleEvalOpts :: CohortEvalOptions
+exampleEvalOpts = defaultCohortEvalOptions
+
+-- NOTE name changed from testCohortSpec to exampleCohortSpec
+exampleCohortSpec
+  :: CohortSpec [Event ClaimsSchema Text Int] MyData (Interval Int)
+exampleCohortSpec = specifyCohort defineIndexSet includeAll getUnitFeatures
+
+-- NOTE: new to edm theory. note types of cohortspec appearing here
+exampleCohortEvaluator
+  :: Population [Event ClaimsSchema Text Int]
+  -> IO (Cohort MyData (Interval Int))
+exampleCohortEvaluator = makeCohortEvaluator exampleEvalOpts exampleCohortSpec
+
+-- NOTE constructor unexported. i do not immediately see another constructor
+-- provided. only way to do this that i see is with `from`. i wonder why population exists if it can only be created `From` a [Subject d]
+examplePopulation :: Population [Event ClaimsSchema Text Int]
+examplePopulation = from [exampleSubject1, exampleSubject2]
 
 exampleFeatures1Spec :: Spec
 exampleFeatures1Spec = do
@@ -277,18 +294,24 @@ exampleFeatures1Spec = do
     $          getUnitFeatures (beginerval 1 60) exampleEvents1
     `shouldBe` example1results
 
+-- TODO monad wrapping makes this annoyin to handle
   it "mapping a population to cohort"
-    $          evalCohort testCohortSpec
-                          (MkPopulation [exampleSubject1, exampleSubject2])
-    `shouldBe` MkCohort
-                 ( MkAttritionInfo
-                   2
-                   2
-                   setFromList
-                   [ MkAttritionLevel SubjectHasNoIndex              1
-                   , MkAttritionLevel (ExcludedBy (1, "includeAll")) 0
-                   , MkAttritionLevel Included                       1
-                   ]
-                 , MkCohortData [MkObsUnit (makeObsID 1 "a") example1results]
+    $          exampleCohortEvaluator examplePopulation
+    -- TODO what does this hls warning mean here? complaining about unit test of IO?
+    `shouldBe` return
+                 (MkCohort
+                 -- NOTE see note on using the makeTestAttritionInfo function. MkAttritionInfo unexported.
+                   ( makeTestAttritionInfo
+                     2
+                     2
+                     [ (SubjectHasNoIndex             , 1)
+                     , (ExcludedBy (1, "includeAll"), 0)
+                     , (Included                      , 1)
+                     ]
+                   -- NOTE edm theory hid the constructors. same question about
+                   -- CohortData as for Population re: from instance being only
+                   -- way to construct.
+                   , from @[ObsUnit MyData (Interval Int)] [from @(ObsID (Interval Int), MyData) (makeObsID (beginervalMoment 1) ("a" :: Text), example1results)]
+                   )
                  )
 

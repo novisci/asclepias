@@ -14,8 +14,6 @@ import           Hasklepias
   Features used by inclusion/exclusion (and possibly other places too)
 -------------------------------------------------------------------------------}
 
-instance ToJSON (Interval Day)
-
 -- | Lift a subject's events in a feature
 featureEvents
   :: [Event ClaimsSchema Text Day]

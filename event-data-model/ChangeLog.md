@@ -1,5 +1,9 @@
 # Changelog for edm
 
+## 0.24.0
+
+* Updates `text` dependency to version 2.0.
+
 ## 0.23.5
 
 * Removes the `SingleOrArray` structure on a `Plan`'s `benefit`, and it is now simply `Maybe Text`. Note that this does *NOT* align with EDM v1.3, which allows for values to be either a single string or an array.

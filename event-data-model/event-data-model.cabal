@@ -55,16 +55,16 @@ library
       event-data-theory
 
       -- External
-    , aeson >= 2.0.2.0
+    , aeson >= 2.0.3.0
     , base >=4.14 && <5
     , bytestring >= 0.11
     , generic-lens == 2.2.0.0
     , microlens == 0.4.12.0
     , tasty >= 1.4
     , tasty-hunit >= 0.10
-    , text == 1.2.4.1
+    , text >= 2.0
     , time >= 1.11
-    , witherable == 0.4.1
+    , witherable >= 0.4.1
   build-tool-depends:
     autoexporter:autoexporter
   default-language: Haskell2010

@@ -35,7 +35,6 @@ library
     , event-data-theory
     , hasklepias-main
     , hasklepias-core
-    , hasklepias-templates
     , hspec
     , base >=4.14 && <5
     , tasty  == 1.4.1

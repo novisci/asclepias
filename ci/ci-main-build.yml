@@ -56,8 +56,9 @@ main-build:
     expire_in: 1 hour
 
 # Upload docs to S3
+# TODO: change to a lighterweight aws image when available in nsBuild
 upload-haddock-docs:
-  image: registry.novisci.com/nsstat/nsbuild/aws:latest
+  image: registry.novisci.com/nsstat/nsbuild/ubuntu:latest
   needs:
     - pipeline: $PARENT_PIPELINE_ID
       job: build_vars

@@ -1,4 +1,5 @@
 packages: hasklepias-core
+        --, hasklepias-examples
         , hasklepias-main
         , hasklepias-appBuilder
         , hasklepias-templates

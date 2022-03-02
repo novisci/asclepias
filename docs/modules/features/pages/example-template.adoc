@@ -1,11 +1,10 @@
 :syntax-highlighting:
-:example-name:
 
-include::feature:example${example-name}.hs[tag=description]
+include::features:example$src/{example-name}.hs[tag=description]
 
 [source,haskell]
 ----
-include::feature:example${example-name}.hs[tag=code]
+include::features:example$src/{example-name}.hs[tag=code]
 ----
 
-include::feature:example${example-name}.hs[tag=code-explanation]
+include::features:example$src/{example-name}.hs[tag=code-explanation]

@@ -3,6 +3,7 @@ Description : Demostrates how to define an outcome monitoring treatment regimes
               over time.
 -}
 
+{-# LANGUAGE DataKinds #-}
 module FeatureExamples.Example4
   ( example
   ) where

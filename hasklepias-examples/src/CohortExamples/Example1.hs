@@ -1,7 +1,7 @@
 {-|
 Description : Demostrates how to define a cohort using Hasklepias
 -}
-
+{-# LANGUAGE DataKinds #-}
 module CohortExamples.Example1
   ( example
   ) where

@@ -2,6 +2,9 @@
 Description : Demostrates how to define features using Hasklepias
 -}
 
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE TypeApplications #-}
+
 module FeatureExamples.Example2
   ( example
   ) where
@@ -31,9 +34,9 @@ example = testGroup
   [ testCase "test on exampleEvents1"
   $   durationsOf (["tookAntibiotics", "wasHospitalized"] :: [Text])
                   exampleEvents1
-  @?= (makeFeature $ featureDataL (Other "no cases") :: Feature "foo" [Int])
+  @?= makeFeature @"foo" (featureDataL (Other "no cases"))
   , testCase "test on exampleEvents3"
   $   durationsOf (["tookAntibiotics", "wasHospitalized"] :: [Text])
                   exampleEvents3
-  @?= (makeFeature (featureDataR [3, 2]) :: Feature "foo" [Int])
+  @?= makeFeature @"foo" (featureDataR [3, 2])
   ]

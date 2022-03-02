@@ -42,11 +42,9 @@ library
       NoImplicitPrelude
       OverloadedStrings
       LambdaCase
-      DataKinds
       FlexibleContexts
       FlexibleInstances
       DeriveGeneric
-      DuplicateRecordFields
       MultiParamTypeClasses
       TypeApplications
 

@@ -2,6 +2,9 @@
 Description : Demostrates how to define features using Hasklepias
 -}
 
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE TypeApplications #-}
+
 module FeatureExamples.Example1
   ( example
   ) where
@@ -247,7 +250,7 @@ example1results :: MyData
 example1results =
   ( pure (beginerval 1 (60 :: Int))
   , pure Include
-  , pure (True, Just $ beginerval 1 (51 :: Int))
+  , pure (True, Just $ beginerval 1 (45 :: Int))
   , pure (False, Nothing)
   , pure True
   , pure $ Just 4
@@ -280,33 +283,26 @@ examplePopulation = from [exampleSubject1, exampleSubject2]
 example :: TestTree
 example = testGroup
   ""
-  [ 
-    -- TODO: FIXME
-      -- testCase "getUnitFeatures from exampleEvents1"
-      --  $   getUnitFeatures (beginerval 1 60) exampleEvents1
-      -- @?= example1results
+  [ testCase "getUnitFeatures from exampleEvents1"
+  $   getUnitFeatures (beginerval 1 60) exampleEvents1
+  @?= example1results
+  , testCase "mapping population to cohort"
+  $   exampleCohortEvaluator examplePopulation
+  @?= Right
+        (MkCohort
+          ( makeTestAttritionInfo
+            2
+            1
+            [ (SubjectHasNoIndex           , 1)
+            , (ExcludedBy (1, "includeAll"), 0)
+            , (Included                    , 1)
+            ]
+        -- NOTE edm theory hid the constructors. see comments about Population.
+          , from @[ObsUnit MyData (Interval Int)]
+            [ from @(ObsID (Interval Int), MyData)
+                (makeObsID (beginervalMoment 60) ("a" :: Text), example1results)
+            ]
+          )
+        )
   ]
-
-  -- TODO: FIXME
-  -- it "mapping a population to cohort"
-  --   $          exampleCohortEvaluator examplePopulation
-  --   `shouldBe` Right
-  --                (MkCohort
-  --                -- NOTE see note on using the makeTestAttritionInfo function. MkAttritionInfo unexported.
-  --                  ( makeTestAttritionInfo
-  --                    2
-  --                    2
-  --                    [ (SubjectHasNoIndex           , 1)
-  --                    , (ExcludedBy (1, "includeAll"), 0)
-  --                    , (Included                    , 1)
-  --                    ]
-  --                  -- NOTE edm theory hid the constructors. see comments about Population.
-  --                  , from @[ObsUnit MyData (Interval Int)]
-  --                    [ from @(ObsID (Interval Int), MyData)
-  --                        ( makeObsID (beginervalMoment 1) ("a" :: Text)
-  --                        , example1results
-  --                        )
-  --                    ]
-  --                  )
-  --                )
 

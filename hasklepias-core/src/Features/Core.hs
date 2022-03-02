@@ -214,7 +214,8 @@ getFData (MkFeature d) = d
 -- >>> makeFeature (pure "test") :: Feature "dummy" Text
 -- "dummy": MkFeatureData {getFeatureData = Right "test"}
 --
-makeFeature :: (KnownSymbol name) => FeatureData d -> Feature name d
+makeFeature
+  :: forall name d . (KnownSymbol name) => FeatureData d -> Feature name d
 makeFeature = MkFeature
 
 -- | A utility for getting the (inner) @'FeatureData'@ content of a @'Feature'@.

@@ -22,64 +22,39 @@ source-repository head
 
 library
   exposed-modules:
+      Examples
+      CohortExamples
+      CohortExamples.Example1
+      FeatureExamples
+      FeatureExamples.Example1
+      FeatureExamples.Example2
+      FeatureExamples.Example3
+      FeatureExamples.Example4
       ExampleEvents
-      ExampleFeatures1
-      ExampleFeatures2
-      ExampleFeatures3
-      ExampleFeatures4
-      ExampleCohort1
   hs-source-dirs:
       src
   build-depends:
     , event-data-model
-    , event-data-theory
     , hasklepias-main
-    , hasklepias-core
-    , hspec
     , base >=4.14 && <5
-    , tasty  == 1.4.1
-    , tasty-hunit == 0.10.0.3
-    , tasty-hspec == 1.2
   default-language: Haskell2010
+  default-extensions: 
+      NoImplicitPrelude
+      OverloadedStrings
+      LambdaCase
+      DataKinds
+      FlexibleContexts
+      FlexibleInstances
+      DeriveGeneric
+      DuplicateRecordFields
+      MultiParamTypeClasses
+      TypeApplications
 
--- test-suite examples
---   type: exitcode-stdio-1.0
---   main-is: Main.hs
---   other-modules:
---       ExampleEvents
---       ExampleFeatures1
---       ExampleFeatures2
---       ExampleFeatures3
---       ExampleFeatures4
---       ExampleCohort1
---   hs-source-dirs:
---       examples
---   build-depends:
---     , event-data-model
---     , event-data-theory
---     , hasklepias-main
---     , hasklepias-core
---     , hspec
---     , base >=4.14 && <5
---     , tasty  == 1.4.1
---     , tasty-hunit == 0.10.0.3
---     , tasty-hspec == 1.2
---   default-language: Haskell2010
-
-executable examples
-    main-is:          Main.hs
-
-    -- Modules included in this executable, other than Main.
-    -- other-modules:
-
-    -- LANGUAGE extensions used by modules in this package.
-    -- other-extensions:
-    build-depends:
-        base ^>=4.14.2.0
-        , hasklepias-examples
-        , tasty  == 1.4.1
-        , tasty-hunit == 0.10.0.3
-        , tasty-hspec == 1.2
-
-    hs-source-dirs:   app
-    default-language: Haskell2010
+test-suite examples
+  type: exitcode-stdio-1.0
+  main-is: Main.hs
+  hs-source-dirs:
+      test
+  build-depends:
+      hasklepias-examples, base
+  default-language: Haskell2010

@@ -224,13 +224,11 @@ followupInterval = makeFollowupInterval 365
 -- See docs on diffFromBegin for what it does
 eventDiffFromBegin
   :: (Typeable b, Ord b, Show b, IntervalSizeable a b, Integral b)
-  => 
-    Interval a -> 
-    MyEvent a
+  => Interval a
+  -> MyEvent a
   -> MyEvent b
 eventDiffFromBegin i e = event i' (getContext e)
- where
-  i' = diffFromBegin i (getInterval e)
+  where i' = diffFromBegin i (getInterval e)
 
 {-
   Functions for defining the study's exposure protocol(s)

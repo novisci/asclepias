@@ -23,8 +23,7 @@ main = do
   spec3 <- testSpec "spec3" exampleFeatures3Spec
   spec4 <- testSpec "spec4" exampleFeatures4Spec
   defaultMain
-    (testGroup
-      "tests"
+    (testGroup "tests"
       -- [spec1, spec2, spec3, spec4, testGroup "Tests" [exampleCohort1tests]]
-      [spec1, spec3, spec4, testGroup "Tests" [exampleCohort1tests]]
+               [spec1, spec3, spec4, testGroup "Tests" [exampleCohort1tests]]
     )

@@ -630,16 +630,18 @@ p1Outcomes' =
   Test specs
 -}
 
-example :: TestTree 
-example = testGroup "TODO" [
-    testCase "TODO" $ testProtocols p1Events @?= p1Protocols
+example :: TestTree
+example = testGroup
+  "TODO"
+  [ testCase "TODO" $ testProtocols p1Events @?= p1Protocols
   , testCase "TODO" $ testProtocols p2Events @?= p2Protocols
   , testCase "TODO" $ testProtocols p3Events @?= p3Protocols
   , testCase "TODO" $ testProtocols p4Events @?= p4Protocols
   , testCase "TODO" $ testProtocols p5Events @?= p5Protocols
-  , testCase "TODO" $ testOutcomes p1Events @?=  p1Outcomes
-  , testCase "TODO" $ testOutcomes (sort p1Events <> [toEvent (1, 59, "wellness")])
-      @?= p1Outcomes'
+  , testCase "TODO" $ testOutcomes p1Events @?= p1Outcomes
+  , testCase "TODO"
+  $   testOutcomes (sort p1Events <> [toEvent (1, 59, "wellness")])
+  @?= p1Outcomes'
   ]
 
 -- exampleFeatures4Spec :: Spec

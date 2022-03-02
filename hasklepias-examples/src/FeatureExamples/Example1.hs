@@ -277,12 +277,12 @@ exampleCohortEvaluator = makeCohortEvaluator exampleEvalOpts exampleCohortSpec
 examplePopulation :: Population [Event ClaimsSchema Text Int]
 examplePopulation = from [exampleSubject1, exampleSubject2]
 
-example :: TestTree 
-example = testGroup "" [
-    testCase  "getUnitFeatures from exampleEvents1"
-    $          getUnitFeatures (beginerval 1 60) exampleEvents1
+example :: TestTree
+example = testGroup
+  ""
+  [ testCase "getUnitFeatures from exampleEvents1"
+    $   getUnitFeatures (beginerval 1 60) exampleEvents1
     @?= example1results
-   
   ]
 
   -- TODO: 

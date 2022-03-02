@@ -2,9 +2,10 @@ module Examples
   ( examples
   ) where
 
+import qualified CohortExamples                as C
 import qualified FeatureExamples               as F
-import qualified CohortExamples   as C
 import           Hasklepias
 
 examples :: IO ()
-examples = defaultMain . testGroup "Examples" =<< sequenceA [pure F.examples, pure C.examples]
+examples = defaultMain . testGroup "Examples" =<< sequenceA
+  [pure F.examples, pure C.examples]

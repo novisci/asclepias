@@ -6,7 +6,7 @@ module CohortExamples.Example1
   ( example
   ) where
 
-import           Hasklepias 
+import           Hasklepias
 
 {-------------------------------------------------------------------------------
   Constants
@@ -546,6 +546,6 @@ example = testGroup
     $
       -- Featureable cannot be tested for equality directly, hence encoding to
       -- JSON bytestring and testing that for equality
-        encode (evalCohorts @[] testPop)
+        encode (_ testPop)
     @?= encode expectedCohortSet
   ]

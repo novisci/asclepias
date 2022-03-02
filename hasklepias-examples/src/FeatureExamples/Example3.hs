@@ -36,7 +36,10 @@ flwup :: FeatureData (Interval Int)
 flwup = pure $ beginerval 50 0
 
 example :: TestTree
-example = testGroup "examplePairComparison" 
-  [ testCase "" $  liftA2 examplePairComparison flwup (pure exampleEvents4)
-    @?= pure (True, Just 16) ]
-    
+example = testGroup
+  "examplePairComparison"
+  [ testCase ""
+    $   liftA2 examplePairComparison flwup (pure exampleEvents4)
+    @?= pure (True, Just 16)
+  ]
+

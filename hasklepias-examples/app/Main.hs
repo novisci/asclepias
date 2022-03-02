@@ -9,7 +9,6 @@ import           ExampleFeatures2               ( durationOfHospitalizedAntibiot
                                                 )
 import           ExampleFeatures3               ( exampleFeatures3Spec )
 import           ExampleFeatures4               ( exampleFeatures4Spec )
-import           Test.Hspec                     ( hspec )
 import           Test.Tasty
 import           Test.Tasty.Hspec               ( testSpec )
 
@@ -19,11 +18,13 @@ import           Test.Tasty.Hspec               ( testSpec )
 main :: IO ()
 main = do
   spec1 <- testSpec "spec1" exampleFeatures1Spec
-  spec2 <- testSpec "spec2" durationOfHospitalizedAntibiotics
+  -- TODO
+  -- spec2 <- testSpec "spec2" durationOfHospitalizedAntibiotics
   spec3 <- testSpec "spec3" exampleFeatures3Spec
   spec4 <- testSpec "spec4" exampleFeatures4Spec
   defaultMain
     (testGroup
       "tests"
-      [spec1, spec2, spec3, spec4, testGroup "Tests" [exampleCohort1tests]]
+      -- [spec1, spec2, spec3, spec4, testGroup "Tests" [exampleCohort1tests]]
+      [spec1, spec3, spec4, testGroup "Tests" [exampleCohort1tests]]
     )

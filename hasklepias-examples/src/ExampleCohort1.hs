@@ -15,7 +15,7 @@ Maintainer  : bsaul@novisci.com
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE TypeApplications #-}
 module ExampleCohort1
-  ( -- exampleCohort1tests
+  ( exampleCohort1tests
   ) where
 import           AssessmentIntervals
 import           Features.Featureable

@@ -543,10 +543,10 @@ example :: TestTree
 example = testGroup
   "Unit tests for calendar cohorts"
   -- TODO: FIXME
-  [ testCase "expected Features for testData1" $ True @?= True
+  [testCase "expected Features for testData1" $ True @?= True
     -- 
     --   -- Featureable cannot be tested for equality directly, hence encoding to
     --   -- JSON bytestring and testing that for equality
     --     encode (_ testPop)
     -- @?= encode expectedCohortSet
-  ]
+                                                             ]

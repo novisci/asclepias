@@ -32,11 +32,11 @@ example = testGroup
   [ testCase "test on exampleEvents1"
   $   durationsOf (["tookAntibiotics", "wasHospitalized"] :: [Text])
                   exampleEvents1
-  @?= makeFeature @"foo" (featureDataL (Other "no cases"))
+  @?= _ (featureDataL (Other "no cases"))
   , testCase "test on exampleEvents3"
   $   durationsOf (["tookAntibiotics", "wasHospitalized"] :: [Text])
                   exampleEvents3
-  @?= makeFeature @"foo" (featureDataR [3, 2])
+  @?= _ (featureDataR [3, 2])
   ]
 
 

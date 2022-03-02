@@ -6,4 +6,3 @@
 
 This section includes description and usage guides for Feature definition templates.
 
-include::features:example$src/Example2.adoc[]

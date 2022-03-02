@@ -8,3 +8,8 @@
 [TIP]
 For more explanation on the theory behind features,
 see xref:ROOT:page$theory/theory-of-features.adoc[].
+
+include::features:example$src/Example2.adoc[]
+
+:example-name: Example2
+include::example-template.adoc[]

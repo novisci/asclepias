@@ -285,7 +285,7 @@ exampleCohortEvaluator
 exampleCohortEvaluator = makeCohortEvaluator exampleEvalOpts exampleCohortSpec
 
 -- NOTE constructor unexported. i do not immediately see another constructor
--- provided. only way to do this that i see is with `from`. i wonder why population exists if it can only be created `From` a [Subject d]
+-- provided. only way to do this that i see is with `from`. 
 examplePopulation :: Population [Event ClaimsSchema Text Int]
 examplePopulation = from [exampleSubject1, exampleSubject2]
 
@@ -296,11 +296,9 @@ exampleFeatures1Spec = do
     $          getUnitFeatures (beginerval 1 60) exampleEvents1
     `shouldBe` example1results
 
--- TODO monad wrapping makes this annoyin to handle
   it "mapping a population to cohort"
     $          exampleCohortEvaluator examplePopulation
-    -- TODO what does this hls warning mean here? 
-    `shouldBe` return
+    `shouldBe` Right
                  (MkCohort
                  -- NOTE see note on using the makeTestAttritionInfo function. MkAttritionInfo unexported.
                    ( makeTestAttritionInfo
@@ -310,9 +308,7 @@ exampleFeatures1Spec = do
                      , (ExcludedBy (1, "includeAll"), 0)
                      , (Included                      , 1)
                      ]
-                   -- NOTE edm theory hid the constructors. same question about
-                   -- CohortData as for Population re: from instance being only
-                   -- way to construct.
+                   -- NOTE edm theory hid the constructors. see comments about Population.
                    , from @[ObsUnit MyData (Interval Int)] [from @(ObsID (Interval Int), MyData) (makeObsID (beginervalMoment 1) ("a" :: Text), example1results)]
                    )
                  )

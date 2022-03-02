@@ -646,12 +646,15 @@ example = testGroup
   ]
 
 exampleFeatures4Spec :: TestTree
-exampleFeatures4Spec = testGroup "tests of exposure protocols"
+exampleFeatures4Spec = testGroup
+  "tests of exposure protocols"
   [ testCase "p1" $ testProtocols p1Events @?= p1Protocols
   , testCase "p2" $ testProtocols p2Events @?= p2Protocols
   , testCase "p3" $ testProtocols p3Events @?= p3Protocols
   , testCase "p4" $ testProtocols p4Events @?= p4Protocols
   , testCase "p5" $ testProtocols p5Events @?= p5Protocols
   , testCase "p1" $ testOutcomes p1Events @?= p1Outcomes
-  , testCase "p1" $ testOutcomes (sort p1Events <> [toEvent (1, 59, "wellness")]) @?= p1Outcomes
+  , testCase "p1"
+  $   testOutcomes (sort p1Events <> [toEvent (1, 59, "wellness")])
+  @?= p1Outcomes
   ]

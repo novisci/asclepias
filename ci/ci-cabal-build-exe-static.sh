@@ -37,9 +37,10 @@ cabal build "${PKG}":exe:"${COMPONENT}" \
    -j \
    -O2 \
    --enable-executable-static \
+   --constraint='text +integer-simple' \
+   --constraint='cryptonite -integer-gmp' \
    || exit 1
-   # --constraint='text +integer-simple' \
-   # --constraint='cryptonite -integer-gmp' \
+
 
 # Get the path to the executable
 EXE="$(./scripts/create-executable-build-path.sh "$PKG" "$VERSION" "$PKG")"

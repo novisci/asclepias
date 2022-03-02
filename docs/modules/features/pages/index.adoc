@@ -9,5 +9,4 @@
 For more explanation on the theory behind features,
 see xref:ROOT:page$theory/theory-of-features.adoc[].
 
-:example-name: Example2
-include::features:example-template.adoc[]
+include::features:example$src/Example2.adoc[]

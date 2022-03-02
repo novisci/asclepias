@@ -18,12 +18,21 @@ import           ExampleEvents                  ( exampleEvents4 )
 import           Hasklepias
 import           Test.Hspec
 
+-- NOTE `Events` was removed from edm package. Using an
+-- analogous version here, but for the more general
+-- `Event`.
+type Events d c a = [Event d c a]
 
 examplePairComparison
-  :: (IntervalSizeable a b) => Interval a -> Events a -> (Bool, Maybe a)
+  :: (IntervalSizeable a b) => Interval a -> Events d Text a -> (Bool, Maybe a)
 examplePairComparison i es =
   es
     |> filterConcur i                   -- filter to concurring with followup interval    
+    -- NOTE: function by the same name was in hasklepias-core FeatureData.
+    -- analogous functionality but slightly different signature to accommodate
+    -- new Event, e.g. Ord constraint on c in Event d c a. Note however that
+    -- the concepts are Text, so we fix type c to Text and don't need to
+    -- include the constraint in examplePairComparison's signature.
     |> splitByConcepts ["c1"] ["c2"]    -- form a list of pairs where first element
     |> uncurry allPairs                 -- has "c1" events and second has "c2" events    
 

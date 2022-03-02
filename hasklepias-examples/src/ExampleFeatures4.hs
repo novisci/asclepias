@@ -12,6 +12,7 @@ Maintainer  : bsaul@novisci.com
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE DeriveGeneric #-}
 
 module ExampleFeatures4
   ( exampleFeatures4Spec
@@ -26,11 +27,40 @@ import           Test.Hspec                     ( Spec
                                                 , shouldBe
                                                 , xcontext
                                                 )
+import           Type.Reflection                ( Typeable )
 
 {-
   Example Data and utilities to create such
 -}
 
+-- NOTE `Events` was removed from edm package. Using an
+-- analogous version here, but for the more general
+-- `Event`. Specialized here to have second type variable as Text. Void is a marker for a data type we will never use in this example.
+-- https://hackage.haskell.org/package/base-4.16.0.0/docs/Data-Void.html#t:Void
+
+-- TODO: what is a better way to go about this, in cases where the Facts field
+-- of the Context d c (in Event d c a) is not used? I would like to use Void
+-- (from Data.Void), but the constructors require a value. Note Void by design
+-- has no constructors.
+-- note too that the Facts field replaces the previous Domain type. The latter
+-- had an 'UnimplementedDomain' variant, but i don't immediately see such a
+-- thing for facts. We might wish to have something like that here, to avoid
+-- boilerplate like that of AlternativeFacts, in which we have to derive some
+-- instances to satisfy all the constraints in Eventable d c a, and the
+-- HasConcept constraint --- the latter of which i think needs a rethinking
+-- anyway.
+
+data AlternativeFacts = AlternativeFacts
+  deriving (Eq, Show, Generic)
+
+
+
+-- Defined separately in ExampleFeatures3
+type MyEvent a = Event AlternativeFacts Text a
+type Events a = [MyEvent a]
+
+-- NOTE this has nothing to do with the event data model. it's a container for
+-- event *data*
 type EventData a b = (b, a, Text)
 
 t1 :: (a, b, c) -> a
@@ -40,14 +70,20 @@ t2 (_, x, _) = x
 t3 :: (a, b, c) -> c
 t3 (_, _, x) = x
 
+-- NOTE needed to add the Typeable constraint to a bunch of these to satisfy
+-- the constraints in event after edm theory refactor. see EventDataTheory.Core
 toEvent
-  :: (IntervalSizeable a b, Show a, Integral b) => EventData a b -> Event a
-toEvent x = event
-  (beginerval (t1 x) (t2 x))
-  (context (UnimplementedDomain ()) (packConcepts [t3 x]) Nothing)
+  :: (Typeable a, IntervalSizeable a b, Show a, Integral b)
+  => EventData a b
+  -> MyEvent a
+toEvent x = event (beginerval (t1 x) (t2 x))
+  -- NOTE context constructor switched argument order
+                  (context (packConcepts [t3 x]) AlternativeFacts Nothing)
 
 toEvents
-  :: (Show a, IntervalSizeable a b, Integral b) => [EventData a b] -> Events a
+  :: (Typeable a, Show a, IntervalSizeable a b, Integral b)
+  => [EventData a b]
+  -> Events a
 toEvents = sort . map toEvent
 
 sapExample1 :: Events Day
@@ -83,7 +119,7 @@ data CensorReason =
   -- The order matters here in that if two censoring events occur on the same
   -- day then the reason for censoring will be chosen based on the following 
   -- ordering.
-    DeathCensor -- disambiguating from Death Domain
+    DeathCensor
   | Disenrollment
   | Discontinuation
   | Noncompliance
@@ -155,6 +191,8 @@ instance (Show a) => Show (Protocols a) where
   Helper functions
 -}
 
+
+
 -- | Duration of follow up in days
 followupDuration :: Integral b => b
 followupDuration = 365
@@ -178,6 +216,21 @@ makeFollowupInterval dur index =
 followupInterval
   :: (Integral b, IntervalSizeable a b) => Interval a -> Interval a
 followupInterval = makeFollowupInterval 365
+
+-- TODO i changed this to accommodate some constraints in diffFromBegin, used
+-- in flupEvents. see note there. this workaround is dumb and should be
+-- addressed with changes upstream, probably. In particular, look at the
+-- awkward dance of a and b types to satisfy the signature of diffFromBegin.
+-- See docs on diffFromBegin for what it does
+eventDiffFromBegin
+  :: (Typeable b, Ord b, Show b, IntervalSizeable a b, Integral b)
+  => 
+    Interval a -> 
+    MyEvent a
+  -> MyEvent b
+eventDiffFromBegin i e = event i' (getContext e)
+ where
+  i' = diffFromBegin i (getInterval e)
 
 {-
   Functions for defining the study's exposure protocol(s)
@@ -305,13 +358,31 @@ decideOutcome adminTime exposure outcomeTime censorTime = case exposure of
 -}
 index :: (Ord a) => Def (F "events" (Events a) -> F "index" (Interval a))
 index = defineA
-  (makeConceptsFilter ["index"] .> intervals .> headMay .> \case
-    Nothing -> makeFeature $ featureDataL (Other "no index")
-    Just x  -> pure x
-  )
+  -- NOTE makeConceptsFilter was removed in the event-data-theory work. 
+  -- replacing with an equivalent.
+  -- NOTE replaced 'intervals' function from IntervalAlgebra with the local
+  -- intervals'. the former acts on f (PairedIntervals) only with Functor f,
+  -- e.g. [PairedInterval], and the latter acts on any f a is Intervallic, e.g.
+  -- [Event d c a].
 
+  -- Note also the type annotation on "index". OverloadedStrings doesn't infer
+  -- the correct type here for use in HasConcept instance and says there is no
+  -- instance where the second type param is String. that makes sense because
+  -- you might in principle have different instances for HasConcept a String
+  -- and HasConcept a Text -- which of course would be dumb.
+  (  filterEvents (Predicate (`hasConcept` ("index" :: Text)))
+  .> intervals'
+  .> headMay
+  .> \case
+       Nothing -> makeFeature $ featureDataL (Other "no index")
+       Just x  -> pure x
+  )
+  where intervals' = fmap getInterval
+
+-- NOTE the additional constraints exist because of those on the new Event. See
+-- Eventable. 
 flupEvents
-  :: (Integral b, IntervalSizeable a b)
+  :: (Show b, Typeable b, Integral b, IntervalSizeable a b)
   => Def
        (  F "index" (Interval a)
        -> F "events" (Events a)
@@ -319,17 +390,21 @@ flupEvents
        )
 flupEvents = define
   (\index es -> es |> filterConcur (followupInterval index) |> fmap
-    (diffFromBegin (followupInterval index))
+    -- NOTE this is the code requiring me to change followupInterval.
+    -- diffFromBegin has a Functor constraint, and Event d c is not a Functor
+    (eventDiffFromBegin (followupInterval index))
   )
 
 {-
    Censoring Events
 -}
 
+-- NOTE `firstConceptOccurrence` was axed from hasklepias-core FeatureEvents,
+-- placed in event-data-theory and renamed.
 death
   :: Integral b
   => Def (F "allFollowupEvents" (Events b) -> F "death" (EventTime b))
-death = define (mkEventTime . fmap begin . firstConceptOccurrence ["death"])
+death = define (mkEventTime . fmap begin . firstOccurrenceOfConcept ["death"])
 
 disenrollment
   :: (Integral b, IntervalSizeable a b)
@@ -343,7 +418,7 @@ disenrollment
 disenrollment = define
   (\i events ->
     events
-      |> makeConceptsFilter ["enrollment"]
+      |> filterEvents (Predicate (`hasConcept` ("enrollment" :: Text)))
   -- combine any concurring enrollment intervals
       |> combineIntervals
   -- find gaps between any enrollment intervals (as well as bounds of followup )
@@ -386,7 +461,7 @@ censorTime = define
 -}
 
 pcskEvents :: Def (F "events" (Events a) -> F "pcskEvents" (Events a))
-pcskEvents = define (makeConceptsFilter ["pcsk"])
+pcskEvents = define $ filterEvents (Predicate (`hasConcept` ("pcsk" :: Text)))
 
 pcskProtocols
   :: (Integral b, IntervalSizeable a b)
@@ -446,7 +521,7 @@ makeOutcomeDefinition
        )
 makeOutcomeDefinition cpt oreason = define
   (\index events protocols censor ->
-    events |> firstConceptOccurrence cpt |> \x ->
+    events |> firstOccurrenceOfConcept cpt |> \x ->
       makeOccurrence oreason (mkEventTime (fmap begin x))
         |> makeNegOutcomes index protocols censor
   )
@@ -463,7 +538,7 @@ o2 = makeOutcomeDefinition ["accident"] Accident
 
 testProtocols
   :: (Integral b, IntervalSizeable a b)
-  => [Event a]
+  => [MyEvent a]
   -> Feature "pcskProtocols" (Protocols b)
 testProtocols input = eval pcskProtocols idx pcev
  where
@@ -511,8 +586,8 @@ p5Protocols = pure $ MkProtocols Compliant
 -}
 
 testOutcomes
-  :: (Integral b, IntervalSizeable a b)
-  => [Event a]
+  :: (Show b, Typeable b, Integral b, IntervalSizeable a b)
+  => [MyEvent a]
   -> ( Feature "wellness" (NegOutcomes b)
      , Feature "accident" (NegOutcomes b)
      )

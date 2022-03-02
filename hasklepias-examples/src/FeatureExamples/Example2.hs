@@ -25,18 +25,15 @@ durationsOf cpts =
          else makeFeature $ featureDataR (durations x)
 {- end::code[] -}
 
-
 example :: TestTree
 example = testGroup
   "durationsOf example"
   [ testCase "test on exampleEvents1"
   $   durationsOf (["tookAntibiotics", "wasHospitalized"] :: [Text])
                   exampleEvents1
-  @?= _ (featureDataL (Other "no cases"))
+  @?= (makeFeature $ featureDataL (Other "no cases") :: Feature "foo" [Int])
   , testCase "test on exampleEvents3"
   $   durationsOf (["tookAntibiotics", "wasHospitalized"] :: [Text])
                   exampleEvents3
-  @?= _ (featureDataR [3, 2])
+  @?= (makeFeature (featureDataR [3, 2]) :: Feature "foo" [Int])
   ]
-
-

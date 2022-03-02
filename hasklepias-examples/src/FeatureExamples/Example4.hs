@@ -645,22 +645,13 @@ example = testGroup
   @?= p1Outcomes'
   ]
 
--- exampleFeatures4Spec :: Spec
--- exampleFeatures4Spec = do
---   describe "tests of exposure protocols" $ do
---     it "p1" $ testProtocols p1Events `shouldBe` p1Protocols
---     it "p2" $ testProtocols p2Events `shouldBe` p2Protocols
---     it "p3" $ testProtocols p3Events `shouldBe` p3Protocols
---     it "p4" $ testProtocols p4Events `shouldBe` p4Protocols
---     it "p5" $ testProtocols p5Events `shouldBe` p5Protocols
-
---   describe "tests of outcomes" $ do
---     it "p1" $ testOutcomes p1Events `shouldBe` p1Outcomes
---     it "p1'"
---       $          testOutcomes (sort p1Events <> [toEvent (1, 59, "wellness")])
---       `shouldBe` p1Outcomes'
-
-    -- describe "SAP examples" $ 
-    --   do
-    --     it "sap example 1" pending
-        -- testOutcomes sapExample1 `shouldBe` ???
+exampleFeatures4Spec :: TestTree
+exampleFeatures4Spec = testGroup "tests of exposure protocols"
+  [ testCase "p1" $ testProtocols p1Events @?= p1Protocols
+  , testCase "p2" $ testProtocols p2Events @?= p2Protocols
+  , testCase "p3" $ testProtocols p3Events @?= p3Protocols
+  , testCase "p4" $ testProtocols p4Events @?= p4Protocols
+  , testCase "p5" $ testProtocols p5Events @?= p5Protocols
+  , testCase "p1" $ testOutcomes p1Events @?= p1Outcomes
+  , testCase "p1" $ testOutcomes (sort p1Events <> [toEvent (1, 59, "wellness")]) @?= p1Outcomes
+  ]

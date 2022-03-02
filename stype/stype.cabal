@@ -36,13 +36,13 @@ library
   hs-source-dirs:
       src
   build-depends:
-      aeson >= 2.0.2.0
+      aeson >= 2.0.3.0
     , base >=4.14 && <5
-    , bytestring == 0.11.1.0
+    , bytestring >= 0.11
     , semiring-simple == 1.0.0.1
     , tasty  == 1.4.1
     , tasty-hunit == 0.10.0.3
-    , text == 1.2.4.1
+    , text >= 2.0 
   default-language: Haskell2010
 
 test-suite stype-test

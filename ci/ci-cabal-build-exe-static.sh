@@ -33,13 +33,21 @@ mkdir -p "$INSTALLDIR"
 
 # The commented-out constraints were at one point necessary, but now lead to an
 # error for recent builds (as of 2022-02-01 - DP)
+#
+# BS: As of 2022-03-02, the constraints are necessary (or seem to be) again
+# see 
+# https://gitlab.novisci.com/nsStat/asclepias/-/jobs/72502
+# for a failed build without constraints, and
+# https://gitlab.novisci.com/nsStat/asclepias/-/jobs/72650
+# for a successful build with constraints
 cabal build "${PKG}":exe:"${COMPONENT}" \
    -j \
    -O2 \
    --enable-executable-static \
+   --constraint='text +integer-simple' \
+   --constraint='cryptonite -integer-gmp' \
    || exit 1
-   # --constraint='text +integer-simple' \
-   # --constraint='cryptonite -integer-gmp' \
+
 
 # Get the path to the executable
 EXE="$(./scripts/create-executable-build-path.sh "$PKG" "$VERSION" "$PKG")"

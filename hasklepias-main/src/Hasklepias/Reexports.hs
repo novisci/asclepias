@@ -45,6 +45,7 @@ module Hasklepias.Reexports
   , module Data.Tuple
   , module Data.Tuple.Curry
   , module Lens.Micro
+  , module Type.Reflection
   , module Safe
   , module Flow
   , module Witherable
@@ -186,7 +187,7 @@ import safe      GHC.Show                       ( Show(..) )
 import safe      GHC.TypeLits                   ( KnownSymbol(..)
                                                 , symbolVal
                                                 )
-
+import safe Type.Reflection ( Typeable )
 import safe      Flow                           ( (!>)
                                                 , (.>)
                                                 , (<!)

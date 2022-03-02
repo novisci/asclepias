@@ -1,26 +1,14 @@
 {-|
-Module      : ExampleFeatures1
 Description : Demostrates how to define features using Hasklepias
-Copyright   : (c) NoviSci, Inc 2020
-License     : BSD3
-Maintainer  : bsaul@novisci.com
 -}
 
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE NoImplicitPrelude #-}
-{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE TypeApplications #-}
-module ExampleFeatures1
-  ( exampleFeatures1Spec
+module FeatureExamples.Example1
+  ( example
   ) where
 
-import           EventData                      ( containsConcepts )
 import           ExampleEvents
 import           Hasklepias
-import           Test.Hspec  -- imported for test case
+
 {-
 Index is defined as the first occurrence of an Orca bite.
 -}
@@ -289,32 +277,34 @@ exampleCohortEvaluator = makeCohortEvaluator exampleEvalOpts exampleCohortSpec
 examplePopulation :: Population [Event ClaimsSchema Text Int]
 examplePopulation = from [exampleSubject1, exampleSubject2]
 
-exampleFeatures1Spec :: Spec
-exampleFeatures1Spec = do
-
-  it "getUnitFeatures from exampleEvents1"
+example :: TestTree 
+example = testGroup "" [
+    testCase  "getUnitFeatures from exampleEvents1"
     $          getUnitFeatures (beginerval 1 60) exampleEvents1
-    `shouldBe` example1results
+    @?= example1results
+   
+  ]
 
-  it "mapping a population to cohort"
-    $          exampleCohortEvaluator examplePopulation
-    `shouldBe` Right
-                 (MkCohort
-                 -- NOTE see note on using the makeTestAttritionInfo function. MkAttritionInfo unexported.
-                   ( makeTestAttritionInfo
-                     2
-                     2
-                     [ (SubjectHasNoIndex           , 1)
-                     , (ExcludedBy (1, "includeAll"), 0)
-                     , (Included                    , 1)
-                     ]
-                   -- NOTE edm theory hid the constructors. see comments about Population.
-                   , from @[ObsUnit MyData (Interval Int)]
-                     [ from @(ObsID (Interval Int), MyData)
-                         ( makeObsID (beginervalMoment 1) ("a" :: Text)
-                         , example1results
-                         )
-                     ]
-                   )
-                 )
+  -- TODO: 
+  -- it "mapping a population to cohort"
+  --   $          exampleCohortEvaluator examplePopulation
+  --   `shouldBe` Right
+  --                (MkCohort
+  --                -- NOTE see note on using the makeTestAttritionInfo function. MkAttritionInfo unexported.
+  --                  ( makeTestAttritionInfo
+  --                    2
+  --                    2
+  --                    [ (SubjectHasNoIndex           , 1)
+  --                    , (ExcludedBy (1, "includeAll"), 0)
+  --                    , (Included                    , 1)
+  --                    ]
+  --                  -- NOTE edm theory hid the constructors. see comments about Population.
+  --                  , from @[ObsUnit MyData (Interval Int)]
+  --                    [ from @(ObsID (Interval Int), MyData)
+  --                        ( makeObsID (beginervalMoment 1) ("a" :: Text)
+  --                        , example1results
+  --                        )
+  --                    ]
+  --                  )
+  --                )
 

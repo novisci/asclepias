@@ -1,33 +1,14 @@
 {-|
-Module      : ExampleFeatures4
 Description : Demostrates how to define an outcome monitoring treatment regimes
               over time.
-Copyright   : (c) NoviSci, Inc 2020
-License     : BSD3
-Maintainer  : bsaul@novisci.com
 -}
 
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE NoImplicitPrelude #-}
-{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE LambdaCase #-}
-{-# LANGUAGE DeriveGeneric #-}
-
-module ExampleFeatures4
-  ( exampleFeatures4Spec
+module FeatureExamples.Example4
+  ( example
   ) where
 
 import           ExampleEvents                  ( exampleEvents4 )
 import           Hasklepias
-import           Test.Hspec                     ( Spec
-                                                , describe
-                                                , it
-                                                , pending
-                                                , shouldBe
-                                                , xcontext
-                                                )
-import           Type.Reflection                ( Typeable )
 
 {-
   Example Data and utilities to create such
@@ -52,7 +33,6 @@ import           Type.Reflection                ( Typeable )
 
 data AlternativeFacts = AlternativeFacts
   deriving (Eq, Show, Generic)
-
 
 
 -- Defined separately in ExampleFeatures3
@@ -650,20 +630,32 @@ p1Outcomes' =
   Test specs
 -}
 
-exampleFeatures4Spec :: Spec
-exampleFeatures4Spec = do
-  describe "tests of exposure protocols" $ do
-    it "p1" $ testProtocols p1Events `shouldBe` p1Protocols
-    it "p2" $ testProtocols p2Events `shouldBe` p2Protocols
-    it "p3" $ testProtocols p3Events `shouldBe` p3Protocols
-    it "p4" $ testProtocols p4Events `shouldBe` p4Protocols
-    it "p5" $ testProtocols p5Events `shouldBe` p5Protocols
+example :: TestTree 
+example = testGroup "TODO" [
+    testCase "TODO" $ testProtocols p1Events @?= p1Protocols
+  , testCase "TODO" $ testProtocols p2Events @?= p2Protocols
+  , testCase "TODO" $ testProtocols p3Events @?= p3Protocols
+  , testCase "TODO" $ testProtocols p4Events @?= p4Protocols
+  , testCase "TODO" $ testProtocols p5Events @?= p5Protocols
+  , testCase "TODO" $ testOutcomes p1Events @?=  p1Outcomes
+  , testCase "TODO" $ testOutcomes (sort p1Events <> [toEvent (1, 59, "wellness")])
+      @?= p1Outcomes'
+  ]
 
-  describe "tests of outcomes" $ do
-    it "p1" $ testOutcomes p1Events `shouldBe` p1Outcomes
-    it "p1'"
-      $          testOutcomes (sort p1Events <> [toEvent (1, 59, "wellness")])
-      `shouldBe` p1Outcomes'
+-- exampleFeatures4Spec :: Spec
+-- exampleFeatures4Spec = do
+--   describe "tests of exposure protocols" $ do
+--     it "p1" $ testProtocols p1Events `shouldBe` p1Protocols
+--     it "p2" $ testProtocols p2Events `shouldBe` p2Protocols
+--     it "p3" $ testProtocols p3Events `shouldBe` p3Protocols
+--     it "p4" $ testProtocols p4Events `shouldBe` p4Protocols
+--     it "p5" $ testProtocols p5Events `shouldBe` p5Protocols
+
+--   describe "tests of outcomes" $ do
+--     it "p1" $ testOutcomes p1Events `shouldBe` p1Outcomes
+--     it "p1'"
+--       $          testOutcomes (sort p1Events <> [toEvent (1, 59, "wellness")])
+--       `shouldBe` p1Outcomes'
 
     -- describe "SAP examples" $ 
     --   do

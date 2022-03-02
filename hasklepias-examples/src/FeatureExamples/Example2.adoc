@@ -1,0 +1,11 @@
+:syntax-highlighting: 
+
+include::example2.hs[tag=description]
+
+[source,haskell]
+----
+include::example2.hs[tag=code]
+----
+
+include::example2.hs[tag=code-explanation]
+

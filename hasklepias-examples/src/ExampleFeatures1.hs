@@ -304,12 +304,17 @@ exampleFeatures1Spec = do
                    ( makeTestAttritionInfo
                      2
                      2
-                     [ (SubjectHasNoIndex             , 1)
+                     [ (SubjectHasNoIndex           , 1)
                      , (ExcludedBy (1, "includeAll"), 0)
-                     , (Included                      , 1)
+                     , (Included                    , 1)
                      ]
                    -- NOTE edm theory hid the constructors. see comments about Population.
-                   , from @[ObsUnit MyData (Interval Int)] [from @(ObsID (Interval Int), MyData) (makeObsID (beginervalMoment 1) ("a" :: Text), example1results)]
+                   , from @[ObsUnit MyData (Interval Int)]
+                     [ from @(ObsID (Interval Int), MyData)
+                         ( makeObsID (beginervalMoment 1) ("a" :: Text)
+                         , example1results
+                         )
+                     ]
                    )
                  )
 

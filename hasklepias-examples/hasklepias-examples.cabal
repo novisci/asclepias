@@ -38,7 +38,14 @@ library
     , hasklepias-main
     , base >=4.14 && <5
   default-language: Haskell2010
-  default-extensions: 
+  default-extensions:
+  -- NOTE: 
+  -- DataKinds and TypeApplications are used frequently in the examples
+  -- but brittany v0.13.1.2 does NOT format code idempotently unless
+  -- these extensions are enables within module.
+  -- The brittrany formatter does not appear to check the .cabal file
+  -- for enabled extensions. 
+  -- Hence, these extensions are turned on as needed within modules.
       NoImplicitPrelude
       OverloadedStrings
       LambdaCase
@@ -46,7 +53,6 @@ library
       FlexibleInstances
       DeriveGeneric
       MultiParamTypeClasses
-      TypeApplications
 
 test-suite examples
   type: exitcode-stdio-1.0

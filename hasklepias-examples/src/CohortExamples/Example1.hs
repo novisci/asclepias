@@ -431,15 +431,11 @@ expectedObsUnita = map from pairs where
     )
     expectedFeatures1
 
-
 makeExpectedCohort
   :: AttritionInfo
   -> [ObsUnit ClaimsSchema Featureset]
   -> Cohort ClaimsSchema Featureset
 makeExpectedCohort a x = MkCohort (a, into x)
-
--- mkAl :: (CohortStatus, Natural) -> AttritionLevel
--- mkAl = uncurry MkAttritionLevel
 
 expectedCohorts :: [Cohort Featureset (Interval Day)]
 expectedCohorts = zipWith

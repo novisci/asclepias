@@ -5,6 +5,12 @@
 
 = The Asclepias Developer Guide 
 
+[NOTE]
+This guide is designed for asclepias *developers*,
+i.e. folks who contribute the asclepias repository.
+For the user guide, 
+xref:ROOT:introduction.adoc[click here].
+
 These documents describe how to: 
 
 * contribute to `+asclepias+`

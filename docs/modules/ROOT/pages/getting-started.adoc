@@ -5,8 +5,25 @@
 
 == Installing the toolchain
 
-#TODO#
+include::partial$install-toolchain.adoc[]
+
+== Set up your development environment
+
+include::partial$setup-ide.adoc[]
 
 == Next Steps 
 
-#TODO#
+Once you have the toolchain and development environment installed,
+next steps may include:
+
+* working through a tutorial #TODO: link#;
+* initializing a new asclepias project #TODO: link#;
+* reading up on how to
+link[define a feature],
+link[specify a cohort], 
+or
+link[build a cohort application]
+#TODO: fix links#
+.
+
+

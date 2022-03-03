@@ -22,9 +22,9 @@ link:haddock-site:[here].
 [#motivation]
 == Motivation
 
-xref::ROOT:partial$motivation.adoc[]
+include::partial$motivation.adoc[]
 
 [#benefits]
 == Benefits
 
-xref::ROOT:partial$benefits.adoc[]
+include::partial$benefits.adoc[]

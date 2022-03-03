@@ -7,7 +7,7 @@
 * Template library
 ** xref:features:templates.adoc[]
 ** xref:cohorts:templates.adoc[]
-* Applications
+* xref::applications:index.adoc[] 
 ** xref:applications:cohort-collector.adoc[] 
 * xref:theory/index.adoc[]
 ** xref:theory/theory-of-cohorts.adoc[]

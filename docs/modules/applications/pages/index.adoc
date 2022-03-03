@@ -7,7 +7,7 @@
 These pages describe applications provided by asclepias.
 For documentation about building applications __from__ asclepias,
 such as cohort applications,
-xref:ROOT/page$build-project-applications.adoc[see here].
+xref:ROOT:page$build-project-applications.adoc[see here].
 
 Asclepias currently provides the following applications: 
 

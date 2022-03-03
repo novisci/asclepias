@@ -2,6 +2,7 @@
 Description : Demostrates how to define a cohort using Hasklepias
 -}
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE TypeApplications #-}
 module CohortExamples.Example1
   ( example
   ) where
@@ -20,10 +21,10 @@ lookback455 = 455
 followupDuration :: CalendarDiffDays
 followupDuration = CalendarDiffDays 3 0
 
--- | Calendar indices: first day of each quarter for 2017-2018
+-- | Calendar indices: first day of each quarter for 2017
 indices :: [Interval Day]
 indices = map (\(y, m) -> beginerval 0 (fromGregorian y m 1))
-              (allPairs [2017 .. 2018] [1, 4, 7, 10])
+              (allPairs [2017] [1, 4, 7, 10])
 
 {-------------------------------------------------------------------------------
   Utility functions 
@@ -215,7 +216,7 @@ critDead = define
   (\index mDeadDay -> case mDeadDay of
     Nothing      -> Include
     Just deadDay -> excludeIf $ beforeIndex index deadDay
-        --  excludeIf ( maybe False (beforeIndex index) mDeadDay) -- different way to write logic
+    --  excludeIf ( maybe False (beforeIndex index) mDeadDay) -- different way to write logic
   )
 
 {-------------------------------------------------------------------------------
@@ -232,7 +233,7 @@ type BoolFeatDef n
 type BoolFeat n = Feature n Bool
 
 diabetes :: BoolFeatDef "diabetes"
-diabetes = twoOutOneIn ["is_diabetes_outpatient"] ["is_diabetes_inpatient"]
+diabetes = twoOutOneIn ["is_diabetes_inpatient"] ["is_diabetes_outpatient"]
 
 instance HasAttributes  "diabetes" Bool where
   getAttributes _ = basicAttributes "Has Diabetes"
@@ -242,7 +243,7 @@ instance HasAttributes  "diabetes" Bool where
 
 
 ckd :: BoolFeatDef "ckd"
-ckd = twoOutOneIn ["is_ckd_outpatient"] ["is_ckd_inpatient"]
+ckd = twoOutOneIn ["is_ckd_inpatient"] ["is_ckd_outpatient"]
 
 instance HasAttributes  "ckd" Bool where
   getAttributes _ =
@@ -394,21 +395,16 @@ testSubject2 = into ("b" :: Text, testData2)
 testPop :: Population [Event ClaimsSchema Text Day]
 testPop = into [testSubject1, testSubject2]
 
-makeExpectedCovariate
-  :: (KnownSymbol name) => FeatureData Bool -> Feature name Bool
-makeExpectedCovariate = makeFeature
-
 makeExpectedFeatures
   :: FeatureData (Interval Day)
   -> (FeatureData Bool, FeatureData Bool, FeatureData Bool, FeatureData Bool)
   -> Featureset
 makeExpectedFeatures i (b1, b2, b3, b4) = featureset
-  (  packFeature (makeFeature i :: Feature "calendarIndex" (Interval Day))
-  :| [ packFeature (makeExpectedCovariate b1 :: Feature "diabetes" Bool)
-     , packFeature (makeExpectedCovariate b2 :: Feature "ckd" Bool)
-     , packFeature (makeExpectedCovariate b3 :: Feature "ppi" Bool)
-     , packFeature
-       (makeExpectedCovariate b4 :: Feature "glucocorticoids" Bool)
+  (  packFeature (makeFeature @"calendarIndex" i)
+  :| [ packFeature (makeFeature @"diabetes" b1)
+     , packFeature (makeFeature @"ckd" b2)
+     , packFeature (makeFeature @"ppi" b3)
+     , packFeature (makeFeature @"glucocorticoids" b4)
      ]
   )
 
@@ -426,10 +422,14 @@ expectedFeatures1 = map
     )
   ]
 
-expectedObsUnita :: [ObsUnit Featureset Int]
+expectedObsUnita :: [ObsUnit Featureset (Interval Day)]
 expectedObsUnita = map from pairs where
-  pairs =
-    zip (replicate 5 (makeObsID (1 :: Int) ("a" :: Text))) expectedFeatures1
+  pairs = zip
+    (fmap
+      (\(x, y) -> makeObsID (beginerval 1 (fromGregorian x y 1)) ("a" :: Text))
+      [(2017, 4), (2017, 7), (2017, 10)]
+    )
+    expectedFeatures1
 
 
 makeExpectedCohort
@@ -441,7 +441,7 @@ makeExpectedCohort a x = MkCohort (a, into x)
 -- mkAl :: (CohortStatus, Natural) -> AttritionLevel
 -- mkAl = uncurry MkAttritionLevel
 
-expectedCohorts :: [Cohort Featureset Int]
+expectedCohorts :: [Cohort Featureset (Interval Day)]
 expectedCohorts = zipWith
   (curry MkCohort)
   [ makeTestAttritionInfo
@@ -488,65 +488,19 @@ expectedCohorts = zipWith
     , (ExcludedBy (5, "isDead")              , 0)
     , (Included                              , 1)
     ]
-  , makeTestAttritionInfo
-    2
-    2
-    [ (SubjectHasNoIndex                     , 0)
-    , (ExcludedBy (1, "isFemale")            , 0)
-    , (ExcludedBy (2, "isOver50")            , 1)
-    , (ExcludedBy (3, "isEnrolled")          , 0)
-    , (ExcludedBy (4, "isContinuousEnrolled"), 1)
-    , (ExcludedBy (5, "isDead")              , 0)
-    , (Included                              , 0)
-    ]
-  , makeTestAttritionInfo
-    2
-    2
-    [ (SubjectHasNoIndex                     , 0)
-    , (ExcludedBy (1, "isFemale")            , 0)
-    , (ExcludedBy (2, "isOver50")            , 1)
-    , (ExcludedBy (3, "isEnrolled")          , 1)
-    , (ExcludedBy (4, "isContinuousEnrolled"), 0)
-    , (ExcludedBy (5, "isDead")              , 0)
-    , (Included                              , 0)
-    ]
-  , makeTestAttritionInfo
-    2
-    2
-    [ (SubjectHasNoIndex                     , 0)
-    , (ExcludedBy (1, "isFemale")            , 0)
-    , (ExcludedBy (2, "isOver50")            , 1)
-    , (ExcludedBy (3, "isEnrolled")          , 1)
-    , (ExcludedBy (4, "isContinuousEnrolled"), 0)
-    , (ExcludedBy (5, "isDead")              , 0)
-    , (Included                              , 0)
-    ]
-  , makeTestAttritionInfo
-    2
-    2
-    [ (SubjectHasNoIndex                     , 0)
-    , (ExcludedBy (1, "isFemale")            , 0)
-    , (ExcludedBy (2, "isOver50")            , 1)
-    , (ExcludedBy (3, "isEnrolled")          , 1)
-    , (ExcludedBy (4, "isContinuousEnrolled"), 0)
-    , (ExcludedBy (5, "isDead")              , 0)
-    , (Included                              , 0)
-    ]
   ]
-  (fmap into ([[]] ++ transpose [expectedObsUnita] ++ [[], [], [], []]))
+  (fmap into ([] : transpose [expectedObsUnita]))
 
-expectedCohortSet :: CohortMap Featureset Int
+expectedCohortSet :: CohortMap Featureset (Interval Day)
 expectedCohortSet =
   into $ mapFromList $ zip (fmap (pack . show) indices) expectedCohorts
 
 example :: TestTree
 example = testGroup
   "Unit tests for calendar cohorts"
-  -- TODO: FIXME
-  [testCase "expected Features for testData1" $ True @?= True
-    -- 
-    --   -- Featureable cannot be tested for equality directly, hence encoding to
-    --   -- JSON bytestring and testing that for equality
-    --     encode (_ testPop)
-    -- @?= encode expectedCohortSet
-                                                             ]
+  [ testCase "expected Features for testData1"
+    $ -- Featureable cannot be tested for equality directly, hence encoding to
+      -- JSON bytestring and testing that for equality
+        encode (evalCohorts @[] testPop)
+    @?= encode [expectedCohortSet]
+  ]

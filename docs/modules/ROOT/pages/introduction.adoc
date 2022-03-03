@@ -8,10 +8,23 @@ a domain specific language for building and analyzing cohorts.
 
 == Where to start
 
-If this is your first time using Asclepias,
+If you're unfamiliar with asclepias and what it can do,
+start by reading the <<motivation>> and <<benefits>> sections below.
+If this is your first time using asclepias,
 read xref:getting-started.adoc[getting started].
-#TODO add more#
+If you're already an asclepias user,
+check out our available tutorials and how-to guides.
 
 [NOTE]
 Reference information for `+hasklepias+` functions is located 
 link:haddock-site:[here].
+
+[#motivation]
+== Motivation
+
+xref::ROOT:partial$motivation.adoc[]
+
+[#benefits]
+== Benefits
+
+xref::ROOT:partial$benefits.adoc[]

@@ -1,6 +1,4 @@
 * xref:introduction.adoc[]
-** xref:motivation.adoc[]
-** xref:benefits.adoc[]
 * How-to guides
 ** xref:getting-started.adoc[]
 ** xref:cohorts:index.adoc[]

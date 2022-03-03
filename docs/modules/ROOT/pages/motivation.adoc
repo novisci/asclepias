@@ -1,17 +1,2 @@
 = Motivation
 
-The extraction and transformation of source data
-(such as insurance claims, electronic medical records, or case report forms)
-into analysis-ready cohort data consumes an inordinate amount of resources
-in a epidemiologic and
-https://en.wikipedia.org/wiki/Real_world_evidence[real world evidence]
-research.
-In particular, the translation of scientists' analysis plans into code
-can be prone to misinterpretation.
-Coding a cohort often requires frequent clarification by the scientists,
-and a best practice is to have the cohort coded by
-by two or more programming teams to ensure quality.
-
-The aim of asclepias is to make
-the process of defining, building, and analyzing cohorts
-smoother and more robust.

@@ -1,0 +1,37 @@
+:description: Lists the features and benefits of asclepias
+
+Asclepias is a domain specific language and a collection of tools
+for defining cohorts.
+Benefits of asclepias include:
+
+Formally defines a cohort:: 
+#TODO: What is a cohort?#
+
+Provides tools for defining features::
+#TODO: What is a feature?#
+
+Includes a well-tested Feature library::
+#TODO: describe the templates#
+
+Makes writing tests of features easy::
+#TODO: describe how scientists can write tests#
+
+Uses type safety to create better programs:: 
+Prevents many common programming errors. 
+#TODO: why does type safety matter?#
+
+Is easily extensible:: 
+Users can create multiple features and/or cohorts following a common pattern
+and share these across projects.
+
+Is data model agnostic::
+#TODO: explain how cohorts and features
+can be used for any data model;
+use of the event data theory is encouraged but not required#
+
+Introduces the event data theory::
+#TODO: explain the event data theory;
+how it can be used to produce models;
+how time is a primary concept and
+aligns with how scientists often define features;
+how it uses a formal algebra for rigor#

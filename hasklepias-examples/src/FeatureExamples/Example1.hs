@@ -33,13 +33,11 @@ bline = makeBaselineFromIndex 60
 flwup :: (IntervalSizeable a b) => Interval a -> AssessmentInterval a
 flwup = makeFollowupFromIndex 30
 
--- | Replacement for function of the same name that was disappeared
--- previously in hasklepias-core FeatureEvents
--- NOTE tallyEvents and Predicate are new to EDM theory
+-- | TODO
 atleastNofX :: (Ord c) => Int -> [c] -> [Event d c a] -> Bool
 atleastNofX n xs es = tallyEvents (Predicate (`hasAnyConcepts` xs)) es >= n
 
--- | Another such function, from that same module
+-- | TODO
 makeConceptsFilter
   :: (Filterable f, Ord c) => [c] -> f (Event d c a) -> f (Event d c a)
 makeConceptsFilter cpts = filter (`hasAnyConcepts` cpts)
@@ -57,7 +55,6 @@ makeHx
 makeHx cnpts i events =
   (isNotEmpty (f i events'), lastMay $ intervals (f i events'))
   -- TODO: find the available functions to replace this mess
-  -- NOTE `hasConcepts` moved to EDM theory and renamed as below
  where
   f i = makePairedFilter enclose i (`hasAnyConcepts` cnpts)
   makePairedFilter fi i fc = filter (makePairPredicate fi i fc)
@@ -164,7 +161,7 @@ countOfHospitalEventsDef = define countOfHospitalEvents
 
 -- | time of distcontinuation of antibiotics
 --   and time from start of follow up
---   This needs to be generalized as Nothing could either indicate they didn't 
+--   TODO This needs to be generalized as Nothing could either indicate they didn't 
 --   discontinue or that they simply got no antibiotics records.
 so :: Intervallic i a => ComparativePredicateOf1 (i a)
 so = unionPredicates [startedBy, overlappedBy]
@@ -258,25 +255,21 @@ example1results =
   , pure $ Just (78, 18)
   )
 
--- NOTE: CohortEvalOptions new to EDM theory
 exampleEvalOpts :: CohortEvalOptions
 exampleEvalOpts = defaultCohortEvalOptions
 
--- NOTE name changed from testCohortSpec to exampleCohortSpec
 exampleCohortSpec
   :: CohortSpec [Event ClaimsSchema Text Int] MyData (Interval Int)
 exampleCohortSpec = specifyCohort defineIndexSet includeAll getUnitFeatures
 
--- NOTE: new to edm theory. note types of cohortspec appearing here
--- evaluator requires a monad wrapper in return. using either here because IO
--- has no Eq instance, hence testing doesn't work.
+-- NOTE makeCohortEvaluator requires a monad wrapper in return type. Using
+-- Either here because IO a has no Eq instance, hence testing doesn't work.
 exampleCohortEvaluator
   :: Population [Event ClaimsSchema Text Int]
   -> Either Text (Cohort MyData (Interval Int))
 exampleCohortEvaluator = makeCohortEvaluator exampleEvalOpts exampleCohortSpec
 
--- NOTE constructor unexported. i do not immediately see another constructor
--- provided. only way to do this that i see is with `from`. 
+-- NOTE constructor unexported.  only way to do construct it is with `from`. 
 examplePopulation :: Population [Event ClaimsSchema Text Int]
 examplePopulation = from [exampleSubject1, exampleSubject2]
 
@@ -297,7 +290,6 @@ example = testGroup
             , (ExcludedBy (1, "includeAll"), 0)
             , (Included                    , 1)
             ]
-        -- NOTE edm theory hid the constructors. see comments about Population.
           , from @[ObsUnit MyData (Interval Int)]
             [ from @(ObsID (Interval Int), MyData)
                 (makeObsID (beginervalMoment 60) ("a" :: Text), example1results)
@@ -305,4 +297,3 @@ example = testGroup
           )
         )
   ]
-

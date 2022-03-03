@@ -14,11 +14,6 @@ examplePairComparison
 examplePairComparison i es =
   es
     |> filterConcur i                   -- filter to concurring with followup interval    
-    -- NOTE: function by the same name was in hasklepias-core FeatureData.
-    -- analogous functionality but slightly different signature to accommodate
-    -- new Event, e.g. Ord constraint on c in Event d c a. Note however that
-    -- the concepts are Text, so we fix type c to Text and don't need to
-    -- include the constraint in examplePairComparison's signature.
     |> splitByConcepts ["c1"] ["c2"]    -- form a list of pairs where first element
     |> uncurry allPairs                 -- has "c1" events and second has "c2" events    
 
@@ -42,4 +37,3 @@ example = testGroup
     $   liftA2 examplePairComparison flwup (pure exampleEvents4)
     @?= pure (True, Just 16)
   ]
-

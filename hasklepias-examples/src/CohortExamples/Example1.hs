@@ -336,9 +336,9 @@ m
   -> [Text]
   -> ClaimsSchema
   -> Event ClaimsSchema Text Day
-m y m d dur c dmn = event ctx itv where
-  itv = context (packConcepts c) dmn Nothing
-  ctx = beginerval dur (fromGregorian y m d)
+m y m d dur c dmn = event itv ctx where
+  ctx = context (packConcepts c) dmn Nothing
+  itv = beginerval dur (fromGregorian y m d)
 
 testData1 :: [Event ClaimsSchema Text Day]
 testData1 = sort

@@ -1,13 +1,15 @@
 * xref:introduction.adoc[]
 * How-to guides
 ** xref:getting-started.adoc[]
+** xref:initialize-new-project.adoc[]
 ** xref:cohorts:index.adoc[]
 ** xref:features:index.adoc[]
+** xref:build-project-applications.adoc[]
 * xref::tutorials.adoc[]
 * Template library
 ** xref:features:templates.adoc[]
 ** xref:cohorts:templates.adoc[]
-* xref::applications:index.adoc[] 
+* xref:applications:index.adoc[] 
 ** xref:applications:cohort-collector.adoc[] 
 * xref:theory/index.adoc[]
 ** xref:theory/theory-of-cohorts.adoc[]

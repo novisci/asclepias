@@ -1,16 +1,16 @@
-:description: Landing page for doc module about applications provided by asclepias
 :navtitle: Applications
+:description: Landing page for doc module about applications provided by asclepias
+
+= Asclepias Applications
 
 [IMPORTANT]
 These pages describe applications provided by asclepias.
 For documentation about building applications __from__ asclepias,
 such as cohort applications,
-see #TODO#.
-
-== Asclepias Applications
+xref:ROOT/page$build-project-applications.adoc[see here].
 
 Asclepias currently provides the following applications: 
 
 `+cohort-collector+`::
 An application for combining cohort JSON across partitions. 
-xref:cohort-collector.adoc[See documentation].
+xref:applications:cohort-collector.adoc[See documentation].

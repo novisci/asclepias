@@ -1,0 +1,6 @@
+:navtitle: Initialize new project
+:description: How to initialize a new asclepias project
+
+= Initialize an asclepias project
+
+#TODO#

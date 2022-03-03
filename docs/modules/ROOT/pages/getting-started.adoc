@@ -17,13 +17,11 @@ Once you have the toolchain and development environment installed,
 next steps may include:
 
 * working through a tutorial #TODO: link#;
-* initializing a new asclepias project #TODO: link#;
+* xref:page$initialize-new-project.adoc[initializing a new asclepias project];
 * reading up on how to
-link[define a feature],
-link[specify a cohort], 
+xref:features:page$index.adoc[define a feature],
+xref:cohorts:page$index.adoc[specify a cohort], 
 or
-link[build a cohort application]
-#TODO: fix links#
-.
+xref:build-project-applications.adoc[build a cohort application].
 
 

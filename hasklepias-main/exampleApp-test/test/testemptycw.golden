@@ -1,1 +1,1 @@
-{"example":[{"attritionInfo":[{"attritionCount":0,"attritionLevel":{"tag":"SubjectHasNoIndex"}},{"attritionCount":0,"attritionLevel":{"tag":"Included"}}],"totalProcessed":0},{"contents":{"attributes":[],"cohortData":[[]],"ids":[]},"tag":"CW"}]}
+{"example":[{"attritionInfo":[[{"tag":"SubjectHasNoIndex"},0],[{"tag":"Included"},0]],"totalSubjectsProcessed":0,"totalUnitsProcessed":0},{"contents":{"attributes":[],"cohortData":[[]],"ids":[]},"tag":"CW"}]}

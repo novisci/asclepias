@@ -27,5 +27,7 @@ docs-site/*
 # test artifacts
 cohort-collector/test/tests/testcw.json
 cohort-collector/test/tests/testrw.json
-
-
+hasklepias-main/exampleApp-test/test/testrw.json
+hasklepias-main/exampleApp-test/test/testcw.json
+hasklepias-main/exampleApp-test/test/testemptyrw.json
+hasklepias-main/exampleApp-test/test/testemptycw.json

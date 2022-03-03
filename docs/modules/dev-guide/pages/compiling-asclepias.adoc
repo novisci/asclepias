@@ -181,13 +181,15 @@ then you probably need to install a different build of LLVM,
 which you can do using e.g. homebrew as shown below.
 Note that in this example we specify LLVM version 12 as suggested in the thread shown below,
 however the LLVM versions that are compatible with Haskell compilations may change over time.
-See https://www.reddit.com/r/haskell/comments/rjm0x8/help_wanted_for_llvm_config_for_haskell_on_mac/[Help wanted for LLVM config for Haskell on Mac] on Reddit for a more detailed discussion.
+See 
+https://www.reddit.com/r/haskell/comments/rjm0x8/help_wanted_for_llvm_config_for_haskell_on_mac/[Help wanted for LLVM config for Haskell on Mac] 
+on Reddit for a more detailed discussion.
 
 [source,shell]
 ----
 brew install llvm@12
 ----
-You will also want to add a line like the following to the appropriate shell startup file such as `${HOME}/.bashrc`, `${HOME}/.zshrc`, etc.
+You will also want to add a line like the following to the appropriate shell startup file such as `$\{HOME}/.bashrc`, `$\{HOME}/.zshrc`, etc.
 [source,shell]
 ----
 export PATH="/opt/homebrew/opt/llvm@12/bin:$PATH"

@@ -5,7 +5,7 @@
 
 == Installing the toolchain
 
-include::partial$install-toolchain.adoc[]
+include::partial$install-toolchain.adoc[leveloffset=+1]
 
 == Set up your development environment
 

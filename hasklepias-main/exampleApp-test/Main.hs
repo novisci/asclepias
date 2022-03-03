@@ -11,12 +11,12 @@ import qualified Data.ByteString.Lazy          as B
 import           Hasklepias
 import           Hasklepias.ExampleApp
 import           Hasklepias.MakeCohortApp       ( runApp )
+import           System.Process
 import           Test.Tasty                     ( TestTree
                                                 , defaultMain
                                                 , testGroup
                                                 )
 import           Test.Tasty.Silver
-import           System.Process
 
 appTestRw :: IO ()
 appTestRw = do
@@ -25,7 +25,9 @@ appTestRw = do
   B.writeFile "exampleApp-test/test/testrw.json" r
 
 appStdinRw :: IO ()
-appStdinRw = callCommand "< exampleApp-test/test/testData.jsonl exampleAppRW -o exampleApp-test/test/stdinrw.json"
+appStdinRw =
+  callCommand
+    "< exampleApp-test/test/testData.jsonl exampleAppRW -o exampleApp-test/test/stdinrw.json"
 
 appTestCw :: IO ()
 appTestCw = do
@@ -34,7 +36,9 @@ appTestCw = do
   B.writeFile "exampleApp-test/test/testcw.json" r
 
 appStdinCw :: IO ()
-appStdinCw = callCommand "< exampleApp-test/test/testData.jsonl exampleAppCW -o exampleApp-test/test/stdincw.json"
+appStdinCw =
+  callCommand
+    "< exampleApp-test/test/testData.jsonl exampleAppCW -o exampleApp-test/test/stdincw.json"
 
 appTestEmptyRw :: IO ()
 appTestEmptyRw = do
@@ -43,7 +47,9 @@ appTestEmptyRw = do
   B.writeFile "exampleApp-test/test/testemptyrw.json" r
 
 appStdinEmptyRw :: IO ()
-appStdinEmptyRw = callCommand "< exampleApp-test/test/testEmptyData.jsonl exampleAppRW -o exampleApp-test/test/stdinemptyrw.json"
+appStdinEmptyRw =
+  callCommand
+    "< exampleApp-test/test/testEmptyData.jsonl exampleAppRW -o exampleApp-test/test/stdinemptyrw.json"
 
 appTestEmptyCw :: IO ()
 appTestEmptyCw = do
@@ -52,7 +58,9 @@ appTestEmptyCw = do
   B.writeFile "exampleApp-test/test/testemptycw.json" r
 
 appStdinEmptyCw :: IO ()
-appStdinEmptyCw = callCommand "< exampleApp-test/test/testEmptyData.jsonl exampleAppCW -o exampleApp-test/test/stdinemptycw.json"
+appStdinEmptyCw =
+  callCommand
+    "< exampleApp-test/test/testEmptyData.jsonl exampleAppCW -o exampleApp-test/test/stdinemptycw.json"
 
 tests :: TestTree
 tests = testGroup
@@ -69,10 +77,11 @@ tests = testGroup
                  "exampleApp-test/test/testemptyrw.golden"
                  "exampleApp-test/test/testemptyrw.json"
                  appTestEmptyRw
-  , goldenVsFile "ExampleApp of row-wise cohort with empty data from standard input"
-                 "exampleApp-test/test/testemptyrw.golden"
-                 "exampleApp-test/test/stdinemptyrw.json"
-                 appStdinEmptyRw
+  , goldenVsFile
+    "ExampleApp of row-wise cohort with empty data from standard input"
+    "exampleApp-test/test/testemptyrw.golden"
+    "exampleApp-test/test/stdinemptyrw.json"
+    appStdinEmptyRw
   , goldenVsFile "ExampleApp of column-wise cohort from file"
                  "exampleApp-test/test/testcw.golden"
                  "exampleApp-test/test/testcw.json"
@@ -85,10 +94,11 @@ tests = testGroup
                  "exampleApp-test/test/testemptycw.golden"
                  "exampleApp-test/test/testemptycw.json"
                  appTestEmptyCw
-  , goldenVsFile "ExampleApp of column-wise cohort with empty data from standard input"
-                 "exampleApp-test/test/testemptycw.golden"
-                 "exampleApp-test/test/stdinemptycw.json"
-                 appStdinEmptyCw
+  , goldenVsFile
+    "ExampleApp of column-wise cohort with empty data from standard input"
+    "exampleApp-test/test/testemptycw.golden"
+    "exampleApp-test/test/stdinemptycw.json"
+    appStdinEmptyCw
   ]
 
 main :: IO ()

@@ -10,9 +10,10 @@ cabal build all \
 
 # The `exampleAppRW` and `exampleAppCW` applications are required to perform the
 # testing
-cabal install hasklepias-main:exampleAppRW --install-method=copy --installdir=$(pwd)
-cabal install hasklepias-main:exampleAppCW --install-method=copy --installdir=$(pwd)
-export PATH=$(pwd):$PATH
+cabal install hasklepias-main:exampleAppRW --install-method=copy --installdir="$(pwd)"
+cabal install hasklepias-main:exampleAppCW --install-method=copy --installdir="$(pwd)"
+PATH=$(pwd):$PATH
+export PATH
 
 cabal test all \
   -j \

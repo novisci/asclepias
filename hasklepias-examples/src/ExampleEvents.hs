@@ -61,6 +61,7 @@ t2 (_, x, _) = x
 t3 :: (a, b, c) -> c
 t3 (_, _, x) = x
 
+{- tag::example-events-1[] -}
 exampleEvents1Data :: [EventData Int]
 exampleEvents1Data =
   [ (9 , 1 , "enrollment")
@@ -88,6 +89,7 @@ exampleEvents1Data =
   , (3 , 80, "tookAntibiotics")
   , (1 , 95, "died")
   ]
+{- end::example-events-1[] -}
 
 exampleEvents2Data :: [EventData Int]
 exampleEvents2Data =

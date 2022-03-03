@@ -10,7 +10,7 @@ copyright:      NoviSci, Inc
 category:       Data Science
 synopsis:       embedded DSL for defining epidemiologic cohorts
 license:        BSD-3-Clause
-license-file:   LICENSE
+--license-file:   LICENSE
 build-type:     Simple
 extra-source-files:
     README.md
@@ -22,46 +22,43 @@ source-repository head
 
 library
   exposed-modules:
+      Examples
+      CohortExamples
+      CohortExamples.Example1
+      FeatureExamples
+      FeatureExamples.Example1
+      FeatureExamples.Example2
+      FeatureExamples.Example3
+      FeatureExamples.Example4
       ExampleEvents
-      ExampleFeatures1
-      ExampleFeatures2
-      ExampleFeatures3
-      ExampleFeatures4
-      ExampleCohort1
   hs-source-dirs:
       src
   build-depends:
     , event-data-model
-    , event-data-theory
     , hasklepias-main
-    , hasklepias-core
-    , hspec
     , base >=4.14 && <5
-    , tasty  == 1.4.1
-    , tasty-hunit == 0.10.0.3
-    , tasty-hspec == 1.2
   default-language: Haskell2010
+  default-extensions:
+  -- NOTE: 
+  -- DataKinds and TypeApplications are used frequently in the examples
+  -- but brittany v0.13.1.2 does NOT format code idempotently unless
+  -- these extensions are enables within module.
+  -- The brittrany formatter does not appear to check the .cabal file
+  -- for enabled extensions. 
+  -- Hence, these extensions are turned on as needed within modules.
+      NoImplicitPrelude
+      OverloadedStrings
+      LambdaCase
+      FlexibleContexts
+      FlexibleInstances
+      DeriveGeneric
+      MultiParamTypeClasses
 
--- test-suite examples
---   type: exitcode-stdio-1.0
---   main-is: Main.hs
---   other-modules:
---       ExampleEvents
---       ExampleFeatures1
---       ExampleFeatures2
---       ExampleFeatures3
---       ExampleFeatures4
---       ExampleCohort1
---   hs-source-dirs:
---       examples
---   build-depends:
---     , event-data-model
---     , event-data-theory
---     , hasklepias-main
---     , hasklepias-core
---     , hspec
---     , base >=4.14 && <5
---     , tasty  == 1.4.1
---     , tasty-hunit == 0.10.0.3
---     , tasty-hspec == 1.2
---   default-language: Haskell2010
+test-suite examples
+  type: exitcode-stdio-1.0
+  main-is: Main.hs
+  hs-source-dirs:
+      test
+  build-depends:
+      hasklepias-examples, base
+  default-language: Haskell2010

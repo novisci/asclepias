@@ -45,6 +45,7 @@ module Hasklepias.Reexports
   , module Data.Tuple
   , module Data.Tuple.Curry
   , module Lens.Micro
+  , module Type.Reflection
   , module Safe
   , module Flow
   , module Witherable
@@ -172,6 +173,13 @@ import safe      Data.Tuple.Curry               ( Curry(..)
                                                 , curryN
                                                 , uncurryN
                                                 )
+import safe      Flow                           ( (!>)
+                                                , (.>)
+                                                , (<!)
+                                                , (<.)
+                                                , (<|)
+                                                , (|>)
+                                                )
 import safe      GHC.Enum                       ( Enum(fromEnum) )
 import safe      GHC.Generics                   ( Generic )
 import safe      GHC.Num                        ( Integer(..)
@@ -186,14 +194,6 @@ import safe      GHC.Show                       ( Show(..) )
 import safe      GHC.TypeLits                   ( KnownSymbol(..)
                                                 , symbolVal
                                                 )
-
-import safe      Flow                           ( (!>)
-                                                , (.>)
-                                                , (<!)
-                                                , (<.)
-                                                , (<|)
-                                                , (|>)
-                                                )
 import           Safe                           ( headMay
                                                 , initMay
                                                 , lastMay
@@ -201,6 +201,7 @@ import           Safe                           ( headMay
                                                 , minimumMay
                                                 , tailMay
                                                 )
+import safe      Type.Reflection                ( Typeable )
 import safe      Witherable                     ( Filterable(filter)
                                                 , Witherable(..)
                                                 )

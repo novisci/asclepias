@@ -85,7 +85,7 @@ test-suite exampleApp-test
     , hasklepias-core
     , hasklepias-appBuilder
     , base >=4.14 && <5
-    , tasty  == 1.4.1
+    , tasty 
     , tasty-silver 
     , bytestring
   default-language: Haskell2010
@@ -108,8 +108,8 @@ test-suite exampleFilterApp-test
     , hasklepias-core
     , hasklepias-appBuilder
     , base >=4.14 && <5
-    , tasty  == 1.4.1
+    , tasty  
     , tasty-silver 
     , bytestring
-    , silently == 1.2.5.1
+    , silently >= 1.2.5.1
   default-language: Haskell2010

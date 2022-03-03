@@ -1,35 +1,25 @@
 {-|
-Module      : ExampleFeatures4
 Description : Demostrates how to define an outcome monitoring treatment regimes
               over time.
-Copyright   : (c) NoviSci, Inc 2020
-License     : BSD3
-Maintainer  : bsaul@novisci.com
 -}
 
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE DataKinds #-}
-{-# LANGUAGE LambdaCase #-}
-
-module ExampleFeatures4
-  ( exampleFeatures4Spec
+module FeatureExamples.Example4
+  ( example
   ) where
 
 import           ExampleEvents                  ( exampleEvents4 )
 import           Hasklepias
-import           Test.Hspec                     ( Spec
-                                                , describe
-                                                , it
-                                                , pending
-                                                , shouldBe
-                                                , xcontext
-                                                )
 
 {-
   Example Data and utilities to create such
 -}
+
+data AlternativeFacts = AlternativeFacts
+  deriving (Eq, Show, Generic)
+
+type MyEvent a = Event AlternativeFacts Text a
+type Events a = [MyEvent a]
 
 type EventData a b = (b, a, Text)
 
@@ -41,13 +31,16 @@ t3 :: (a, b, c) -> c
 t3 (_, _, x) = x
 
 toEvent
-  :: (IntervalSizeable a b, Show a, Integral b) => EventData a b -> Event a
-toEvent x = event
-  (beginerval (t1 x) (t2 x))
-  (context (UnimplementedDomain ()) (packConcepts [t3 x]) Nothing)
+  :: (Typeable a, IntervalSizeable a b, Show a, Integral b)
+  => EventData a b
+  -> MyEvent a
+toEvent x = event (beginerval (t1 x) (t2 x))
+                  (context (packConcepts [t3 x]) AlternativeFacts Nothing)
 
 toEvents
-  :: (Show a, IntervalSizeable a b, Integral b) => [EventData a b] -> Events a
+  :: (Typeable a, Show a, IntervalSizeable a b, Integral b)
+  => [EventData a b]
+  -> Events a
 toEvents = sort . map toEvent
 
 sapExample1 :: Events Day
@@ -83,7 +76,7 @@ data CensorReason =
   -- The order matters here in that if two censoring events occur on the same
   -- day then the reason for censoring will be chosen based on the following 
   -- ordering.
-    DeathCensor -- disambiguating from Death Domain
+    DeathCensor
   | Disenrollment
   | Discontinuation
   | Noncompliance
@@ -155,6 +148,8 @@ instance (Show a) => Show (Protocols a) where
   Helper functions
 -}
 
+
+
 -- | Duration of follow up in days
 followupDuration :: Integral b => b
 followupDuration = 365
@@ -178,6 +173,15 @@ makeFollowupInterval dur index =
 followupInterval
   :: (Integral b, IntervalSizeable a b) => Interval a -> Interval a
 followupInterval = makeFollowupInterval 365
+
+-- TODO see https://gitlab.novisci.com/nsStat/asclepias/-/issues/186
+eventDiffFromBegin
+  :: (Typeable b, Ord b, Show b, IntervalSizeable a b, Integral b)
+  => Interval a
+  -> MyEvent a
+  -> MyEvent b
+eventDiffFromBegin i e = event i' (getContext e)
+  where i' = diffFromBegin i (getInterval e)
 
 {-
   Functions for defining the study's exposure protocol(s)
@@ -305,13 +309,17 @@ decideOutcome adminTime exposure outcomeTime censorTime = case exposure of
 -}
 index :: (Ord a) => Def (F "events" (Events a) -> F "index" (Interval a))
 index = defineA
-  (makeConceptsFilter ["index"] .> intervals .> headMay .> \case
-    Nothing -> makeFeature $ featureDataL (Other "no index")
-    Just x  -> pure x
+  (  filterEvents (Predicate (`hasConcept` ("index" :: Text)))
+  .> intervals'
+  .> headMay
+  .> \case
+       Nothing -> makeFeature $ featureDataL (Other "no index")
+       Just x  -> pure x
   )
+  where intervals' = fmap getInterval
 
 flupEvents
-  :: (Integral b, IntervalSizeable a b)
+  :: (Eventable AlternativeFacts Text b, Integral b, IntervalSizeable a b)
   => Def
        (  F "index" (Interval a)
        -> F "events" (Events a)
@@ -319,7 +327,7 @@ flupEvents
        )
 flupEvents = define
   (\index es -> es |> filterConcur (followupInterval index) |> fmap
-    (diffFromBegin (followupInterval index))
+    (eventDiffFromBegin (followupInterval index))
   )
 
 {-
@@ -329,7 +337,7 @@ flupEvents = define
 death
   :: Integral b
   => Def (F "allFollowupEvents" (Events b) -> F "death" (EventTime b))
-death = define (mkEventTime . fmap begin . firstConceptOccurrence ["death"])
+death = define (mkEventTime . fmap begin . firstOccurrenceOfConcept ["death"])
 
 disenrollment
   :: (Integral b, IntervalSizeable a b)
@@ -343,7 +351,7 @@ disenrollment
 disenrollment = define
   (\i events ->
     events
-      |> makeConceptsFilter ["enrollment"]
+      |> filterEvents (Predicate (`hasConcept` ("enrollment" :: Text)))
   -- combine any concurring enrollment intervals
       |> combineIntervals
   -- find gaps between any enrollment intervals (as well as bounds of followup )
@@ -386,7 +394,7 @@ censorTime = define
 -}
 
 pcskEvents :: Def (F "events" (Events a) -> F "pcskEvents" (Events a))
-pcskEvents = define (makeConceptsFilter ["pcsk"])
+pcskEvents = define $ filterEvents (Predicate (`hasConcept` ("pcsk" :: Text)))
 
 pcskProtocols
   :: (Integral b, IntervalSizeable a b)
@@ -446,7 +454,7 @@ makeOutcomeDefinition
        )
 makeOutcomeDefinition cpt oreason = define
   (\index events protocols censor ->
-    events |> firstConceptOccurrence cpt |> \x ->
+    events |> firstOccurrenceOfConcept cpt |> \x ->
       makeOccurrence oreason (mkEventTime (fmap begin x))
         |> makeNegOutcomes index protocols censor
   )
@@ -463,7 +471,7 @@ o2 = makeOutcomeDefinition ["accident"] Accident
 
 testProtocols
   :: (Integral b, IntervalSizeable a b)
-  => [Event a]
+  => [MyEvent a]
   -> Feature "pcskProtocols" (Protocols b)
 testProtocols input = eval pcskProtocols idx pcev
  where
@@ -511,8 +519,8 @@ p5Protocols = pure $ MkProtocols Compliant
 -}
 
 testOutcomes
-  :: (Integral b, IntervalSizeable a b)
-  => [Event a]
+  :: (Show b, Typeable b, Integral b, IntervalSizeable a b)
+  => [MyEvent a]
   -> ( Feature "wellness" (NegOutcomes b)
      , Feature "accident" (NegOutcomes b)
      )
@@ -577,22 +585,30 @@ p1Outcomes' =
   Test specs
 -}
 
-exampleFeatures4Spec :: Spec
-exampleFeatures4Spec = do
-  describe "tests of exposure protocols" $ do
-    it "p1" $ testProtocols p1Events `shouldBe` p1Protocols
-    it "p2" $ testProtocols p2Events `shouldBe` p2Protocols
-    it "p3" $ testProtocols p3Events `shouldBe` p3Protocols
-    it "p4" $ testProtocols p4Events `shouldBe` p4Protocols
-    it "p5" $ testProtocols p5Events `shouldBe` p5Protocols
+example :: TestTree
+example = testGroup
+  "TODO"
+  [ testCase "TODO" $ testProtocols p1Events @?= p1Protocols
+  , testCase "TODO" $ testProtocols p2Events @?= p2Protocols
+  , testCase "TODO" $ testProtocols p3Events @?= p3Protocols
+  , testCase "TODO" $ testProtocols p4Events @?= p4Protocols
+  , testCase "TODO" $ testProtocols p5Events @?= p5Protocols
+  , testCase "TODO" $ testOutcomes p1Events @?= p1Outcomes
+  , testCase "TODO"
+  $   testOutcomes (sort p1Events <> [toEvent (1, 59, "wellness")])
+  @?= p1Outcomes'
+  ]
 
-  describe "tests of outcomes" $ do
-    it "p1" $ testOutcomes p1Events `shouldBe` p1Outcomes
-    it "p1'"
-      $          testOutcomes (sort p1Events <> [toEvent (1, 59, "wellness")])
-      `shouldBe` p1Outcomes'
-
-    -- describe "SAP examples" $ 
-    --   do
-    --     it "sap example 1" pending
-        -- testOutcomes sapExample1 `shouldBe` ???
+exampleFeatures4Spec :: TestTree
+exampleFeatures4Spec = testGroup
+  "tests of exposure protocols"
+  [ testCase "p1" $ testProtocols p1Events @?= p1Protocols
+  , testCase "p2" $ testProtocols p2Events @?= p2Protocols
+  , testCase "p3" $ testProtocols p3Events @?= p3Protocols
+  , testCase "p4" $ testProtocols p4Events @?= p4Protocols
+  , testCase "p5" $ testProtocols p5Events @?= p5Protocols
+  , testCase "p1" $ testOutcomes p1Events @?= p1Outcomes
+  , testCase "p1"
+  $   testOutcomes (sort p1Events <> [toEvent (1, 59, "wellness")])
+  @?= p1Outcomes
+  ]

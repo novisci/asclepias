@@ -1,26 +1,16 @@
 {-|
-Module      : ExampleFeatures3
 Description : Demostrates how to define features using Hasklepias
-Copyright   : (c) NoviSci, Inc 2020
-License     : BSD3
-Maintainer  : bsaul@novisci.com
 -}
 
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE NoImplicitPrelude #-}
-
-module ExampleFeatures3
-  ( exampleFeatures3Spec
+module FeatureExamples.Example3
+  ( example
   ) where
 
 import           ExampleEvents                  ( exampleEvents4 )
 import           Hasklepias
-import           Test.Hspec
-
 
 examplePairComparison
-  :: (IntervalSizeable a b) => Interval a -> Events a -> (Bool, Maybe a)
+  :: (IntervalSizeable a b) => Interval a -> [Event d Text a] -> (Bool, Maybe a)
 examplePairComparison i es =
   es
     |> filterConcur i                   -- filter to concurring with followup interval    
@@ -40,9 +30,10 @@ examplePairComparison i es =
 flwup :: FeatureData (Interval Int)
 flwup = pure $ beginerval 50 0
 
-exampleFeatures3Spec :: Spec
-exampleFeatures3Spec = do
-
-  it "examplePairComparison"
-    $          liftA2 examplePairComparison flwup (pure exampleEvents4)
-    `shouldBe` pure (True, Just 16)
+example :: TestTree
+example = testGroup
+  "examplePairComparison"
+  [ testCase ""
+    $   liftA2 examplePairComparison flwup (pure exampleEvents4)
+    @?= pure (True, Just 16)
+  ]

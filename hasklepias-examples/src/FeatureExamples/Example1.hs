@@ -1,24 +1,17 @@
 {-|
-Module      : ExampleFeatures1
 Description : Demostrates how to define features using Hasklepias
-Copyright   : (c) NoviSci, Inc 2020
-License     : BSD3
-Maintainer  : bsaul@novisci.com
 -}
 
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE DataKinds #-}
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
-module ExampleFeatures1
-  ( exampleFeatures1Spec
+{-# LANGUAGE TypeApplications #-}
+
+module FeatureExamples.Example1
+  ( example
   ) where
 
-import           EventData                      ( containsConcepts )
+import           ExampleEvents
 import           Hasklepias
-import           Test.Hspec -- imported for test case
+
 {-
 Index is defined as the first occurrence of an Orca bite.
 -}
@@ -40,6 +33,15 @@ bline = makeBaselineFromIndex 60
 flwup :: (IntervalSizeable a b) => Interval a -> AssessmentInterval a
 flwup = makeFollowupFromIndex 30
 
+-- | TODO
+atleastNofX :: (Ord c) => Int -> [c] -> [Event d c a] -> Bool
+atleastNofX n xs es = tallyEvents (Predicate (`hasAnyConcepts` xs)) es >= n
+
+-- | TODO
+makeConceptsFilter
+  :: (Filterable f, Ord c) => [c] -> f (Event d c a) -> f (Event d c a)
+makeConceptsFilter cpts = filter (`hasAnyConcepts` cpts)
+
 {-
 Define features that identify whether a subject was bit/struck by a duck and
 bit/struck by a macaw.
@@ -51,8 +53,13 @@ makeHx
   -> [Event ClaimsSchema Text a]
   -> (Bool, Maybe (Interval a))
 makeHx cnpts i events =
-  (isNotEmpty (f i events), lastMay $ intervals (f i events))
-  where f i = makePairedFilter enclose i (`hasConcepts` cnpts)
+  (isNotEmpty (f i events'), lastMay $ intervals (f i events'))
+  -- TODO: find the available functions to replace this mess
+ where
+  f i = makePairedFilter enclose i (`hasAnyConcepts` cnpts)
+  makePairedFilter fi i fc = filter (makePairPredicate fi i fc)
+  makePairPredicate pi i pd x = pi i x && pd (getPairData x)
+  events' = map getEvent events
 
 duckHx
   :: (Ord a)
@@ -154,7 +161,7 @@ countOfHospitalEventsDef = define countOfHospitalEvents
 
 -- | time of distcontinuation of antibiotics
 --   and time from start of follow up
---   This needs to be generalized as Nothing could either indicate they didn't 
+--   TODO This needs to be generalized as Nothing could either indicate they didn't 
 --   discontinue or that they simply got no antibiotics records.
 so :: Intervallic i a => ComparativePredicateOf1 (i a)
 so = unionPredicates [startedBy, overlappedBy]
@@ -235,15 +242,12 @@ includeAll _ _ = criteria $ pure
   (criterion (makeFeature (featureDataR Include) :: Feature "includeAll" Status)
   )
 
-testCohortSpec
-  :: CohortSpec [Event ClaimsSchema Text Int] MyData (Interval Int)
-testCohortSpec = specifyCohort defineIndexSet includeAll getUnitFeatures
 
 example1results :: MyData
 example1results =
   ( pure (beginerval 1 (60 :: Int))
   , pure Include
-  , pure (True, Just $ beginerval 1 (51 :: Int))
+  , pure (True, Just $ beginerval 1 (45 :: Int))
   , pure (False, Nothing)
   , pure True
   , pure $ Just 4
@@ -251,26 +255,45 @@ example1results =
   , pure $ Just (78, 18)
   )
 
+exampleEvalOpts :: CohortEvalOptions
+exampleEvalOpts = defaultCohortEvalOptions
 
-exampleFeatures1Spec :: Spec
-exampleFeatures1Spec = do
+exampleCohortSpec
+  :: CohortSpec [Event ClaimsSchema Text Int] MyData (Interval Int)
+exampleCohortSpec = specifyCohort defineIndexSet includeAll getUnitFeatures
 
-  it "getUnitFeatures from exampleEvents1"
-    $          getUnitFeatures (beginerval 1 60) exampleEvents1
-    `shouldBe` example1results
+-- NOTE makeCohortEvaluator requires a monad wrapper in return type. Using
+-- Either here because IO a has no Eq instance, hence testing doesn't work.
+exampleCohortEvaluator
+  :: Population [Event ClaimsSchema Text Int]
+  -> Either Text (Cohort MyData (Interval Int))
+exampleCohortEvaluator = makeCohortEvaluator exampleEvalOpts exampleCohortSpec
 
-  it "mapping a population to cohort"
-    $          evalCohort testCohortSpec
-                          (MkPopulation [exampleSubject1, exampleSubject2])
-    `shouldBe` MkCohort
-                 ( MkAttritionInfo
-                   2
-                   2
-                   setFromList
-                   [ MkAttritionLevel SubjectHasNoIndex              1
-                   , MkAttritionLevel (ExcludedBy (1, "includeAll")) 0
-                   , MkAttritionLevel Included                       1
-                   ]
-                 , MkCohortData [MkObsUnit (makeObsID 1 "a") example1results]
-                 )
+-- NOTE constructor unexported.  only way to do construct it is with `from`. 
+examplePopulation :: Population [Event ClaimsSchema Text Int]
+examplePopulation = from [exampleSubject1, exampleSubject2]
 
+example :: TestTree
+example = testGroup
+  ""
+  [ testCase "getUnitFeatures from exampleEvents1"
+  $   getUnitFeatures (beginerval 1 60) exampleEvents1
+  @?= example1results
+  , testCase "mapping population to cohort"
+  $   exampleCohortEvaluator examplePopulation
+  @?= Right
+        (MkCohort
+          ( makeTestAttritionInfo
+            2
+            1
+            [ (SubjectHasNoIndex           , 1)
+            , (ExcludedBy (1, "includeAll"), 0)
+            , (Included                    , 1)
+            ]
+          , from @[ObsUnit MyData (Interval Int)]
+            [ from @(ObsID (Interval Int), MyData)
+                (makeObsID (beginervalMoment 60) ("a" :: Text), example1results)
+            ]
+          )
+        )
+  ]

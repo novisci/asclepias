@@ -16,3 +16,10 @@ which branches of the asclepias repo are included in the noviverse site.
 
 == Testing antora locally
 
+You can check that Antora successfully compiles the docs in this repo
+on the current branch with the provided `+test-antora.sh+` script:
+
+[source,shell]
+----
+./scripts/test-antora.sh
+----

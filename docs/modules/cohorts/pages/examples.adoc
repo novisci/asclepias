@@ -2,7 +2,7 @@
 :navtitle: Define cohorts
 = Defining cohorts in asclepias
 
-How to define cohorts...
+#TODO: write intro#
 
 [TIP]
 For more explanation on the theory behind cohorts,

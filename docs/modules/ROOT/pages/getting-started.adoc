@@ -1,4 +1,4 @@
-:toc: right
+:description: how users can get started with asclepias
 :navtitle: Get started
 
 = Getting Started 

@@ -9,31 +9,37 @@ module FeatureExamples.Example3
 import           ExampleEvents                  ( exampleEvents4 )
 import           Hasklepias
 
+{- tag::function[] -}
 examplePairComparison
-  :: (IntervalSizeable a b) => Interval a -> [Event d Text a] -> (Bool, Maybe a)
-examplePairComparison i es =
-  es
-    |> filterConcur i                   -- filter to concurring with followup interval    
-    |> splitByConcepts ["c1"] ["c2"]    -- form a list of pairs where first element
-    |> uncurry allPairs                 -- has "c1" events and second has "c2" events    
+  :: (Eventable d c a, IntervalSizeable a b)
+  => ([c], [c])
+  -> Interval a
+  -> [Event d c a]
+  -> Maybe a
+examplePairComparison (c1, c2) i =
+  filterConcur i    --  <1>
+    .> splitByConcepts c1 c2 -- <2>
+    .> uncurry allPairs -- <3>
+    .> filter (\pr -> fst pr `concur` expand 3 3 (snd pr)) -- <4>
+    .> lastMay -- <5>
+    .> fmap (begin . fst) -- <6>
+{- end::function[] -}
 
-    |> filter                           -- filter this list of pairs to cases 
-              (\pr -> fst pr `concur`             -- where "c1" event concurs with +/- 3
-                                      expand 3 3 (snd pr))           -- of any "c2" event 
-    |> fmap fst
-    |> (\x ->
-         ( isNotEmpty x                  -- are there any?
-         , fmap begin (lastMay x)
-         )
-       )      -- if exists, keep the begin of the last "c1" interval
+{- tag::definition[] -}
+def
+  :: (Eventable d c a, IntervalSizeable a b)
+  => ([c], [c])
+  -> Def (F n1 (Interval a) -> F n2 [Event d c a] -> F n3 (Maybe a))
+def cpts = define (examplePairComparison cpts)
+{- end::definition[] -}
 
-flwup :: FeatureData (Interval Int)
-flwup = pure $ beginerval 50 0
+flwup :: (Interval Int)
+flwup = beginerval 50 0
 
 example :: TestTree
 example = testGroup
   "examplePairComparison"
   [ testCase ""
-    $   liftA2 examplePairComparison flwup (pure exampleEvents4)
-    @?= pure (True, Just 16)
+    $   examplePairComparison (["c1"], ["c2"]) flwup exampleEvents4
+    @?= Just 16
   ]

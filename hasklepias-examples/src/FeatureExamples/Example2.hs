@@ -12,7 +12,7 @@ module FeatureExamples.Example2
 import           ExampleEvents
 import           Hasklepias
 
-{- tag::code[] -}
+{- tag::function[] -}
 durationsOf
   :: (KnownSymbol n, Eventable d c a, IntervalSizeable a b)
   => [c]
@@ -22,11 +22,19 @@ durationsOf cpts =
   filter (`hasAnyConcepts` cpts) -- <1>
     .> fmap (first getConcepts . getEvent) -- <2> <3>
     .> formMeetingSequence -- <4>
-    .> filter (\z -> hasAllConcepts (getPairData z) cpts) -- <5>
+    .> filter (`hasAllConcepts` cpts) -- <5>
     .> \x -> if null x -- <6>
          then makeFeature $ featureDataL $ Other "no cases"
          else makeFeature $ featureDataR (durations x)
-{- end::code[] -}
+{- end::function[] -}
+
+{- tag::definition[] -}
+def
+  :: (KnownSymbol n1, KnownSymbol n2, Eventable d c a, IntervalSizeable a b)
+  => [c] -- <1>
+  -> Def (F n1 [Event d c a] -> F n2 [b]) -- <2>
+def cpts = defineA (durationsOf cpts)
+{- end::definition[] -}
 
 example :: TestTree
 example = testGroup

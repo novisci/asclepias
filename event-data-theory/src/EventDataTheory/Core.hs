@@ -448,6 +448,9 @@ class HasConcept a c where
 instance (Ord c) => HasConcept (Concepts c) c where
   hasConcept (MkConcepts e) concept = member (MkConcept concept) e
 
+instance (Ord c) => HasConcept (PairedInterval (Concepts c) a) c where
+  hasConcept x concept = hasConcept (getPairData x) concept
+
 -- | Does an @a@ have *any* of a list of 'Concept's?
 hasAnyConcepts :: HasConcept a c => a -> [c] -> Bool
 hasAnyConcepts x = any (\c -> x `hasConcept` c)

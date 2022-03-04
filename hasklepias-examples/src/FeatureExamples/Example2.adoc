@@ -1,4 +1,4 @@
-== Example 2
+= Find the last event that occurs within a time window of other events
 
 This example demonstrates:
 
@@ -25,7 +25,7 @@ when a subject was both hospitalized and on some medication.
 
 [source,haskell]
 ----
-include::Example2.hs[tag=code]
+include::Example2.hs[tag=function]
 ----
 
 Take the case that a subject has the following events,
@@ -77,7 +77,10 @@ The data of the running example would look like:
 ------------------------------
 ----
 
-<5> Filter to those intervals that have both of the given concepts. 
+<5> Filter to those intervals that have both of the given concepts.
+Note that `hasAllConcepts` works here because 
+`PairedInterval (Concepts c) a` is defined as an instance of the `HasConcepts`
+typeclass in `event-data-theory`.
 +
 [source]
 ----
@@ -89,3 +92,14 @@ The data of the running example would look like:
 we return a failure, i.e. a `+Left+` value of `FeatureData`.
 Otherwise, we return the durations of any intervals,
 as a successful `+Right+` value of `+FeatureData+`.
+
+The `durationsOf` function can be lifted into a `Definition` 
+using `defineA`:
+
+[source,haskell]
+----
+include::Example2.hs[tag=definition]
+----
+
+<1> Create a function which takes a list of concepts and
+<2> Returns a `Definition`

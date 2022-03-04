@@ -84,7 +84,7 @@ with a `c2` event after
 The list from the last step gets converted to:
 +
 ----
-[ ( (10,11), (3,9) )
+[ ( (10,11), (3,10) )
 , ( (10,11), (9,16) ) 
 ]
 ----

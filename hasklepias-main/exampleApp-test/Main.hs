@@ -7,16 +7,45 @@ module Main
   ( main
   ) where
 
+import           Control.Exception             ( tryJust )
+import           Control.Monad                 ( guard )
 import qualified Data.ByteString.Lazy          as B
+import           Data.Char                     ( isDigit )
 import           Hasklepias
 import           Hasklepias.ExampleApp
 import           Hasklepias.MakeCohortApp       ( runApp )
+import           System.IO.Error
 import           System.Process
+import           System.Environment
 import           Test.Tasty                     ( TestTree
                                                 , defaultMain
                                                 , testGroup
                                                 )
 import           Test.Tasty.Silver
+
+-- Create a unique ID based on the GitLab environmental variable $CI_PIPELINE_ID
+-- if one is defined, otherwise the computation fails with `isDoesNotExistError`
+ciPipelineId :: IO String
+ciPipelineId = getEnv "CI_PIPELINE_ID"
+
+-- Use the value of `ciPipelineId` if it was able to be obtained, otherwise
+-- invoke the system process `date` to get the number of seconds since the epoch
+-- as a fallback. The `takeWhile isDigit` is used to strip the trailing `\n`.
+-- TODO: it would be better to use a Haskell library for this
+sessionId :: IO String
+sessionId = do
+  r <- tryJust (guard . isDoesNotExistError) ciPipelineId
+  case r of
+    Left  e -> fmap (takeWhile isDigit) (readProcess "date" ["+%s"] [])
+    Right v -> ciPipelineId
+
+s3TestDataKey :: IO String
+s3TestDataKey = pure "hasklepias/sandbox-testdata/testData-" <> sessionId <> pure ".jsonl"
+
+-- Write the test data to S3. If the command returns a non-zero exit code then
+-- an exception is raised
+writeTestDataToS3 :: IO ()
+writeTestDataToS3 = pure "aws s3 cp exampleApp-test/test/testData.jsonl s3://download.novisci.com/" <> s3TestDataKey >>= callCommand
 
 appTestRw :: IO ()
 appTestRw = do
@@ -28,6 +57,13 @@ appStdinRw :: IO ()
 appStdinRw =
   callCommand
     "< exampleApp-test/test/testData.jsonl exampleAppRW -o exampleApp-test/test/stdinrw.json"
+
+appS3inRw :: IO ()
+appS3inRw = do
+  -- cmd <- pure "exampleAppRW -o exampleApp-test/test/s3inrw.json -r us-east-1 -b download.novisci.com -k hasklepias/sandbox-testdata/testData-" <> sessionId <> pure ".jsonl"
+  cmd <- pure "exampleAppRW -o exampleApp-test/test/s3inrw.json -r us-east-1 -b download.novisci.com -k " <> s3TestDataKey
+  callCommand
+    cmd
 
 appTestCw :: IO ()
 appTestCw = do
@@ -73,6 +109,10 @@ tests = testGroup
                  "exampleApp-test/test/testrw.golden"
                  "exampleApp-test/test/stdinrw.json"
                  appStdinRw
+  , goldenVsFile "ExampleApp of row-wise cohort reading from S3"
+                 "exampleApp-test/test/testrw.golden"
+                 "exampleApp-test/test/s3inrw.json"
+                 appS3inRw
   , goldenVsFile "ExampleApp of row-wise cohort with empty data from file"
                  "exampleApp-test/test/testemptyrw.golden"
                  "exampleApp-test/test/testemptyrw.json"
@@ -102,4 +142,7 @@ tests = testGroup
   ]
 
 main :: IO ()
-main = defaultMain tests
+main = do
+  writeTestDataToS3
+  defaultMain tests
+  -- removeTestDataFromS3

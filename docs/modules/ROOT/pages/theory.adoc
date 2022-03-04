@@ -2,4 +2,10 @@
 
 = Theory and Design of Asclepias
 
-In this section, #TODO#
+Asclepias is organized around three abstractions:
+
+Events:: xref:theory-of-events.adoc[Learn about the event data theory.]
+
+Features:: xref:features:page$theory.adoc[Learn about the `Feature` type.]
+
+Cohorts:: xref:cohorts:page$theory.adoc[Learn about the `Cohort` type.]

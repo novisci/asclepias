@@ -1,6 +1,0 @@
-:description: explains the cohort type and how it is used
-
-= Cohorts
-
-#TODO: 
-update once documentation structure is resolved.#

@@ -16,6 +16,11 @@ which branches of the asclepias repo are included in the noviverse site.
 
 == Testing antora locally
 
+[NOTE]
+You will need to 
+https://docs.antora.org/antora/latest/install/install-antora/[install Antora]
+if you have not previously done so.
+
 You can check that Antora successfully compiles the docs in this repo
 on the current branch with the provided `+test-antora.sh+` script:
 

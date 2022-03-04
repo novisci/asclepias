@@ -19,8 +19,8 @@ next steps may include:
 * working through a tutorial #TODO: link#;
 * xref:page$initialize-new-project.adoc[initializing a new asclepias project];
 * reading up on how to
-xref:features:page$index.adoc[define a feature],
-xref:cohorts:page$index.adoc[specify a cohort], 
+xref:features:page$examples.adoc[define a feature],
+xref:cohorts:page$examples.adoc[specify a cohort], 
 or
 xref:build-project-applications.adoc[build a cohort application].
 

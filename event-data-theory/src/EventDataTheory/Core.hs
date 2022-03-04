@@ -449,7 +449,7 @@ instance (Ord c) => HasConcept (Concepts c) c where
   hasConcept (MkConcepts e) concept = member (MkConcept concept) e
 
 instance (Ord c) => HasConcept (PairedInterval (Concepts c) a) c where
-  hasConcept x = hasConcept (getPairData x) 
+  hasConcept x = hasConcept (getPairData x)
 
 -- | Does an @a@ have *any* of a list of 'Concept's?
 hasAnyConcepts :: HasConcept a c => a -> [c] -> Bool

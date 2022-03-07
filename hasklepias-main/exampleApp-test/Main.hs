@@ -10,6 +10,9 @@ module Main
 import           Control.Exception             ( tryJust )
 import           Control.Monad                 ( guard )
 import qualified Data.ByteString.Lazy          as B
+import           Data.Time                     ( getCurrentTime )
+import           Data.Time.Clock.POSIX         ( utcTimeToPOSIXSeconds )
+import           Data.Time.Clock               ( nominalDiffTimeToSeconds )
 import           Data.Char                     ( isDigit )
 import           Hasklepias
 import           Hasklepias.ExampleApp
@@ -28,15 +31,13 @@ import           Test.Tasty.Silver
 ciPipelineId :: IO String
 ciPipelineId = getEnv "CI_PIPELINE_ID"
 
--- Use the value of `ciPipelineId` if it was able to be obtained, otherwise
--- invoke the system process `date` to get the number of seconds since the epoch
--- as a fallback. The `takeWhile isDigit` is used to strip the trailing `\n`.
--- TODO: it would be better to use a Haskell library for this
+-- Use the value of `ciPipelineId` if it was able to be obtained, otherwise use
+-- the number of seconds since the epoch as a fallback
 sessionId :: IO String
 sessionId = do
   r <- tryJust (guard . isDoesNotExistError) ciPipelineId
   case r of
-    Left  e -> fmap (takeWhile isDigit) (readProcess "date" ["+%s"] [])
+    Left  e -> fmap (show . floor . nominalDiffTimeToSeconds . utcTimeToPOSIXSeconds) getCurrentTime
     Right v -> ciPipelineId
 
 s3TestDataKey :: IO String

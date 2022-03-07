@@ -19,11 +19,11 @@ buildNofXWithGap
   -> Natural -- ^ the minimum number of gaps
   -> b -- ^ the minimum duration of a gap
   -> (i a -> AssessmentInterval a)
-  -> ComparativePredicateOf2 (AssessmentInterval a) (Event d c a)
-  -> Predicate (Event d c a)
+  -> ComparativePredicateOf2 (AssessmentInterval a) (Event c d a)
+  -> Predicate (Event c d a)
   -> Definition
        (  Feature indexName (i a)
-       -> Feature eventsName (container (Event d c a))
+       -> Feature eventsName (container (Event c d a))
        -> Feature varName outputType
        )
 buildNofXWithGap cast nGaps allowableGap = buildNofXBase
@@ -53,11 +53,11 @@ buildNofXWithGapBool
   => Natural -- ^ the minimum number of gaps
   -> b -- ^ the minimum duration of a gap
   -> (i a -> AssessmentInterval a)
-  -> ComparativePredicateOf2 (AssessmentInterval a) (Event d c a)
-  -> Predicate (Event d c a)
+  -> ComparativePredicateOf2 (AssessmentInterval a) (Event c d a)
+  -> Predicate (Event c d a)
   -> Definition
        (  Feature indexName (i a)
-       -> Feature eventsName (container (Event d c a))
+       -> Feature eventsName (container (Event c d a))
        -> Feature varName Bool
        )
 buildNofXWithGapBool = buildNofXWithGap id
@@ -73,11 +73,11 @@ buildNofXWithGapBinary
   => Natural -- ^ the minimum number of gaps
   -> b -- ^ the minimum duration of a gap
   -> (i a -> AssessmentInterval a)
-  -> ComparativePredicateOf2 (AssessmentInterval a) (Event d c a)
-  -> Predicate (Event d c a)
+  -> ComparativePredicateOf2 (AssessmentInterval a) (Event c d a)
+  -> Predicate (Event c d a)
   -> Definition
        (  Feature indexName (i a)
-       -> Feature eventsName (container (Event d c a))
+       -> Feature eventsName (container (Event c d a))
        -> Feature varName Binary
        )
 buildNofXWithGapBinary = buildNofXWithGap fromBool
@@ -90,13 +90,13 @@ type NofXWithGapArgs
     , Interval Int -> AssessmentInterval Int
     , ComparativePredicateOf2
         (AssessmentInterval Int)
-        (Event TestSchema Text Int)
-    , Predicate (Event TestSchema Text Int)
+        (Event Text TestSchema Int)
+    , Predicate (Event Text TestSchema Int)
     )
 
 type NofXWithGapTestCase
   = TestCase
-      (F "index" (Interval Int), F "events" [Event TestSchema Text Int])
+      (F "index" (Interval Int), F "events" [Event Text TestSchema Int])
       Bool
       NofXWithGapArgs
 

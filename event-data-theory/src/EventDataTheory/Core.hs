@@ -161,7 +161,7 @@ newtype Event c d a = MkEvent ( PairedInterval (Context c d) a )
 {- end::eventType[] -}
   deriving (Eq, Show, Generic)
 
-instance (Ord a) => Intervallic (Event d c) a where
+instance (Ord a) => Intervallic (Event c d) a where
   getInterval (MkEvent x) = getInterval x
   setInterval (MkEvent x) y = MkEvent $ setInterval x y
 

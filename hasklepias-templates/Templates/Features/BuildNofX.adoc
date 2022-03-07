@@ -1,17 +1,43 @@
 :description: Documents the BuildNofX template
+:source-highlighter: highlightjs
 
-Do N events relating to the assessment interval in some way 
+= `buildNofX`: Do N events satisfy a predicate X?
+
+[TIP]
+====
+Use this template to create a `Definition` for a `Feature`
+that answers the following question:
+
+* [x] Do N events relating to the assessment interval in some way 
 satisfy the given predicate?
+====
 
-== Specialized Definitions
+== Usage and Examples
 
-`buildNofX` specialized to return `Binary`.
+#TODO#
+
+== Specialized Versions
+
+`buildNofXBool`:: specialized to return `Bool`.
+`buildNofXBinary`:: specialized to return a `stype` `Binary` value.
+`buildNofXBinaryConcurBaseline`:: specialized to filter to events
+that concur with an assessment interval.
+created by `makeBaselineFromIndex` of a specified duration
+and a provided predicate.
+
+`buildNofConceptsBinaryConcurBaseline`:: specialized to filter to events
+that concur with an assessment interval
+created by `makeBaselineFromIndex` of a specified duration
+and that have a given set of concepts.
 
 
-`buildNofX` specialized to return a boolean.
+== Source code
 
-`buildNofXBinary` specialized to filter to events that concur with an assessment interval created by `makeBaselineFromIndex` of a specified duration and a provided predicate.
-
-
-`buildNofXBinary` specialized to filter to events that concur with an assessment interval created by `makeBaselineFromIndex` of a specified duration and that have a given set of concepts.
-
+[%collapsible]
+.View source code
+====
+[source,haskell]
+----
+include::BuildNofX.hs[tag=template0]
+----
+====

@@ -24,7 +24,7 @@ buildNofX
        -> Feature varName outputType
        )
 buildNofX f n = buildNofXBase id (\x -> length x >= naturalToInt n) (const f)
-{- tag::template0[] -}
+{- end::template0[] -}
 
 {- tag::template1[] -}
 buildNofXBinary
@@ -45,7 +45,7 @@ buildNofXBinary = buildNofX fromBool
 buildNofXBool
   :: (Intervallic i a, Witherable container)
   => Natural -- ^ minimum number of cases 
-  -> (i a -> AssessmentInterval a) -- ^ function to transform a 'Cohort.Index' to an 'Cohort.AssessmentInterval'
+  -> (i a -> AssessmentInterval a) -- ^ function to transform a to an 'AssessmentInterval'
   -> ComparativePredicateOf2 (AssessmentInterval a) (Event d c a) -- ^ interval predicate
   -> Predicate (Event d c a) -- ^ a predicate on events
   -> Definition
@@ -60,7 +60,7 @@ buildNofXBool = buildNofX id
 buildNofXBinaryConcurBaseline
   :: (Intervallic i0 a, Witherable t, IntervalSizeable a b, Baseline i0 a)
   => Natural -- ^ minimum number of events.
-  -> b -- ^ duration of baseline (passed to 'Cohort.makeBaselineFromIndex')
+  -> b -- ^ duration of baseline (passed to 'makeBaselineFromIndex')
   -> Predicate (Event d c a)
   -> Definition
        (  Feature indexName (i0 a)

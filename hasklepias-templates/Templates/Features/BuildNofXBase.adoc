@@ -1,8 +1,7 @@
 :description: Documentation for buildNofXBase template
 :source-highlighter: highlightjs
 
-
-= The basis for N of X pattern
+= `buildNofXBase`: The basis for N of X pattern
 
 [TIP]
 ====
@@ -58,7 +57,7 @@ include::BuildNofXBase.hs[tag=example1]
 <1> Create a baseline interval from the index to 180 units (e.g. days)
 back in time.
 <2> Filter to events that concur with the baseline interval and
-<3> contain the concept `"enrollment"`.
+<3> contains the concept `"enrollment"`.
 +
 NOTE: This example assumes the `Concept` type is `Text`.
 

@@ -26,6 +26,7 @@ content:
   sources:
   - url: ../
     start_path: docs
+    branches: [HEAD]
 ui:
   bundle:
     url: https://gitlab.com/antora/antora-ui-default/-/jobs/artifacts/HEAD/raw/build/ui-bundle.zip?job=bundle-stable

@@ -1,9 +1,12 @@
 :navtitle: Feature templates
 :description: Reference material for all feature templates
-:toc:
 
 = Feature Definition Templates
 
-This section includes description and usage guides for Feature definition templates.
+This section includes description and usage guides for
+`Definition` templates.
+A `Definiton` is a function that returns a `Feature`.
 
 include::features:example$templatesSrc/BuildNofXBase.adoc[leveloffset=+1]
+
+include::features:example$templatesSrc/BuildNofX.adoc[leveloffset=+1]

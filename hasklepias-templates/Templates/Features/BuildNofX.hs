@@ -16,15 +16,11 @@ buildNofX
   => (Bool -> outputType) -- ^ casting function
   -> Natural -- ^ minimum number of cases
   -> (i a -> AssessmentInterval a) -- ^ function to transform a 'Cohort.Index' to an 'Cohort.AssessmentInterval'
-  -> ComparativePredicateOf2
-       (AssessmentInterval a)
-       (Event d c a) -- ^ interval predicate
+  -> ComparativePredicateOf2 (AssessmentInterval a) (Event d c a) -- ^ interval predicate
   -> Predicate (Event d c a) -- ^ a predicate on events
   -> Definition
        (  Feature indexName (i a)
-       -> Feature
-            eventsName
-            (container (Event d c a))
+       -> Feature eventsName (container (Event d c a))
        -> Feature varName outputType
        )
 buildNofX f n = buildNofXBase id (\x -> length x >= naturalToInt n) (const f)
@@ -35,15 +31,11 @@ buildNofXBinary
   :: (Intervallic i a, Witherable container)
   => Natural
   -> (i a -> AssessmentInterval a)
-  -> ComparativePredicateOf2
-       (AssessmentInterval a)
-       (Event d c a)
+  -> ComparativePredicateOf2 (AssessmentInterval a) (Event d c a)
   -> Predicate (Event d c a)
   -> Definition
        (  Feature indexName (i a)
-       -> Feature
-            eventsName
-            (container (Event d c a))
+       -> Feature eventsName (container (Event d c a))
        -> Feature varName Binary
        )
 buildNofXBinary = buildNofX fromBool
@@ -54,15 +46,11 @@ buildNofXBool
   :: (Intervallic i a, Witherable container)
   => Natural -- ^ minimum number of cases 
   -> (i a -> AssessmentInterval a) -- ^ function to transform a 'Cohort.Index' to an 'Cohort.AssessmentInterval'
-  -> ComparativePredicateOf2
-       (AssessmentInterval a)
-       (Event d c a) -- ^ interval predicate
+  -> ComparativePredicateOf2 (AssessmentInterval a) (Event d c a) -- ^ interval predicate
   -> Predicate (Event d c a) -- ^ a predicate on events
   -> Definition
        (  Feature indexName (i a)
-       -> Feature
-            eventsName
-            (container (Event d c a))
+       -> Feature eventsName (container (Event d c a))
        -> Feature varName Bool
        )
 buildNofXBool = buildNofX id

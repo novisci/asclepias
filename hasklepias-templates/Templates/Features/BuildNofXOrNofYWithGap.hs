@@ -58,9 +58,7 @@ buildNofXOrNofYWithGapBool
   -> Predicate (Event d c a)
   -> Definition
        (  Feature indexName (i a)
-       -> Feature
-            eventsName
-            (container (Event d c a))
+       -> Feature eventsName (container (Event d c a))
        -> Feature varName Bool
        )
 buildNofXOrNofYWithGapBool = buildNofXOrNofYWithGap (||) id
@@ -84,9 +82,7 @@ buildNofXOrNofYWithGapBinary
   -> Predicate (Event d c a)
   -> Definition
        (  Feature indexName (i a)
-       -> Feature
-            eventsName
-            (container (Event d c a))
+       -> Feature eventsName (container (Event d c a))
        -> Feature varName Binary
        )
 buildNofXOrNofYWithGapBinary = buildNofXOrNofYWithGap

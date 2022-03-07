@@ -17,15 +17,11 @@ buildNofXBase
   -> (container1 (i1 a) -> t) -- ^ function mapping the processed events to an intermediate type
   -> (AssessmentInterval a -> t -> outputType) -- ^ function casting intermediate type to output type with the option to use the assessment interval
   -> (i0 a -> AssessmentInterval a) -- ^ function which maps index interval to interval in which to assess the feature
-  -> ComparativePredicateOf2
-       (AssessmentInterval a)
-       (Event d c a) -- ^ the interval relation of the input events to the assessment interval
+  -> ComparativePredicateOf2 (AssessmentInterval a) (Event d c a) -- ^ the interval relation of the input events to the assessment interval
   -> Predicate (Event d c a) -- ^ The predicate to filter to Enrollment events (e.g. 'FeatureEvents.isEnrollment')
   -> Definition
        (  Feature indexName (i0 a)
-       -> Feature
-            eventsName
-            (container0 (Event d c a))
+       -> Feature eventsName (container0 (Event d c a))
        -> Feature varName outputType
        )
 buildNofXBase runPreProcess runProcess runPostProcess makeAssessmentInterval relation predicate
@@ -48,9 +44,7 @@ buildNofXBase runPreProcess runProcess runPostProcess makeAssessmentInterval rel
 {- tag::example0[] -}
 buildExample
   :: (Interval Day -> AssessmentInterval Day)
-  -> ComparativePredicateOf2
-       (AssessmentInterval Day)
-       (Event d c Day)
+  -> ComparativePredicateOf2 (AssessmentInterval Day) (Event d c Day)
   -> Predicate (Event d c Day)
   -> Definition
        (  Feature indexName (Interval Day)

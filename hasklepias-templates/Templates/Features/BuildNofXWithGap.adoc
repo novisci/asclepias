@@ -1,3 +1,33 @@
-:description: Documentatation for BuildNofXWithGap
+:description: Documentation for BuildNofXWithGap template
+:source-highlighter: highlightjs
 
-Are there N gaps of at least the given duration between any pair of events that relate to the assessment interval by the given relation and the satisfy the given predicate?
+= `buildNofXWithGap`: Do events have a certain gap between them?
+
+[TIP]
+====
+Use this template to create a `Definition` for a `Feature` that answers:
+
+* [x] Are there N gaps of at least the given duration
+between any pair of events that relate
+to the assessment interval by the given relation
+and the satisfy the given predicate?
+
+Find two outpatient events separated by at least 7 days
+is an example.
+====
+
+== Usage and Examples
+
+#TODO#
+
+== Source code
+
+[%collapsible]
+.View source code
+====
+[source,haskell]
+----
+include::BuildNofXWithGap.hs[tag=template0]
+----
+====
+

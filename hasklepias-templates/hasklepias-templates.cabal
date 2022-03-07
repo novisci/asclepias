@@ -30,7 +30,7 @@ library
       Templates.Features.BuildNofXBase
       Templates.Features.BuildNofX
       Templates.Features.BuildNofXWithGap
-      Templates.Features.BuildNofXOrNofYWithGap
+      Templates.Features.BuildNofXOrMofYWithGap
       Templates.Features.BuildNofUniqueBegins
       Templates.FeatureReqs
       Templates.TestUtilities
@@ -39,9 +39,6 @@ library
     -- Internal packages
         hasklepias-core
       , event-data-theory
-
-      -- TODO: can this dep be removed?
-      , event-data-model 
       , stype
     
     -- External packages

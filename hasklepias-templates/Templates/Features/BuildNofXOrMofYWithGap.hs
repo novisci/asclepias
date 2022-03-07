@@ -1,8 +1,8 @@
-module Templates.Features.BuildNofXOrNofYWithGap
-  ( buildNofXOrNofYWithGap
-  , buildNofXOrNofYWithGapBool
-  , buildNofXOrNofYWithGapBinary
-  , buildNofXOrNofYWithGapTests
+module Templates.Features.BuildNofXOrMofYWithGap
+  ( buildNofXOrMofYWithGap
+  , buildNofXOrMofYWithGapBool
+  , buildNofXOrMofYWithGapBinary
+  , buildNofXOrMofYWithGapTests
   ) where
 
 import           Templates.FeatureReqs
@@ -10,7 +10,7 @@ import           Templates.Features.BuildNofX
 import           Templates.Features.BuildNofXWithGap
 
 {- tag::template0[] -}
-buildNofXOrNofYWithGap
+buildNofXOrMofYWithGap
   :: ( Intervallic i a
      , IntervalSizeable a b
      , IntervalCombinable i a
@@ -34,14 +34,14 @@ buildNofXOrNofYWithGap
             (container (Event d c a))
        -> Feature varName outputType
        )
-buildNofXOrNofYWithGap f cast xCount xPred gapCount gapDuration assess intervalPred yPred
+buildNofXOrMofYWithGap f cast xCount xPred gapCount gapDuration assess intervalPred yPred
   = D2C f
         (buildNofX cast xCount assess intervalPred xPred)
         (buildNofXWithGap cast gapCount gapDuration assess intervalPred yPred)
 {- end::template0[] -}
 
 {- tag::template1[] -}
-buildNofXOrNofYWithGapBool
+buildNofXOrMofYWithGapBool
   :: ( Intervallic i a
      , IntervalSizeable a b
      , IntervalCombinable i a
@@ -61,11 +61,11 @@ buildNofXOrNofYWithGapBool
        -> Feature eventsName (container (Event d c a))
        -> Feature varName Bool
        )
-buildNofXOrNofYWithGapBool = buildNofXOrNofYWithGap (||) id
+buildNofXOrMofYWithGapBool = buildNofXOrMofYWithGap (||) id
 {- end::template1[] -}
 
 {- tag::template2[] -}
-buildNofXOrNofYWithGapBinary
+buildNofXOrMofYWithGapBinary
   :: ( Intervallic i a
      , IntervalSizeable a b
      , IntervalCombinable i a
@@ -85,32 +85,32 @@ buildNofXOrNofYWithGapBinary
        -> Feature eventsName (container (Event d c a))
        -> Feature varName Binary
        )
-buildNofXOrNofYWithGapBinary = buildNofXOrNofYWithGap
+buildNofXOrMofYWithGapBinary = buildNofXOrMofYWithGap
   (\x y -> fromBool $ (||) (toBool x) (toBool y))
   fromBool
 {- tag::template2[] -}
 
 
-type NofXOrNofYWithGapArgs
+type NofXOrMofYWithGapArgs
   = ( Natural
-    , Predicate (Event ClaimsSchema Text Int)
+    , Predicate (Event TestSchema Text Int)
     , Natural
     , Int
     , Interval Int -> AssessmentInterval Int
     , ComparativePredicateOf2
         (AssessmentInterval Int)
-        (Event ClaimsSchema Text Int)
-    , Predicate (Event ClaimsSchema Text Int)
+        (Event TestSchema Text Int)
+    , Predicate (Event TestSchema Text Int)
     )
 
-type NofXOrNofYWithGapTestCase
+type NofXOrMofYWithGapTestCase
   = TestCase
-      (F "index" (Interval Int), F "events" [Event ClaimsSchema Text Int])
+      (F "index" (Interval Int), F "events" [Event TestSchema Text Int])
       Bool
-      NofXOrNofYWithGapArgs
+      NofXOrMofYWithGapArgs
 
-buildNofXOrNofYWithGapTestCases :: [NofXOrNofYWithGapTestCase]
-buildNofXOrNofYWithGapTestCases =
+buildNofXOrMofYWithGapTestCases :: [NofXOrMofYWithGapTestCase]
+buildNofXOrMofYWithGapTestCases =
   [ f
     "True if looking for no events and there are no events"
     ( 0
@@ -169,7 +169,7 @@ buildNofXOrNofYWithGapTestCases =
         |--------------|
       -}
   , f
-    "False if a no X and Y single event ClaimsSchema Text  and looking for gap"
+    "False if a no X and Y single event TestSchema Text  and looking for gap"
     ( 1
     , containsConcepts ["A"]
     , 1
@@ -311,8 +311,8 @@ buildNofXOrNofYWithGapTestCases =
   g = makeEnrollmentEvent
   h = makeEventWithConcepts
 
-buildNofXOrNofYWithGapTests :: TestTree
-buildNofXOrNofYWithGapTests = makeTestGroup "Tests of NofXWithGap template"
-                                            (buildNofXOrNofYWithGap (||) id)
-                                            buildNofXOrNofYWithGapTestCases
+buildNofXOrMofYWithGapTests :: TestTree
+buildNofXOrMofYWithGapTests = makeTestGroup "Tests of NofXWithGap template"
+                                            (buildNofXOrMofYWithGap (||) id)
+                                            buildNofXOrMofYWithGapTestCases
 

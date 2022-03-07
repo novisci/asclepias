@@ -8,7 +8,7 @@ import           Templates.FeatureReqs         as F
 {- | 
 TODO
 -}
-{- tag::template[] -}
+{- tag::template0[] -}
 buildContinuousEnrollment
   :: ( Monoid (container (Interval a))
      , Monoid (container (Maybe (Interval a)))
@@ -17,14 +17,17 @@ buildContinuousEnrollment
      , IntervalSizeable a b
      )
   => (i0 a -> AssessmentInterval a) -- ^ function which maps index interval to interval in which to assess enrollment
-  -> Predicate (Event d c a)  -- ^ The predicate to filter to Enrollment events (e.g. 'FeatureEvents.isEnrollment')
-  -> b  -- ^ duration of allowable gap between enrollment intervals
-  -> Definition
+  -> Predicate (Event d c a)  -- ^ The predicate to filter to events (e.g. 'FeatureEvents.isEnrollment')
+  -> b  -- ^ duration of allowable gap between intervals
+  ->
+    {- tag::templateDefSig0 [] -}
+     Definition
        (  Feature indexName (i0 a)
        -> Feature eventsName (container (Event d c a))
        -> Feature prevName Status
        -> Feature varName Status
        )
+    {- end::templateDefSig0 [] -}
 buildContinuousEnrollment makeAssessmentInterval predicate allowableGap =
   define
     (\index events prevStatus -> case prevStatus of
@@ -38,7 +41,8 @@ buildContinuousEnrollment makeAssessmentInterval predicate allowableGap =
           (combineIntervals $ F.filterEvents predicate events)
         )
     )
-{- end::template[] -}
+{- end::template0[] -}
+
 
 {- tag::example0[] -}
 -- f = buildContinuousEnrollment myMapper myPred 8 
@@ -47,14 +51,14 @@ buildContinuousEnrollment makeAssessmentInterval predicate allowableGap =
 
 type ContEnrollArgs
   = ( Interval Int -> AssessmentInterval Int
-    , Predicate (Event ClaimsSchema Text Int)
+    , Predicate (Event TestSchema Text Int)
     , Int
     )
 
 type ContEnrollTestCase
   = TestCase
       ( F "index" (Interval Int)
-      , F "events" [Event ClaimsSchema Text Int]
+      , F "events" [Event TestSchema Text Int]
       , F "prev" Status
       )
       Status

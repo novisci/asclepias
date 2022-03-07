@@ -1,3 +1,0 @@
-:description: Documentation for BuildNofXOrNofYWithGag
-
-Is either `buildNofX` or `buildNofXWithGap` satisfied?

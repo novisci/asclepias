@@ -90,13 +90,13 @@ type NofXWithGapArgs
     , Interval Int -> AssessmentInterval Int
     , ComparativePredicateOf2
         (AssessmentInterval Int)
-        (Event ClaimsSchema Text Int)
-    , Predicate (Event ClaimsSchema Text Int)
+        (Event TestSchema Text Int)
+    , Predicate (Event TestSchema Text Int)
     )
 
 type NofXWithGapTestCase
   = TestCase
-      (F "index" (Interval Int), F "events" [Event ClaimsSchema Text Int])
+      (F "index" (Interval Int), F "events" [Event TestSchema Text Int])
       Bool
       NofXWithGapArgs
 
@@ -136,7 +136,7 @@ buildNofXWithGapTestCases =
                               <- Enrollment
         |--------------|
       -}
-  , f "False if a single event ClaimsSchema Text and looking for gap"
+  , f "False if a single event TestSchema Text and looking for gap"
       (1, 3, makeBaselineFromIndex 10, concur, isEnrollmentEvent)
       (10, 11)
       [g (8, 9)]

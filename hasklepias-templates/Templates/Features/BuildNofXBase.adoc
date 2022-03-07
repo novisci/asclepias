@@ -1,7 +1,7 @@
 :description: Documentation for buildNofXBase template
 :source-highlighter: highlightjs
 
-= `buildNofXBase`: The basis for N of X pattern
+= `buildNofXBase`: Basis for N of X pattern
 
 [TIP]
 ====

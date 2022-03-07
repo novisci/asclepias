@@ -19,7 +19,9 @@ satisfy the given predicate?
 == Specialized Versions
 
 `buildNofXBool`:: specialized to return `Bool`.
+
 `buildNofXBinary`:: specialized to return a `stype` `Binary` value.
+
 `buildNofXBinaryConcurBaseline`:: specialized to filter to events
 that concur with an assessment interval.
 created by `makeBaselineFromIndex` of a specified duration

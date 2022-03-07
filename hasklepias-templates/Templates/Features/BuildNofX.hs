@@ -99,13 +99,13 @@ type NofXArgs
     , Interval Int -> AssessmentInterval Int
     , ComparativePredicateOf2
         (AssessmentInterval Int)
-        (Event ClaimsSchema Text Int)
-    , Predicate (Event ClaimsSchema Text Int)
+        (Event TestSchema Text Int)
+    , Predicate (Event TestSchema Text Int)
     )
 
 type NofXTestCase
   = TestCase
-      (F "index" (Interval Int), F "events" [Event ClaimsSchema Text Int])
+      (F "index" (Interval Int), F "events" [Event TestSchema Text Int])
       Bool
       NofXArgs
 

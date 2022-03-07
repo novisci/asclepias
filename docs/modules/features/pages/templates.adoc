@@ -10,3 +10,13 @@ A `Definiton` is a function that returns a `Feature`.
 include::features:example$templatesSrc/BuildNofXBase.adoc[leveloffset=+1]
 
 include::features:example$templatesSrc/BuildNofX.adoc[leveloffset=+1]
+
+include::features:example$templatesSrc/BuildNofUniqueBegins.adoc[leveloffset=+1]
+
+include::features:example$templatesSrc/BuildNofXWithGap.adoc[leveloffset=+1]
+
+include::features:example$templatesSrc/BuildNofXOrMofYWithGap.adoc[leveloffset=+1]
+
+include::features:example$templatesSrc/BuildIsEnrolled.adoc[leveloffset=+1]
+
+include::features:example$templatesSrc/BuildContinuousEnrollment.adoc[leveloffset=+1]

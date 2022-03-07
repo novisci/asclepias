@@ -6,7 +6,7 @@ module Templates.Features.BuildIsEnrolled
 import           Data.Tuple.Solo
 import           Templates.FeatureReqs         as F -- TODO: remove this import; it's necessary (for some reason for GHC 9.0.1)
 
-{- tag::template[] -}
+{- tag::template0[] -}
 buildIsEnrolled
   :: ( Intervallic i0 a
      , Monoid (container (Interval a))
@@ -26,9 +26,9 @@ buildIsEnrolled predicate = define
       .> any (concur index)
       .> includeIf
   )
-{- end::template[] -}
+{- end::template0[] -}
 
-type IsEnrolledArgs = (Solo (Predicate (Event ClaimsSchema Text Int)))
+type IsEnrolledArgs = (Solo (Predicate (Event TestSchema Text Int)))
   -- use of Solo is because buildIsEnrolled takes a single argument and the
   -- Solo is needed to match the Curry constraints in the makeBuilderAssertion
   -- (via makeTestGroup). In the buildIsEnrolledTestCases, the Solo is created 
@@ -36,7 +36,7 @@ type IsEnrolledArgs = (Solo (Predicate (Event ClaimsSchema Text Int)))
 
 type IsEnrolledTestCase
   = TestCase
-      (F "index" (Interval Int), F "events" [Event ClaimsSchema Text Int])
+      (F "index" (Interval Int), F "events" [Event TestSchema Text Int])
       Status
       IsEnrolledArgs
 

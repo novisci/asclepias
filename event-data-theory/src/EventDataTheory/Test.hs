@@ -108,7 +108,7 @@ do in fact parse.
 -}
 eventDecodeTests
   :: forall d c a b
-   . (Eventable d c a, EventLineAble d c a b, FromJSONEvent d c a)
+   . (Eventable c d a, EventLineAble c d a b, FromJSONEvent c d a)
   => FilePath
   -> IO TestTree
 eventDecodeTests dir = createDecodeSmokeTestGroup
@@ -132,7 +132,7 @@ do not in fact parse.
 -}
 eventDecodeFailTests
   :: forall d c a b
-   . (Eventable d c a, EventLineAble d c a b, FromJSONEvent d c a)
+   . (Eventable c d a, EventLineAble c d a b, FromJSONEvent c d a)
   => FilePath
   -> IO TestTree
 eventDecodeFailTests dir = createDecodeSmokeTestGroup
@@ -196,15 +196,15 @@ do in fact parse.
 -}
 eventLineRoundTripTests
   :: forall d c a b
-   . ( Eventable d c a
-     , FromJSONEvent d c a
-     , ToJSONEvent d c a
+   . ( Eventable c d a
+     , FromJSONEvent c d a
+     , ToJSONEvent c d a
      , IntervalSizeable a b
      )
   => FilePath
   -> IO TestTree
 eventLineRoundTripTests dir =
-  createJSONRoundtripSmokeTestGroup @(EventLine d c a)
+  createJSONRoundtripSmokeTestGroup @(EventLine c d a)
     (  "Checking that .jsonl files in "
     <> dir
     <> " can be decoded then encoded as EventLines"
@@ -224,12 +224,12 @@ The test passes if:
 -}
 createModifyEventLineTest
   :: forall d c a b
-   . (Eventable d c a, EventLineAble d c a b, FromJSONEvent d c a, Data d)
+   . (Eventable c d a, EventLineAble c d a b, FromJSONEvent c d a, Data d)
   => FilePath -- ^ path to file to be decoded
   -> IO TestTree
 createModifyEventLineTest testFile = do
   x <- B.readFile testFile
-  let d1 = decode' @(EventLine d c a) x
+  let d1 = decode' @(EventLine c d a) x
 
   let
     res = case d1 of
@@ -256,7 +256,7 @@ with given file extensions.
 -}
 createModifyEventLineTestGroup
   :: forall d c a b
-   . (Eventable d c a, EventLineAble d c a b, FromJSONEvent d c a, Data d)
+   . (Eventable c d a, EventLineAble c d a b, FromJSONEvent c d a, Data d)
   => TestName
   -> [FilePath] -- ^ a list of file extensions to find in the provided directory
   -> FilePath -- ^ name of directory containing files to be parsed
@@ -286,7 +286,7 @@ in the result.
 -}
 eventLineModifyTests
   :: forall d c a b
-   . (Eventable d c a, EventLineAble d c a b, FromJSONEvent d c a, Data d)
+   . (Eventable c d a, EventLineAble c d a b, FromJSONEvent c d a, Data d)
   => FilePath
   -> IO TestTree
 eventLineModifyTests dir = createModifyEventLineTestGroup @d @c @a

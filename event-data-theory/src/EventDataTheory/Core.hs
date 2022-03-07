@@ -72,7 +72,6 @@ import           Data.Aeson                     ( FromJSON
                                                 , ToJSON
                                                 , Value(Number, String)
                                                 )
-import           Data.Bifunctor                 ( Bifunctor(..) )
 import           Data.Binary                    ( Binary )
 import           Data.Functor.Contravariant     ( Contravariant(contramap)
                                                 , Predicate(..)
@@ -97,6 +96,8 @@ import           Witch                          ( From(..)
                                                 , into
                                                 , via
                                                 )
+
+import           Data.Bifunctor
 
 {- |
 The 'Event' type puts a certain amount of structure on
@@ -167,6 +168,10 @@ instance (Ord a) => Intervallic (Event c d) a where
 
 instance Functor (Event c d) where
   fmap f (MkEvent x) = MkEvent $ fmap f x
+
+instance Bifunctor (Event c) where
+  first f (MkEvent x) = MkEvent $ first (fmap f) x
+  second f (MkEvent x) = MkEvent $ second f x
 
 instance Ord c => HasConcept (Event c d a) c where
   hasConcept e = hasConcept (getContext e)

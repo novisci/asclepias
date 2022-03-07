@@ -106,8 +106,8 @@ instance Semigroup FilterState where
 -- Initialize a FilterState using a given parser and predicate function.
 initFilterState
   :: (Show a, FromJSON a, IntervalSizeable a b)
-  => (C.ByteString -> Maybe (Event d c a)) -- ^ Event parser
-  -> (Event d c a -> Bool) -- ^ Predicate on events
+  => (C.ByteString -> Maybe (Event c d a)) -- ^ Event parser
+  -> (Event c d a -> Bool) -- ^ Predicate on events
   -> C.ByteString -- ^ the data to (attempt to) parse into an event
   -> FilterState
 initFilterState f p x = FilterState (id, b, x)
@@ -153,7 +153,7 @@ prefilterC
      , IntervalSizeable a b
      , Monad m
      )
-  => (Event d c a -> Bool)
+  => (Event c d a -> Bool)
   -> C.ByteString
   -> ConduitM i g m (Maybe (IO FilterState))
 prefilterC p x =
@@ -213,7 +213,7 @@ makeFilterApp
      , IntervalSizeable a b
      )
   => String -- ^ name of the app (e.g. a project's id)
-  -> (Event d c a -> Bool) -- ^ predicate to evaluate for each event
+  -> (Event c d a -> Bool) -- ^ predicate to evaluate for each event
   -> FilterApp IO
 makeFilterApp name predicate = MkFilterApp $ \l -> do
   options <- execParser (makeAppArgs name)

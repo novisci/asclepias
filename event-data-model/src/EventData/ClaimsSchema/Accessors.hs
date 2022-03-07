@@ -117,7 +117,7 @@ previewCode dmn =
     <|> ((dmn ^? (_As @"Procedure")) <&> (^. field @"code" . field @"code"))
 
 -- | Preview the text part of a 'Code' from an event, using `previewCode'.
-previewCodeE :: Event ClaimsSchema c a -> Maybe Text
+previewCodeE :: Event c ClaimsSchema a -> Maybe Text
 previewCodeE = previewCode . getFacts . getContext
 
 -- | Preview @Provider@ from 'Diagnosis', 'Medication', or 'Procedure' ClaimsSchema
@@ -163,7 +163,7 @@ previewBenefit :: ClaimsSchema -> Maybe Text
 previewBenefit x = previewPlan x >>= (^. field @"benefit")
 
 -- | View the @benefit@ field of a @Event@
-previewBenefitE :: Event ClaimsSchema c a -> Maybe Text
+previewBenefitE :: Event c ClaimsSchema a -> Maybe Text
 previewBenefitE = previewBenefit . getFacts . getContext
 
 -- | View the @exchange@ field of a @Plan@
@@ -171,7 +171,7 @@ previewExchange :: ClaimsSchema -> Maybe Exchange
 previewExchange x = previewPlan x >>= (^? field @"exchange")
 
 -- | View the @exchange@ field of a @Event@
-previewExchangeE :: Event ClaimsSchema c a -> Maybe Exchange
+previewExchangeE :: Event c ClaimsSchema a -> Maybe Exchange
 previewExchangeE = previewExchange . getFacts . getContext
 
 -- | Preview birth year from a ClaimsSchema
@@ -179,31 +179,31 @@ previewBirthYear :: ClaimsSchema -> Maybe Year
 previewBirthYear dmn = intMayMap =<< previewDemoInfo dmn
 
 -- | Returns a (possibly empty) list of birth years from a set of events
-viewBirthYears :: (Witherable f) => f (Event ClaimsSchema c a) -> [Year]
+viewBirthYears :: (Witherable f) => f (Event c ClaimsSchema a) -> [Year]
 viewBirthYears x = mapMaybe
   (\e -> previewBirthYear (getFacts $ getContext e))
   (toList $ filter (getPredicate isBirthYearEvent) x)
 
 -- | Returns a (possibly empty) list of Gender values from a set of events
-viewGenders :: (Witherable f) => f (Event ClaimsSchema c a) -> [Text]
+viewGenders :: (Witherable f) => f (Event c ClaimsSchema a) -> [Text]
 viewGenders x = mapMaybe
   (\e -> previewDemoInfo =<< Just (getContext e ^. field @"getFacts"))
   (toList $ filter (getPredicate isGenderFactEvent) x)
 
 -- | Returns a (possibly empty) list of State values from a set of events
-viewStates :: (Witherable f) => f (Event ClaimsSchema c a) -> [Text]
+viewStates :: (Witherable f) => f (Event c ClaimsSchema a) -> [Text]
 viewStates x = mapMaybe
   (\e -> previewDemoInfo =<< Just (getContext e ^. field @"getFacts"))
   (toList $ filter (getPredicate isStateFactEvent) x)
 
 -- | Returns a (possibly empty) list of Region values from a set of events
-viewRegions :: (Witherable f) => f (Event ClaimsSchema c a) -> [Text]
+viewRegions :: (Witherable f) => f (Event c ClaimsSchema a) -> [Text]
 viewRegions x = mapMaybe
   (\e -> previewDemoInfo =<< Just (getContext e ^. field @"getFacts"))
   (toList $ filter (getPredicate isRegionFactEvent) x)
 
 -- | Returns a (possibly empty) list of Insurance plan benefit values from a set of events
-viewBenefits :: (Witherable f) => f (Event ClaimsSchema c a) -> [Text]
+viewBenefits :: (Witherable f) => f (Event c ClaimsSchema a) -> [Text]
 viewBenefits x = mapMaybe
   (\e -> previewBenefit =<< Just (getContext e ^. field @"getFacts"))
   (toList $ filter (getPredicate (isEnrollmentEvent ||| isEligibilityEvent)) x)

@@ -358,7 +358,7 @@ The @TimeLine@ value IS NOT changed.
 Only those fields in the context that align with the factsline
 are modified.
 -}
-updateFactsLine :: (Data d') => FactsLine d a -> Context d' c -> FactsLine d' a
+updateFactsLine :: (Data d') => FactsLine d a -> Context c d' -> FactsLine d' a
 updateFactsLine (MkFactsLine dmn tm _ sid _ vld) x = MkFactsLine
   { domain     = pack $ show $ toConstr (getFacts x)
   , time       = tm
@@ -380,7 +380,7 @@ are modified.
 updateFactsLineWithInterval
   :: (Data d', Ord a')
   => FactsLine d a
-  -> Context d' c
+  -> Context c d'
   -> Interval a'
   -> FactsLine d' a'
 updateFactsLineWithInterval (MkFactsLine _ _ _ sid _ vld) x i = MkFactsLine
@@ -429,7 +429,7 @@ eitherModifyEventLineFromContext
      , Data d'
      )
   => ParseEventLineOption
-  -> (Context d c -> Context d' c')
+  -> (Context c d -> Context c' d')
   -> EventLine d c a
   -> Either String (EventLine d' c' a)
 eitherModifyEventLineFromContext opt g (MkEventLine a b c d e f) = do
@@ -486,7 +486,7 @@ modifyEventLineWithContext
      , Data d'
      )
   => ParseEventLineOption
-  -> (Context d c -> Context d' c')
+  -> (Context c d -> Context c' d')
   -> B.ByteString
   -> Either String (EventLine d' c' a)
 modifyEventLineWithContext opt f x =

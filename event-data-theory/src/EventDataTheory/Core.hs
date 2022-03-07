@@ -130,7 +130,7 @@ The 'event' function is a smart constructor for 'Event'.
 >>> data SomeDomain = A | B deriving (Eq, Ord, Show, Generic)
 >>>
 >>> type MyEvent = Event SomeDomain T.Text Integer
->>> let myEvent = event (beginerval 5 0) (Context (packConcepts ["foo"]) A Nothing) :: MyEvent
+>>> let myEvent = event (beginerval 5 0) (Context A (packConcepts ["foo"]) Nothing) :: MyEvent
 >>> show myEvent
 "MkEvent {(0, 5), Context {concepts = Concepts (fromList [Concept \"foo\"]), facts = A, source = Nothing}}"
 
@@ -144,7 +144,7 @@ False
 >>> data MyConcepts = Foo | Bar | Baz deriving (Eq, Ord, Show, Generic) 
 >>>
 >>> type NewEvent = Event NewDomain MyConcepts Integer
->>> let newEvent = event (beginerval 5 0) (Context (packConcepts [Foo, Bar]) (A "cool") Nothing) :: NewEvent
+>>> let newEvent = event (beginerval 5 0) (Context (A "cool") (packConcepts [Foo, Bar]) Nothing) :: NewEvent
 >>> show newEvent
 "MkEvent {(0, 5), Context {concepts = Concepts (fromList [Concept Foo,Concept Bar]), facts = A \"cool\", source = Nothing}}"
 
@@ -157,7 +157,7 @@ False
 -}
 
 {- tag::eventType[] -}
-newtype Event d c a = MkEvent ( PairedInterval (Context d c) a )
+newtype Event d c a = MkEvent ( PairedInterval (Context c d) a )
 {- end::eventType[] -}
   deriving (Eq, Show, Generic)
 
@@ -214,15 +214,15 @@ type ToJSONEvent d c a = (ToJSON d, ToJSON c, ToJSON a)
 type FromJSONEvent d c a = (FromJSON d, FromJSON c, FromJSON a)
 
 -- | A smart constructor for 'Event d c a's.
-event :: (Eventable d c a) => Interval a -> Context d c -> Event d c a
+event :: (Eventable d c a) => Interval a -> Context c d -> Event d c a
 event i c = MkEvent (makePairedInterval c i)
 
 -- | Unpack an 'Event' from its constructor.
-getEvent :: Event d c a -> PairedInterval (Context d c) a
+getEvent :: Event d c a -> PairedInterval (Context c d) a
 getEvent (MkEvent x) = x
 
 -- | Get the 'Context' of an 'Event'. 
-getContext :: Event d c a -> Context d c
+getContext :: Event d c a -> Context c d
 getContext = getPairData . getEvent
 
 {-|
@@ -266,7 +266,7 @@ which carries information about the provenance of the data.
 
 -}
 {- tag::contextType[] -}
-data Context d c = MkContext
+data Context c d = MkContext
   { -- | the 'Concepts' of a @Context@
     getConcepts :: Concepts c -- <1>
     -- | the facts of a @Context@.  
@@ -277,18 +277,18 @@ data Context d c = MkContext
   {- end::contextType[] -}
   deriving (Eq, Show, Generic)
 
-instance Ord c => HasConcept (Context d c) c where
+instance Ord c => HasConcept (Context c d) c where
   hasConcept c = hasConcept (getConcepts c)
 
-instance (NFData d, NFData c) => NFData (Context d c)
-instance (Binary d, Binary c) => Binary (Context d c)
+instance (NFData d, NFData c) => NFData (Context c d)
+instance (Binary d, Binary c) => Binary (Context c d)
 -- See NOTE at top of module regarding To/FromJSON
-instance ( Ord c, FromJSON c, FromJSON d ) => FromJSON (Context d c)
-instance ( Ord c, ToJSON c, ToJSON d ) => ToJSON (Context d c)
+instance ( Ord c, FromJSON c, FromJSON d ) => FromJSON (Context c d)
+instance ( Ord c, ToJSON c, ToJSON d ) => ToJSON (Context c d)
 
 instance ( Arbitrary d, Show d, Eq d, Generic d
          , Arbitrary c, Show c, Eq c, Ord c, Typeable c) =>
-      Arbitrary (Context d c) where
+      Arbitrary (Context c d) where
   arbitrary = liftM3 MkContext arbitrary arbitrary (pure Nothing)
 
 -- | Smart constructor for a 'Context',
@@ -297,7 +297,7 @@ context
   => Concepts c
   -> d
   -> Maybe Source
-  -> Context d c
+  -> Context c d
 context = MkContext
 
 {-|
@@ -316,15 +316,15 @@ bimapContext
   :: (Ord c1, Ord c2)
   => (c1 -> c2)
   -> (d1 -> d2)
-  -> Context d1 c1
-  -> Context d2 c2
+  -> Context c1 d1
+  -> Context c2 d2
 bimapContext g f (MkContext cpts fcts src) =
   MkContext (mapConcepts g cpts) (f fcts) src
 
 {-|
 Turn the 'Source' within a 'Context' to 'Nothing'.
 -}
-dropSource :: Context d c -> Context d c
+dropSource :: Context c d -> Context c d
 dropSource (MkContext cpts fcts _) = MkContext cpts fcts Nothing
 
 {-|
@@ -512,7 +512,8 @@ class EventPredicate element d c a where
   -}
   liftToEventPredicate :: Predicate element -> Predicate (Event d c a)
 
-instance EventPredicate (Context d c) d c a where
+-- TODO swap d and c throughout these instances
+instance EventPredicate (Context c d) d c a where
   liftToEventPredicate = contramap getContext
 
 instance EventPredicate d d c a where
@@ -543,13 +544,14 @@ class EventFunction f d d' c c' a a' where
   -}
   liftToEventFunction :: (Ord c, Ord c') => f -> Event d c a -> Event d' c' a'
 
+-- TODO swap ds and cs?
 instance EventFunction (c -> c') d d c c' a a where
   liftToEventFunction f = trimapEvent id f id
 
 instance EventFunction (d -> d') d d' c c a a where
   liftToEventFunction = trimapEvent id id
 
-instance EventFunction (Context d c -> Context d' c') d d' c c' a a where
+instance EventFunction (Context c d -> Context c' d') d d' c c' a a where
   liftToEventFunction f (MkEvent x) = MkEvent $ first f x
 
 instance EventFunction (a -> a') d d c c a a' where
@@ -572,7 +574,7 @@ class ContextFunction f d d' c c' where
   Lifts a function @f@ of a component of an 'Context'
   to a function on an 'Context'
   -}
-  liftToContextFunction :: (Ord c, Ord c') => f -> Context d c -> Context d' c'
+  liftToContextFunction :: (Ord c, Ord c') => f -> Context c d -> Context c' d'
 
 instance ContextFunction (Concepts c -> Concepts c') d d c c' where
   liftToContextFunction f (MkContext x y z) = MkContext (f x) y z

@@ -515,7 +515,6 @@ class EventPredicate element c d a where
   -}
   liftToEventPredicate :: Predicate element -> Predicate (Event c d a)
 
--- TODO swap d and c throughout these instances
 instance EventPredicate (Context c d) c d a where
   liftToEventPredicate = contramap getContext
 
@@ -547,7 +546,6 @@ class EventFunction f c c' d d' a a' where
   -}
   liftToEventFunction :: (Ord c, Ord c') => f -> Event c d a -> Event c' d' a'
 
--- TODO swap ds and cs?
 instance EventFunction (c -> c') c c' d d a a where
   liftToEventFunction f = trimapEvent id f id
 
@@ -587,4 +585,3 @@ instance ContextFunction (c -> c') c c' d d where
 
 instance ContextFunction (d -> d') c c d d' where
   liftToContextFunction = bimapContext id
-

@@ -50,7 +50,7 @@ buildNofXBool
   -> Predicate (Event c d a) -- ^ a predicate on events
   -> Definition
        (  Feature indexName (i a)
-       -> Feature eventsName (container (Event d c a))
+       -> Feature eventsName (container (Event c d a))
        -> Feature varName Bool
        )
 buildNofXBool = buildNofX id
@@ -61,7 +61,7 @@ buildNofXBinaryConcurBaseline
   :: (Intervallic i0 a, Witherable t, IntervalSizeable a b, Baseline i0 a)
   => Natural -- ^ minimum number of events.
   -> b -- ^ duration of baseline (passed to 'makeBaselineFromIndex')
-  -> Predicate (Event d c a)
+  -> Predicate (Event c d a)
   -> Definition
        (  Feature indexName (i0 a)
        -> Feature eventsName (t (Event c d a))

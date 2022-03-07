@@ -1,129 +1,117 @@
----
-title: buildNofX
-tags: []
----
-
-## Description
-
-Do N events relating to the assessment interval in some way the satisfy the given predicate?
-
-```haskell
 module Templates.Features.BuildNofX
   ( buildNofX
   , buildNofXBool
   , buildNofXBinary
   , buildNofXBinaryConcurBaseline
   , buildNofConceptsBinaryConcurBaseline
-  , buildNofXTests 
+  , buildNofXTests
   ) where
 
 import           Templates.FeatureReqs
 import           Templates.Features.BuildNofXBase
-```
 
-## Usage
-
-TODO
-
-## Definition
-
-```haskell
+{- tag::template0[] -}
 buildNofX
   :: (Intervallic i a, Witherable container)
   => (Bool -> outputType) -- ^ casting function
   -> Natural -- ^ minimum number of cases
   -> (i a -> AssessmentInterval a) -- ^ function to transform a 'Cohort.Index' to an 'Cohort.AssessmentInterval'
-  -> ComparativePredicateOf2 (AssessmentInterval a) (Event ClaimsSchema c a) -- ^ interval predicate
-  -> Predicate (Event ClaimsSchema c a) -- ^ a predicate on events
+  -> ComparativePredicateOf2
+       (AssessmentInterval a)
+       (Event d c a) -- ^ interval predicate
+  -> Predicate (Event d c a) -- ^ a predicate on events
   -> Definition
        (  Feature indexName (i a)
-       -> Feature eventsName (container (Event ClaimsSchema c a))
+       -> Feature
+            eventsName
+            (container (Event d c a))
        -> Feature varName outputType
        )
 buildNofX f n = buildNofXBase id (\x -> length x >= naturalToInt n) (const f)
-```
+{- tag::template0[] -}
 
-### Specialized Definitions
-
-`buildNofX` specialized to return `Binary`.
-
-```haskell
+{- tag::template1[] -}
 buildNofXBinary
   :: (Intervallic i a, Witherable container)
   => Natural
   -> (i a -> AssessmentInterval a)
-  -> ComparativePredicateOf2 (AssessmentInterval a) (Event ClaimsSchema c a)
-  -> Predicate (Event ClaimsSchema c a)
+  -> ComparativePredicateOf2
+       (AssessmentInterval a)
+       (Event d c a)
+  -> Predicate (Event d c a)
   -> Definition
        (  Feature indexName (i a)
-       -> Feature eventsName (container (Event ClaimsSchema c a))
+       -> Feature
+            eventsName
+            (container (Event d c a))
        -> Feature varName Binary
        )
 buildNofXBinary = buildNofX fromBool
-```
+{- end::template1[] -}
 
-`buildNofX` specialized to return a boolean.
-
-```haskell
+{- tag::template2[] -}
 buildNofXBool
   :: (Intervallic i a, Witherable container)
   => Natural -- ^ minimum number of cases 
   -> (i a -> AssessmentInterval a) -- ^ function to transform a 'Cohort.Index' to an 'Cohort.AssessmentInterval'
-  -> ComparativePredicateOf2 (AssessmentInterval a) (Event ClaimsSchema c a) -- ^ interval predicate
-  -> Predicate (Event ClaimsSchema c a) -- ^ a predicate on events
+  -> ComparativePredicateOf2
+       (AssessmentInterval a)
+       (Event d c a) -- ^ interval predicate
+  -> Predicate (Event d c a) -- ^ a predicate on events
   -> Definition
        (  Feature indexName (i a)
-       -> Feature eventsName (container (Event ClaimsSchema c a))
+       -> Feature
+            eventsName
+            (container (Event d c a))
        -> Feature varName Bool
        )
 buildNofXBool = buildNofX id
-```
+{- end::template2[] -}
 
-`buildNofXBinary` specialized to filter to events that concur with an assessment interval created by `makeBaselineFromIndex` of a specified duration and a provided predicate.
-
-```haskell
+{- tag::template3[] -}
 buildNofXBinaryConcurBaseline
   :: (Intervallic i0 a, Witherable t, IntervalSizeable a b, Baseline i0 a)
   => Natural -- ^ minimum number of events.
   -> b -- ^ duration of baseline (passed to 'Cohort.makeBaselineFromIndex')
-  -> Predicate (Event ClaimsSchema c a)
+  -> Predicate (Event d c a)
   -> Definition
        (  Feature indexName (i0 a)
-       -> Feature eventsName (t (Event ClaimsSchema c a))
+       -> Feature eventsName (t (Event d c a))
        -> Feature varName Binary
        )
 buildNofXBinaryConcurBaseline n baselineDur =
   buildNofXBinary n (makeBaselineFromIndex baselineDur) concur
-```
+{- end::template3[] -}
 
-`buildNofXBinary` specialized to filter to events that concur with an assessment interval created by `makeBaselineFromIndex` of a specified duration and that have a given set of concepts.
-
-```haskell
+{- tag::template4[] -}
 buildNofConceptsBinaryConcurBaseline
-  :: (Intervallic i0 a, Witherable t, IntervalSizeable a b, Baseline i0 a, Ord c)
+  :: ( Intervallic i0 a
+     , Witherable t
+     , IntervalSizeable a b
+     , Baseline i0 a
+     , Ord c
+     )
   => Natural -- ^ minimum number of events. 
   -> b  -- ^ duration of baseline (passed to 'Cohort.makeBaselineFromIndex')
   -> [c] -- ^ list of 'EventData.Concepts' passed to 'EventData.containsConcepts'
   -> Definition
        (  Feature indexName (i0 a)
-       -> Feature eventsName (t (Event ClaimsSchema c a))
-       -> Feature varName Binary 
+       -> Feature eventsName (t (Event d c a))
+       -> Feature varName Binary
        )
 buildNofConceptsBinaryConcurBaseline n baselineDur cpts = buildNofXBinary
   n
   (makeBaselineFromIndex baselineDur)
   concur
   (containsConcepts cpts)
-```
-
-## Examples
-
-```haskell
+{- tag::template4[] -}
 
 type NofXArgs
   = ( Natural
     , Interval Int -> AssessmentInterval Int
-    , ComparativePredicateOf2 (AssessmentInterval Int) (Event ClaimsSchema Text Int)
+    , ComparativePredicateOf2
+        (AssessmentInterval Int)
+        (Event ClaimsSchema Text Int)
     , Predicate (Event ClaimsSchema Text Int)
     )
 
@@ -182,9 +170,6 @@ buildNofXTestCases =
   h = makeEventWithConcepts
 
 buildNofXTests :: TestTree
-buildNofXTests = makeTestGroup 
-   "Tests of NofX template"
-    (buildNofX id)
-    buildNofXTestCases 
+buildNofXTests =
+  makeTestGroup "Tests of NofX template" (buildNofX id) buildNofXTestCases
 
-```

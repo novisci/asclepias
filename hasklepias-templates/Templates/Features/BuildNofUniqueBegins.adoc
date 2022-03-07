@@ -1,0 +1,4 @@
+:description: documentation for NofUniqueBegins template
+
+Do N events relating to the 'AssessmentInterval' in some way 
+satisfy the given predicate?

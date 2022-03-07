@@ -1,0 +1,5 @@
+
+[source,haskell]
+----
+include::BuildContinuousEnrollment.hs[tag=example0]
+----

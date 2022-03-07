@@ -1,0 +1,17 @@
+:description: Documents the BuildNofX template
+
+Do N events relating to the assessment interval in some way 
+satisfy the given predicate?
+
+== Specialized Definitions
+
+`buildNofX` specialized to return `Binary`.
+
+
+`buildNofX` specialized to return a boolean.
+
+`buildNofXBinary` specialized to filter to events that concur with an assessment interval created by `makeBaselineFromIndex` of a specified duration and a provided predicate.
+
+
+`buildNofXBinary` specialized to filter to events that concur with an assessment interval created by `makeBaselineFromIndex` of a specified duration and that have a given set of concepts.
+

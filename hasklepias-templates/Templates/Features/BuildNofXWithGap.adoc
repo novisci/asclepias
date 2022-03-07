@@ -1,0 +1,2 @@
+:description: Documentatation for BuildNofXWithGap
+Are there N gaps of at least the given duration between any pair of events that relate to the assessment interval by the given relation and the satisfy the given predicate?

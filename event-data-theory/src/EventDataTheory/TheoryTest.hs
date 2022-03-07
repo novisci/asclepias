@@ -77,13 +77,13 @@ instance FromJSON SillyConcepts
 
 type SillyEvent2 a = Event SillyConcepts SillySchema a
 
-c1 :: Context Text SillySchema 
+c1 :: Context Text SillySchema
 c1 = context (into (["this", "that"] :: [Text])) (A 1) Nothing
 
 e1 :: SillyEvent1 Int
 e1 = event (beginerval 2 1) c1
 
-c2 :: Context Text SillySchema 
+c2 :: Context Text SillySchema
 c2 = context (into (["this", "another"] :: [Text])) (A 1) Nothing
 
 e2 :: SillyEvent1 Int
@@ -142,7 +142,7 @@ hasConceptUnitTests = testGroup
   @?= False
   ]
 
-cPred1 :: Predicate (Context Text SillySchema )
+cPred1 :: Predicate (Context Text SillySchema)
 cPred1 = Predicate (\x -> getFacts x == C)
 
 cPred2 :: Predicate (Maybe Source)

@@ -1,5 +1,5 @@
 {-|
-Module      : Hasklepias Event ClaimsSchema c accessors
+Module      : Hasklepias Event c ClaimsSchema accessors
 Description : Methods fro accessing data in events.
 License     : BSD3
 Maintainer  : bsaul@novisci.com

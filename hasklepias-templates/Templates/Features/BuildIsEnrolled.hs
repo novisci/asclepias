@@ -13,10 +13,10 @@ buildIsEnrolled
      , Applicative container
      , Witherable container
      )
-  => Predicate (Event ClaimsSchema c a) -- ^ The predicate to filter to Enrollment events (e.g. 'FeatureEvents.isEnrollment')
+  => Predicate (Event d c a) -- ^ The predicate to filter to Enrollment events (e.g. 'FeatureEvents.isEnrollment')
   -> Definition
        (  Feature indexName (i0 a)
-       -> Feature eventsName (container (Event ClaimsSchema c a))
+       -> Feature eventsName (container (Event d c a))
        -> Feature varName Status
        )
 buildIsEnrolled predicate = define

@@ -49,7 +49,6 @@ library
       , containers == 0.6.5.1
       , OneTuple == 0.3.1
       , flow >= 2.0.0.0
-      , markdown-unlit
       , tasty  == 1.4.1
       , tasty-hunit == 0.10.0.3
       , text >= 2.0
@@ -57,16 +56,12 @@ library
       , tuple >= 0.3
       , witherable >= 0.4.1
   default-language: Haskell2010
-  ghc-options:
-     -pgmL markdown-unlit
   build-tool-depends: 
-        markdown-unlit:markdown-unlit
-      , autoexporter:autoexporter
+      autoexporter:autoexporter
   default-extensions: 
     DataKinds
     OverloadedStrings
     TupleSections
-  
 
 test-suite templates
   type: exitcode-stdio-1.0

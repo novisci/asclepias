@@ -6,6 +6,10 @@ import           EventDataTheory.Utilities      ( (&&&) )
 import           Templates.FeatureReqs
 
 
+{- |
+The basis of definition templates that answer a question about
+N events satisying a predicate X. 
+-}
 {- tag::template0[] -}
 buildNofXBase
   :: ( Intervallic i0 a
@@ -41,15 +45,38 @@ buildNofXBase runPreProcess runProcess runPostProcess makeAssessmentInterval rel
     )
 {- end::template0[] -}
 
-{- tag::example0[] -}
-buildExample
-  :: (Interval Day -> AssessmentInterval Day)
-  -> ComparativePredicateOf2 (AssessmentInterval Day) (Event d c Day)
-  -> Predicate (Event d c Day)
+{-
+An example of using the buildNofXBase function
+-}
+{- tag::example0sig[] -}
+example
+  :: (Ord a, IntervalSizeable a b)
+  => (Interval a -> AssessmentInterval a)
+  -> ComparativePredicateOf2 (AssessmentInterval a) (Event d c a)
+  -> Predicate (Event d c a)
   -> Definition
-       (  Feature indexName (Interval Day)
-       -> Feature eventsName [Event d c Day]
-       -> Feature varName [Integer]
+       (  Feature indexName (Interval a)
+       -> Feature eventsName [Event d c a]
+       -> Feature varName [b]
        )
-buildExample = buildNofXBase combineIntervals (fmap end) (fmap . diff . begin)
+{- tag::example0sig[] -}
+{- tag::example0[] -}
+example = buildNofXBase combineIntervals -- <1>
+                        (fmap end) -- <2>
+                        (fmap . diff . begin) -- <3>
 {- end::example0[] -}
+
+{- tag::example1sig[] -}
+defBaseline180Enrollment
+  :: IntervalSizeable a b
+  => Definition
+       (  Feature indexName (Interval a)
+       -> Feature eventsName [Event d Text a]
+       -> Feature varName [b]
+       )
+{- tag::example1sig[] -}
+{- tag::example1[] -}
+defBaseline180Enrollment = example (makeBaselineFromIndex 180) -- <1>
+                                   concur -- <2>
+                                   (containsConcepts ["enrollment"]) -- <3>
+{- end::example1[] -}

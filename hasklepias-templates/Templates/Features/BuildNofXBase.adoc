@@ -1,35 +1,74 @@
 :description: Documentation for buildNofXBase template
+:source-highlighter: highlightjs
 
-The `buildNofXBase` template is generally used a basis for creating new templates that follow the pattern:
+
+= The basis for N of X pattern
+
+[TIP]
+====
+Use this function template to:
+
+* [x] write another function that answers a question
+about some count `N` of events that satisfy a predicate `X`.
+====
+
+The `buildNofXBase` template is used a basis
+for creating new templates with the following pattern:
 
 1. Filter events to those satisfying two conditions:
-  * an interval relation with an assessment interval
-  * a provided predicate function such as containing certain concepts
+  * an interval relation with an `+AssessmentInterval+`
+  * a provided `Predicate` (such as containing certain concepts)
 2. Preprocess these events.
 3. Process the events.
-4. Post-process the events, optionally in conjunction with the assessment interval
+4. Postprocess the events,
+optionally in conjunction with the `+AssessmentInterval+`.
 
-== Usage
-
-The `exampleBuilder` function returns another feature builder that performs this logic:
-
-1. combines the intervals of the input events (collapsing concurring and meeting intervals)
-2. gets the `end` of each interval
-3. computes the difference from each `end` to the `begin` of the assessment interval.
+== Usage and Examples
 
 
-To be fully specified as a `Definition` and used in a project, the `exampleBuilder` function needs 3 additional inputs:
+[source,haskell]
+----
+include::BuildNofXBase.hs[tag=example0]
+----
+
+The `example` function above returns another definiton builder
+that performs this logic:
+
+<1> combine the intervals of the input events
+(collapsing concurring and meeting intervals);
+<2> get the `end` of each interval;
+<3> computes the difference from each `end`
+to the `begin` of the assessment interval.
+
+To then be fully specified as a `Definition` and used in a project,
+the `example` function needs 3 additional inputs:
 
 1. a function mapping the index interval to an assessment interval.
 2. a predicate function comparing events to the assessment interval.
 3. another predicate function on the events.
 
-For example, the `buildExampleBaselineEnrollment` is a `Definition` that performs the logic of `buildExample` on enrollment events concurring with baseline, where baseline is defined as 180 days prior to index.
+For example, the `defBaseline180Enrollment` below is a `Definition` 
+that performs the logic of `example`.
 
-```haskell usage
-buildExampleBaseline180Enrollment = 
-  buildExample
-     (makeBaselineFromIndex 180)
-     concur
-     isEnrollmentEvent
-```
+[source,haskell]
+----
+include::BuildNofXBase.hs[tag=example1]
+----
+
+<1> Create a baseline interval from the index to 180 units (e.g. days)
+back in time.
+<2> Filter to events that concur with the baseline interval and
+<3> contain the concept `"enrollment"`.
++
+NOTE: This example assumes the `Concept` type is `Text`.
+
+== Source code
+
+[%collapsible]
+.View source code
+====
+[source,haskell]
+----
+include::BuildNofXBase.hs[tag=template0]
+----
+====

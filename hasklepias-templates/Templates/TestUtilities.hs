@@ -10,10 +10,13 @@ These functions may be moved to more appropriate modules in future versions.
 -- {-# OPTIONS_HADDOCK hide #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE DeriveGeneric #-}
 
 module Templates.TestUtilities
   ( TestCase(..)
+  , TestSchema(..)
   , readIntervalSafe
+  , isEnrollmentEvent
   , makeEnrollmentEvent
   , makeEventWithConcepts
   , makeTestCase
@@ -34,7 +37,6 @@ import           Data.Tuple.Curry
 -- import           GHC.Tuple (Solo (Solo))
 -- #else
 import           Data.Tuple.Solo
-import           EventData
 import           EventDataTheory
 import           Features.Core                  ( Define(..)
                                                 , Definition(..)
@@ -42,6 +44,7 @@ import           Features.Core                  ( Define(..)
                                                 , Feature
                                                 , eval
                                                 )
+import           GHC.Generics
 import           Test.Tasty
 import           Test.Tasty.HUnit
 import           Type.Reflection                ( Typeable )
@@ -52,22 +55,26 @@ import           Type.Reflection                ( Typeable )
 readIntervalSafe :: (Integral b, IntervalSizeable a b) => (a, a) -> Interval a
 readIntervalSafe (b, e) = beginerval (diff e b) b
 
+data TestSchema = Enrollment | NotEnrollment deriving (Show, Eq, Generic)
+
 makeEnrollmentEvent
   :: (Integral b, IntervalSizeable a b, Typeable a, Show a)
   => (a, a)
-  -> Event ClaimsSchema Text a
-makeEnrollmentEvent intrvl = event
-  (readIntervalSafe intrvl)
-  (context mempty (Enrollment emptyEnrollmentFact) Nothing)
+  -> Event TestSchema Text a
+makeEnrollmentEvent intrvl =
+  event (readIntervalSafe intrvl) (context mempty Enrollment Nothing)
 
 makeEventWithConcepts
   :: (Integral b, IntervalSizeable a b, Typeable a, Show a)
   => [Text]
   -> (a, a)
-  -> Event ClaimsSchema Text a
+  -> Event TestSchema Text a
 makeEventWithConcepts cpts intrvl = event
   (readIntervalSafe intrvl)
-  (context (packConcepts cpts) (Enrollment emptyEnrollmentFact) Nothing)
+  (context (packConcepts cpts) Enrollment Nothing)
+
+isEnrollmentEvent :: Predicate (Event TestSchema c a)
+isEnrollmentEvent = liftToEventPredicate (Predicate (== Enrollment))
 
 {-
   types/functions for creating test cases and evaluating them
@@ -107,11 +114,11 @@ makeTestCaseOfIndexAndEvents
   => TestName
   -> bargs
   -> (a, a)
-  -> [Event ClaimsSchema Text a]
+  -> [Event TestSchema Text a]
   -> returnType
   -> TestCase
        ( F "index" (Interval a)
-       , F "events" [Event ClaimsSchema Text a]
+       , F "events" [Event TestSchema Text a]
        )
        returnType
        bargs

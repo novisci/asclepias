@@ -22,8 +22,8 @@ import           Templates.Features.BuildIsEnrolled
 import           Templates.Features.BuildNofUniqueBegins
                                                 ( buildNofUniqueBeginsTests )
 import           Templates.Features.BuildNofX   ( buildNofXTests )
-import           Templates.Features.BuildNofXOrNofYWithGap
-                                                ( buildNofXOrNofYWithGapTests )
+import           Templates.Features.BuildNofXOrMofYWithGap
+                                                ( buildNofXOrMofYWithGapTests )
 import           Templates.Features.BuildNofXWithGap
                                                 ( buildNofXWithGapTests )
 import           Test.Tasty                     ( TestTree
@@ -38,7 +38,7 @@ templateTests = testGroup
   , buildContinuousEnrollmentTests
   , buildNofXTests
   , buildNofXWithGapTests
-  , buildNofXOrNofYWithGapTests
+  , buildNofXOrMofYWithGapTests
   , buildNofUniqueBeginsTests
   ]
 

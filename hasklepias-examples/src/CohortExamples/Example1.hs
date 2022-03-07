@@ -75,7 +75,7 @@ twoOutOneIn
        -> Feature "allEvents" [Event ClaimsSchema Text Day]
        -> Feature name Bool
        )
-twoOutOneIn cpts1 cpts2 = buildNofXOrNofYWithGapBool 1
+twoOutOneIn cpts1 cpts2 = buildNofXOrMofYWithGapBool 1
                                                      (containsConcepts cpts1)
                                                      1
                                                      7

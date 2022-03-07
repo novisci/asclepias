@@ -1,5 +1,5 @@
 {-| 
-Module      : Hygiea.Internal.Atomic
+Module      : Test.Hygiea.Internal.Atomic
 Description : Internal representation of a testable value type to be used in Map
 Copyright   : (c) NoviSci, Inc 2022
 License     : BSD3
@@ -52,7 +52,11 @@ data TestAtomic = TInteger Integer
 -- TODO
 -- the difficulty in adding unions will again be that we need access to the
 -- data, in particular the *names* of the variants. therefore we cannot have a
--- FromDhall instance.
+-- FromDhall instance for TestVal. If we provide a `Decoder TestVal`, we can use `decodeMapSchema` and write a version of `mapInputSchema` that uses `Decoder TestVal` instead of Dhall.auto to decode from the dhall text file.
+-- TestMap and Atomizable could then be changed, along with the appropriate
+-- TryFrom TestMap instances in the Event module to account for TestVal value
+-- type in TestMap.
+
 -- data TestVal = Atomic TestAtomic | Union (Map (Maybe TestAtomic)) deriving (Show, Eq)
 
   {- CONVERSIONS -}

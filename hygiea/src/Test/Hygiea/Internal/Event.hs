@@ -1,3 +1,6 @@
+-- TODO placeholders for event-data-theory general event type and related,
+-- specialized to the needs here. these would be imported from edm theory, and this module then would provide the basic conversions for allowed types, so that users who alias the edm theory types don't have to.
+--
 -- Convenience types to make common conversions simpler
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE OverloadedStrings #-}
@@ -27,10 +30,6 @@ import           Witch.TryFrom
 import           Witch.TryFromException
 import           Witch.Utility                  ( tryVia )
 
--- TODO placeholders for event-data-theory general event type and related,
--- specialized to the needs here. these would be imported
--- These should bew newtypes of those types, so that we can allow users to
--- define their own instances for conversions
 newtype Event d c a = MkEvent ( PairedInterval (Context d c) a )
   deriving (Eq, Show, Generic)
 

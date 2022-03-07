@@ -1,3 +1,6 @@
+{- TODO: This is purely for demonstration and should be deleted once the
+    library is used in, say, hasklepias-examples. -}
+
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeApplications #-}
 

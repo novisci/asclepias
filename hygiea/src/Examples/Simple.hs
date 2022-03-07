@@ -18,13 +18,17 @@ import           Test.Tasty.Hygiea
   {- Project-specific code
 
       This section gives a sense of how much project-specific code needs to be written to interact with hygiea's testing structure. In this case, since outputs and inputs are aliases for CensoredOccurence and Event, the only hygiea-specific code is the ToOutput instance.
+
+      See Main.hs for how it might be used in a test.
       -}
 
   {- Code required for Hygiea testing -}
 
+-- defining the conversion
 instance ToOutput [ProjEvent] [ProjOccurrence] where
   toOutput = cohortBuilder index
 
+-- specifying the files
 projPath :: String
 projPath = "hygiea/src/Examples"
 

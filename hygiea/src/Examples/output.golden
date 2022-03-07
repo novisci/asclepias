@@ -1,0 +1,1 @@
+"[{\"reason\":\"after\",\"time\":[[0,4],{\"getConcepts\":\"home\",\"getFacts\":\"is_funny\"}]},{\"reason\":\"after\",\"time\":[[1,10],{\"getConcepts\":\"not home\",\"getFacts\":\"is_sad\"}]},{\"reason\":\"after\",\"time\":[[0,20],{\"getConcepts\":\"home\",\"getFacts\":\"is_weird\"}]}]"

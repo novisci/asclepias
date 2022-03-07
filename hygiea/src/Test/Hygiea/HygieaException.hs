@@ -9,7 +9,8 @@ import           Data.Text                      ( Text
 import           Witch.From
 import           Witch.TryFromException
 
--- TODO a full pass at the exceptions used throughout, and of the Show instance
+-- TODO a full pass at the exceptions used throughout, and of the Show
+-- instance. messages should be more informative if possible.
 
 -- | Catch-all exception for failures at various points in the decoding
 -- process, from csv file to dhall to internal haskell type.

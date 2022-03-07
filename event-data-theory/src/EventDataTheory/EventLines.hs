@@ -14,9 +14,11 @@ Maintainer  : bsaul@novisci.com
 {-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE ConstraintKinds #-}
 
 module EventDataTheory.EventLines
   ( EventLine
+  , EventLineAble
   , parseEventLinesL
   , parseEventLinesL'
   , eitherDecodeEvent
@@ -88,6 +90,9 @@ instance (Eventable d c a, FromJSONEvent d c a, IntervalSizeable a b)
 
 instance (Ord a, ToJSON a, ToJSON c, ToJSON d) => ToJSON (EventLine d c a)
 
+type EventLineAble d c a b
+  = (Generic d, Typeable d, Typeable c, Typeable a, IntervalSizeable a b)
+
 -- INTERNAL utility for getting subjectID from EventLine
 getSubjectID :: EventLine d c a -> SubjectID
 getSubjectID (MkEventLine _ _ _ _ _ fcts) =
@@ -126,7 +131,7 @@ instance Exception ParseErrorInterval
 Try to parse an @'EventLine'@ into an @'Event'@,
 given an 'ParseEventLineOption'. 
 -}
-instance ( Eventable d c a, IntervalSizeable a b ) =>
+instance ( Eventable d c a, EventLineAble d c a b ) =>
   TryFrom (EventLine d c a, ParseEventLineOption) (Event d c a) where
   tryFrom x = do
     let fcts = (fctln . fst) x
@@ -221,7 +226,7 @@ for discusson of json vs json'.
 -}
 eitherDecodeEvent, eitherDecodeEvent'
   :: forall d c a b
-   . (Eventable d c a, FromJSONEvent d c a, Typeable d, IntervalSizeable a b)
+   . (Eventable d c a, EventLineAble d c a b, FromJSONEvent d c a)
   => ParseEventLineOption
   -> B.ByteString
   -> Either String (SubjectID, Event d c a)
@@ -239,7 +244,7 @@ for discusson of json vs json'.
 -}
 decodeEvent, decodeEvent'
   :: forall d c a b
-   . (Eventable d c a, FromJSONEvent d c a, Typeable d, IntervalSizeable a b)
+   . (Eventable d c a, EventLineAble d c a b, FromJSONEvent d c a)
   => ParseEventLineOption
   -> B.ByteString
   -> Maybe (SubjectID, Event d c a)
@@ -257,7 +262,7 @@ for discusson of json vs json'.
 -}
 decodeEventStrict, decodeEventStrict'
   :: forall d c a b
-   . (Eventable d c a, FromJSONEvent d c a, Typeable d, IntervalSizeable a b)
+   . (Eventable d c a, EventLineAble d c a b, FromJSONEvent d c a)
   => ParseEventLineOption
   -> C.ByteString
   -> Maybe (SubjectID, Event d c a)
@@ -268,7 +273,7 @@ decodeEventStrict' opt x =
 
 makeEventDecoder
   :: forall d c a b e
-   . (Eventable d c a, IntervalSizeable a b)
+   . (Eventable d c a, EventLineAble d c a b)
   => (  TryFromException (EventLine d c a, ParseEventLineOption) (Event d c a)
      -> e
      )
@@ -282,7 +287,7 @@ makeEventDecoder g opt f x = do
 
 makeEventDecoderStrict
   :: forall d c a b e
-   . (Eventable d c a, IntervalSizeable a b)
+   . (Eventable d c a, EventLineAble d c a b)
   => (  TryFromException (EventLine d c a, ParseEventLineOption) (Event d c a)
      -> e
      )
@@ -335,7 +340,7 @@ and the second element is a list of successfully parsed (subjectID, event) pairs
 -}
 parseEventLinesL, parseEventLinesL'
   :: forall d c a b
-   . (Eventable d c a, FromJSONEvent d c a, Typeable d, IntervalSizeable a b)
+   . (Eventable d c a, EventLineAble d c a b, FromJSONEvent d c a)
   => ParseEventLineOption
   -> B.ByteString
   -> ([LineParseError], [(SubjectID, Event d c a)])
@@ -418,9 +423,8 @@ within the Event corresponding to the EventLine.
 eitherModifyEventLineFromContext
   :: forall d d' c c' a b e
    . ( Eventable d c a
+     , EventLineAble d c a b
      , FromJSONEvent d c a
-     , IntervalSizeable a b
-     , Typeable d
      , Ord c'
      , Data d'
      )
@@ -441,9 +445,8 @@ eitherModifyEventLineFromEvent
   :: forall d d' c c' a a' b e
    . ( Eventable d c a
      , Eventable d' c' a'
+     , EventLineAble d c a b
      , FromJSONEvent d c a
-     , IntervalSizeable a b
-     , Typeable d
      , ToJSON a'
      , Data d'
      )
@@ -477,10 +480,9 @@ See 'modifyEventLineWithEvent' for a function that can also modify the interval.
 modifyEventLineWithContext
   :: forall d d' c c' a b m
    . ( Eventable d c a
+     , EventLineAble d c a b
      , FromJSONEvent d c a
-     , IntervalSizeable a b
      , Eventable d' c' a
-     , Typeable d
      , Data d'
      )
   => ParseEventLineOption
@@ -520,8 +522,7 @@ modifyEventLineWithEvent
    . ( FromJSONEvent d c a
      , Eventable d c a
      , Eventable d' c' a'
-     , IntervalSizeable a b
-     , Typeable d
+     , EventLineAble d c a b
      , ToJSON a'
      , Data d'
      )

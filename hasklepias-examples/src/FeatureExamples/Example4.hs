@@ -174,15 +174,6 @@ followupInterval
   :: (Integral b, IntervalSizeable a b) => Interval a -> Interval a
 followupInterval = makeFollowupInterval 365
 
--- TODO see https://gitlab.novisci.com/nsStat/asclepias/-/issues/186
-eventDiffFromBegin
-  :: (Typeable b, Ord b, Show b, IntervalSizeable a b, Integral b)
-  => Interval a
-  -> MyEvent a
-  -> MyEvent b
-eventDiffFromBegin i e = event i' (getContext e)
-  where i' = diffFromBegin i (getInterval e)
-
 {-
   Functions for defining the study's exposure protocol(s)
 -}
@@ -319,7 +310,7 @@ index = defineA
   where intervals' = fmap getInterval
 
 flupEvents
-  :: (Eventable AlternativeFacts Text b, Integral b, IntervalSizeable a b)
+  :: (Integral b, IntervalSizeable a b)
   => Def
        (  F "index" (Interval a)
        -> F "events" (Events a)
@@ -327,7 +318,7 @@ flupEvents
        )
 flupEvents = define
   (\index es -> es |> filterConcur (followupInterval index) |> fmap
-    (eventDiffFromBegin (followupInterval index))
+    (diffFromBegin (followupInterval index))
   )
 
 {-

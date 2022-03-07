@@ -34,6 +34,7 @@ module EventDataTheory.Core
   , Concept
   , Concepts
   , Context
+  , ConceptsInterval
   , getFacts
   , getSource
   , getConcepts
@@ -164,6 +165,9 @@ instance (Ord a) => Intervallic (Event d c) a where
   getInterval (MkEvent x) = getInterval x
   setInterval (MkEvent x) y = MkEvent $ setInterval x y
 
+instance Functor (Event d c) where
+  fmap f (MkEvent x) = MkEvent $ fmap f x
+
 instance Ord c => HasConcept (Event d c a) c where
   hasConcept e = hasConcept (getContext e)
 
@@ -189,22 +193,18 @@ instance ( Ord c, FromJSON c, FromJSON d, FromJSON a ) => FromJSON (Event d c a)
 instance ( Ord c, ToJSON c, ToJSON d, ToJSON a ) => ToJSON (Event d c a)
 
 instance (  Eventable d c a
+          , Generic d
+          , Typeable c
+          , Typeable a
           , Arbitrary d, Arbitrary c, Arbitrary (Interval a)) =>
       Arbitrary (Event d c a) where
   arbitrary = liftM2 event arbitrary arbitrary
 
--- | A synonym for the minimum set of constraints an event needs on its types.
-type Eventable d c a
-  = ( Generic d
-    , Typeable c
-    , Typeable a
-    , Eq d
-    , Ord c
-    , Ord a
-    , Show d
-    , Show c
-    , Show a
-    )
+instance (Ord a) => From (Event d c a) (Interval a) where
+  from = getInterval
+
+-- | A synonym for the basic set of constraints an event needs on its types.
+type Eventable d c a = (Eq d, Ord c, Ord a, Show d, Show c, Show a)
   -- Text is not Generic; but c should at least be Typeable
 
 -- | Constraint synonym for @ToJSON@ on an event's component types.
@@ -458,6 +458,20 @@ hasAnyConcepts x = any (\c -> x `hasConcept` c)
 -- | Does an @a@ have *all* of a list of `Concept's?
 hasAllConcepts :: HasConcept a c => a -> [c] -> Bool
 hasAllConcepts x = all (\c -> x `hasConcept` c)
+
+{-|
+A Concept Interval is simply a synonym for an 'Interval' paired with 'Concepts'.
+-}
+type ConceptsInterval c a = PairedInterval (Concepts c) a
+
+instance From (Event d c a) (ConceptsInterval c a) where
+  from = first getConcepts . getEvent
+instance (Ord a) => From (ConceptsInterval c a) (Interval a) where
+  from = getInterval
+
+-- | Creates a 'ConceptsInterval` from an `Interval` with empty 'Concepts'.
+instance (Ord a, Ord c) => From (Interval a) (ConceptsInterval c a) where
+  from = makePairedInterval mempty
 
 -- | Contains a subject identifier
 data SubjectID =

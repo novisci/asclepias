@@ -4,6 +4,7 @@ Description : Demostrates how to define features using Hasklepias
 
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 module FeatureExamples.Example2
   ( example
@@ -14,13 +15,14 @@ import           Hasklepias
 
 {- tag::function[] -}
 durationsOf
-  :: (KnownSymbol n, Eventable d c a, IntervalSizeable a b)
+  :: forall n d c a b
+   . (KnownSymbol n, Eventable d c a, IntervalSizeable a b)
   => [c]
   -> [Event d c a]
   -> Feature n [b]
 durationsOf cpts =
   filter (`hasAnyConcepts` cpts) -- <1>
-    .> fmap (first getConcepts . getEvent) -- <2> <3>
+    .> fmap (into @(ConceptsInterval c a)) -- <2> <3>
     .> formMeetingSequence -- <4>
     .> filter (`hasAllConcepts` cpts) -- <5>
     .> \x -> if null x -- <6>

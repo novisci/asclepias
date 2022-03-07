@@ -53,14 +53,8 @@ of the given concepts.
 ------------------------------
 ----
 
-<2> Create a `+PairedInterval+` where the data is the concepts.
-The `+getEvent+` function unwraps the `Event d c a` type to
-a `+PairedInterval (Context d c) a+`.
-The `+first+` function demonstrates the `+Bifunctor+` instance
-of `+PairedInterval+`, 
-applying `+getConcepts+` to tranform the type
-`+PairedInterval (Context d c) a+` to
-`+PairedInterval (Concepts c) a+`. 
+<2> Cast each event into a `+ConceptsInterval c a+`, 
+which is a synonym for `+PairedInterval (Concepts c) a+`. 
 <3> This step is important for the `+formMeetingSequence+` function,
 as it requires the "data" part of the paired interval to be a `+Monoid+`.
 `+Concepts+` are a `+Monoid+` by unioning the elements of two values.

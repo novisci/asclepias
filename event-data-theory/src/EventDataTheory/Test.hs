@@ -108,7 +108,7 @@ do in fact parse.
 -}
 eventDecodeTests
   :: forall d c a b
-   . (Eventable d c a, FromJSONEvent d c a, Typeable d, IntervalSizeable a b)
+   . (Eventable d c a, EventLineAble d c a b, FromJSONEvent d c a)
   => FilePath
   -> IO TestTree
 eventDecodeTests dir = createDecodeSmokeTestGroup
@@ -132,7 +132,7 @@ do not in fact parse.
 -}
 eventDecodeFailTests
   :: forall d c a b
-   . (Eventable d c a, FromJSONEvent d c a, Typeable d, IntervalSizeable a b)
+   . (Eventable d c a, EventLineAble d c a b, FromJSONEvent d c a)
   => FilePath
   -> IO TestTree
 eventDecodeFailTests dir = createDecodeSmokeTestGroup
@@ -224,7 +224,7 @@ The test passes if:
 -}
 createModifyEventLineTest
   :: forall d c a b
-   . (Eventable d c a, FromJSONEvent d c a, Data d, IntervalSizeable a b)
+   . (Eventable d c a, EventLineAble d c a b, FromJSONEvent d c a, Data d)
   => FilePath -- ^ path to file to be decoded
   -> IO TestTree
 createModifyEventLineTest testFile = do
@@ -256,7 +256,7 @@ with given file extensions.
 -}
 createModifyEventLineTestGroup
   :: forall d c a b
-   . (Eventable d c a, FromJSONEvent d c a, Data d, IntervalSizeable a b)
+   . (Eventable d c a, EventLineAble d c a b, FromJSONEvent d c a, Data d)
   => TestName
   -> [FilePath] -- ^ a list of file extensions to find in the provided directory
   -> FilePath -- ^ name of directory containing files to be parsed
@@ -286,7 +286,7 @@ in the result.
 -}
 eventLineModifyTests
   :: forall d c a b
-   . (Eventable d c a, FromJSONEvent d c a, Data d, IntervalSizeable a b)
+   . (Eventable d c a, EventLineAble d c a b, FromJSONEvent d c a, Data d)
   => FilePath
   -> IO TestTree
 eventLineModifyTests dir = createModifyEventLineTestGroup @d @c @a

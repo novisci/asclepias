@@ -113,9 +113,8 @@ Creates a cohort builder function
 -}
 makeCohortBuilder
   :: ( Eventable d c a
+     , EventLineAble d c a b
      , FromJSONEvent d c a
-     , Typeable d
-     , IntervalSizeable a b
      , ToJSON d0
      , ShapeCohort d0 i
      , Monad m
@@ -156,9 +155,8 @@ newtype CohortApp m = MkCohortApp { runCohortApp :: Maybe Location -> m B.ByteSt
 -- | Make a command line cohort building application.
 makeCohortApp
   :: ( Eventable d c a
+     , EventLineAble d c a b
      , FromJSONEvent d c a
-     , Typeable d
-     , IntervalSizeable a b
      , ToJSON d0
      , ShapeCohort d0 i
      )

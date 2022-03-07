@@ -17,15 +17,15 @@ buildNofXBase
      , Witherable container0
      , Witherable container1
      )
-  => (container0 (Event d c a) -> container1 (i1 a)) -- ^ function mapping a container of events to a container of intervallic intervals (which could be events!)
+  => (container0 (Event c d a) -> container1 (i1 a)) -- ^ function mapping a container of events to a container of intervallic intervals (which could be events!)
   -> (container1 (i1 a) -> t) -- ^ function mapping the processed events to an intermediate type
   -> (AssessmentInterval a -> t -> outputType) -- ^ function casting intermediate type to output type with the option to use the assessment interval
   -> (i0 a -> AssessmentInterval a) -- ^ function which maps index interval to interval in which to assess the feature
-  -> ComparativePredicateOf2 (AssessmentInterval a) (Event d c a) -- ^ the interval relation of the input events to the assessment interval
-  -> Predicate (Event d c a) -- ^ The predicate to filter to Enrollment events (e.g. 'FeatureEvents.isEnrollment')
+  -> ComparativePredicateOf2 (AssessmentInterval a) (Event c d a) -- ^ the interval relation of the input events to the assessment interval
+  -> Predicate (Event c d a) -- ^ The predicate to filter to Enrollment events (e.g. 'FeatureEvents.isEnrollment')
   -> Definition
        (  Feature indexName (i0 a)
-       -> Feature eventsName (container0 (Event d c a))
+       -> Feature eventsName (container0 (Event c d a))
        -> Feature varName outputType
        )
 buildNofXBase runPreProcess runProcess runPostProcess makeAssessmentInterval relation predicate
@@ -52,11 +52,11 @@ An example of using the buildNofXBase function
 example
   :: (Ord a, IntervalSizeable a b)
   => (Interval a -> AssessmentInterval a)
-  -> ComparativePredicateOf2 (AssessmentInterval a) (Event d c a)
-  -> Predicate (Event d c a)
+  -> ComparativePredicateOf2 (AssessmentInterval a) (Event c d a)
+  -> Predicate (Event c d a)
   -> Definition
        (  Feature indexName (Interval a)
-       -> Feature eventsName [Event d c a]
+       -> Feature eventsName [Event c d a]
        -> Feature varName [b]
        )
 {- tag::example0sig[] -}
@@ -71,7 +71,7 @@ defBaseline180Enrollment
   :: IntervalSizeable a b
   => Definition
        (  Feature indexName (Interval a)
-       -> Feature eventsName [Event d Text a]
+       -> Feature eventsName [Event Text d a]
        -> Feature varName [b]
        )
 {- tag::example1sig[] -}

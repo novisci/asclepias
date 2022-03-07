@@ -15,7 +15,7 @@ import           Hasklepias
 {-
 Index is defined as the first occurrence of an Orca bite.
 -}
-defineIndexSet :: Ord a => [Event ClaimsSchema Text a] -> IndexSet (Interval a)
+defineIndexSet :: Ord a => [Event Text ClaimsSchema a] -> IndexSet (Interval a)
 defineIndexSet events =
   makeIndexSet
     $   getInterval
@@ -34,12 +34,12 @@ flwup :: (IntervalSizeable a b) => Interval a -> AssessmentInterval a
 flwup = makeFollowupFromIndex 30
 
 -- | TODO
-atleastNofX :: (Ord c) => Int -> [c] -> [Event d c a] -> Bool
+atleastNofX :: (Ord c) => Int -> [c] -> [Event c d a] -> Bool
 atleastNofX n xs es = tallyEvents (Predicate (`hasAnyConcepts` xs)) es >= n
 
 -- | TODO
 makeConceptsFilter
-  :: (Filterable f, Ord c) => [c] -> f (Event d c a) -> f (Event d c a)
+  :: (Filterable f, Ord c) => [c] -> f (Event c d a) -> f (Event c d a)
 makeConceptsFilter cpts = filter (`hasAnyConcepts` cpts)
 
 {-
@@ -50,7 +50,7 @@ makeHx
   :: (Ord a)
   => [Text]
   -> AssessmentInterval a
-  -> [Event ClaimsSchema Text a]
+  -> [Event Text ClaimsSchema a]
   -> (Bool, Maybe (Interval a))
 makeHx cnpts i events =
   (isNotEmpty (f i events'), lastMay $ intervals (f i events'))
@@ -64,7 +64,7 @@ makeHx cnpts i events =
 duckHx
   :: (Ord a)
   => AssessmentInterval a
-  -> [Event ClaimsSchema Text a]
+  -> [Event Text ClaimsSchema a]
   -> (Bool, Maybe (Interval a))
 duckHx = makeHx ["wasBitByDuck", "wasStruckByDuck"]
 
@@ -72,7 +72,7 @@ duckHxDef
   :: (Ord a)
   => Definition
        (  Feature "index" (AssessmentInterval a)
-       -> Feature "events" [Event ClaimsSchema Text a]
+       -> Feature "events" [Event Text ClaimsSchema a]
        -> Feature "duck history" (Bool, Maybe (Interval a))
        )
 duckHxDef = define duckHx
@@ -80,7 +80,7 @@ duckHxDef = define duckHx
 macawHx
   :: (Ord a)
   => AssessmentInterval a
-  -> [Event ClaimsSchema Text a]
+  -> [Event Text ClaimsSchema a]
   -> (Bool, Maybe (Interval a))
 macawHx = makeHx ["wasBitByMacaw", "wasStruckByMacaw"]
 
@@ -88,19 +88,19 @@ macawHxDef
   :: (Ord a)
   => Definition
        (  Feature "index" (AssessmentInterval a)
-       -> Feature "events" [Event ClaimsSchema Text a]
+       -> Feature "events" [Event Text ClaimsSchema a]
        -> Feature "macaw history" (Bool, Maybe (Interval a))
        )
 macawHxDef = define macawHx
 
 -- | a helper function for 'twoMinorOrOneMajorDef' 
-twoXOrOneY :: [Text] -> [Text] -> [Event ClaimsSchema Text a] -> Bool
+twoXOrOneY :: [Text] -> [Text] -> [Event Text ClaimsSchema a] -> Bool
 twoXOrOneY x y es = atleastNofX 2 x es || atleastNofX 1 y es
 
 -- | Define an event that identifies whether the subject has two minor or one major
 --   surgery.
 twoMinorOrOneMajor
-  :: (Ord a) => AssessmentInterval a -> [Event ClaimsSchema Text a] -> Bool
+  :: (Ord a) => AssessmentInterval a -> [Event Text ClaimsSchema a] -> Bool
 twoMinorOrOneMajor i events =
   twoXOrOneY ["hadMinorSurgery"] ["hadMajorSurgery"] (filterEnclose i events)
 
@@ -108,7 +108,7 @@ twoMinorOrOneMajorDef
   :: (Ord a)
   => Definition
        (  Feature "index" (AssessmentInterval a)
-       -> Feature "events" [Event ClaimsSchema Text a]
+       -> Feature "events" [Event Text ClaimsSchema a]
        -> Feature "two major or one minor" Bool
        )
 twoMinorOrOneMajorDef = define twoMinorOrOneMajor
@@ -118,7 +118,7 @@ twoMinorOrOneMajorDef = define twoMinorOrOneMajor
 timeSinceLastAntibiotics
   :: (IntervalSizeable a b)
   => AssessmentInterval a
-  -> [Event ClaimsSchema Text a]
+  -> [Event Text ClaimsSchema a]
   -> Maybe b
 timeSinceLastAntibiotics i =
   lastMay                                 -- want the last one
@@ -132,7 +132,7 @@ timeSinceLastAntibioticsDef
   :: (IntervalSizeable a b)
   => Definition
        (  Feature "index" (AssessmentInterval a)
-       -> Feature "events" [Event ClaimsSchema Text a]
+       -> Feature "events" [Event Text ClaimsSchema a]
        -> Feature "time since antibiotics" (Maybe b)
        )
 timeSinceLastAntibioticsDef = define timeSinceLastAntibiotics
@@ -142,7 +142,7 @@ timeSinceLastAntibioticsDef = define timeSinceLastAntibiotics
 countOfHospitalEvents
   :: (IntervalSizeable a b)
   => AssessmentInterval a
-  -> [Event ClaimsSchema Text a]
+  -> [Event Text ClaimsSchema a]
   -> (Int, Maybe b)
 countOfHospitalEvents i =
   (\x -> (length x, duration <$> lastMay x))
@@ -154,7 +154,7 @@ countOfHospitalEventsDef
   :: (IntervalSizeable a b)
   => Definition
        (  Feature "index" (AssessmentInterval a)
-       -> Feature "events" [Event ClaimsSchema Text a]
+       -> Feature "events" [Event Text ClaimsSchema a]
        -> Feature "count of hospitalizations" (Int, Maybe b)
        )
 countOfHospitalEventsDef = define countOfHospitalEvents
@@ -169,7 +169,7 @@ so = unionPredicates [startedBy, overlappedBy]
 discontinuation
   :: (IntervalSizeable a b)
   => AssessmentInterval a
-  -> [Event ClaimsSchema Text a]
+  -> [Event Text ClaimsSchema a]
   -> Maybe (a, b)
 discontinuation i events =
   (\x -> Just
@@ -192,7 +192,7 @@ discontinuationDef
   :: (IntervalSizeable a b)
   => Definition
        (  Feature "index" (AssessmentInterval a)
-       -> Feature "events" [Event ClaimsSchema Text a]
+       -> Feature "events" [Event Text ClaimsSchema a]
        -> Feature "discontinuation" (Maybe (a, b))
        )
 discontinuationDef = define discontinuation
@@ -212,7 +212,7 @@ type MyData
     , Feature "discontinuation" (Maybe (Int, Int))
     )
 
-getUnitFeatures :: Interval Int -> [Event ClaimsSchema Text Int] -> MyData
+getUnitFeatures :: Interval Int -> [Event Text ClaimsSchema Int] -> MyData
 getUnitFeatures index x =
   ( idx
   , eval
@@ -237,7 +237,7 @@ getUnitFeatures index x =
 dummyIndex :: Interval Int
 dummyIndex = beginerval 1 0
 
-includeAll :: Interval Int -> [Event ClaimsSchema Text Int] -> Criteria
+includeAll :: Interval Int -> [Event Text ClaimsSchema Int] -> Criteria
 includeAll _ _ = criteria $ pure
   (criterion (makeFeature (featureDataR Include) :: Feature "includeAll" Status)
   )
@@ -259,18 +259,18 @@ exampleEvalOpts :: CohortEvalOptions
 exampleEvalOpts = defaultCohortEvalOptions
 
 exampleCohortSpec
-  :: CohortSpec [Event ClaimsSchema Text Int] MyData (Interval Int)
+  :: CohortSpec [Event Text ClaimsSchema Int] MyData (Interval Int)
 exampleCohortSpec = specifyCohort defineIndexSet includeAll getUnitFeatures
 
 -- NOTE makeCohortEvaluator requires a monad wrapper in return type. Using
 -- Either here because IO a has no Eq instance, hence testing doesn't work.
 exampleCohortEvaluator
-  :: Population [Event ClaimsSchema Text Int]
+  :: Population [Event Text ClaimsSchema Int]
   -> Either Text (Cohort MyData (Interval Int))
 exampleCohortEvaluator = makeCohortEvaluator exampleEvalOpts exampleCohortSpec
 
 -- NOTE constructor unexported.  only way to do construct it is with `from`. 
-examplePopulation :: Population [Event ClaimsSchema Text Int]
+examplePopulation :: Population [Event Text ClaimsSchema Int]
 examplePopulation = from [exampleSubject1, exampleSubject2]
 
 example :: TestTree

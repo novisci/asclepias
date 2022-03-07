@@ -20,22 +20,22 @@ import           Hasklepias
 -- import EventData (ClaimsSchema)
 import           Type.Reflection                ( Typeable )
 
-exampleEvents1 :: [Event ClaimsSchema Text Int]
+exampleEvents1 :: [Event Text ClaimsSchema Int]
 exampleEvents1 = toEvents exampleEvents1Data
 
-exampleEvents2 :: [Event ClaimsSchema Text Int]
+exampleEvents2 :: [Event Text ClaimsSchema Int]
 exampleEvents2 = toEvents exampleEvents2Data
 
-exampleEvents3 :: [Event ClaimsSchema Text Int]
+exampleEvents3 :: [Event Text ClaimsSchema Int]
 exampleEvents3 = toEvents exampleEvents3Data
 
-exampleEvents4 :: [Event ClaimsSchema Text Int]
+exampleEvents4 :: [Event Text ClaimsSchema Int]
 exampleEvents4 = toEvents exampleEvents4Data
 
-exampleSubject1 :: Subject [Event ClaimsSchema Text Int]
+exampleSubject1 :: Subject [Event Text ClaimsSchema Int]
 exampleSubject1 = from ("a" :: Text, exampleEvents1)
 
-exampleSubject2 :: Subject [Event ClaimsSchema Text Int]
+exampleSubject2 :: Subject [Event Text ClaimsSchema Int]
 exampleSubject2 = from ("b" :: Text, exampleEvents2)
 
 type EventData a = (a, a, Text)
@@ -43,7 +43,7 @@ type EventData a = (a, a, Text)
 toEvent
   :: (IntervalSizeable a a, Typeable a, Show a)
   => EventData a
-  -> Event ClaimsSchema Text a
+  -> Event Text ClaimsSchema a
 toEvent x = event
   (beginerval (t1 x) (t2 x))
   (context (packConcepts [t3 x]) (Enrollment emptyEnrollmentFact) Nothing)  -- TODO: this used to be `UnimplementedDomain ()`, what should it be now?
@@ -51,7 +51,7 @@ toEvent x = event
 toEvents
   :: (Ord a, Show a, IntervalSizeable a a, Typeable a)
   => [EventData a]
-  -> [Event ClaimsSchema Text a]  -- TODO: change this back once the signature for `toEvent` is fixed
+  -> [Event Text ClaimsSchema a]  -- TODO: change this back once the signature for `toEvent` is fixed
 toEvents = sort . map toEvent
 
 t1 :: (a, b, c) -> a

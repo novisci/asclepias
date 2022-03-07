@@ -55,8 +55,8 @@ beforeIndex = before
 -- | Creates a filter for events to those that 'concur' with the baseline interval.
 getBaselineConcur
   :: Interval Day
-  -> [Event ClaimsSchema Text Day]
-  -> [Event ClaimsSchema Text Day]
+  -> [Event Text ClaimsSchema Day]
+  -> [Event Text ClaimsSchema Day]
 getBaselineConcur index = filterConcur (baselineInterval index)
 
 {-------------------------------------------------------------------------------
@@ -72,7 +72,7 @@ twoOutOneIn
   -> [Text] -- ^ cpts2
   -> Definition
        (  Feature "calendarIndex" (Interval Day)
-       -> Feature "allEvents" [Event ClaimsSchema Text Day]
+       -> Feature "allEvents" [Event Text ClaimsSchema Day]
        -> Feature name Bool
        )
 twoOutOneIn cpts1 cpts2 = buildNofXOrMofYWithGapBool 1
@@ -91,7 +91,7 @@ medHx
   :: [Text]
   -> Definition
        (  Feature "calendarIndex" (Interval Day)
-       -> Feature "allEvents" [Event ClaimsSchema Text Day]
+       -> Feature "allEvents" [Event Text ClaimsSchema Day]
        -> Feature name Bool
        )
 medHx cpt = define
@@ -119,8 +119,8 @@ medHx cpt = define
 
 -- | Lift a subject's events in a feature
 featureEvents
-  :: [Event ClaimsSchema Text Day]
-  -> Feature "allEvents" [Event ClaimsSchema Text Day]
+  :: [Event Text ClaimsSchema Day]
+  -> Feature "allEvents" [Event Text ClaimsSchema Day]
 featureEvents = pure
 
 -- | The subject's age at time of index. Returns an error if there no birth year
@@ -128,7 +128,7 @@ featureEvents = pure
 age
   :: Definition
        (  Feature "calendarIndex" (Interval Day)
-       -> Feature "allEvents" [Event ClaimsSchema Text Day]
+       -> Feature "allEvents" [Event Text ClaimsSchema Day]
        -> Feature "age" Integer
        )
 age = defineA
@@ -149,7 +149,7 @@ age = defineA
 --   are no death records.
 deathDay
   :: Definition
-       (  Feature "allEvents" [Event ClaimsSchema Text Day]
+       (  Feature "allEvents" [Event Text ClaimsSchema Day]
        -> Feature "deathDay" (Maybe (Interval Day))
        )
 deathDay = define
@@ -168,7 +168,7 @@ deathDay = define
 -- | Include the subject if female; Exclude otherwise
 critFemale
   :: Definition
-       (  Feature "allEvents" [Event ClaimsSchema Text Day]
+       (  Feature "allEvents" [Event Text ClaimsSchema Day]
        -> Feature "isFemale" Status
        )
 critFemale = define
@@ -186,7 +186,7 @@ critOver50 = define (includeIf . (>= 50))
 critEnrolled
   :: Definition
        (  Feature "calendarIndex" (Interval Day)
-       -> Feature "allEvents" [Event ClaimsSchema Text Day]
+       -> Feature "allEvents" [Event Text ClaimsSchema Day]
        -> Feature "isEnrolled" Status
        )
 critEnrolled = buildIsEnrolled isEnrollmentEvent
@@ -198,7 +198,7 @@ critEnrolled = buildIsEnrolled isEnrollmentEvent
 critEnrolled455
   :: Definition
        (  Feature "calendarIndex" (Interval Day)
-       -> Feature "allEvents" [Event ClaimsSchema Text Day]
+       -> Feature "allEvents" [Event Text ClaimsSchema Day]
        -> Feature "isEnrolled" Status
        -> Feature "isContinuousEnrolled" Status
        )
@@ -226,7 +226,7 @@ critDead = define
 type BoolFeatDef n
   = Definition
       (  Feature "calendarIndex" (Interval Day)
-      -> Feature "allEvents" [Event ClaimsSchema Text Day]
+      -> Feature "allEvents" [Event Text ClaimsSchema Day]
       -> Feature n Bool
       )
 
@@ -270,11 +270,11 @@ instance HasAttributes  "glucocorticoids" Bool where
 -------------------------------------------------------------------------------}
 
 makeIndexRunner
-  :: Interval Day -> [Event ClaimsSchema Text Day] -> IndexSet (Interval Day)
+  :: Interval Day -> [Event Text ClaimsSchema Day] -> IndexSet (Interval Day)
 makeIndexRunner i _ = makeIndexSet [i]
 
 -- | Make a function that runs the criteria for a calendar index
-makeCriteriaRunner :: Interval Day -> [Event ClaimsSchema Text Day] -> Criteria
+makeCriteriaRunner :: Interval Day -> [Event Text ClaimsSchema Day] -> Criteria
 makeCriteriaRunner index events =
   criteria
     $  criterion crit1
@@ -295,7 +295,7 @@ instance HasAttributes "calendarIndex" (Interval Day) where
 
 -- | Make a function that runs the features for a calendar index
 makeFeatureRunner
-  :: Interval Day -> [Event ClaimsSchema Text Day] -> Featureset
+  :: Interval Day -> [Event Text ClaimsSchema Day] -> Featureset
 makeFeatureRunner index events = featureset
   (  packFeature idx
   :| [ packFeature $ eval diabetes idx ef
@@ -310,7 +310,7 @@ makeFeatureRunner index events = featureset
 
 -- | Make a cohort specification for each calendar time
 cohortSpecs
-  :: CohortMapSpec [Event ClaimsSchema Text Day] Featureset (Interval Day)
+  :: CohortMapSpec [Event Text ClaimsSchema Day] Featureset (Interval Day)
 cohortSpecs = makeCohortSpecs $ map
   (\x ->
     (pack $ show x, makeIndexRunner x, makeCriteriaRunner, makeFeatureRunner)
@@ -320,7 +320,7 @@ cohortSpecs = makeCohortSpecs $ map
 -- | A function that evaluates all the calendar cohorts for a population
 evalCohorts
   :: Monad m
-  => Population [Event ClaimsSchema Text Day]
+  => Population [Event Text ClaimsSchema Day]
   -> m (CohortMap Featureset (Interval Day))
 evalCohorts = makeCohortSpecsEvaluator defaultCohortEvalOptions cohortSpecs
 
@@ -335,12 +335,12 @@ m
   -> Integer
   -> [Text]
   -> ClaimsSchema
-  -> Event ClaimsSchema Text Day
+  -> Event Text ClaimsSchema Day
 m y m d dur c dmn = event itv ctx where
   ctx = context (packConcepts c) dmn Nothing
   itv = beginerval dur (fromGregorian y m d)
 
-testData1 :: [Event ClaimsSchema Text Day]
+testData1 :: [Event Text ClaimsSchema Day]
 testData1 = sort
   [ m
     2010
@@ -364,10 +364,10 @@ testData1 = sort
   , m 2017 8 1 91  ["is_ppi"]                (Enrollment emptyEnrollmentFact) -- TODO: this used to be `UnimplementedDomain ()`, what should it be now?
   ]
 
-testSubject1 :: Subject [Event ClaimsSchema Text Day]
+testSubject1 :: Subject [Event Text ClaimsSchema Day]
 testSubject1 = into ("a" :: Text, testData1)
 
-testData2 :: [Event ClaimsSchema Text Day]
+testData2 :: [Event Text ClaimsSchema Day]
 testData2 = sort
   [ m
     2010
@@ -389,10 +389,10 @@ testData2 = sort
   , m 2018 2 1 30  ["enrollment"] (Enrollment emptyEnrollmentFact)
   ]
 
-testSubject2 :: Subject [Event ClaimsSchema Text Day]
+testSubject2 :: Subject [Event Text ClaimsSchema Day]
 testSubject2 = into ("b" :: Text, testData2)
 
-testPop :: Population [Event ClaimsSchema Text Day]
+testPop :: Population [Event Text ClaimsSchema Day]
 testPop = into [testSubject1, testSubject2]
 
 makeExpectedFeatures

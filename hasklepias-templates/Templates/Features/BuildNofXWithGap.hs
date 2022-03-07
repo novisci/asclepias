@@ -1,13 +1,3 @@
----
-title: buildNofXWithGap
-tags: []
----
-
-## Description
-
- Are there N gaps of at least the given duration between any pair of events that relate to the assessment interval by the given relation and the satisfy the given predicate?
-
-```haskell module
 module Templates.Features.BuildNofXWithGap
   ( buildNofXWithGap
   , buildNofXWithGapBool
@@ -15,15 +5,10 @@ module Templates.Features.BuildNofXWithGap
   , buildNofXWithGapTests
   ) where
 
-import           Templates.FeatureReqs             as F
+import           Templates.FeatureReqs         as F
 import           Templates.Features.BuildNofXBase
-```
 
-## Usage
-
-## Definition
-
-```haskell
+{- tag::template0[] -}
 buildNofXWithGap
   :: ( Intervallic i a
      , IntervalSizeable a b
@@ -34,20 +19,20 @@ buildNofXWithGap
   -> Natural -- ^ the minimum number of gaps
   -> b -- ^ the minimum duration of a gap
   -> (i a -> AssessmentInterval a)
-  -> ComparativePredicateOf2 (AssessmentInterval a) (Event ClaimsSchema c a)
-  -> Predicate (Event ClaimsSchema c a)
+  -> ComparativePredicateOf2 (AssessmentInterval a) (Event d c a)
+  -> Predicate (Event d c a)
   -> Definition
        (  Feature indexName (i a)
-       -> Feature eventsName (container (Event ClaimsSchema c a))
+       -> Feature eventsName (container (Event d c a))
        -> Feature varName outputType
        )
 buildNofXWithGap cast nGaps allowableGap = buildNofXBase
   (-- just need the intervals  
-     fmap getInterval
+   fmap getInterval
    -- pairGaps needs List input as the container type
-    .> toList)
+                    .> toList)
   (-- get (Maybe) durations of interval gaps between all pairs
-    pairGaps
+     pairGaps
    -- throw away any non-gaps
   .> catMaybes
    -- keep only those gap durations at least the allowableGap
@@ -56,13 +41,9 @@ buildNofXWithGap cast nGaps allowableGap = buildNofXBase
   .> \x -> length x >= naturalToInt nGaps
   )
   (const cast)
-```
+{- end::template0[] -}
 
-### Specialized Definitions
-
-`buildNofXWithGap` specialized to return boolean.
-
-```haskell
+{- tag::template1[] -}
 buildNofXWithGapBool
   :: ( Intervallic i a
      , IntervalSizeable a b
@@ -72,19 +53,17 @@ buildNofXWithGapBool
   => Natural -- ^ the minimum number of gaps
   -> b -- ^ the minimum duration of a gap
   -> (i a -> AssessmentInterval a)
-  -> ComparativePredicateOf2 (AssessmentInterval a) (Event ClaimsSchema c a)
-  -> Predicate (Event ClaimsSchema c a)
+  -> ComparativePredicateOf2 (AssessmentInterval a) (Event d c a)
+  -> Predicate (Event d c a)
   -> Definition
        (  Feature indexName (i a)
-       -> Feature eventsName (container (Event ClaimsSchema c a))
+       -> Feature eventsName (container (Event d c a))
        -> Feature varName Bool
        )
 buildNofXWithGapBool = buildNofXWithGap id
-```
+{- end::template1[] -}
 
-`buildNofXWithGap` specialized to return `Binary`.
-
-```haskell
+{- tag::template2[] -}
 buildNofXWithGapBinary
   :: ( Intervallic i a
      , IntervalSizeable a b
@@ -94,30 +73,30 @@ buildNofXWithGapBinary
   => Natural -- ^ the minimum number of gaps
   -> b -- ^ the minimum duration of a gap
   -> (i a -> AssessmentInterval a)
-  -> ComparativePredicateOf2 (AssessmentInterval a) (Event ClaimsSchema c a)
-  -> Predicate (Event ClaimsSchema c a)
+  -> ComparativePredicateOf2 (AssessmentInterval a) (Event d c a)
+  -> Predicate (Event d c a)
   -> Definition
        (  Feature indexName (i a)
-       -> Feature eventsName (container (Event ClaimsSchema c a))
+       -> Feature eventsName (container (Event d c a))
        -> Feature varName Binary
        )
 buildNofXWithGapBinary = buildNofXWithGap fromBool
-```
+{- end::template2[] -}
 
-## Examples
 
-```haskell
 type NofXWithGapArgs
   = ( Natural
     , Int
     , Interval Int -> AssessmentInterval Int
-    , ComparativePredicateOf2 (AssessmentInterval Int) (Event ClaimsSchema Text Int)
-    , Predicate (Event ClaimsSchema Text Int)
+    , ComparativePredicateOf2
+        (AssessmentInterval Int)
+        (Event TestSchema Text Int)
+    , Predicate (Event TestSchema Text Int)
     )
 
 type NofXWithGapTestCase
   = TestCase
-      (F "index" (Interval Int), F "events" [Event ClaimsSchema Text Int])
+      (F "index" (Interval Int), F "events" [Event TestSchema Text Int])
       Bool
       NofXWithGapArgs
 
@@ -157,7 +136,7 @@ buildNofXWithGapTestCases =
                               <- Enrollment
         |--------------|
       -}
-  , f "False if a single event ClaimsSchema Text and looking for gap"
+  , f "False if a single event TestSchema Text and looking for gap"
       (1, 3, makeBaselineFromIndex 10, concur, isEnrollmentEvent)
       (10, 11)
       [g (8, 9)]
@@ -245,8 +224,7 @@ buildNofXWithGapTestCases =
   h = makeEventWithConcepts
 
 buildNofXWithGapTests :: TestTree
-buildNofXWithGapTests = makeTestGroup 
-  "Tests of NofXWithGap template"
-    (buildNofXWithGap id) 
-    buildNofXWithGapTestCases 
-```
+buildNofXWithGapTests = makeTestGroup "Tests of NofXWithGap template"
+                                      (buildNofXWithGap id)
+                                      buildNofXWithGapTestCases
+

@@ -129,8 +129,8 @@ The 'event' function is a smart constructor for 'Event'.
 
 >>> data SomeDomain = A | B deriving (Eq, Ord, Show, Generic)
 >>>
->>> type MyEvent = Event SomeDomain T.Text Integer
->>> let myEvent = event (beginerval 5 0) (Context A (packConcepts ["foo"]) Nothing) :: MyEvent
+>>> type MyEvent = Event T.Text SomeDomain Integer
+>>> let myEvent = event (beginerval 5 0) (context (packConcepts ["foo"]) A Nothing) :: MyEvent
 >>> show myEvent
 "MkEvent {(0, 5), Context {concepts = Concepts (fromList [Concept \"foo\"]), facts = A, source = Nothing}}"
 
@@ -143,8 +143,8 @@ False
 >>> data NewDomain = A T.Text | B Integer deriving (Eq, Ord, Show, Generic)
 >>> data MyConcepts = Foo | Bar | Baz deriving (Eq, Ord, Show, Generic) 
 >>>
->>> type NewEvent = Event NewDomain MyConcepts Integer
->>> let newEvent = event (beginerval 5 0) (Context (A "cool") (packConcepts [Foo, Bar]) Nothing) :: NewEvent
+>>> type NewEvent = Event MyConcepts NewDomain Integer
+>>> let newEvent = event (beginerval 5 0) (context (packConcepts [Foo, Bar]) (A "cool") Nothing) :: NewEvent
 >>> show newEvent
 "MkEvent {(0, 5), Context {concepts = Concepts (fromList [Concept Foo,Concept Bar]), facts = A \"cool\", source = Nothing}}"
 
@@ -157,7 +157,7 @@ False
 -}
 
 {- tag::eventType[] -}
-newtype Event d c a = MkEvent ( PairedInterval (Context c d) a )
+newtype Event c d a = MkEvent ( PairedInterval (Context c d) a )
 {- end::eventType[] -}
   deriving (Eq, Show, Generic)
 

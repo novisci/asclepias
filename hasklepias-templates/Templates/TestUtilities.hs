@@ -73,7 +73,7 @@ makeEventWithConcepts cpts intrvl = event
   (readIntervalSafe intrvl)
   (context (packConcepts cpts) Enrollment Nothing)
 
-isEnrollmentEvent :: Predicate (Event TestSchema c a)
+isEnrollmentEvent :: Predicate (Event c TestSchema a)
 isEnrollmentEvent = liftToEventPredicate (Predicate (== Enrollment))
 
 {-

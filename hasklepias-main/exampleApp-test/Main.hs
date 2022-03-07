@@ -28,25 +28,29 @@ import           Test.Tasty.Silver
 
 -- Create a unique ID based on the GitLab environmental variable $CI_PIPELINE_ID
 -- if one is defined, otherwise the computation fails with `isDoesNotExistError`
-ciPipelineId :: IO String
-ciPipelineId = getEnv "CI_PIPELINE_ID"
+getCIPipelineId :: IO String
+getCIPipelineId = getEnv "CI_PIPELINE_ID"
 
--- Use the value of `ciPipelineId` if it was able to be obtained, otherwise use
+-- Use the value of `getCIPipelineId` if it was able to be obtained, otherwise use
 -- the number of seconds since the epoch as a fallback
-sessionId :: IO String
-sessionId = do
-  r <- tryJust (guard . isDoesNotExistError) ciPipelineId
+getSessionId :: IO String
+getSessionId = do
+  r <- tryJust (guard . isDoesNotExistError) getCIPipelineId
   case r of
     Left  e -> fmap (show . floor . nominalDiffTimeToSeconds . utcTimeToPOSIXSeconds) getCurrentTime
-    Right v -> ciPipelineId
+    Right v -> getCIPipelineId
 
-s3TestDataKey :: IO String
-s3TestDataKey = pure "hasklepias/sandbox-testdata/testData-" <> sessionId <> pure ".jsonl"
+s3TestDataKey :: String -> String
+s3TestDataKey sessionId = "hasklepias/sandbox-testdata/testData-" ++ sessionId ++ ".jsonl"
 
--- Write the test data to S3. If the command returns a non-zero exit code then
--- an exception is raised
-writeTestDataToS3 :: IO ()
-writeTestDataToS3 = pure "aws s3 cp exampleApp-test/test/testData.jsonl s3://download.novisci.com/" <> s3TestDataKey >>= callCommand
+s3TestDataURI  :: String -> String
+s3TestDataURI sessionId = "s3://download.novisci.com/" ++ s3TestDataKey sessionId
+
+writeTestDataToS3 :: String -> IO ()
+writeTestDataToS3 uri = pure ("aws s3 cp exampleApp-test/test/testData.jsonl " ++ uri) >>= callCommand
+
+removeTestDataFromS3 :: String -> IO ()
+removeTestDataFromS3 uri = pure ("aws s3 rm " ++ uri) >>= callCommand
 
 appTestRw :: IO ()
 appTestRw = do
@@ -59,12 +63,10 @@ appStdinRw =
   callCommand
     "< exampleApp-test/test/testData.jsonl exampleAppRW -o exampleApp-test/test/stdinrw.json"
 
-appS3inRw :: IO ()
-appS3inRw = do
-  -- cmd <- pure "exampleAppRW -o exampleApp-test/test/s3inrw.json -r us-east-1 -b download.novisci.com -k hasklepias/sandbox-testdata/testData-" <> sessionId <> pure ".jsonl"
-  cmd <- pure "exampleAppRW -o exampleApp-test/test/s3inrw.json -r us-east-1 -b download.novisci.com -k " <> s3TestDataKey
-  callCommand
-    cmd
+appS3inRw :: String -> IO ()
+appS3inRw sessionKey = do
+  let cmd = pure ("exampleAppRW -o exampleApp-test/test/s3inrw.json -r us-east-1 -b download.novisci.com -k " ++ sessionKey)
+  cmd >>= callCommand
 
 appTestCw :: IO ()
 appTestCw = do
@@ -99,8 +101,8 @@ appStdinEmptyCw =
   callCommand
     "< exampleApp-test/test/testEmptyData.jsonl exampleAppCW -o exampleApp-test/test/stdinemptycw.json"
 
-tests :: TestTree
-tests = testGroup
+tests :: String -> TestTree
+tests sessionId = testGroup
   "Tests of exampleApp"
   [ goldenVsFile "ExampleApp of row-wise cohort reading from file"
                  "exampleApp-test/test/testrw.golden"
@@ -113,7 +115,7 @@ tests = testGroup
   , goldenVsFile "ExampleApp of row-wise cohort reading from S3"
                  "exampleApp-test/test/testrw.golden"
                  "exampleApp-test/test/s3inrw.json"
-                 appS3inRw
+                 (appS3inRw sessionId)
   , goldenVsFile "ExampleApp of row-wise cohort with empty data from file"
                  "exampleApp-test/test/testemptyrw.golden"
                  "exampleApp-test/test/testemptyrw.json"
@@ -144,6 +146,9 @@ tests = testGroup
 
 main :: IO ()
 main = do
-  writeTestDataToS3
-  defaultMain tests
-  -- removeTestDataFromS3
+  sessionId <- getSessionId
+  let sessionKey = s3TestDataKey sessionId
+  let sessionURI = s3TestDataURI sessionId
+  writeTestDataToS3 sessionURI
+  defaultMain (tests sessionKey)
+  removeTestDataFromS3 sessionURI

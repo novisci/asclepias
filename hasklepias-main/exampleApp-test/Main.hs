@@ -40,24 +40,34 @@ getSessionId = do
     Left  e -> fmap (show . floor . nominalDiffTimeToSeconds . utcTimeToPOSIXSeconds) getCurrentTime
     Right v -> getCIPipelineId
 
+-- Enumeration of the test data cases
+data TestDataType = TestDataEmpty | TestDataSmall
+
+-- Create the local filepath where the test data is stored
+localTestDataLoc :: TestDataType -> String
+localTestDataLoc TestDataEmpty = "exampleApp-test/test/testEmptyData.jsonl"
+localTestDataLoc TestDataSmall = "exampleApp-test/test/testData.jsonl"
+
 -- Create the S3 key where the test data will be located (once paired with a bucket)
-s3TestDataKey :: String -> String -> String
-s3TestDataKey sessionId desc = "hasklepias/sandbox-testdata/testData-" ++ sessionId ++ "-" ++ desc ++ ".jsonl"
+s3TestDataKey :: String -> TestDataType -> String
+s3TestDataKey sessionId TestDataEmpty = "hasklepias/sandbox-testdata/testEmptyData-" ++ sessionId ++ "-empty.jsonl"
+s3TestDataKey sessionId TestDataSmall = "hasklepias/sandbox-testdata/testData-" ++ sessionId ++ "-small.jsonl"
 
 -- Create the S3 URI where the test data will be located
 s3TestDataURI  :: String -> String
 s3TestDataURI key = "s3://download.novisci.com/" ++ key
 
--- Copy the test data to S3 at the location specified by `uri`
-writeTestDataToS3 :: String -> String -> IO ()
-writeTestDataToS3 sessionId descr = pure cmd >>= callCommand where
-  uri = s3TestDataURI $ s3TestDataKey sessionId descr
-  cmd = "aws s3 cp exampleApp-test/test/testData.jsonl " ++ uri
+-- Copy the test data to S3
+writeTestDataToS3 :: String -> TestDataType -> IO ()
+writeTestDataToS3 sessionId testDataType = pure cmd >>= callCommand where
+  from = localTestDataLoc testDataType
+  to   = s3TestDataURI $ s3TestDataKey sessionId testDataType
+  cmd  = "aws s3 cp " ++ from ++ " " ++ to
 
--- Delete the test data from S3 at the location specified by `uri`
-removeTestDataFromS3 :: String -> String -> IO ()
-removeTestDataFromS3 sessionId descr = pure cmd >>= callCommand where
-  uri = s3TestDataURI $ s3TestDataKey sessionId descr
+-- Delete the test data from S3
+removeTestDataFromS3 :: String -> TestDataType -> IO ()
+removeTestDataFromS3 sessionId testDataType = pure cmd >>= callCommand where
+  uri = s3TestDataURI $ s3TestDataKey sessionId testDataType
   cmd = "aws s3 rm " ++ uri
 
 appTestRw :: IO ()
@@ -71,10 +81,10 @@ appStdinRw =
   callCommand
     "< exampleApp-test/test/testData.jsonl exampleAppRW -o exampleApp-test/test/stdinrw.json"
 
-appS3inRw :: String -> String -> IO ()
-appS3inRw sessionId desc = do
-  let sessionKey = s3TestDataKey sessionId desc
-  let cmd = "exampleAppRW -o exampleApp-test/test/s3inrw.json -r us-east-1 -b download.novisci.com -k " ++ sessionKey
+appS3inRw :: String -> TestDataType -> IO ()
+appS3inRw sessionId testDataType = do
+  let key = s3TestDataKey sessionId testDataType
+  let cmd = "exampleAppRW -o exampleApp-test/test/s3inrw.json -r us-east-1 -b download.novisci.com -k " ++ key
   pure cmd >>= callCommand
 
 appTestCw :: IO ()
@@ -129,7 +139,7 @@ tests sessionId = testGroup
   , goldenVsFile "ExampleApp of row-wise cohort reading from S3"
                  "exampleApp-test/test/testrw.golden"
                  "exampleApp-test/test/s3inrw.json"
-                 (appS3inRw sessionId "small")
+                 (appS3inRw sessionId TestDataSmall)
   , goldenVsFile "ExampleApp of row-wise cohort with empty data from file"
                  "exampleApp-test/test/testemptyrw.golden"
                  "exampleApp-test/test/testemptyrw.json"
@@ -162,9 +172,9 @@ main :: IO ()
 main = do
   sessionId <- getSessionId
   -- writeTestDataToS3 sessionId "empty"
-  writeTestDataToS3 sessionId "small"
+  writeTestDataToS3 sessionId TestDataSmall
   -- writeTestDataToS3 sessionId "large"
   defaultMain (tests sessionId)
   -- removeTestDataFromS3 sessionId "large"
-  removeTestDataFromS3 sessionId "small"
+  removeTestDataFromS3 sessionId TestDataSmall
   -- removeTestDataFromS3 sessionId "empty"

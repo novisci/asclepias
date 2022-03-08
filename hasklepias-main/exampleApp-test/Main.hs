@@ -40,13 +40,25 @@ getSessionId = do
     Left  e -> fmap (show . floor . nominalDiffTimeToSeconds . utcTimeToPOSIXSeconds) getCurrentTime
     Right v -> getCIPipelineId
 
+-- Enumeration of the test applications
+data AppType = AppColumnWise | AppRowWise
+
 -- Enumeration of the test data cases
 data TestDataType = TestDataEmpty | TestDataSmall
 
+-- Enumeration of input and output sources
+data TestInputType = TestInputFile | TestInputStdin | TestInputS3
+data TestOutputType = TestOutputFile | TestOutputStdin | TestOutputS3
+
 -- Create the local filepath where the test data is stored
-localTestDataLoc :: TestDataType -> String
-localTestDataLoc TestDataEmpty = "exampleApp-test/test/testEmptyData.jsonl"
-localTestDataLoc TestDataSmall = "exampleApp-test/test/testData.jsonl"
+localInputDataLoc :: TestDataType -> String
+localInputDataLoc TestDataEmpty = "exampleApp-test/test/testEmptyData.jsonl"
+localInputDataLoc TestDataSmall = "exampleApp-test/test/testData.jsonl"
+
+-- Create the local filepath where the cohort build is written to
+localOutputDataLoc :: TestDataType -> String
+localOutputDataLoc TestDataEmpty = "exampleApp-test/test/stdinemptyrw.json"
+localOutputDataLoc TestDataSmall = "exampleApp-test/test/stdinrw.json"
 
 -- Create the S3 key where the test data will be located (once paired with a bucket)
 s3TestDataKey :: String -> TestDataType -> String
@@ -60,7 +72,7 @@ s3TestDataURI key = "s3://download.novisci.com/" ++ key
 -- Copy the test data to S3
 writeTestDataToS3 :: String -> TestDataType -> IO ()
 writeTestDataToS3 sessionId testDataType = pure cmd >>= callCommand where
-  from = localTestDataLoc testDataType
+  from = localInputDataLoc testDataType
   to   = s3TestDataURI $ s3TestDataKey sessionId testDataType
   cmd  = "aws s3 cp " ++ from ++ " " ++ to
 
@@ -81,10 +93,21 @@ appStdinRw =
   callCommand
     "< exampleApp-test/test/testData.jsonl exampleAppRW -o exampleApp-test/test/stdinrw.json"
 
-appS3inRw :: String -> TestDataType -> IO ()
-appS3inRw sessionId testDataType = do
-  let key = s3TestDataKey sessionId testDataType
-  let cmd = "exampleAppRW -o exampleApp-test/test/s3inrw.json -r us-east-1 -b download.novisci.com -k " ++ key
+appTest :: String -> AppType -> TestDataType -> TestInputType -> TestOutputType -> IO ()
+appTest sessionId appType testDataType testInputType testOutputType = do
+  let appCmd = case appType of
+        AppRowWise -> "exampleAppRW"
+        AppColumnWise -> "exampleAppCW"
+  let inputFragm = case testInputType of
+        TestInputFile -> "-f " ++ localInputDataLoc testDataType
+        TestInputStdin -> "< " ++ localInputDataLoc testDataType
+        TestInputS3 -> "-r us-east-1 -b download.novisci.com -k " ++ s3TestDataKey sessionId testDataType
+  let outputFragm = case testOutputType of
+        TestOutputFile -> "-o " ++ localOutputDataLoc testDataType
+        TestOutputStdin -> "> " ++ localOutputDataLoc testDataType
+        TestOutputS3 -> "--outregion us-east-1 --outbucket download.novisci.com --outkey " s3TestDataKey sessionId testDataType
+  let cmd = appCmd ++ " " ++ inputFragm ++ " " ++ outputFragm
+  print "TEST COMMAND:  " ++ cmd
   pure cmd >>= callCommand
 
 appTestCw :: IO ()
@@ -98,9 +121,10 @@ appStdinCw =
   callCommand
     "< exampleApp-test/test/testData.jsonl exampleAppCW -o exampleApp-test/test/stdincw.json"
 
-appS3inCw :: String -> IO ()
-appS3inCw sessionKey = do
-  let cmd = "exampleAppCW -o exampleApp-test/test/s3incw.json -r us-east-1 -b download.novisci.com -k " ++ sessionKey
+appS3inCw :: String -> TestDataType -> IO ()
+appS3inCw sessionId testDataType = do
+  let key = s3TestDataKey sessionId testDataType
+  let cmd = "exampleAppCW -o exampleApp-test/test/s3incw.json -r us-east-1 -b download.novisci.com -k " ++ key
   pure cmd >>= callCommand
 
 appTestEmptyRw :: IO ()
@@ -128,6 +152,7 @@ appStdinEmptyCw =
 tests :: String -> TestTree
 tests sessionId = testGroup
   "Tests of exampleApp"
+  -- Row-wise, small data
   [ goldenVsFile "ExampleApp of row-wise cohort reading from file"
                  "exampleApp-test/test/testrw.golden"
                  "exampleApp-test/test/testrw.json"
@@ -139,7 +164,8 @@ tests sessionId = testGroup
   , goldenVsFile "ExampleApp of row-wise cohort reading from S3"
                  "exampleApp-test/test/testrw.golden"
                  "exampleApp-test/test/s3inrw.json"
-                 (appS3inRw sessionId TestDataSmall)
+                 (appS3inRw sessionId TestDataSmall OutputLocal)
+  -- Row-wise, empty data
   , goldenVsFile "ExampleApp of row-wise cohort with empty data from file"
                  "exampleApp-test/test/testemptyrw.golden"
                  "exampleApp-test/test/testemptyrw.json"
@@ -149,6 +175,11 @@ tests sessionId = testGroup
     "exampleApp-test/test/testemptyrw.golden"
     "exampleApp-test/test/stdinemptyrw.json"
     appStdinEmptyRw
+  , goldenVsFile "ExampleApp of row-wise cohort with empty data from S3"
+                 "exampleApp-test/test/testemptyrw.golden"
+                 "exampleApp-test/test/s3inempty.json"
+                 (appS3inRw sessionId TestDataSmall)
+  -- Column-wise, small data
   , goldenVsFile "ExampleApp of column-wise cohort from file"
                  "exampleApp-test/test/testcw.golden"
                  "exampleApp-test/test/testcw.json"
@@ -157,6 +188,11 @@ tests sessionId = testGroup
                  "exampleApp-test/test/testcw.golden"
                  "exampleApp-test/test/stdincw.json"
                  appStdinCw
+  , goldenVsFile "ExampleApp of column-wise cohort reading from S3"
+                 "exampleApp-test/test/testcw.golden"
+                 "exampleApp-test/test/s3incw.json"
+                 (appS3inCw sessionId TestDataSmall)
+  -- Row-wise, empty data
   , goldenVsFile "ExampleApp of column-wise cohort with empty data from file"
                  "exampleApp-test/test/testemptycw.golden"
                  "exampleApp-test/test/testemptycw.json"

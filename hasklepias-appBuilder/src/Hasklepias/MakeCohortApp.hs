@@ -85,10 +85,10 @@ TODO
 mapIntoPop
   :: forall d c a
    . (Ord a, Ord c, Eq d)
-  => [(SubjectID, Event d c a)]
-  -> Population [Event d c a]
+  => [(SubjectID, Event c d a)]
+  -> Population [Event c d a]
 mapIntoPop l = into $ fmap
-  (\(id, es) -> into @(Subject [Event d c a]) (into @Text id, sort es)) -- TODO: is there a way to avoid the sort?
+  (\(id, es) -> into @(Subject [Event c d a]) (into @Text id, sort es)) -- TODO: is there a way to avoid the sort?
   (collectBySubject l)
 
 {-| INTERNAL
@@ -112,15 +112,15 @@ makeAppArgs name version = Options.Applicative.info
 Creates a cohort builder function
 -}
 makeCohortBuilder
-  :: ( Eventable d c a
-     , EventLineAble d c a b
-     , FromJSONEvent d c a
+  :: ( Eventable c d a
+     , EventLineAble c d a b
+     , FromJSONEvent c d a
      , ToJSON d0
      , ShapeCohort d0 i
      , Monad m
      )
   => CohortEvalOptions
-  -> CohortMapSpec [Event d c a] d0 i
+  -> CohortMapSpec [Event c d a] d0 i
   -> B.ByteString
   -> m ([LineParseError], CohortMap d0 i)
 makeCohortBuilder opts specs x = do
@@ -154,16 +154,16 @@ newtype CohortApp m = MkCohortApp { runCohortApp :: Maybe Location -> m B.ByteSt
 
 -- | Make a command line cohort building application.
 makeCohortApp
-  :: ( Eventable d c a
-     , EventLineAble d c a b
-     , FromJSONEvent d c a
+  :: ( Eventable c d a
+     , EventLineAble c d a b
+     , FromJSONEvent c d a
      , ToJSON d0
      , ShapeCohort d0 i
      )
   => String  -- ^ cohort name
   -> String  -- ^ app version
   -> (Cohort d0 i -> CohortJSON) -- ^ a function which specifies the output shape
-  -> CohortMapSpec [Event d c a] d0 i  -- ^ a list of cohort specifications
+  -> CohortMapSpec [Event c d a] d0 i  -- ^ a list of cohort specifications
   -> CohortApp IO
 makeCohortApp name version shape spec = MkCohortApp $ \l -> do
   options <- execParser (makeAppArgs name version)

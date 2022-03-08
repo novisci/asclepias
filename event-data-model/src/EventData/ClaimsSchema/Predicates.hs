@@ -35,7 +35,7 @@ isEnrollmentDomain (Enrollment _) = True
 isEnrollmentDomain _              = False
 
 -- | Predicate for enrollment events
-isEnrollmentEvent :: Predicate (Event ClaimsSchema c a)
+isEnrollmentEvent :: Predicate (Event c ClaimsSchema a)
 isEnrollmentEvent = liftToEventPredicate (Predicate isEnrollmentDomain)
 
 -- | Predicate for Eligibility facts
@@ -44,7 +44,7 @@ isEligibilityDomain (Eligibility _) = True
 isEligibilityDomain _               = False
 
 -- | Predicate for Eligibility events
-isEligibilityEvent :: Predicate (Event ClaimsSchema c a)
+isEligibilityEvent :: Predicate (Event c ClaimsSchema a)
 isEligibilityEvent = liftToEventPredicate (Predicate isEligibilityDomain)
 
 -- | Predicate for Birth Year facts
@@ -54,7 +54,7 @@ isBirthYear (Demographics (DemographicsFacts (DemographicsInfo BirthYear _))) =
 isBirthYear _ = False
 
 -- | Predicate for events containing Birth Year facts
-isBirthYearEvent :: Predicate (Event ClaimsSchema c a)
+isBirthYearEvent :: Predicate (Event c ClaimsSchema a)
 isBirthYearEvent = liftToEventPredicate (Predicate isBirthYear)
 
 -- | Predicate for Gender facts
@@ -64,7 +64,7 @@ isGenderFact (Demographics (DemographicsFacts (DemographicsInfo Gender _))) =
 isGenderFact _ = False
 
 -- | Predicate for events containing Gender facts
-isGenderFactEvent :: Predicate (Event ClaimsSchema c a)
+isGenderFactEvent :: Predicate (Event c ClaimsSchema a)
 isGenderFactEvent = liftToEventPredicate (Predicate isGenderFact)
 
 -- | Predicate for State facts
@@ -74,7 +74,7 @@ isStateFact (Demographics (DemographicsFacts (DemographicsInfo State _))) =
 isStateFact _ = False
 
 -- | Predicate for events containing  State facts
-isStateFactEvent :: Predicate (Event ClaimsSchema c a)
+isStateFactEvent :: Predicate (Event c ClaimsSchema a)
 isStateFactEvent = liftToEventPredicate (Predicate isStateFact)
 
 -- | Predicate for Region facts
@@ -84,5 +84,5 @@ isRegionFact (Demographics (DemographicsFacts (DemographicsInfo Region _))) =
 isRegionFact _ = False
 
 -- | Predicate for events containing Region facts
-isRegionFactEvent :: Predicate (Event ClaimsSchema c a)
+isRegionFactEvent :: Predicate (Event c ClaimsSchema a)
 isRegionFactEvent = liftToEventPredicate (Predicate isRegionFact)

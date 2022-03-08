@@ -13,10 +13,10 @@ buildIsEnrolled
      , Applicative container
      , Witherable container
      )
-  => Predicate (Event d c a) -- ^ The predicate to filter to Enrollment events (e.g. 'FeatureEvents.isEnrollment')
+  => Predicate (Event c d a) -- ^ The predicate to filter to Enrollment events (e.g. 'FeatureEvents.isEnrollment')
   -> Definition
        (  Feature indexName (i0 a)
-       -> Feature eventsName (container (Event d c a))
+       -> Feature eventsName (container (Event c d a))
        -> Feature varName Status
        )
 buildIsEnrolled predicate = define
@@ -28,7 +28,7 @@ buildIsEnrolled predicate = define
   )
 {- end::template0[] -}
 
-type IsEnrolledArgs = (Solo (Predicate (Event TestSchema Text Int)))
+type IsEnrolledArgs = (Solo (Predicate (Event Text TestSchema Int)))
   -- use of Solo is because buildIsEnrolled takes a single argument and the
   -- Solo is needed to match the Curry constraints in the makeBuilderAssertion
   -- (via makeTestGroup). In the buildIsEnrolledTestCases, the Solo is created 
@@ -36,7 +36,7 @@ type IsEnrolledArgs = (Solo (Predicate (Event TestSchema Text Int)))
 
 type IsEnrolledTestCase
   = TestCase
-      (F "index" (Interval Int), F "events" [Event TestSchema Text Int])
+      (F "index" (Interval Int), F "events" [Event Text TestSchema Int])
       Status
       IsEnrolledArgs
 

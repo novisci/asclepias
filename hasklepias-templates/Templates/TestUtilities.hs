@@ -60,7 +60,7 @@ data TestSchema = Enrollment | NotEnrollment deriving (Show, Eq, Generic)
 makeEnrollmentEvent
   :: (Integral b, IntervalSizeable a b, Typeable a, Show a)
   => (a, a)
-  -> Event TestSchema Text a
+  -> Event Text TestSchema a
 makeEnrollmentEvent intrvl =
   event (readIntervalSafe intrvl) (context mempty Enrollment Nothing)
 
@@ -68,12 +68,12 @@ makeEventWithConcepts
   :: (Integral b, IntervalSizeable a b, Typeable a, Show a)
   => [Text]
   -> (a, a)
-  -> Event TestSchema Text a
+  -> Event Text TestSchema a
 makeEventWithConcepts cpts intrvl = event
   (readIntervalSafe intrvl)
   (context (packConcepts cpts) Enrollment Nothing)
 
-isEnrollmentEvent :: Predicate (Event TestSchema c a)
+isEnrollmentEvent :: Predicate (Event c TestSchema a)
 isEnrollmentEvent = liftToEventPredicate (Predicate (== Enrollment))
 
 {-
@@ -114,11 +114,11 @@ makeTestCaseOfIndexAndEvents
   => TestName
   -> bargs
   -> (a, a)
-  -> [Event TestSchema Text a]
+  -> [Event Text TestSchema a]
   -> returnType
   -> TestCase
        ( F "index" (Interval a)
-       , F "events" [Event TestSchema Text a]
+       , F "events" [Event Text TestSchema a]
        )
        returnType
        bargs

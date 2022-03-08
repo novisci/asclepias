@@ -72,7 +72,6 @@ import           Data.Aeson                     ( FromJSON
                                                 , ToJSON
                                                 , Value(Number, String)
                                                 )
-import           Data.Bifunctor                 ( Bifunctor(..) )
 import           Data.Binary                    ( Binary )
 import           Data.Functor.Contravariant     ( Contravariant(contramap)
                                                 , Predicate(..)
@@ -97,6 +96,8 @@ import           Witch                          ( From(..)
                                                 , into
                                                 , via
                                                 )
+
+import           Data.Bifunctor
 
 {- |
 The 'Event' type puts a certain amount of structure on
@@ -129,8 +130,8 @@ The 'event' function is a smart constructor for 'Event'.
 
 >>> data SomeDomain = A | B deriving (Eq, Ord, Show, Generic)
 >>>
->>> type MyEvent = Event SomeDomain T.Text Integer
->>> let myEvent = event (beginerval 5 0) (Context (packConcepts ["foo"]) A Nothing) :: MyEvent
+>>> type MyEvent = Event T.Text SomeDomain Integer
+>>> let myEvent = event (beginerval 5 0) (context (packConcepts ["foo"]) A Nothing) :: MyEvent
 >>> show myEvent
 "MkEvent {(0, 5), Context {concepts = Concepts (fromList [Concept \"foo\"]), facts = A, source = Nothing}}"
 
@@ -143,8 +144,8 @@ False
 >>> data NewDomain = A T.Text | B Integer deriving (Eq, Ord, Show, Generic)
 >>> data MyConcepts = Foo | Bar | Baz deriving (Eq, Ord, Show, Generic) 
 >>>
->>> type NewEvent = Event NewDomain MyConcepts Integer
->>> let newEvent = event (beginerval 5 0) (Context (packConcepts [Foo, Bar]) (A "cool") Nothing) :: NewEvent
+>>> type NewEvent = Event MyConcepts NewDomain Integer
+>>> let newEvent = event (beginerval 5 0) (context (packConcepts [Foo, Bar]) (A "cool") Nothing) :: NewEvent
 >>> show newEvent
 "MkEvent {(0, 5), Context {concepts = Concepts (fromList [Concept Foo,Concept Bar]), facts = A \"cool\", source = Nothing}}"
 
@@ -157,21 +158,25 @@ False
 -}
 
 {- tag::eventType[] -}
-newtype Event d c a = MkEvent ( PairedInterval (Context d c) a )
+newtype Event c d a = MkEvent ( PairedInterval (Context c d) a )
 {- end::eventType[] -}
   deriving (Eq, Show, Generic)
 
-instance (Ord a) => Intervallic (Event d c) a where
+instance (Ord a) => Intervallic (Event c d) a where
   getInterval (MkEvent x) = getInterval x
   setInterval (MkEvent x) y = MkEvent $ setInterval x y
 
-instance Functor (Event d c) where
+instance Functor (Event c d) where
   fmap f (MkEvent x) = MkEvent $ fmap f x
 
-instance Ord c => HasConcept (Event d c a) c where
+instance Bifunctor (Event c) where
+  first f (MkEvent x) = MkEvent $ first (fmap f) x
+  second f (MkEvent x) = MkEvent $ second f x
+
+instance Ord c => HasConcept (Event c d a) c where
   hasConcept e = hasConcept (getContext e)
 
-instance (Ord a, Ord c, Eq d) => Ord (Event d c a) where
+instance (Ord a, Ord c, Eq d) => Ord (Event c d a) where
   {-|
   Events are first ordered by their intervals.
   In the case two intervals are equal, 
@@ -182,47 +187,47 @@ instance (Ord a, Ord c, Eq d) => Ord (Event d c a) where
     _  -> compare (getConcepts $ getContext x) (getConcepts $ getContext y)
     where ic = compare (getInterval x) (getInterval y)
 
-instance (NFData a, NFData d, NFData c) => NFData (Event d c a)
-instance (Binary d, Binary c, Binary a) => Binary (Event d c a)
+instance (NFData a, NFData d, NFData c) => NFData (Event c d a)
+instance (Binary d, Binary c, Binary a) => Binary (Event c d a)
 -- See NOTE at top of module regarding To/FromJSON instances
 instance ( FromJSON a ) => FromJSON (Interval a)
 instance ( ToJSON a ) => ToJSON (Interval a)
 instance ( FromJSON b, FromJSON a ) => FromJSON (PairedInterval b a)
 instance ( ToJSON b, ToJSON a ) => ToJSON (PairedInterval b a)
-instance ( Ord c, FromJSON c, FromJSON d, FromJSON a ) => FromJSON (Event d c a)
-instance ( Ord c, ToJSON c, ToJSON d, ToJSON a ) => ToJSON (Event d c a)
+instance ( Ord c, FromJSON c, FromJSON d, FromJSON a ) => FromJSON (Event c d a)
+instance ( Ord c, ToJSON c, ToJSON d, ToJSON a ) => ToJSON (Event c d a)
 
-instance (  Eventable d c a
+instance (  Eventable c d a
           , Generic d
           , Typeable c
           , Typeable a
           , Arbitrary d, Arbitrary c, Arbitrary (Interval a)) =>
-      Arbitrary (Event d c a) where
+      Arbitrary (Event c d a) where
   arbitrary = liftM2 event arbitrary arbitrary
 
-instance (Ord a) => From (Event d c a) (Interval a) where
+instance (Ord a) => From (Event c d a) (Interval a) where
   from = getInterval
 
 -- | A synonym for the basic set of constraints an event needs on its types.
-type Eventable d c a = (Eq d, Ord c, Ord a, Show d, Show c, Show a)
+type Eventable c d a = (Eq d, Ord c, Ord a, Show d, Show c, Show a)
   -- Text is not Generic; but c should at least be Typeable
 
 -- | Constraint synonym for @ToJSON@ on an event's component types.
-type ToJSONEvent d c a = (ToJSON d, ToJSON c, ToJSON a)
+type ToJSONEvent c d a = (ToJSON d, ToJSON c, ToJSON a)
 
 -- | Constraint synonym for @FromSON@ on an event's component types.
-type FromJSONEvent d c a = (FromJSON d, FromJSON c, FromJSON a)
+type FromJSONEvent c d a = (FromJSON d, FromJSON c, FromJSON a)
 
 -- | A smart constructor for 'Event d c a's.
-event :: (Eventable d c a) => Interval a -> Context d c -> Event d c a
+event :: (Eventable c d a) => Interval a -> Context c d -> Event c d a
 event i c = MkEvent (makePairedInterval c i)
 
 -- | Unpack an 'Event' from its constructor.
-getEvent :: Event d c a -> PairedInterval (Context d c) a
+getEvent :: Event c d a -> PairedInterval (Context c d) a
 getEvent (MkEvent x) = x
 
 -- | Get the 'Context' of an 'Event'. 
-getContext :: Event d c a -> Context d c
+getContext :: Event c d a -> Context c d
 getContext = getPairData . getEvent
 
 {-|
@@ -239,8 +244,8 @@ trimapEvent
   => (a1 -> a2)
   -> (c1 -> c2)
   -> (d1 -> d2)
-  -> Event d1 c1 a1
-  -> Event d2 c2 a2
+  -> Event c1 d1 a1
+  -> Event c2 d2 a2
 trimapEvent g f h (MkEvent x) = MkEvent $ bimap (bimapContext f h) g x
 
 {- |
@@ -266,7 +271,7 @@ which carries information about the provenance of the data.
 
 -}
 {- tag::contextType[] -}
-data Context d c = MkContext
+data Context c d = MkContext
   { -- | the 'Concepts' of a @Context@
     getConcepts :: Concepts c -- <1>
     -- | the facts of a @Context@.  
@@ -277,19 +282,22 @@ data Context d c = MkContext
   {- end::contextType[] -}
   deriving (Eq, Show, Generic)
 
-instance Ord c => HasConcept (Context d c) c where
+instance Ord c => HasConcept (Context c d) c where
   hasConcept c = hasConcept (getConcepts c)
 
-instance (NFData d, NFData c) => NFData (Context d c)
-instance (Binary d, Binary c) => Binary (Context d c)
+instance (NFData d, NFData c) => NFData (Context c d)
+instance (Binary d, Binary c) => Binary (Context c d)
 -- See NOTE at top of module regarding To/FromJSON
-instance ( Ord c, FromJSON c, FromJSON d ) => FromJSON (Context d c)
-instance ( Ord c, ToJSON c, ToJSON d ) => ToJSON (Context d c)
+instance ( Ord c, FromJSON c, FromJSON d ) => FromJSON (Context c d)
+instance ( Ord c, ToJSON c, ToJSON d ) => ToJSON (Context c d)
 
 instance ( Arbitrary d, Show d, Eq d, Generic d
          , Arbitrary c, Show c, Eq c, Ord c, Typeable c) =>
-      Arbitrary (Context d c) where
+      Arbitrary (Context c d) where
   arbitrary = liftM3 MkContext arbitrary arbitrary (pure Nothing)
+
+instance Functor (Context c) where
+  fmap f (MkContext c d s) = MkContext c (f d) s
 
 -- | Smart constructor for a 'Context',
 context
@@ -297,7 +305,7 @@ context
   => Concepts c
   -> d
   -> Maybe Source
-  -> Context d c
+  -> Context c d
 context = MkContext
 
 {-|
@@ -316,15 +324,15 @@ bimapContext
   :: (Ord c1, Ord c2)
   => (c1 -> c2)
   -> (d1 -> d2)
-  -> Context d1 c1
-  -> Context d2 c2
+  -> Context c1 d1
+  -> Context c2 d2
 bimapContext g f (MkContext cpts fcts src) =
   MkContext (mapConcepts g cpts) (f fcts) src
 
 {-|
 Turn the 'Source' within a 'Context' to 'Nothing'.
 -}
-dropSource :: Context d c -> Context d c
+dropSource :: Context c d -> Context c d
 dropSource (MkContext cpts fcts _) = MkContext cpts fcts Nothing
 
 {-|
@@ -464,7 +472,7 @@ A Concept Interval is simply a synonym for an 'Interval' paired with 'Concepts'.
 -}
 type ConceptsInterval c a = PairedInterval (Concepts c) a
 
-instance From (Event d c a) (ConceptsInterval c a) where
+instance From (Event c d a) (ConceptsInterval c a) where
   from = first getConcepts . getEvent
 instance (Ord a) => From (ConceptsInterval c a) (Interval a) where
   from = getInterval
@@ -505,26 +513,26 @@ This class is only used in this 'EventDataTheory.Core' module
 for the purposes of having a single @liftToEventPredicate@ function
 that works on 'Concepts', 'Context', or 'Event' data.
 -}
-class EventPredicate element d c a where
+class EventPredicate element c d a where
   {-|
   Lifts a 'Predicate' of a component of an 'Event'
   to a 'Predicate' on an 'Event'
   -}
-  liftToEventPredicate :: Predicate element -> Predicate (Event d c a)
+  liftToEventPredicate :: Predicate element -> Predicate (Event c d a)
 
-instance EventPredicate (Context d c) d c a where
+instance EventPredicate (Context c d) c d a where
   liftToEventPredicate = contramap getContext
 
-instance EventPredicate d d c a where
+instance EventPredicate d c d a where
   liftToEventPredicate = contramap (getFacts . getContext)
 
-instance EventPredicate (Concepts c) d c a where
+instance EventPredicate (Concepts c) c d a where
   liftToEventPredicate = contramap (getConcepts . getContext)
 
-instance EventPredicate (Maybe Source) d c a where
+instance EventPredicate (Maybe Source) c d a where
   liftToEventPredicate = contramap (getSource . getContext)
 
-instance (Ord a) => EventPredicate (Interval a) d c a where
+instance (Ord a) => EventPredicate (Interval a) c d a where
   liftToEventPredicate = contramap getInterval
 
 {-|
@@ -536,23 +544,23 @@ This class is only used in this 'EventDataTheory.Core' module
 for the purposes of having a single @liftToEventFunction@ function
 that works on 'Concepts', 'Context', or 'Event' data.
 -}
-class EventFunction f d d' c c' a a' where
+class EventFunction f c c' d d' a a' where
   {-|
   Lifts a function @@ of a component of an 'Event'
   to a function on an 'Event'
   -}
-  liftToEventFunction :: (Ord c, Ord c') => f -> Event d c a -> Event d' c' a'
+  liftToEventFunction :: (Ord c, Ord c') => f -> Event c d a -> Event c' d' a'
 
-instance EventFunction (c -> c') d d c c' a a where
+instance EventFunction (c -> c') c c' d d a a where
   liftToEventFunction f = trimapEvent id f id
 
-instance EventFunction (d -> d') d d' c c a a where
+instance EventFunction (d -> d') c c d d' a a where
   liftToEventFunction = trimapEvent id id
 
-instance EventFunction (Context d c -> Context d' c') d d' c c' a a where
+instance EventFunction (Context c d -> Context c' d') c c' d d' a a where
   liftToEventFunction f (MkEvent x) = MkEvent $ first f x
 
-instance EventFunction (a -> a') d d c c a a' where
+instance EventFunction (a -> a') c c d d a a' where
   liftToEventFunction f = trimapEvent f id id
 
 {-|
@@ -567,19 +575,18 @@ that works on 'Concepts', 'Context', or 'Event' data.
 -- NOTE: this kind of constraint solving could probably be done
 -- using the Select monad from Control.Monad.Trans.Select
 -- but it's not clear that would add anything other than additional deps.
-class ContextFunction f d d' c c' where
+class ContextFunction f c c' d d' where
   {-|
   Lifts a function @f@ of a component of an 'Context'
   to a function on an 'Context'
   -}
-  liftToContextFunction :: (Ord c, Ord c') => f -> Context d c -> Context d' c'
+  liftToContextFunction :: (Ord c, Ord c') => f -> Context c d -> Context c' d'
 
-instance ContextFunction (Concepts c -> Concepts c') d d c c' where
+instance ContextFunction (Concepts c -> Concepts c') c c' d d where
   liftToContextFunction f (MkContext x y z) = MkContext (f x) y z
 
-instance ContextFunction (c -> c') d d c c' where
+instance ContextFunction (c -> c') c c' d d where
   liftToContextFunction f = bimapContext f id
 
-instance ContextFunction (d -> d') d d' c c where
+instance ContextFunction (d -> d') c c d d' where
   liftToContextFunction = bimapContext id
-

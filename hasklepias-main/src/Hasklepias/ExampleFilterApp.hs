@@ -9,4 +9,4 @@ import           Hasklepias
 exampleFilterApp :: FilterApp IO
 exampleFilterApp = makeFilterApp
   "Prefilter test app"
-  (getPredicate isEnrollmentEvent :: Event ClaimsSchema Text Day -> Bool)
+  (getPredicate isEnrollmentEvent :: Event Text ClaimsSchema Day -> Bool)

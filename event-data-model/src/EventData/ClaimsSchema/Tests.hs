@@ -23,7 +23,7 @@ import           Test.Tasty.HUnit
 
 
 -- | Toy events for unit tests
-e1 :: Event ClaimsSchema Text Int
+e1 :: Event Text ClaimsSchema Int
 e1 = event
   (beginerval 4 1)
   (context (packConcepts ["c1", "c2"])
@@ -32,7 +32,7 @@ e1 = event
   )
 
 
-e2 :: Event ClaimsSchema Text Int
+e2 :: Event Text ClaimsSchema Int
 e2 = event
   (beginerval 4 2)
   (context (packConcepts ["c3", "c4"])
@@ -40,7 +40,7 @@ e2 = event
            Nothing
   )
 
-e3 :: Event ClaimsSchema Text Int
+e3 :: Event Text ClaimsSchema Int
 e3 = event
   (beginerval 4 2)
   (context
@@ -53,7 +53,7 @@ demoYear :: ClaimsSchema
 demoYear =
   Demographics $ DemographicsFacts (DemographicsInfo BirthYear (Just "1987"))
 
-e4 :: Event ClaimsSchema Text Int
+e4 :: Event Text ClaimsSchema Int
 e4 = event (beginerval 4 2) (context (packConcepts []) demoYear Nothing)
 
 enrollEvent :: B.ByteString

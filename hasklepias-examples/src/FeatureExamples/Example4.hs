@@ -18,7 +18,7 @@ import           Hasklepias
 data AlternativeFacts = AlternativeFacts
   deriving (Eq, Show, Generic)
 
-type MyEvent a = Event AlternativeFacts Text a
+type MyEvent a = Event Text AlternativeFacts a
 type Events a = [MyEvent a]
 
 type EventData a b = (b, a, Text)

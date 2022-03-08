@@ -62,7 +62,7 @@ instance FromJSON SillySchema where
       }
     )
 
-type SillyEvent1 a = Event SillySchema Text a
+type SillyEvent1 a = Event Text SillySchema a
 {- end::exampleEvent[] -}
 
 instance ToJSON SillySchema where
@@ -75,15 +75,15 @@ data SillyConcepts = Mouse | Giraffe | Hornbill
 
 instance FromJSON SillyConcepts
 
-type SillyEvent2 a = Event SillySchema SillyConcepts a
+type SillyEvent2 a = Event SillyConcepts SillySchema a
 
-c1 :: Context SillySchema Text
+c1 :: Context Text SillySchema
 c1 = context (into (["this", "that"] :: [Text])) (A 1) Nothing
 
 e1 :: SillyEvent1 Int
 e1 = event (beginerval 2 1) c1
 
-c2 :: Context SillySchema Text
+c2 :: Context Text SillySchema
 c2 = context (into (["this", "another"] :: [Text])) (A 1) Nothing
 
 e2 :: SillyEvent1 Int
@@ -142,7 +142,7 @@ hasConceptUnitTests = testGroup
   @?= False
   ]
 
-cPred1 :: Predicate (Context SillySchema Text)
+cPred1 :: Predicate (Context Text SillySchema)
 cPred1 = Predicate (\x -> getFacts x == C)
 
 cPred2 :: Predicate (Maybe Source)
@@ -237,7 +237,7 @@ testInputsBad =
 
 testInput = testInputsGood <> "\n" <> testInputsBad
 
-testOutput :: ([LineParseError], [(SubjectID, Event SillySchema Text Day)])
+testOutput :: ([LineParseError], [(SubjectID, Event Text SillySchema Day)])
 testOutput =
   ( [ from @(Natural, String) (3, "Error in $[5]: key \"patient_id\" not found")
     , from @(Natural, String) (4, "Error in $[5]: key \"patient_id\" not found")

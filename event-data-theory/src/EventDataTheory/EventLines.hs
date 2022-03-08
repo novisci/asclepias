@@ -82,28 +82,28 @@ See [event data model docs](https://docs.novisci.com/edm-sandbox/latest/index.ht
 'ToJSON' instances are not provided, but may be in the future. 
 -}
 
-data EventLine d c a = MkEventLine Value Value Value Value [c] (FactsLine d a)
+data EventLine c d a = MkEventLine Value Value Value Value [c] (FactsLine d a)
   deriving (Eq, Show, Generic)
 
-instance (Eventable d c a, FromJSONEvent d c a, IntervalSizeable a b)
-          => FromJSON (EventLine d c a)
+instance (Eventable c d a, FromJSONEvent c d a, IntervalSizeable a b)
+          => FromJSON (EventLine c d a)
 
-instance (Ord a, ToJSON a, ToJSON c, ToJSON d) => ToJSON (EventLine d c a)
+instance (Ord a, ToJSON a, ToJSON c, ToJSON d) => ToJSON (EventLine c d a)
 
-type EventLineAble d c a b
+type EventLineAble c d a b
   = (Generic d, Typeable d, Typeable c, Typeable a, IntervalSizeable a b)
 
 -- INTERNAL utility for getting subjectID from EventLine
-getSubjectID :: EventLine d c a -> SubjectID
+getSubjectID :: EventLine c d a -> SubjectID
 getSubjectID (MkEventLine _ _ _ _ _ fcts) =
   (getSubjectIDLine . patient_id) fcts
 
 -- INTERNAL utility for getting the FactsLine from EventLine
-fctln :: EventLine d c a -> FactsLine d a
+fctln :: EventLine c d a -> FactsLine d a
 fctln (MkEventLine _ _ _ _ _ x) = x
 
 -- INTERNAL utility for getting concepts from EventLine
-cptsln :: EventLine d c a -> [c]
+cptsln :: EventLine c d a -> [c]
 cptsln (MkEventLine _ _ _ _ x _) = x
 
 {-|
@@ -131,8 +131,8 @@ instance Exception ParseErrorInterval
 Try to parse an @'EventLine'@ into an @'Event'@,
 given an 'ParseEventLineOption'. 
 -}
-instance ( Eventable d c a, EventLineAble d c a b ) =>
-  TryFrom (EventLine d c a, ParseEventLineOption) (Event d c a) where
+instance ( Eventable c d a, EventLineAble c d a b ) =>
+  TryFrom (EventLine c d a, ParseEventLineOption) (Event c d a) where
   tryFrom x = do
     let fcts = (fctln . fst) x
     let i    = time fcts
@@ -226,46 +226,46 @@ for discusson of json vs json'.
 -}
 eitherDecodeEvent, eitherDecodeEvent'
   :: forall d c a b
-   . (Eventable d c a, EventLineAble d c a b, FromJSONEvent d c a)
+   . (Eventable c d a, EventLineAble c d a b, FromJSONEvent c d a)
   => ParseEventLineOption
   -> B.ByteString
-  -> Either String (SubjectID, Event d c a)
+  -> Either String (SubjectID, Event c d a)
 eitherDecodeEvent opt = makeEventDecoder show opt eitherDecode
 eitherDecodeEvent' opt = makeEventDecoder show opt eitherDecode'
 
 {-|
 Decode a bytestring corresponding to an 'EventLine' into
-@Maybe (SubjectID, Event d c a)@,
+@Maybe (SubjectID, Event c d a)@,
 where the value is @Nothing@ on failure
-and @Just (SubjectID, Event d c a)@ on success.
+and @Just (SubjectID, Event c d a)@ on success.
 
 NOTE: See https://hackage.haskell.org/package/aeson-2.0.3.0/docs/Data-Aeson.html#g:22 
 for discusson of json vs json'.
 -}
 decodeEvent, decodeEvent'
   :: forall d c a b
-   . (Eventable d c a, EventLineAble d c a b, FromJSONEvent d c a)
+   . (Eventable c d a, EventLineAble c d a b, FromJSONEvent c d a)
   => ParseEventLineOption
   -> B.ByteString
-  -> Maybe (SubjectID, Event d c a)
+  -> Maybe (SubjectID, Event c d a)
 decodeEvent opt x = rightToMaybe $ eitherDecodeEvent opt x
 decodeEvent' opt x = rightToMaybe $ eitherDecodeEvent' opt x
 
 {-|
 Decode a strict bytestring corresponding to an 'EventLine' into
-@Maybe (SubjectID, Event d c a)@,
+@Maybe (SubjectID, Event c d a)@,
 where the value is @Nothing@ on failure
-and @Just (SubjectID, Event d c a)@ on success.
+and @Just (SubjectID, Event c d a)@ on success.
 
 NOTE: See https://hackage.haskell.org/package/aeson-2.0.3.0/docs/Data-Aeson.html#g:22 
 for discusson of json vs json'.
 -}
 decodeEventStrict, decodeEventStrict'
   :: forall d c a b
-   . (Eventable d c a, EventLineAble d c a b, FromJSONEvent d c a)
+   . (Eventable c d a, EventLineAble c d a b, FromJSONEvent c d a)
   => ParseEventLineOption
   -> C.ByteString
-  -> Maybe (SubjectID, Event d c a)
+  -> Maybe (SubjectID, Event c d a)
 decodeEventStrict opt x =
   rightToMaybe $ makeEventDecoderStrict show opt eitherDecodeStrict x
 decodeEventStrict' opt x =
@@ -273,30 +273,30 @@ decodeEventStrict' opt x =
 
 makeEventDecoder
   :: forall d c a b e
-   . (Eventable d c a, EventLineAble d c a b)
-  => (  TryFromException (EventLine d c a, ParseEventLineOption) (Event d c a)
+   . (Eventable c d a, EventLineAble c d a b)
+  => (  TryFromException (EventLine c d a, ParseEventLineOption) (Event c d a)
      -> e
      )
   -> ParseEventLineOption
-  -> (B.ByteString -> Either e (EventLine d c a))
-  -> (B.ByteString -> Either e (SubjectID, Event d c a))
+  -> (B.ByteString -> Either e (EventLine c d a))
+  -> (B.ByteString -> Either e (SubjectID, Event c d a))
 makeEventDecoder g opt f x = do
   eline <- f x
-  tryev <- first g $ tryInto @(Event d c a) (eline, opt)
+  tryev <- first g $ tryInto @(Event c d a) (eline, opt)
   pure (getSubjectID eline, tryev)
 
 makeEventDecoderStrict
   :: forall d c a b e
-   . (Eventable d c a, EventLineAble d c a b)
-  => (  TryFromException (EventLine d c a, ParseEventLineOption) (Event d c a)
+   . (Eventable c d a, EventLineAble c d a b)
+  => (  TryFromException (EventLine c d a, ParseEventLineOption) (Event c d a)
      -> e
      )
   -> ParseEventLineOption
-  -> (C.ByteString -> Either e (EventLine d c a))
-  -> (C.ByteString -> Either e (SubjectID, Event d c a))
+  -> (C.ByteString -> Either e (EventLine c d a))
+  -> (C.ByteString -> Either e (SubjectID, Event c d a))
 makeEventDecoderStrict g opt f x = do
   eline <- f x
-  tryev <- first g $ tryInto @(Event d c a) (eline, opt)
+  tryev <- first g $ tryInto @(Event c d a) (eline, opt)
   pure (getSubjectID eline, tryev)
 
 -- INTERNAL utlity for transforming an @Either@ into a @Maybe@
@@ -316,17 +316,17 @@ instance From (Natural, String) LineParseError where
 -- internal for create line parsers
 makeLineParser
   :: forall d c a b
-   . (Eventable d c a, FromJSONEvent d c a, Typeable d, IntervalSizeable a b)
-  => (B.ByteString -> Either String (SubjectID, Event d c a))
+   . (Eventable c d a, FromJSONEvent c d a, Typeable d, IntervalSizeable a b)
+  => (B.ByteString -> Either String (SubjectID, Event c d a))
   -> B.ByteString
-  -> ([LineParseError], [(SubjectID, Event d c a)])
+  -> ([LineParseError], [(SubjectID, Event c d a)])
 makeLineParser f l = partitionEithers $ zipWith
   (\x i -> first (\t -> MkLineParseError (i, t)) (f x))
   (B.lines l)
   [1 ..]
 
 {-| 
-Parse @Event d c a@ from new-line delimited JSON.
+Parse @Event c d a@ from new-line delimited JSON.
 
 Per the [aeson docs](https://hackage.haskell.org/package/aeson-2.0.3.0/docs/Data-Aeson.html#g:22),
 when using this version: 
@@ -340,10 +340,10 @@ and the second element is a list of successfully parsed (subjectID, event) pairs
 -}
 parseEventLinesL, parseEventLinesL'
   :: forall d c a b
-   . (Eventable d c a, EventLineAble d c a b, FromJSONEvent d c a)
+   . (Eventable c d a, EventLineAble c d a b, FromJSONEvent c d a)
   => ParseEventLineOption
   -> B.ByteString
-  -> ([LineParseError], [(SubjectID, Event d c a)])
+  -> ([LineParseError], [(SubjectID, Event c d a)])
 parseEventLinesL opt = makeLineParser (eitherDecodeEvent opt)
 parseEventLinesL' opt = makeLineParser (eitherDecodeEvent' opt)
 
@@ -358,7 +358,7 @@ The @TimeLine@ value IS NOT changed.
 Only those fields in the context that align with the factsline
 are modified.
 -}
-updateFactsLine :: (Data d') => FactsLine d a -> Context d' c -> FactsLine d' a
+updateFactsLine :: (Data d') => FactsLine d a -> Context c d' -> FactsLine d' a
 updateFactsLine (MkFactsLine dmn tm _ sid _ vld) x = MkFactsLine
   { domain     = pack $ show $ toConstr (getFacts x)
   , time       = tm
@@ -380,7 +380,7 @@ are modified.
 updateFactsLineWithInterval
   :: (Data d', Ord a')
   => FactsLine d a
-  -> Context d' c
+  -> Context c d'
   -> Interval a'
   -> FactsLine d' a'
 updateFactsLineWithInterval (MkFactsLine _ _ _ sid _ vld) x i = MkFactsLine
@@ -400,9 +400,9 @@ from data in an @Event@.
 -}
 updateEventLineFromEvent
   :: (Data d', Ord a', ToJSON a', Ord c')
-  => EventLine d c a
-  -> Event d' c' a'
-  -> EventLine d' c' a'
+  => EventLine c d a
+  -> Event c' d' a'
+  -> EventLine c' d' a'
 updateEventLineFromEvent (MkEventLine _ _ _ _ _ f) x =
   let ctxt = getContext x
   in  let i = getInterval x
@@ -422,18 +422,18 @@ within the Event corresponding to the EventLine.
 -}
 eitherModifyEventLineFromContext
   :: forall d d' c c' a b e
-   . ( Eventable d c a
-     , EventLineAble d c a b
-     , FromJSONEvent d c a
+   . ( Eventable c d a
+     , EventLineAble c d a b
+     , FromJSONEvent c d a
      , Ord c'
      , Data d'
      )
   => ParseEventLineOption
-  -> (Context d c -> Context d' c')
-  -> EventLine d c a
-  -> Either String (EventLine d' c' a)
+  -> (Context c d -> Context c' d')
+  -> EventLine c d a
+  -> Either String (EventLine c' d' a)
 eitherModifyEventLineFromContext opt g (MkEventLine a b c d e f) = do
-  ev <- first show $ tryInto @(Event d c a) (MkEventLine a b c d e f, opt)
+  ev <- first show $ tryInto @(Event c d a) (MkEventLine a b c d e f, opt)
   let ctxt  = g (getContext ev)
   let newFl = updateFactsLine f ctxt
   pure $ MkEventLine a b c d (into . getConcepts $ ctxt) newFl
@@ -443,19 +443,19 @@ TODO
 -}
 eitherModifyEventLineFromEvent
   :: forall d d' c c' a a' b e
-   . ( Eventable d c a
-     , Eventable d' c' a'
-     , EventLineAble d c a b
-     , FromJSONEvent d c a
+   . ( Eventable c d a
+     , Eventable c' d' a'
+     , EventLineAble c d a b
+     , FromJSONEvent c d a
      , ToJSON a'
      , Data d'
      )
   => ParseEventLineOption
-  -> (Event d c a -> Event d' c' a')
-  -> EventLine d c a
-  -> Either String (EventLine d' c' a')
+  -> (Event c d a -> Event c' d' a')
+  -> EventLine c d a
+  -> Either String (EventLine c' d' a')
 eitherModifyEventLineFromEvent opt g x = do
-  ev1 <- first show $ tryInto @(Event d c a) (x, opt)
+  ev1 <- first show $ tryInto @(Event c d a) (x, opt)
   let ev2 = g ev1
   pure $ updateEventLineFromEvent x ev2
 
@@ -479,18 +479,18 @@ See 'modifyEventLineWithEvent' for a function that can also modify the interval.
 -}
 modifyEventLineWithContext
   :: forall d d' c c' a b m
-   . ( Eventable d c a
-     , EventLineAble d c a b
-     , FromJSONEvent d c a
-     , Eventable d' c' a
+   . ( Eventable c d a
+     , EventLineAble c d a b
+     , FromJSONEvent c d a
+     , Eventable c' d' a
      , Data d'
      )
   => ParseEventLineOption
-  -> (Context d c -> Context d' c')
+  -> (Context c d -> Context c' d')
   -> B.ByteString
-  -> Either String (EventLine d' c' a)
+  -> Either String (EventLine c' d' a)
 modifyEventLineWithContext opt f x =
-  let el = eitherDecode @(EventLine d c a) x
+  let el = eitherDecode @(EventLine c d a) x
   in  eitherModifyEventLineFromContext opt f =<< el
 
 {-
@@ -519,17 +519,17 @@ Therefore, USER BEWARE.
 -}
 modifyEventLineWithEvent
   :: forall d d' c c' a a' b m
-   . ( FromJSONEvent d c a
-     , Eventable d c a
-     , Eventable d' c' a'
-     , EventLineAble d c a b
+   . ( FromJSONEvent c d a
+     , Eventable c d a
+     , Eventable c' d' a'
+     , EventLineAble c d a b
      , ToJSON a'
      , Data d'
      )
   => ParseEventLineOption
-  -> (Event d c a -> Event d' c' a')
+  -> (Event c d a -> Event c' d' a')
   -> B.ByteString
-  -> Either String (EventLine d' c' a')
+  -> Either String (EventLine c' d' a')
 modifyEventLineWithEvent opt f x =
-  let el = eitherDecode @(EventLine d c a) x
+  let el = eitherDecode @(EventLine c d a) x
   in  eitherModifyEventLineFromEvent opt f =<< el

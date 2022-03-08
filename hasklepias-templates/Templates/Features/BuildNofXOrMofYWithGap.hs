@@ -19,19 +19,19 @@ buildNofXOrMofYWithGap
   => (outputType -> outputType -> outputType)
   -> (Bool -> outputType)
   -> Natural -- ^ count passed to 'buildNofX'
-  -> Predicate (Event d c a)
+  -> Predicate (Event c d a)
   -> Natural -- ^ the minimum number of gaps passed to 'buildNofXWithGap'
   -> b -- ^ the minimum duration of a gap passed to 'buildNofXWithGap'
   -> (i a -> AssessmentInterval a)
   -> ComparativePredicateOf2
        (AssessmentInterval a)
-       (Event d c a)
-  -> Predicate (Event d c a)
+       (Event c d a)
+  -> Predicate (Event c d a)
   -> Definition
        (  Feature indexName (i a)
        -> Feature
             eventsName
-            (container (Event d c a))
+            (container (Event c d a))
        -> Feature varName outputType
        )
 buildNofXOrMofYWithGap f cast xCount xPred gapCount gapDuration assess intervalPred yPred
@@ -48,17 +48,17 @@ buildNofXOrMofYWithGapBool
      , Witherable container
      )
   => Natural -- ^ count passed to 'buildNofX'
-  -> Predicate (Event d c a)
+  -> Predicate (Event c d a)
   -> Natural -- ^ the minimum number of gaps passed to 'buildNofXWithGap'
   -> b -- ^ the minimum duration of a gap passed to 'buildNofXWithGap'
   -> (i a -> AssessmentInterval a)
   -> ComparativePredicateOf2
        (AssessmentInterval a)
-       (Event d c a)
-  -> Predicate (Event d c a)
+       (Event c d a)
+  -> Predicate (Event c d a)
   -> Definition
        (  Feature indexName (i a)
-       -> Feature eventsName (container (Event d c a))
+       -> Feature eventsName (container (Event c d a))
        -> Feature varName Bool
        )
 buildNofXOrMofYWithGapBool = buildNofXOrMofYWithGap (||) id
@@ -72,17 +72,17 @@ buildNofXOrMofYWithGapBinary
      , Witherable container
      )
   => Natural -- ^ count passed to 'buildNofX'
-  -> Predicate (Event d c a)
+  -> Predicate (Event c d a)
   -> Natural -- ^ the minimum number of gaps passed to 'buildNofXWithGap'
   -> b -- ^ the minimum duration of a gap passed to 'buildNofXWithGap'
   -> (i a -> AssessmentInterval a)
   -> ComparativePredicateOf2
        (AssessmentInterval a)
-       (Event d c a)
-  -> Predicate (Event d c a)
+       (Event c d a)
+  -> Predicate (Event c d a)
   -> Definition
        (  Feature indexName (i a)
-       -> Feature eventsName (container (Event d c a))
+       -> Feature eventsName (container (Event c d a))
        -> Feature varName Binary
        )
 buildNofXOrMofYWithGapBinary = buildNofXOrMofYWithGap
@@ -93,19 +93,19 @@ buildNofXOrMofYWithGapBinary = buildNofXOrMofYWithGap
 
 type NofXOrMofYWithGapArgs
   = ( Natural
-    , Predicate (Event TestSchema Text Int)
+    , Predicate (Event Text TestSchema Int)
     , Natural
     , Int
     , Interval Int -> AssessmentInterval Int
     , ComparativePredicateOf2
         (AssessmentInterval Int)
-        (Event TestSchema Text Int)
-    , Predicate (Event TestSchema Text Int)
+        (Event Text TestSchema Int)
+    , Predicate (Event Text TestSchema Int)
     )
 
 type NofXOrMofYWithGapTestCase
   = TestCase
-      (F "index" (Interval Int), F "events" [Event TestSchema Text Int])
+      (F "index" (Interval Int), F "events" [Event Text TestSchema Int])
       Bool
       NofXOrMofYWithGapArgs
 

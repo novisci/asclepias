@@ -28,6 +28,15 @@ import           Test.Tasty                     ( TestTree
                                                 )
 import           Test.Tasty.Silver
 
+localTestDataDir :: String
+localTestDataDir = "exampleApp-test/test/"
+
+s3TestDataDir :: String
+s3TestDataDir = "hasklepias/sandbox-testapps/testdata/"
+
+s3ResultsDir :: String
+s3ResultsDir = "hasklepias/sandbox-testapps/results/"
+
 -- Create a unique ID based on the GitLab environmental variable $CI_PIPELINE_ID
 -- if one is defined, otherwise the computation fails with `isDoesNotExistError`
 getCIPipelineId :: IO String
@@ -41,6 +50,7 @@ getSessionId = do
   case r of
     Left  e -> fmap (show . floor . nominalDiffTimeToSeconds . utcTimeToPOSIXSeconds) getCurrentTime
     Right v -> getCIPipelineId
+
 
 -- Enumeration of the test applications
 data AppType = AppRowWise | AppColumnWise
@@ -70,20 +80,20 @@ instance Show TestOutputType where
 
 -- Create the local filepath where the test data is stored
 localInputDataLoc :: TestDataType -> String
-localInputDataLoc TestDataEmpty = "exampleApp-test/test/testEmptyData.jsonl"
-localInputDataLoc TestDataSmall = "exampleApp-test/test/testData.jsonl"
+localInputDataLoc TestDataEmpty = localTestDataDir ++ "testEmptyData.jsonl"
+localInputDataLoc TestDataSmall = localTestDataDir ++ "testData.jsonl"
 
 localResultsFilepath :: String -> String
 localResultsFilepath = ("exampleApp-test/results/" ++)
 
 -- Create the S3 key where the test data will be located (once paired with a bucket)
 s3TestDataKey :: String -> TestDataType -> String
-s3TestDataKey sessionId TestDataEmpty = "hasklepias/sandbox-testapps/testdata/" ++ sessionId ++ "/testdata-empty.jsonl"
-s3TestDataKey sessionId TestDataSmall = "hasklepias/sandbox-testapps/testdata/" ++ sessionId ++ "/testdata-small.jsonl"
+s3TestDataKey sessionId TestDataEmpty = s3TestDataDir ++ sessionId ++ "/testdata-empty.jsonl"
+s3TestDataKey sessionId TestDataSmall = s3TestDataDir ++ sessionId ++ "/testdata-small.jsonl"
 
 -- Create the S3 key where the results will be located (once paired with a bucket)
 s3ResultsKey :: String -> String -> String
-s3ResultsKey sessionId filename = "hasklepias/sandbox-testapps/results/" ++ sessionId ++ "/" ++ filename
+s3ResultsKey sessionId filename = s3ResultsDir ++ sessionId ++ "/" ++ filename
 
 -- Create the S3 URI where the test data will be located
 s3FileURI  :: String -> String
@@ -103,19 +113,13 @@ copyResultsFromS3 sessionId filename =
     uri = s3FileURI $ s3ResultsKey sessionId filename
     cmd = "aws s3 cp " ++ uri ++ " " ++ localResultsFilepath filename
 
--- Delete test data from S3
-removeTestDataFromS3 :: String -> TestDataType -> IO ()
-removeTestDataFromS3 sessionId testDataType =
-  pure cmd >>= callCommand where
-    uri = s3FileURI $ s3TestDataKey sessionId testDataType
-    cmd = "aws s3 rm " ++ uri
-
 -- Delete results from S3
-removeResultsFromS3 :: String -> String -> IO ()
-removeResultsFromS3 sessionId filename =
+removeSessionDirFromS3 :: String -> String -> IO ()
+removeSessionDirFromS3 prefix sessionId =
   pure cmd >>= callCommand where
-    uri = s3FileURI $ s3ResultsKey sessionId filename
-    cmd = "aws s3 rm " ++ uri
+    fileglob = prefix ++ sessionId ++ "/*"
+    uri      = s3FileURI fileglob
+    cmd      = "aws s3 rm " ++ uri
 
 appTest :: String -> AppType -> TestDataType -> TestInputType -> TestOutputType -> IO ()
 appTest sessionId appType testDataType testInputType testOutputType = do
@@ -139,7 +143,6 @@ appTest sessionId appType testDataType testInputType testOutputType = do
   print $ "TEST COMMAND:  " ++ cmd
   pure cmd >>= callCommand
   if isS3out then copyResultsFromS3 sessionId outfilename else pure ()
-  -- if isS3out then removeResultsFromS3 sessionId outfilename else pure ()  -- TODO: uncomment this line
 
 constructTestName :: AppType -> TestDataType -> TestInputType -> TestOutputType -> String
 constructTestName appType testDataType testInputType testOutputType = concat
@@ -201,40 +204,40 @@ tests sessionId = testGroup
   "Tests of exampleApp"
   [ appGoldenVsFile sessionId AppRowWise    TestDataEmpty TestInputFile  TestOutputFile
   , appGoldenVsFile sessionId AppRowWise    TestDataEmpty TestInputFile  TestOutputStdout
-  -- , appGoldenVsFile sessionId AppRowWise    TestDataEmpty TestInputFile  TestOutputS3
-  -- , appGoldenVsFile sessionId AppRowWise    TestDataEmpty TestInputStdin TestOutputFile
-  -- , appGoldenVsFile sessionId AppRowWise    TestDataEmpty TestInputStdin TestOutputStdout
-  -- , appGoldenVsFile sessionId AppRowWise    TestDataEmpty TestInputStdin TestOutputS3
-  -- , appGoldenVsFile sessionId AppRowWise    TestDataEmpty TestInputS3    TestOutputFile
-  -- , appGoldenVsFile sessionId AppRowWise    TestDataEmpty TestInputS3    TestOutputStdout
-  -- , appGoldenVsFile sessionId AppRowWise    TestDataEmpty TestInputS3    TestOutputS3
-  -- , appGoldenVsFile sessionId AppRowWise    TestDataSmall TestInputFile  TestOutputFile
-  -- , appGoldenVsFile sessionId AppRowWise    TestDataSmall TestInputFile  TestOutputStdout
-  -- , appGoldenVsFile sessionId AppRowWise    TestDataSmall TestInputFile  TestOutputS3
-  -- , appGoldenVsFile sessionId AppRowWise    TestDataSmall TestInputStdin TestOutputFile
-  -- , appGoldenVsFile sessionId AppRowWise    TestDataSmall TestInputStdin TestOutputStdout
-  -- , appGoldenVsFile sessionId AppRowWise    TestDataSmall TestInputStdin TestOutputS3
-  -- , appGoldenVsFile sessionId AppRowWise    TestDataSmall TestInputS3    TestOutputFile
-  -- , appGoldenVsFile sessionId AppRowWise    TestDataSmall TestInputS3    TestOutputStdout
-  -- , appGoldenVsFile sessionId AppRowWise    TestDataSmall TestInputS3    TestOutputS3
-  -- , appGoldenVsFile sessionId AppColumnWise TestDataEmpty TestInputFile  TestOutputFile
-  -- , appGoldenVsFile sessionId AppColumnWise TestDataEmpty TestInputFile  TestOutputStdout
-  -- , appGoldenVsFile sessionId AppColumnWise TestDataEmpty TestInputFile  TestOutputS3
-  -- , appGoldenVsFile sessionId AppColumnWise TestDataEmpty TestInputStdin TestOutputFile
-  -- , appGoldenVsFile sessionId AppColumnWise TestDataEmpty TestInputStdin TestOutputStdout
-  -- , appGoldenVsFile sessionId AppColumnWise TestDataEmpty TestInputStdin TestOutputS3
-  -- , appGoldenVsFile sessionId AppColumnWise TestDataEmpty TestInputS3    TestOutputFile
-  -- , appGoldenVsFile sessionId AppColumnWise TestDataEmpty TestInputS3    TestOutputStdout
-  -- , appGoldenVsFile sessionId AppColumnWise TestDataEmpty TestInputS3    TestOutputS3
-  -- , appGoldenVsFile sessionId AppColumnWise TestDataSmall TestInputFile  TestOutputFile
-  -- , appGoldenVsFile sessionId AppColumnWise TestDataSmall TestInputFile  TestOutputStdout
-  -- , appGoldenVsFile sessionId AppColumnWise TestDataSmall TestInputFile  TestOutputS3
-  -- , appGoldenVsFile sessionId AppColumnWise TestDataSmall TestInputStdin TestOutputFile
-  -- , appGoldenVsFile sessionId AppColumnWise TestDataSmall TestInputStdin TestOutputStdout
-  -- , appGoldenVsFile sessionId AppColumnWise TestDataSmall TestInputStdin TestOutputS3
-  -- , appGoldenVsFile sessionId AppColumnWise TestDataSmall TestInputS3    TestOutputFile
-  -- , appGoldenVsFile sessionId AppColumnWise TestDataSmall TestInputS3    TestOutputStdout
-  -- , appGoldenVsFile sessionId AppColumnWise TestDataSmall TestInputS3    TestOutputS3
+  , appGoldenVsFile sessionId AppRowWise    TestDataEmpty TestInputFile  TestOutputS3
+  , appGoldenVsFile sessionId AppRowWise    TestDataEmpty TestInputStdin TestOutputFile
+  , appGoldenVsFile sessionId AppRowWise    TestDataEmpty TestInputStdin TestOutputStdout
+  , appGoldenVsFile sessionId AppRowWise    TestDataEmpty TestInputStdin TestOutputS3
+  , appGoldenVsFile sessionId AppRowWise    TestDataEmpty TestInputS3    TestOutputFile
+  , appGoldenVsFile sessionId AppRowWise    TestDataEmpty TestInputS3    TestOutputStdout
+  , appGoldenVsFile sessionId AppRowWise    TestDataEmpty TestInputS3    TestOutputS3
+  , appGoldenVsFile sessionId AppRowWise    TestDataSmall TestInputFile  TestOutputFile
+  , appGoldenVsFile sessionId AppRowWise    TestDataSmall TestInputFile  TestOutputStdout
+  , appGoldenVsFile sessionId AppRowWise    TestDataSmall TestInputFile  TestOutputS3
+  , appGoldenVsFile sessionId AppRowWise    TestDataSmall TestInputStdin TestOutputFile
+  , appGoldenVsFile sessionId AppRowWise    TestDataSmall TestInputStdin TestOutputStdout
+  , appGoldenVsFile sessionId AppRowWise    TestDataSmall TestInputStdin TestOutputS3
+  , appGoldenVsFile sessionId AppRowWise    TestDataSmall TestInputS3    TestOutputFile
+  , appGoldenVsFile sessionId AppRowWise    TestDataSmall TestInputS3    TestOutputStdout
+  , appGoldenVsFile sessionId AppRowWise    TestDataSmall TestInputS3    TestOutputS3
+  , appGoldenVsFile sessionId AppColumnWise TestDataEmpty TestInputFile  TestOutputFile
+  , appGoldenVsFile sessionId AppColumnWise TestDataEmpty TestInputFile  TestOutputStdout
+  , appGoldenVsFile sessionId AppColumnWise TestDataEmpty TestInputFile  TestOutputS3
+  , appGoldenVsFile sessionId AppColumnWise TestDataEmpty TestInputStdin TestOutputFile
+  , appGoldenVsFile sessionId AppColumnWise TestDataEmpty TestInputStdin TestOutputStdout
+  , appGoldenVsFile sessionId AppColumnWise TestDataEmpty TestInputStdin TestOutputS3
+  , appGoldenVsFile sessionId AppColumnWise TestDataEmpty TestInputS3    TestOutputFile
+  , appGoldenVsFile sessionId AppColumnWise TestDataEmpty TestInputS3    TestOutputStdout
+  , appGoldenVsFile sessionId AppColumnWise TestDataEmpty TestInputS3    TestOutputS3
+  , appGoldenVsFile sessionId AppColumnWise TestDataSmall TestInputFile  TestOutputFile
+  , appGoldenVsFile sessionId AppColumnWise TestDataSmall TestInputFile  TestOutputStdout
+  , appGoldenVsFile sessionId AppColumnWise TestDataSmall TestInputFile  TestOutputS3
+  , appGoldenVsFile sessionId AppColumnWise TestDataSmall TestInputStdin TestOutputFile
+  , appGoldenVsFile sessionId AppColumnWise TestDataSmall TestInputStdin TestOutputStdout
+  , appGoldenVsFile sessionId AppColumnWise TestDataSmall TestInputStdin TestOutputS3
+  , appGoldenVsFile sessionId AppColumnWise TestDataSmall TestInputS3    TestOutputFile
+  , appGoldenVsFile sessionId AppColumnWise TestDataSmall TestInputS3    TestOutputStdout
+  , appGoldenVsFile sessionId AppColumnWise TestDataSmall TestInputS3    TestOutputS3
   ]
 
 main :: IO ()
@@ -242,7 +245,9 @@ main = do
   -- TODO: copy the test data to S3 (put it here so it only gets done once)
   createDirectoryIfMissing True "exampleApp-test/results"
   sessionId <- getSessionId
-  -- writeTestDataToS3 sessionId TestDataSmall
+  writeTestDataToS3 sessionId TestDataEmpty
+  writeTestDataToS3 sessionId TestDataSmall
   defaultMain (tests sessionId)
-  -- removeTestDataFromS3 sessionId TestDataSmall
-  -- removeDirectoryRecursive "exampleApp-test/results" -- TODO: doesn't work?
+  -- removeDirectoryRecursive "exampleApp-test/results" -- FIXME: doesn't work?
+  -- removeSessionDirFromS3 s3TestDataDir sessionId -- FIXME: doesn't work?
+  -- removeSessionDirFromS3 s3ResultsDir sessionId -- FIXME: doesn't work?

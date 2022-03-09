@@ -31,6 +31,9 @@ import           Test.Tasty.Silver
 localTestDataDir :: String
 localTestDataDir = "exampleApp-test/test/"
 
+s3Bucket :: String
+s3Bucket = "download.novisci.com"
+
 s3TestDataDir :: String
 s3TestDataDir = "hasklepias/sandbox-testapps/testdata/"
 
@@ -97,7 +100,7 @@ s3ResultsKey sessionId filename = s3ResultsDir ++ sessionId ++ "/" ++ filename
 
 -- Create the S3 URI where the test data will be located
 s3FileURI  :: String -> String
-s3FileURI = ("s3://download.novisci.com/" ++)
+s3FileURI = (("s3://" ++ s3Bucket ++ "/") ++)
 
 -- Copy test data to S3
 writeTestDataToS3 :: String -> TestDataType -> IO ()
@@ -131,11 +134,11 @@ appTest sessionId appType testDataType testInputType testOutputType = do
   let inputFragm = case testInputType of
         TestInputFile -> "-f " ++ infilename
         TestInputStdin -> "< " ++ infilename
-        TestInputS3 -> "-r us-east-1 -b download.novisci.com -k " ++ s3TestDataKey sessionId testDataType
+        TestInputS3 -> "-r us-east-1 -b " ++ s3Bucket ++ " -k " ++ s3TestDataKey sessionId testDataType
   let outputFragm = case testOutputType of
         TestOutputFile -> "-o " ++ localResultsFilepath outfilename
         TestOutputStdout -> "> " ++ localResultsFilepath outfilename
-        TestOutputS3 -> "--outregion us-east-1 --outbucket download.novisci.com --outkey " ++ s3ResultsKey sessionId outfilename
+        TestOutputS3 -> "--outregion us-east-1 --outbucket " ++ s3Bucket ++ " --outkey " ++ s3ResultsKey sessionId outfilename
   let cmd = appCmd ++ " " ++ inputFragm ++ " " ++ outputFragm
   let isS3out = case testOutputType of
         TestOutputS3 -> True

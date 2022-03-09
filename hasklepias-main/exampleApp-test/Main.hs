@@ -18,7 +18,8 @@ import           Hasklepias
 import           Hasklepias.ExampleApp
 import           Hasklepias.MakeCohortApp       ( runApp )
 import           System.IO.Error
-import           System.Directory               ( createDirectoryIfMissing )
+import           System.Directory               ( createDirectoryIfMissing
+                                                , removeDirectoryRecursive )
 import           System.Process
 import           System.Environment
 import           Test.Tasty                     ( TestTree
@@ -72,120 +73,73 @@ localInputDataLoc :: TestDataType -> String
 localInputDataLoc TestDataEmpty = "exampleApp-test/test/testEmptyData.jsonl"
 localInputDataLoc TestDataSmall = "exampleApp-test/test/testData.jsonl"
 
--- -- Create the local filepath where the cohort build is written to
--- localOutputDataLoc :: TestDataType -> String
--- localOutputDataLoc TestDataEmpty = "exampleApp-test/test/stdinemptyrw.json"
--- localOutputDataLoc TestDataSmall = "exampleApp-test/test/stdinrw.json"
+localResultsFilepath :: String -> String
+localResultsFilepath = ("exampleApp-test/results/" ++)
 
 -- Create the S3 key where the test data will be located (once paired with a bucket)
 s3TestDataKey :: String -> TestDataType -> String
-s3TestDataKey sessionId TestDataEmpty = "hasklepias/sandbox-testdata/testEmptyData-" ++ sessionId ++ "-empty.jsonl"
-s3TestDataKey sessionId TestDataSmall = "hasklepias/sandbox-testdata/testData-" ++ sessionId ++ "-small.jsonl"
+s3TestDataKey sessionId TestDataEmpty = "hasklepias/sandbox-testapps/testdata/" ++ sessionId ++ "/testdata-empty.jsonl"
+s3TestDataKey sessionId TestDataSmall = "hasklepias/sandbox-testapps/testdata/" ++ sessionId ++ "/testdata-small.jsonl"
 
--- -- FIXME
--- -- Create the S3 key where the results will be located (once paired with a bucket)
--- s3TestDataKey :: String -> TestDataType -> String
--- s3TestDataKey sessionId TestDataEmpty = "hasklepias/sandbox-testdata/testEmptyData-" ++ sessionId ++ "-empty.jsonl"
--- s3TestDataKey sessionId TestDataSmall = "hasklepias/sandbox-testdata/testData-" ++ sessionId ++ "-small.jsonl"
+-- Create the S3 key where the results will be located (once paired with a bucket)
+s3ResultsKey :: String -> String -> String
+s3ResultsKey sessionId filename = "hasklepias/sandbox-testapps/results/" ++ sessionId ++ "/" ++ filename
 
 -- Create the S3 URI where the test data will be located
-s3TestDataURI  :: String -> String
-s3TestDataURI key = "s3://download.novisci.com/" ++ key
+s3FileURI  :: String -> String
+s3FileURI = ("s3://download.novisci.com/" ++)
 
 -- Copy test data to S3
 writeTestDataToS3 :: String -> TestDataType -> IO ()
 writeTestDataToS3 sessionId testDataType = pure cmd >>= callCommand where
   from = localInputDataLoc testDataType
-  to   = s3TestDataURI $ s3TestDataKey sessionId testDataType
+  to   = s3FileURI $ s3TestDataKey sessionId testDataType
   cmd  = "aws s3 cp " ++ from ++ " " ++ to
+
+-- Copy results from S3
+copyResultsFromS3 :: String -> String -> IO ()
+copyResultsFromS3 sessionId filename =
+  pure cmd >>= callCommand where
+    uri = s3FileURI $ s3ResultsKey sessionId filename
+    cmd = "aws s3 cp " ++ uri ++ " " ++ localResultsFilepath filename
 
 -- Delete test data from S3
 removeTestDataFromS3 :: String -> TestDataType -> IO ()
-removeTestDataFromS3 sessionId testDataType = pure cmd >>= callCommand where
-  uri = s3TestDataURI $ s3TestDataKey sessionId testDataType
-  cmd = "aws s3 rm " ++ uri
+removeTestDataFromS3 sessionId testDataType =
+  pure cmd >>= callCommand where
+    uri = s3FileURI $ s3TestDataKey sessionId testDataType
+    cmd = "aws s3 rm " ++ uri
 
--- Copy test results from S3
-copyResultsFroms3 :: AppType -> TestDataType -> TestInputType -> TestOutputType -> IO ()
-copyResultsFroms3 appType testDataType testInputType testOutputType = pure cmd >>= callCommand where
-  let filename = localOutputFilename appType testDataType testInputType testOutputType
+-- Delete results from S3
+removeResultsFromS3 :: String -> String -> IO ()
+removeResultsFromS3 sessionId filename =
+  pure cmd >>= callCommand where
+    uri = s3FileURI $ s3ResultsKey sessionId filename
+    cmd = "aws s3 rm " ++ uri
 
-  uri = s3TestDataURI $ s3TestDataKey sessionId testDataType
-  cmd = "aws s3 rm " ++ uri
-
-
--- appTestRw :: IO ()
--- appTestRw = do
---   r <- runAppWithLocation (Local "exampleApp-test/test/testData.jsonl")
---                           exampleAppRW
---   B.writeFile "exampleApp-test/test/testrw.json" r
-
--- appStdinRw :: IO ()
--- appStdinRw =
---   callCommand
---     "< exampleApp-test/test/testData.jsonl exampleAppRW -o exampleApp-test/test/stdinrw.appTest :: String -> AppType -> TestDataType -> TestInputType -> TestOutputType -> IO ()
+appTest :: String -> AppType -> TestDataType -> TestInputType -> TestOutputType -> IO ()
 appTest sessionId appType testDataType testInputType testOutputType = do
+  let infilename = localInputDataLoc testDataType
+  let outfilename = resultsFilename appType testDataType testInputType testOutputType
   let appCmd = case appType of
         AppRowWise -> "exampleAppRW"
         AppColumnWise -> "exampleAppCW"
   let inputFragm = case testInputType of
-        TestInputFile -> "-f " ++ localInputDataLoc testDataType
-        TestInputStdin -> "< " ++ localInputDataLoc testDataType
+        TestInputFile -> "-f " ++ infilename
+        TestInputStdin -> "< " ++ infilename
         TestInputS3 -> "-r us-east-1 -b download.novisci.com -k " ++ s3TestDataKey sessionId testDataType
   let outputFragm = case testOutputType of
-        TestOutputFile -> "-o " ++ localOutputFilepath (localOutputFilename appType testDataType testInputType testOutputType)
-        TestOutputStdout -> "> " ++ localOutputFilepath (localOutputFilename appType testDataType testInputType testOutputType)
-        TestOutputS3 -> "--outregion us-east-1 --outbucket download.novisci.com --outkey " ++ s3TestDataKey sessionId testDataType
+        TestOutputFile -> "-o " ++ localResultsFilepath outfilename
+        TestOutputStdout -> "> " ++ localResultsFilepath outfilename
+        TestOutputS3 -> "--outregion us-east-1 --outbucket download.novisci.com --outkey " ++ s3ResultsKey sessionId outfilename
   let cmd = appCmd ++ " " ++ inputFragm ++ " " ++ outputFragm
-  print $ "TEST COMMAND:  " ++ cmd
-  let isS3in = case testInputType of
-        TestInputS3 -> True
-        _           -> False
   let isS3out = case testOutputType of
         TestOutputS3 -> True
         _            -> False
+  print $ "TEST COMMAND:  " ++ cmd
   pure cmd >>= callCommand
-  if isS3out then copyTestDataFromS3 sessionId testDataType else pure ()
-  if isS3out then removeTestDataFromS3 sessionId testDataType else pure ()
-
--- appTestCw :: IO ()
--- appTestCw = do
---   r <- runAppWithLocation (Local "exampleApp-test/test/testData.jsonl")
---                           exampleAppCW
---   B.writeFile "exampleApp-test/test/testcw.json" r
-
--- appStdinCw :: IO ()
--- appStdinCw =
---   callCommand
---     "< exampleApp-test/test/testData.jsonl exampleAppCW -o exampleApp-test/test/stdincw.json"
-
--- appS3inCw :: String -> TestDataType -> IO ()
--- appS3inCw sessionId testDataType = do
---   let key = s3TestDataKey sessionId testDataType
---   let cmd = "exampleAppCW -o exampleApp-test/test/s3incw.json -r us-east-1 -b download.novisci.com -k " ++ key
---   pure cmd >>= callCommand
-
--- appTestEmptyRw :: IO ()
--- appTestEmptyRw = do
---   r <- runAppWithLocation (Local "exampleApp-test/test/testEmptyData.jsonl")
---                           exampleAppRW
---   B.writeFile "exampleApp-test/test/testemptyrw.json" r
-
--- appStdinEmptyRw :: IO ()
--- appStdinEmptyRw =
---   callCommand
---     "< exampleApp-test/test/testEmptyData.jsonl exampleAppRW -o exampleApp-test/test/stdinemptyrw.json"
-
--- appTestEmptyCw :: IO ()
--- appTestEmptyCw = do
---   r <- runAppWithLocation (Local "exampleApp-test/test/testEmptyData.jsonl")
---                           exampleAppCW
---   B.writeFile "exampleApp-test/test/testemptycw.json" r
-
--- appStdinEmptyCw :: IO ()
--- appStdinEmptyCw =
---   callCommand
---     "< exampleApp-test/test/testEmptyData.jsonl exampleAppCW -o exampleApp-test/test/stdinemptycw.json"
+  if isS3out then copyResultsFromS3 sessionId outfilename else pure ()
+  -- if isS3out then removeResultsFromS3 sessionId outfilename else pure ()  -- TODO: uncomment this line
 
 constructTestName :: AppType -> TestDataType -> TestInputType -> TestOutputType -> String
 constructTestName appType testDataType testInputType testOutputType = concat
@@ -211,11 +165,8 @@ constructTestLocGolden appType testDataType = concat
   , ".golden"
   ]
 
-localOutputFilepath :: String -> String
-localOutputFilepath = ("exampleApp-test/results/" ++)
-
-localOutputFilename :: AppType -> TestDataType -> TestInputType -> TestOutputType -> String
-localOutputFilename appType testDataType testInputType testOutputType = concat
+resultsFilename :: AppType -> TestDataType -> TestInputType -> TestOutputType -> String
+resultsFilename appType testDataType testInputType testOutputType = concat
   [ "results-"
   , case appType of
       AppRowWise -> "rw"
@@ -242,7 +193,7 @@ appGoldenVsFile sessionId appType testDataType testInputType testOutputType =
   goldenVsFile
     (constructTestName appType testDataType testInputType testOutputType)
     (constructTestLocGolden appType testDataType)
-    (localOutputFilepath (localOutputFilename appType testDataType testInputType testOutputType))
+    (localResultsFilepath (resultsFilename appType testDataType testInputType testOutputType))
     (appTest sessionId appType testDataType testInputType testOutputType)
 
 tests :: String -> TestTree
@@ -288,8 +239,10 @@ tests sessionId = testGroup
 
 main :: IO ()
 main = do
+  -- TODO: copy the test data to S3 (put it here so it only gets done once)
   createDirectoryIfMissing True "exampleApp-test/results"
   sessionId <- getSessionId
   -- writeTestDataToS3 sessionId TestDataSmall
   defaultMain (tests sessionId)
   -- removeTestDataFromS3 sessionId TestDataSmall
+  -- removeDirectoryRecursive "exampleApp-test/results" -- TODO: doesn't work?

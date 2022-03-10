@@ -7,7 +7,10 @@ module Main
   ( main
   ) where
 
-import           Control.Exception             ( tryJust )
+import           Control.Exception             ( catch
+                                               , tryJust
+                                               , throwIO
+                                               )
 import           Control.Monad                 ( guard )
 import qualified Data.ByteString.Lazy          as B
 import           Data.Time                     ( getCurrentTime )
@@ -16,10 +19,14 @@ import           Data.Time.Clock               ( nominalDiffTimeToSeconds )
 import           Data.Char                     ( isDigit )
 import           Hasklepias
 import           Hasklepias.ExampleApp
+import           BuildLargeTestData
 import           Hasklepias.MakeCohortApp       ( runApp )
 import           System.IO.Error
 import           System.Directory               ( createDirectoryIfMissing
-                                                , removeDirectoryRecursive )
+                                                , removeDirectoryRecursive
+                                                , removePathForcibly
+                                                )
+import           System.Exit                    ( ExitCode )
 import           System.Process
 import           System.Environment
 import           Test.Tasty                     ( TestTree
@@ -30,6 +37,9 @@ import           Test.Tasty.Silver
 
 localTestDataDir :: String
 localTestDataDir = "exampleApp-test/test/"
+
+localResultsDir :: String
+localResultsDir = "exampleApp-test/results/"
 
 s3Bucket :: String
 s3Bucket = "download.novisci.com"
@@ -53,7 +63,6 @@ getSessionId = do
   case r of
     Left  e -> fmap (show . floor . nominalDiffTimeToSeconds . utcTimeToPOSIXSeconds) getCurrentTime
     Right v -> getCIPipelineId
-
 
 -- Enumeration of the test applications
 data AppType = AppRowWise | AppColumnWise
@@ -87,7 +96,7 @@ localInputDataLoc TestDataEmpty = localTestDataDir ++ "testEmptyData.jsonl"
 localInputDataLoc TestDataSmall = localTestDataDir ++ "testData.jsonl"
 
 localResultsFilepath :: String -> String
-localResultsFilepath = ("exampleApp-test/results/" ++)
+localResultsFilepath = (localResultsDir ++)
 
 -- Create the S3 key where the test data will be located (once paired with a bucket)
 s3TestDataKey :: String -> TestDataType -> String
@@ -120,9 +129,9 @@ copyResultsFromS3 sessionId filename =
 removeSessionDirFromS3 :: String -> String -> IO ()
 removeSessionDirFromS3 prefix sessionId =
   pure cmd >>= callCommand where
-    fileglob = prefix ++ sessionId ++ "/*"
+    fileglob = prefix ++ sessionId
     uri      = s3FileURI fileglob
-    cmd      = "aws s3 rm " ++ uri
+    cmd      = "aws s3 rm --recursive " ++ uri
 
 appTest :: String -> AppType -> TestDataType -> TestInputType -> TestOutputType -> IO ()
 appTest sessionId appType testDataType testInputType testOutputType = do
@@ -245,12 +254,13 @@ tests sessionId = testGroup
 
 main :: IO ()
 main = do
-  -- TODO: copy the test data to S3 (put it here so it only gets done once)
-  createDirectoryIfMissing True "exampleApp-test/results"
+  createDirectoryIfMissing True localResultsDir
   sessionId <- getSessionId
   writeTestDataToS3 sessionId TestDataEmpty
   writeTestDataToS3 sessionId TestDataSmall
   defaultMain (tests sessionId)
-  -- removeDirectoryRecursive "exampleApp-test/results" -- FIXME: doesn't work?
-  -- removeSessionDirFromS3 s3TestDataDir sessionId -- FIXME: doesn't work?
-  -- removeSessionDirFromS3 s3ResultsDir sessionId -- FIXME: doesn't work?
+    `catch` (\e -> do
+      removeDirectoryRecursive localResultsDir
+      -- removeSessionDirFromS3 s3TestDataDir sessionId  -- TODO: uncomment!
+      -- removeSessionDirFromS3 s3ResultsDir sessionId  -- TODO: uncomment!
+      throwIO (e :: ExitCode))

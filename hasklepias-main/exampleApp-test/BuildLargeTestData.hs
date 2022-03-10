@@ -7,8 +7,7 @@ import Text.Printf
 import Text.Regex
 
 nReplicates :: Int
--- nReplicates = 1000
-nReplicates = 10
+nReplicates = 1000
 
 nDigits :: Int
 nDigits = length $ show (nReplicates - 1)
@@ -35,7 +34,7 @@ generateNewSubjs :: Regex -> [String] -> [String]
 generateNewSubjs re lines =
   concatMap updateIdsPtl replacements where
   updateIdsPtl = \replacement -> updateIds re replacement lines
-  replacements = map (constructReplacement . formatNum) [0..nReplicates]
+  replacements = map (constructReplacement . formatNum) [0..(nReplicates - 1)]
 
 generateNewEvents :: [String] -> [String]
 generateNewEvents = concat . replicate nReplicates

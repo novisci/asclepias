@@ -11,7 +11,9 @@ import           Control.Exception             ( catch
                                                , tryJust
                                                , throwIO
                                                )
-import           Control.Monad                 ( guard )
+import           Control.Monad                 ( guard
+                                               , when
+                                               )
 import qualified Data.ByteString.Lazy          as B
 import           Data.Time                     ( getCurrentTime )
 import           Data.Time.Clock.POSIX         ( utcTimeToPOSIXSeconds )
@@ -154,7 +156,7 @@ appTest sessionId appType testDataType testInputType testOutputType = do
         _            -> False
   print $ "TEST COMMAND:  " ++ cmd
   pure cmd >>= callCommand
-  if isS3out then copyResultsFromS3 sessionId outfilename else pure ()
+  when isS3out $ copyResultsFromS3 sessionId outfilename
 
 constructTestName :: AppType -> TestDataType -> TestInputType -> TestOutputType -> String
 constructTestName appType testDataType testInputType testOutputType = concat

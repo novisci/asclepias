@@ -10,7 +10,7 @@ nReplicates :: Int
 nReplicates = 10
 
 nDigits :: Int
-nDigits = 3
+nDigits = length $ show (nReplicates - 1)
 
 formatNum :: Int -> String
 formatNum = printf ("%0" ++ show nDigits ++ "s") . show

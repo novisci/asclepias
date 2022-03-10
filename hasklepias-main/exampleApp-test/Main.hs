@@ -36,6 +36,7 @@ import           Test.Tasty                     ( TestTree
                                                 , testGroup
                                                 )
 import           Test.Tasty.Silver
+import BuildLargeTestData (makeManySubjectsTestData)
 
 localTestDataDir :: String
 localTestDataDir = "exampleApp-test/test/"
@@ -73,10 +74,12 @@ instance Show AppType where
   show AppColumnWise = "column-wise"
 
 -- Enumeration of the test data cases
-data TestDataType = TestDataEmpty | TestDataSmall
+data TestDataType = TestDataEmpty | TestDataSmall | TestDataManySubj | TestDataManyEvent
 instance Show TestDataType where
   show TestDataEmpty = "empty data"
   show TestDataSmall = "small data"
+  show TestDataManySubj = "many subjects data"
+  show TestDataManyEvent = "many evetns data"
 
 -- Enumeration of input sources
 data TestInputType = TestInputFile | TestInputStdin | TestInputS3
@@ -96,6 +99,8 @@ instance Show TestOutputType where
 localInputDataLoc :: TestDataType -> String
 localInputDataLoc TestDataEmpty = localTestDataDir ++ "testEmptyData.jsonl"
 localInputDataLoc TestDataSmall = localTestDataDir ++ "testData.jsonl"
+localInputDataLoc TestDataManySubj = localTestDataDir ++ "testmanysubjects.jsonl"
+localInputDataLoc TestDataManyEvent = localTestDataDir ++ "testmanyevents.jsonl"
 
 localResultsFilepath :: String -> String
 localResultsFilepath = (localResultsDir ++)
@@ -104,6 +109,8 @@ localResultsFilepath = (localResultsDir ++)
 s3TestDataKey :: String -> TestDataType -> String
 s3TestDataKey sessionId TestDataEmpty = s3TestDataDir ++ sessionId ++ "/testdata-empty.jsonl"
 s3TestDataKey sessionId TestDataSmall = s3TestDataDir ++ sessionId ++ "/testdata-small.jsonl"
+s3TestDataKey sessionId TestDataManySubj = s3TestDataDir ++ sessionId ++ "/testdata-manysubj.jsonl"
+s3TestDataKey sessionId TestDataManyEvent = s3TestDataDir ++ sessionId ++ "/testdata-manyevent.jsonl"
 
 -- Create the S3 key where the results will be located (once paired with a bucket)
 s3ResultsKey :: String -> String -> String

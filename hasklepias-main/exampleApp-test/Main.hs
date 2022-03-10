@@ -261,12 +261,28 @@ tests sessionId = testGroup
   , appGoldenVsFile sessionId AppColumnWise TestDataSmall TestInputS3    TestOutputS3
   ]
 
+makeManySubjectsTestDataPtl :: IO ()
+makeManySubjectsTestDataPtl =
+  makeManySubjectsTestData
+    (localTestDataDir ++ "testData.jsonl")
+    (localTestDataDir ++ "testManySubjects.jsonl")
+
+makeManyEventsTestDataPtl :: IO ()
+makeManyEventsTestDataPtl =
+  makeManyEventsTestData
+    (localTestDataDir ++ "testData.jsonl")
+    (localTestDataDir ++ "testManyEvents.jsonl")
+
 main :: IO ()
 main = do
-  createDirectoryIfMissing True localResultsDir
   sessionId <- getSessionId
+  createDirectoryIfMissing True localResultsDir
+  makeManySubjectsTestDataPtl
+  makeManyEventsTestDataPtl
   writeTestDataToS3 sessionId TestDataEmpty
   writeTestDataToS3 sessionId TestDataSmall
+  writeTestDataToS3 sessionId TestDataManySubj
+  writeTestDataToS3 sessionId TestDataManyEvent
   defaultMain (tests sessionId)
     `catch` (\e -> do
       removeDirectoryRecursive localResultsDir

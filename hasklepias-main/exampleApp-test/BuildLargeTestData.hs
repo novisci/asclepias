@@ -1,5 +1,6 @@
 module BuildLargeTestData
   ( makeManySubjectsTestData
+  , makeManyEventsTestData
   ) where
 
 import Text.Printf
@@ -23,19 +24,38 @@ updateIds pattern replacement =
 constructReplacement :: String -> String
 constructReplacement label = "\"\\1-" ++ label ++ "\""
 
-generateLines :: Regex -> [String] -> [[String]]
-generateLines re lines =
-  map updateIdsPtl replacements where
+generateLines ::
+     (String -> Bool)
+  -> ([String] -> [String])
+  -> [String]
+  -> [String]
+generateLines pred generateFcn = generateFcn . filter pred
+
+generateNewSubjs :: Regex -> [String] -> [String]
+generateNewSubjs re lines =
+  concatMap updateIdsPtl replacements where
   updateIdsPtl = \replacement -> updateIds re replacement lines
   replacements = map (constructReplacement . formatNum) [0..nReplicates]
+
+generateNewEvents :: [String] -> [String]
+generateNewEvents = concat . replicate nReplicates
 
 readLines :: String -> IO [String]
 readLines = fmap lines . readFile
 
+generateData :: String -> String -> ([String] -> [String]) -> IO ()
+generateData infilePath outfilePath transform = do
+  infileLines <- readLines infilePath
+  let updatedLines = transform infileLines
+  let concatLines = foldr (\x y -> x ++ "\n" ++ y) "" updatedLines
+  writeFile outfilePath concatLines
+
 makeManySubjectsTestData :: String -> String -> IO ()
 makeManySubjectsTestData infilepath outfilepath = do
-  let re = mkRegex "\"(a|b|c)\""
-  infilelines <- readLines infilepath
-  let newLines = concat $ generateLines re infilelines
-  let newStr = foldr (\x y -> x ++ "\n" ++ y) "" newLines
-  writeFile outfilepath newStr
+  generateData infilepath outfilepath (generateNewSubjs $ mkRegex "\"(a|b|c)\"")
+
+makeManyEventsTestData :: String -> String -> IO ()
+makeManyEventsTestData infilepath outfilepath = do
+  generateData infilepath outfilepath transform where
+    checkIfSubjA s = (s !! 2 == 'a') && (s !! 3 == '"')
+    transform = generateNewEvents . filter checkIfSubjA

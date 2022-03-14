@@ -36,7 +36,7 @@ import           Test.Tasty                     ( TestTree
                                                 , testGroup
                                                 )
 import           Test.Tasty.Silver
-import BuildLargeTestData (makeManySubjectsTestData)
+import BuildLargeTestData ( generateTestDataManySubjects )
 
 localTestDataDir :: String
 localTestDataDir = "exampleApp-test/test/"
@@ -261,15 +261,15 @@ tests sessionId = testGroup
   , appGoldenVsFile sessionId AppColumnWise TestDataSmall TestInputS3    TestOutputS3
   ]
 
-makeManySubjectsTestDataPtl :: IO ()
-makeManySubjectsTestDataPtl =
-  makeManySubjectsTestData
+generateTestDataManySubjectsPtl :: IO ()
+generateTestDataManySubjectsPtl =
+  generateTestDataManySubjects
     (localTestDataDir ++ "testData.jsonl")
     (localTestDataDir ++ "testManySubjects.jsonl")
 
-makeManyEventsTestDataPtl :: IO ()
-makeManyEventsTestDataPtl =
-  makeManyEventsTestData
+generateTestDataManyEventsPtl :: IO ()
+generateTestDataManyEventsPtl =
+  generateTestDataManyEvents
     (localTestDataDir ++ "testData.jsonl")
     (localTestDataDir ++ "testManyEvents.jsonl")
 
@@ -277,15 +277,15 @@ main :: IO ()
 main = do
   sessionId <- getSessionId
   createDirectoryIfMissing True localResultsDir
-  makeManySubjectsTestDataPtl
-  makeManyEventsTestDataPtl
+  generateTestDataManySubjectsPtl
+  generateTestDataManyEventsPtl
   writeTestDataToS3 sessionId TestDataEmpty
   writeTestDataToS3 sessionId TestDataSmall
   writeTestDataToS3 sessionId TestDataManySubj
   writeTestDataToS3 sessionId TestDataManyEvent
   defaultMain (tests sessionId)
     `catch` (\e -> do
-      removeDirectoryRecursive localResultsDir
+      -- removeDirectoryRecursive localResultsDir
       -- removeSessionDirFromS3 s3TestDataDir sessionId  -- TODO: uncomment!
       -- removeSessionDirFromS3 s3ResultsDir sessionId  -- TODO: uncomment!
       throwIO (e :: ExitCode))

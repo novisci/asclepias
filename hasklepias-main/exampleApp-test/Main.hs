@@ -308,22 +308,52 @@ generateTestDataManySubjectsPtl =
     (localTestDataDir ++ "testData.jsonl")
     (localTestDataDir ++ "testManySubjects.jsonl")
 
-generateTestDataManyEventsPtl :: IO ()
-generateTestDataManyEventsPtl =
+generateTestDataManyEventPtl :: IO ()
+generateTestDataManyEventPtl =
   generateTestDataManyEvents
     (localTestDataDir ++ "testData.jsonl")
     (localTestDataDir ++ "testManyEvents.jsonl")
 
+generateGoldenManySubjectsRwPtl :: IO ()
+generateGoldenManySubjectsRwPtl =
+  generateGoldenManySubjectsRw
+    (localTestDataDir ++ "testmanysubjectsrw.golden")
+
+generateGoldenManySubjectsCwPtl :: IO ()
+generateGoldenManySubjectsCwPtl =
+  generateGoldenManySubjectsCw
+    (localTestDataDir ++ "testmanysubjectscw.golden")
+
+-- Perform the testing
+--
+-- Note that changing the number of events for the "many events" test data
+-- doesn't change the output of the cohort creation since the cohort definition
+-- throws that data away anyway, so for this reason we create a golden file and
+-- store it in the repository. On the other hand, for the "many subjects" test
+-- data we generate the data and corresponding golden file each time we do the
+-- testing so as to (i) prevent storing large files in the repository, and (ii)
+-- so that we can change the number of test subjects with ease.
 main :: IO ()
 main = do
   sessionId <- getSessionId
   createDirectoryIfMissing True localResultsDir
+
+  -- Generate the many subjects test data, the many events test data, and the
+  -- many subjects row-wise and column-wise golden files. Note that the "many
+  -- event" golden files are included as part of the repository
   generateTestDataManySubjectsPtl
-  generateTestDataManyEventsPtl
+  generateTestDataManyEventPtl
+  generateGoldenManySubjectsRwPtl
+  generateGoldenManySubjectsCwPtl
+
+  -- Copy the test data to S3 with session-specific keys to avoid collisions
   writeTestDataToS3 sessionId TestDataEmpty
   writeTestDataToS3 sessionId TestDataSmall
   writeTestDataToS3 sessionId TestDataManySubj
   writeTestDataToS3 sessionId TestDataManyEvent
+
+  -- Run the tests and perform cleanup. Note that ANY CODE WRITTEN AFTER THIS
+  -- EXPRESION WILL BE SILENTLY IGNORED
   defaultMain (tests sessionId)
     `catch` (\e -> do
       -- removeDirectoryRecursive localResultsDir

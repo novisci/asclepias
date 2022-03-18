@@ -1,9 +1,13 @@
 module BuildLargeTestData
-  ( generateTestDataManySubjects
+  ( generateGoldenManySubjectsRw
+  , generateGoldenManySubjectsCw
+  , generateTestDataManySubjects
   , generateTestDataManyEvents
   ) where
 
-import Data.List ( intercalate )
+import Data.List ( sort
+                 , intercalate
+                 )
 import Text.Printf
 import Text.Regex
 
@@ -68,11 +72,23 @@ generateTestDataManyEvents infilepath outfilepath = do
     checkIfSubjA s = (s !! 2 == 'a') && (s !! 3 == '"')
     transform = generateNewEvents . filter checkIfSubjA
 
--- generateGoldenCwManyEvents :: String -> IO ()
--- generateGoldenCwManyEvents outfilePath = do
---   writeFile outfilePath concatLines where
---     concatLines = outputStart ++ concatCwVars ++ outputEnd
---     concatCwVars = "[" ++ intercalate "," cwVarManys ++ "]"
+generateGoldenManySubjectsRw :: String -> IO ()
+generateGoldenManySubjectsRw outfilepath =
+  writeFile outfilepath concatLines where
+    concatLines = (
+      concat outputStart
+      ++ intercalate "," rwPatientManys
+      ++ concat outputRwEnd)
+
+generateGoldenManySubjectsCw :: String -> IO ()
+generateGoldenManySubjectsCw outfilepath =
+  writeFile outfilepath concatLines where
+    concatLines = (
+      concat outputStart
+      ++ intercalate "," cwVarManys
+      ++ "],\"ids\":["
+      ++ intercalate "," cwPatientManys
+      ++ concat outputCwEnd)
 
 outputStart :: [String]
 outputStart =
@@ -92,7 +108,7 @@ rwPatientEntries =
   ]
 
 rwPatientManys :: [String]
-rwPatientManys = generateNewSubjs patientRe rwPatientEntries
+rwPatientManys = sort $ generateNewSubjs patientRe rwPatientEntries
 
 cwPatientEntries :: [String]
 cwPatientEntries =
@@ -101,7 +117,7 @@ cwPatientEntries =
   ]
 
 cwPatientManys :: [String]
-cwPatientManys = generateNewSubjs patientRe cwPatientEntries
+cwPatientManys = sort $ generateNewSubjs patientRe cwPatientEntries
 
 cwVarEntries :: [String]
 cwVarEntries =
@@ -116,5 +132,8 @@ cwVarManys :: [String]
 cwVarManys = map (\s -> "[" ++ replicateEntries s ++ "]") cwVarEntries where
   replicateEntries = intercalate "," . replicate nReplicates
 
-outputEnd :: [String]
-outputEnd = ["]},\"tag\":\"RW\"}]}"]
+outputRwEnd :: [String]
+outputRwEnd = ["]},\"tag\":\"RW\"}]}"]
+
+outputCwEnd :: [String]
+outputCwEnd = ["]},\"tag\":\"CW\"}]}"]

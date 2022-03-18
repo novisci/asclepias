@@ -75,25 +75,12 @@ instance Show AppType where
 
 -- Enumeration of the test data cases
 data TestDataType = TestDataEmpty | TestDataSmall | TestDataManySubj | TestDataManyEvent
-instance Show TestDataType where
-  show TestDataEmpty = "empty data"
-  show TestDataSmall = "small data"
-  show TestDataManySubj = "many subjects data"
-  show TestDataManyEvent = "many evetns data"
 
 -- Enumeration of input sources
 data TestInputType = TestInputFile | TestInputStdin | TestInputS3
-instance Show TestInputType where
-  show TestInputFile = "file"
-  show TestInputStdin = "standard input"
-  show TestInputS3 = "S3"
 
 -- Enumeration of input sources
 data TestOutputType = TestOutputFile | TestOutputStdout | TestOutputS3
-instance Show TestOutputType where
-  show TestOutputFile = "file"
-  show TestOutputStdout = "standard output"
-  show TestOutputS3 = "S3"
 
 -- Create the local filepath where the test data is stored
 localInputDataLoc :: TestDataType -> String
@@ -169,13 +156,25 @@ appTest sessionId appType testDataType testInputType testOutputType = do
 constructTestName :: AppType -> TestDataType -> TestInputType -> TestOutputType -> String
 constructTestName appType testDataType testInputType testOutputType = concat
   [ "ExampleApp of a "
-  , show appType
+  , case appType of
+      AppRowWise-> "row-wise"
+      AppColumnWise -> "column-wise"
   , " cohort performed on "
-  , show testDataType
+  , case testDataType of
+      TestDataEmpty -> "empty data"
+      TestDataSmall -> "small data"
+      TestDataManySubj -> "many subjects data"
+      TestDataManyEvent -> "many evetns data"
   , " reading from "
-  , show testInputType
+  , case testInputType of
+      TestInputFile -> "file"
+      TestInputStdin -> "standard input"
+      TestInputS3 -> "S3"
   , " and writing to "
-  , show testOutputType
+  , case testOutputType of
+      TestOutputFile -> "file"
+      TestOutputStdout -> "standard output"
+      TestOutputS3 -> "S3"
   ]
 
 constructTestLocGolden :: AppType -> TestDataType -> String

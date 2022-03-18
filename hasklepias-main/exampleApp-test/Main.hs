@@ -53,20 +53,6 @@ s3TestDataDir = "hasklepias/sandbox-testapps/testdata/"
 s3ResultsDir :: String
 s3ResultsDir = "hasklepias/sandbox-testapps/results/"
 
--- Create a unique ID based on the GitLab environmental variable $CI_PIPELINE_ID
--- if one is defined, otherwise the computation fails with `isDoesNotExistError`
-getCIPipelineId :: IO String
-getCIPipelineId = getEnv "CI_PIPELINE_ID"
-
--- Use the value of `getCIPipelineId` if it was able to be obtained, otherwise use
--- the number of seconds since the epoch as a fallback
-getSessionId :: IO String
-getSessionId = do
-  r <- tryJust (guard . isDoesNotExistError) getCIPipelineId
-  case r of
-    Left  e -> fmap (show . floor . nominalDiffTimeToSeconds . utcTimeToPOSIXSeconds) getCurrentTime
-    Right v -> getCIPipelineId
-
 -- Enumeration of the test applications
 data AppType = AppRowWise | AppColumnWise
 instance Show AppType where
@@ -82,148 +68,45 @@ data TestInputType = TestInputFile | TestInputStdin | TestInputS3
 -- Enumeration of input sources
 data TestOutputType = TestOutputFile | TestOutputStdout | TestOutputS3
 
--- Create the local filepath where the test data is stored
-localInputDataLoc :: TestDataType -> String
-localInputDataLoc TestDataEmpty = localTestDataDir ++ "testEmptyData.jsonl"
-localInputDataLoc TestDataSmall = localTestDataDir ++ "testData.jsonl"
-localInputDataLoc TestDataManySubj = localTestDataDir ++ "testmanysubjects.jsonl"
-localInputDataLoc TestDataManyEvent = localTestDataDir ++ "testmanyevents.jsonl"
+-- Run the tests
+--
+-- Note that changing the number of events for the "many events" test data
+-- doesn't change the output of the cohort creation since the cohort definition
+-- throws that data away anyway, so for this reason we create a golden file and
+-- store it in the repository. On the other hand, for the "many subjects" test
+-- data we generate the data and corresponding golden file each time we do the
+-- testing so as to (i) prevent storing large files in the repository, and (ii)
+-- so that we can change the number of test subjects with ease.
+main :: IO ()
+main = do
+  sessionId <- getSessionId
+  createDirectoryIfMissing True localResultsDir
 
--- Helper function to create the local filpath from a filename
-localResultsFilepath :: String -> String
-localResultsFilepath = (localResultsDir ++)
+  -- Generate the many subjects test data, the many events test data, and the
+  -- many subjects row-wise and column-wise golden files. Note that the "many
+  -- event" golden files are included as part of the repository
+  generateTestDataManySubjectsPtl
+  generateTestDataManyEventPtl
+  generateGoldenManySubjectsRwPtl
+  generateGoldenManySubjectsCwPtl
 
--- Create the S3 key where the test data will be located (once paired with a bucket)
-s3TestDataKey :: String -> TestDataType -> String
-s3TestDataKey sessionId TestDataEmpty = s3TestDataDir ++ sessionId ++ "/testdata-empty.jsonl"
-s3TestDataKey sessionId TestDataSmall = s3TestDataDir ++ sessionId ++ "/testdata-small.jsonl"
-s3TestDataKey sessionId TestDataManySubj = s3TestDataDir ++ sessionId ++ "/testdata-manysubj.jsonl"
-s3TestDataKey sessionId TestDataManyEvent = s3TestDataDir ++ sessionId ++ "/testdata-manyevent.jsonl"
+  -- Copy the test data to S3 with session-specific keys to avoid collisions
+  writeTestDataToS3 sessionId TestDataEmpty
+  writeTestDataToS3 sessionId TestDataSmall
+  writeTestDataToS3 sessionId TestDataManySubj
+  writeTestDataToS3 sessionId TestDataManyEvent
 
--- Create the S3 key where the results will be located (once paired with a bucket)
-s3ResultsKey :: String -> String -> String
-s3ResultsKey sessionId filename = s3ResultsDir ++ sessionId ++ "/" ++ filename
+  -- Run the tests and perform cleanup. Note that ANY CODE WRITTEN AFTER THIS
+  -- EXPRESION WILL BE SILENTLY IGNORED
+  defaultMain (tests sessionId)
+    `catch` (\e -> do
+      -- removeDirectoryRecursive localResultsDir
+      -- removeSessionDirFromS3 s3TestDataDir sessionId  -- TODO: uncomment!
+      -- removeSessionDirFromS3 s3ResultsDir sessionId  -- TODO: uncomment!
+      -- FIXME: add generated test files and golden files to gitignore?
+      throwIO (e :: ExitCode))
 
--- Create the S3 URI where the test data will be located
-s3FileURI  :: String -> String
-s3FileURI = (("s3://" ++ s3Bucket ++ "/") ++)
-
--- Copy test data to S3
-writeTestDataToS3 :: String -> TestDataType -> IO ()
-writeTestDataToS3 sessionId testDataType = pure cmd >>= callCommand where
-  from = localInputDataLoc testDataType
-  to   = s3FileURI $ s3TestDataKey sessionId testDataType
-  cmd  = "aws s3 cp " ++ from ++ " " ++ to
-
--- Copy results from S3
-copyResultsFromS3 :: String -> String -> IO ()
-copyResultsFromS3 sessionId filename =
-  pure cmd >>= callCommand where
-    uri = s3FileURI $ s3ResultsKey sessionId filename
-    cmd = "aws s3 cp " ++ uri ++ " " ++ localResultsFilepath filename
-
--- Delete results from S3
-removeSessionDirFromS3 :: String -> String -> IO ()
-removeSessionDirFromS3 prefix sessionId =
-  pure cmd >>= callCommand where
-    fileglob = prefix ++ sessionId
-    uri      = s3FileURI fileglob
-    cmd      = "aws s3 rm --recursive " ++ uri
-
-appTest :: String -> AppType -> TestDataType -> TestInputType -> TestOutputType -> IO ()
-appTest sessionId appType testDataType testInputType testOutputType = do
-  let infilename = localInputDataLoc testDataType
-  let outfilename = resultsFilename appType testDataType testInputType testOutputType
-  let appCmd = case appType of
-        AppRowWise -> "exampleAppRW"
-        AppColumnWise -> "exampleAppCW"
-  let inputFragm = case testInputType of
-        TestInputFile -> "-f " ++ infilename
-        TestInputStdin -> "< " ++ infilename
-        TestInputS3 -> "-r us-east-1 -b " ++ s3Bucket ++ " -k " ++ s3TestDataKey sessionId testDataType
-  let outputFragm = case testOutputType of
-        TestOutputFile -> "-o " ++ localResultsFilepath outfilename
-        TestOutputStdout -> "> " ++ localResultsFilepath outfilename
-        TestOutputS3 -> "--outregion us-east-1 --outbucket " ++ s3Bucket ++ " --outkey " ++ s3ResultsKey sessionId outfilename
-  let cmd = appCmd ++ " " ++ inputFragm ++ " " ++ outputFragm
-  let isS3out = case testOutputType of
-        TestOutputS3 -> True
-        _            -> False
-  print $ "TEST COMMAND:  " ++ cmd
-  pure cmd >>= callCommand
-  when isS3out $ copyResultsFromS3 sessionId outfilename
-
-constructTestName :: AppType -> TestDataType -> TestInputType -> TestOutputType -> String
-constructTestName appType testDataType testInputType testOutputType = concat
-  [ "ExampleApp of a "
-  , case appType of
-      AppRowWise-> "row-wise"
-      AppColumnWise -> "column-wise"
-  , " cohort performed on "
-  , case testDataType of
-      TestDataEmpty -> "empty data"
-      TestDataSmall -> "small data"
-      TestDataManySubj -> "many subjects data"
-      TestDataManyEvent -> "many evetns data"
-  , " reading from "
-  , case testInputType of
-      TestInputFile -> "file"
-      TestInputStdin -> "standard input"
-      TestInputS3 -> "S3"
-  , " and writing to "
-  , case testOutputType of
-      TestOutputFile -> "file"
-      TestOutputStdout -> "standard output"
-      TestOutputS3 -> "S3"
-  ]
-
-constructTestLocGolden :: AppType -> TestDataType -> String
-constructTestLocGolden appType testDataType = concat
-  [ "exampleApp-test/test/test"
-  , case testDataType of
-      TestDataEmpty -> "empty"
-      TestDataSmall -> ""
-      TestDataManySubj -> "manysubjects"
-      TestDataManyEvent -> "manyevents"
-  , case appType of
-      AppRowWise -> "rw"
-      AppColumnWise -> "cw"
-  , ".golden"
-  ]
-
-resultsFilename :: AppType -> TestDataType -> TestInputType -> TestOutputType -> String
-resultsFilename appType testDataType testInputType testOutputType = concat
-  [ "results-"
-  , case appType of
-      AppRowWise -> "rw"
-      AppColumnWise -> "cw"
-  , "-"
-  , case testDataType of
-      TestDataEmpty -> "emptydata"
-      TestDataSmall -> "small"
-      TestDataManySubj -> "manysubjectss"
-      TestDataManyEvent -> "manyevents"
-  , "-"
-  , case testInputType of
-      TestInputFile -> "filein"
-      TestInputStdin -> "stdin"
-      TestInputS3 -> "s3in"
-  , "-"
-  , case testOutputType of
-      TestOutputFile -> "fileout"
-      TestOutputStdout -> "stdout"
-      TestOutputS3 -> "s3out"
-  , ".json"
-  ]
-
-appGoldenVsFile :: String -> AppType -> TestDataType -> TestInputType -> TestOutputType -> TestTree
-appGoldenVsFile sessionId appType testDataType testInputType testOutputType =
-  goldenVsFile
-    (constructTestName appType testDataType testInputType testOutputType)
-    (constructTestLocGolden appType testDataType)
-    (localResultsFilepath (resultsFilename appType testDataType testInputType testOutputType))
-    (appTest sessionId appType testDataType testInputType testOutputType)
-
+-- Enumerate the test cases
 tests :: String -> TestTree
 tests sessionId = testGroup
   "Tests of exampleApp"
@@ -301,61 +184,210 @@ tests sessionId = testGroup
   , appGoldenVsFile sessionId AppColumnWise TestDataManyEvent TestInputS3    TestOutputS3
   ]
 
+-- Conduct a single test
+appGoldenVsFile :: String -> AppType -> TestDataType -> TestInputType -> TestOutputType -> TestTree
+appGoldenVsFile sessionId appType testDataType testInputType testOutputType =
+  goldenVsFile
+    (constructTestName appType testDataType testInputType testOutputType)
+    (constructTestLocGolden appType testDataType)
+    (localResultsFilepath (resultsFilename appType testDataType testInputType testOutputType))
+    (appTest sessionId appType testDataType testInputType testOutputType)
+
+-- Build a shell command represented by string and run the command as a
+-- subprocess, where the command is a cohort-building application. If the
+-- application writes the results to S3 then copy those results back to the
+-- local filesystem
+appTest :: String -> AppType -> TestDataType -> TestInputType -> TestOutputType -> IO ()
+appTest sessionId appType testDataType testInputType testOutputType = do
+  let outfilename = resultsFilename appType testDataType testInputType testOutputType
+  let isS3out = case testOutputType of
+        TestOutputS3 -> True
+        _ -> False
+  let cmd = appTestCmd sessionId appType testDataType testInputType testOutputType
+  print $ "TEST COMMAND:  " ++ cmd
+  pure cmd >>= callCommand
+  when isS3out $ copyResultsFromS3 sessionId outfilename
+
+-- Construct a string representing a shell command that runs one of the testing
+-- cohort-building applications on the test data
+--
+-- Note that if the input is specified as coming from standard input, then a
+-- fragment like `"< /path/to/file"` is inserted in the middle of the command
+-- string. While this is not usual practice, the shell removes the fragment
+-- prior to processing and things do indeed work as intended
+appTestCmd :: String -> AppType -> TestDataType -> TestInputType -> TestOutputType -> String
+appTestCmd sessionId appType testDataType testInputType testOutputType =
+  appCmd ++ " " ++ inputFragm ++ " " ++ outputFragm
+  where
+    infilename = localInputDataLoc testDataType
+    outfilename = resultsFilename appType testDataType testInputType testOutputType
+    appCmd = case appType of
+        AppRowWise -> "exampleAppRW"
+        AppColumnWise -> "exampleAppCW"
+    inputFragm = case testInputType of
+        TestInputFile -> "-f " ++ infilename
+        TestInputStdin -> "< " ++ infilename
+        TestInputS3 -> "-r us-east-1 -b " ++ s3Bucket ++ " -k " ++ s3TestDataKey sessionId testDataType
+    outputFragm = case testOutputType of
+        TestOutputFile -> "-o " ++ localResultsFilepath outfilename
+        TestOutputStdout -> "> " ++ localResultsFilepath outfilename
+        TestOutputS3 -> "--outregion us-east-1 --outbucket " ++ s3Bucket ++ " --outkey " ++ s3ResultsKey sessionId outfilename
+
+-- Construct the test data for the "many subjects" test scenario and write it to
+-- the filesystem
 generateTestDataManySubjectsPtl :: IO ()
 generateTestDataManySubjectsPtl =
   generateTestDataManySubjects
     (localTestDataDir ++ "testData.jsonl")
     (localTestDataDir ++ "testManySubjects.jsonl")
 
+-- Construct the test data for the "many events" test scenario and write it to
+-- the filesystem
 generateTestDataManyEventPtl :: IO ()
 generateTestDataManyEventPtl =
   generateTestDataManyEvents
     (localTestDataDir ++ "testData.jsonl")
     (localTestDataDir ++ "testManyEvents.jsonl")
 
+-- Construct the golden file for the row-wise representation of the "many
+-- subjects" test scenario and write it to the filesystem
 generateGoldenManySubjectsRwPtl :: IO ()
 generateGoldenManySubjectsRwPtl =
   generateGoldenManySubjectsRw
     (localTestDataDir ++ "testmanysubjectsrw.golden")
 
+-- Construct the golden file for the column-wise representation of the "many
+-- subjects" test scenario and write it to the filesystem
 generateGoldenManySubjectsCwPtl :: IO ()
 generateGoldenManySubjectsCwPtl =
   generateGoldenManySubjectsCw
     (localTestDataDir ++ "testmanysubjectscw.golden")
 
--- Perform the testing
---
--- Note that changing the number of events for the "many events" test data
--- doesn't change the output of the cohort creation since the cohort definition
--- throws that data away anyway, so for this reason we create a golden file and
--- store it in the repository. On the other hand, for the "many subjects" test
--- data we generate the data and corresponding golden file each time we do the
--- testing so as to (i) prevent storing large files in the repository, and (ii)
--- so that we can change the number of test subjects with ease.
-main :: IO ()
-main = do
-  sessionId <- getSessionId
-  createDirectoryIfMissing True localResultsDir
+-- Create the local filepath where the test data is stored
+localInputDataLoc :: TestDataType -> String
+localInputDataLoc TestDataEmpty = localTestDataDir ++ "testEmptyData.jsonl"
+localInputDataLoc TestDataSmall = localTestDataDir ++ "testData.jsonl"
+localInputDataLoc TestDataManySubj = localTestDataDir ++ "testmanysubjects.jsonl"
+localInputDataLoc TestDataManyEvent = localTestDataDir ++ "testmanyevents.jsonl"
 
-  -- Generate the many subjects test data, the many events test data, and the
-  -- many subjects row-wise and column-wise golden files. Note that the "many
-  -- event" golden files are included as part of the repository
-  generateTestDataManySubjectsPtl
-  generateTestDataManyEventPtl
-  generateGoldenManySubjectsRwPtl
-  generateGoldenManySubjectsCwPtl
+-- Helper function to create the local filpath from a filename
+localResultsFilepath :: String -> String
+localResultsFilepath = (localResultsDir ++)
 
-  -- Copy the test data to S3 with session-specific keys to avoid collisions
-  writeTestDataToS3 sessionId TestDataEmpty
-  writeTestDataToS3 sessionId TestDataSmall
-  writeTestDataToS3 sessionId TestDataManySubj
-  writeTestDataToS3 sessionId TestDataManyEvent
+-- Create the S3 key where the test data will be located (once paired with a bucket)
+s3TestDataKey :: String -> TestDataType -> String
+s3TestDataKey sessionId TestDataEmpty = s3TestDataDir ++ sessionId ++ "/testdata-empty.jsonl"
+s3TestDataKey sessionId TestDataSmall = s3TestDataDir ++ sessionId ++ "/testdata-small.jsonl"
+s3TestDataKey sessionId TestDataManySubj = s3TestDataDir ++ sessionId ++ "/testdata-manysubj.jsonl"
+s3TestDataKey sessionId TestDataManyEvent = s3TestDataDir ++ sessionId ++ "/testdata-manyevent.jsonl"
 
-  -- Run the tests and perform cleanup. Note that ANY CODE WRITTEN AFTER THIS
-  -- EXPRESION WILL BE SILENTLY IGNORED
-  defaultMain (tests sessionId)
-    `catch` (\e -> do
-      -- removeDirectoryRecursive localResultsDir
-      -- removeSessionDirFromS3 s3TestDataDir sessionId  -- TODO: uncomment!
-      -- removeSessionDirFromS3 s3ResultsDir sessionId  -- TODO: uncomment!
-      throwIO (e :: ExitCode))
+-- Create the S3 key where the results will be located (once paired with a bucket)
+s3ResultsKey :: String -> String -> String
+s3ResultsKey sessionId filename = s3ResultsDir ++ sessionId ++ "/" ++ filename
+
+-- Create the S3 URI where the test data will be located
+s3FileURI  :: String -> String
+s3FileURI = (("s3://" ++ s3Bucket ++ "/") ++)
+
+-- Copy test data to S3
+writeTestDataToS3 :: String -> TestDataType -> IO ()
+writeTestDataToS3 sessionId testDataType = pure cmd >>= callCommand where
+  from = localInputDataLoc testDataType
+  to   = s3FileURI $ s3TestDataKey sessionId testDataType
+  cmd  = "aws s3 cp " ++ from ++ " " ++ to
+
+-- Copy results from S3
+copyResultsFromS3 :: String -> String -> IO ()
+copyResultsFromS3 sessionId filename =
+  pure cmd >>= callCommand where
+    uri = s3FileURI $ s3ResultsKey sessionId filename
+    cmd = "aws s3 cp " ++ uri ++ " " ++ localResultsFilepath filename
+
+-- Delete results from S3
+removeSessionDirFromS3 :: String -> String -> IO ()
+removeSessionDirFromS3 prefix sessionId =
+  pure cmd >>= callCommand where
+    fileglob = prefix ++ sessionId
+    uri      = s3FileURI fileglob
+    cmd      = "aws s3 rm --recursive " ++ uri
+
+-- Construct a name to use as a label for a given test
+constructTestName :: AppType -> TestDataType -> TestInputType -> TestOutputType -> String
+constructTestName appType testDataType testInputType testOutputType = concat
+  [ "ExampleApp of a "
+  , case appType of
+      AppRowWise-> "row-wise"
+      AppColumnWise -> "column-wise"
+  , " cohort performed on "
+  , case testDataType of
+      TestDataEmpty -> "empty data"
+      TestDataSmall -> "small data"
+      TestDataManySubj -> "many subjects data"
+      TestDataManyEvent -> "many evetns data"
+  , " reading from "
+  , case testInputType of
+      TestInputFile -> "file"
+      TestInputStdin -> "standard input"
+      TestInputS3 -> "S3"
+  , " and writing to "
+  , case testOutputType of
+      TestOutputFile -> "file"
+      TestOutputStdout -> "standard output"
+      TestOutputS3 -> "S3"
+  ]
+
+-- Construct the local filepath where the golden file is found for a given test
+constructTestLocGolden :: AppType -> TestDataType -> String
+constructTestLocGolden appType testDataType = concat
+  [ localTestDataDir
+  , "test"
+  , case testDataType of
+      TestDataEmpty -> "empty"
+      TestDataSmall -> ""
+      TestDataManySubj -> "manysubjects"
+      TestDataManyEvent -> "manyevents"
+  , case appType of
+      AppRowWise -> "rw"
+      AppColumnWise -> "cw"
+  , ".golden"
+  ]
+
+-- Construct the filename for the output for a given test
+resultsFilename :: AppType -> TestDataType -> TestInputType -> TestOutputType -> String
+resultsFilename appType testDataType testInputType testOutputType = concat
+  [ "results-"
+  , case appType of
+      AppRowWise -> "rw"
+      AppColumnWise -> "cw"
+  , "-"
+  , case testDataType of
+      TestDataEmpty -> "emptydata"
+      TestDataSmall -> "small"
+      TestDataManySubj -> "manysubjectss"
+      TestDataManyEvent -> "manyevents"
+  , "-"
+  , case testInputType of
+      TestInputFile -> "filein"
+      TestInputStdin -> "stdin"
+      TestInputS3 -> "s3in"
+  , "-"
+  , case testOutputType of
+      TestOutputFile -> "fileout"
+      TestOutputStdout -> "stdout"
+      TestOutputS3 -> "s3out"
+  , ".json"
+  ]
+
+-- Create a unique ID based on the GitLab environmental variable $CI_PIPELINE_ID
+-- if one is defined, otherwise the computation fails with `isDoesNotExistError`
+getCIPipelineId :: IO String
+getCIPipelineId = getEnv "CI_PIPELINE_ID"
+
+-- Use the value of `getCIPipelineId` if it was able to be obtained, otherwise use
+-- the number of seconds since the epoch as a fallback
+getSessionId :: IO String
+getSessionId = do
+  r <- tryJust (guard . isDoesNotExistError) getCIPipelineId
+  case r of
+    Left  e -> fmap (show . floor . nominalDiffTimeToSeconds . utcTimeToPOSIXSeconds) getCurrentTime
+    Right v -> getCIPipelineId

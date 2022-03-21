@@ -55,9 +55,6 @@ s3ResultsDir = "hasklepias/sandbox-testapps/results/"
 
 -- Enumeration of the test applications
 data AppType = AppRowWise | AppColumnWise
-instance Show AppType where
-  show AppRowWise = "row-wise"
-  show AppColumnWise = "column-wise"
 
 -- Enumeration of the test data cases
 data TestDataType = TestDataEmpty | TestDataSmall | TestDataManySubj | TestDataManyEvent
@@ -65,7 +62,7 @@ data TestDataType = TestDataEmpty | TestDataSmall | TestDataManySubj | TestDataM
 -- Enumeration of input sources
 data TestInputType = TestInputFile | TestInputStdin | TestInputS3
 
--- Enumeration of input sources
+-- Enumeration of output sources
 data TestOutputType = TestOutputFile | TestOutputStdout | TestOutputS3
 
 -- Run the tests

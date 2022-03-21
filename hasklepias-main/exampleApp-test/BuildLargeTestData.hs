@@ -17,8 +17,7 @@ nSubj :: Int
 nSubj = 2
 
 nReplicates :: Int
--- nReplicates = 1000
-nReplicates = 3
+nReplicates = 1000
 
 nDigits :: Int
 nDigits = length $ show (nReplicates - 1)

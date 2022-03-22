@@ -58,6 +58,17 @@ library
     , witch >= 1.0
   default-language: Haskell2010
 
+library exampleTestUtils
+  exposed-modules:
+      HasklepiasMainTestUtils
+      HasklepiasMainTestUtils.BuildLargeTestData
+  hs-source-dirs:
+      exampleTestUtils
+  build-depends:
+      base >=4.14 && <5
+    , regex-compat
+  default-language: Haskell2010
+
 executable exampleAppCW
   main-is: Main.hs
   hs-source-dirs:
@@ -113,6 +124,7 @@ test-suite exampleFilterApp-test
     , hasklepias-core
     , hasklepias-appBuilder
     , base >=4.14 && <5
+    , exampleTestUtils
     , process >= 1.6.14
     , tasty  
     , tasty-silver 

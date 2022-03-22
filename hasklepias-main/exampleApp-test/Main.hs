@@ -8,35 +8,25 @@ module Main
   ) where
 
 import           Control.Exception             ( catch
-                                               , tryJust
-                                               , throwIO
-                                               )
-import           Control.Monad                 ( guard
-                                               , when
-                                               )
+                                               , throwIO )
+import           Control.Monad                 ( when )
 import qualified Data.ByteString.Lazy          as B
-import           Data.Time                     ( getCurrentTime )
-import           Data.Time.Clock.POSIX         ( utcTimeToPOSIXSeconds )
-import           Data.Time.Clock               ( nominalDiffTimeToSeconds )
 import           Data.Char                     ( isDigit )
 import           Hasklepias
 import           Hasklepias.ExampleApp
-import           BuildLargeTestData
+import           HasklepiasMainTestUtils
 import           Hasklepias.MakeCohortApp       ( runApp )
-import           System.IO.Error
 import           System.Directory               ( createDirectoryIfMissing
                                                 , removeDirectoryRecursive
                                                 , removePathForcibly
                                                 )
 import           System.Exit                    ( ExitCode )
-import           System.Process
-import           System.Environment
+import           System.Process                 ( callCommand )
 import           Test.Tasty                     ( TestTree
                                                 , defaultMain
                                                 , testGroup
                                                 )
 import           Test.Tasty.Silver
-import BuildLargeTestData ( generateTestDataManySubjects )
 
 localTestDataDir :: String
 localTestDataDir = "exampleApp-test/test/"
@@ -76,6 +66,8 @@ data TestOutputType = TestOutputFile | TestOutputStdout | TestOutputS3
 -- so that we can change the number of test subjects with ease.
 main :: IO ()
 main = do
+
+  -- Generate a unique session ID and ensure that the results directory exists
   sessionId <- getSessionId
   createDirectoryIfMissing True localResultsDir
 
@@ -374,17 +366,3 @@ resultsFilename appType testDataType testInputType testOutputType = concat
       TestOutputS3 -> "s3out"
   , ".json"
   ]
-
--- Create a unique ID based on the GitLab environmental variable $CI_PIPELINE_ID
--- if one is defined, otherwise the computation fails with `isDoesNotExistError`
-getCIPipelineId :: IO String
-getCIPipelineId = getEnv "CI_PIPELINE_ID"
-
--- Use the value of `getCIPipelineId` if it was able to be obtained, otherwise use
--- the number of seconds since the epoch as a fallback
-getSessionId :: IO String
-getSessionId = do
-  r <- tryJust (guard . isDoesNotExistError) getCIPipelineId
-  case r of
-    Left  e -> fmap (show . floor . nominalDiffTimeToSeconds . utcTimeToPOSIXSeconds) getCurrentTime
-    Right v -> getCIPipelineId

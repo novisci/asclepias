@@ -23,7 +23,7 @@ source-repository head
 library
   exposed-modules:
       Examples
-      -- CohortExamples
+      CohortExamples
       CohortExamples.Example1
       FeatureExamples
       FeatureExamples.Example1

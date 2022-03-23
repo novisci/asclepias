@@ -25,7 +25,7 @@ data Demographic =
     BirthYear Integer
   | Gender Text
   deriving (Eq, Show, Ord, Generic)
-data ExampleModel = 
+data ExampleModel =
     Enrollment
   | Medical
   | Demographics Demographic
@@ -56,14 +56,13 @@ toEvent
   :: (IntervalSizeable a a, Typeable a, Show a)
   => EventData a
   -> Event Text ExampleModel a
-toEvent x = event
-  (beginerval (t1 x) (t2 x))
-  (context (packConcepts [t3 x]) Enrollment Nothing) 
+toEvent x = event (beginerval (t1 x) (t2 x))
+                  (context (packConcepts [t3 x]) Enrollment Nothing)
 
 toEvents
   :: (Ord a, Show a, IntervalSizeable a a, Typeable a)
   => [EventData a]
-  -> [Event Text ExampleModel a] 
+  -> [Event Text ExampleModel a]
 toEvents = sort . map toEvent
 
 t1 :: (a, b, c) -> a

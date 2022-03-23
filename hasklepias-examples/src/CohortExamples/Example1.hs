@@ -7,8 +7,10 @@ module CohortExamples.Example1
   ( example
   ) where
 
+import           ExampleEvents                  ( Demographic(..)
+                                                , ExampleModel(..)
+                                                )
 import           Hasklepias
-import           ExampleEvents (ExampleModel(..), Demographic(..))
 {-------------------------------------------------------------------------------
   Constants
 -------------------------------------------------------------------------------}
@@ -145,11 +147,11 @@ age = defineA
              makeFeature $ featureDataL $ Other "No numeric birth year found"
            Just age -> pure age
   )
-  where
-    viewBirthYears :: Event Text ExampleModel Day -> Maybe Integer
-    viewBirthYears x = case getFacts (getContext x) of
-        Demographics (BirthYear v) -> Just v
-        _ -> Nothing
+ where
+  viewBirthYears :: Event Text ExampleModel Day -> Maybe Integer
+  viewBirthYears x = case getFacts (getContext x) of
+    Demographics (BirthYear v) -> Just v
+    _                          -> Nothing
 
 
 -- | Just the day of death (the first if there are multiple). Nothing if there
@@ -190,11 +192,10 @@ critOver50 :: Definition (Feature "age" Integer -> Feature "isOver50" Status)
 critOver50 = define (includeIf . (>= 50))
 
 isEnrollmentEvent :: Predicate (Event Text ExampleModel Day)
-isEnrollmentEvent = 
-  Predicate (\x -> 
-     case getFacts (getContext x) of 
-       Enrollment -> True 
-       _ -> False
+isEnrollmentEvent = Predicate
+  (\x -> case getFacts (getContext x) of
+    Enrollment -> True
+    _          -> False
   )
 
 -- | Include the subject if she has an enrollment interval concurring with index.
@@ -357,25 +358,12 @@ m y m d dur c dmn = event itv ctx where
 
 testData1 :: [Event Text ExampleModel Day]
 testData1 = sort
-  [ m
-    2010
-    1
-    1
-    1
-    ["is_female"]
-    (Demographics (Gender "Female"))
-  , m
-    2010
-    1
-    1
-    1
-    ["is_birth_year"]
-    (Demographics (BirthYear 1960)
-    )
+  [ m 2010 1 1 1   ["is_female"]             (Demographics (Gender "Female"))
+  , m 2010 1 1 1   ["is_birth_year"]         (Demographics (BirthYear 1960))
   , m 2016 1 1 699 ["enrollment"]            Enrollment
   , m 2018 1 1 30  ["enrollment"]            Enrollment
   , m 2018 2 1 30  ["enrollment"]            Enrollment
-  , m 2017 6 5 1   ["is_diabetes_inpatient"] Medical 
+  , m 2017 6 5 1   ["is_diabetes_inpatient"] Medical
   , m 2017 8 1 91  ["is_ppi"]                Medical
   ]
 
@@ -384,24 +372,11 @@ testSubject1 = into ("a" :: Text, testData1)
 
 testData2 :: [Event Text ExampleModel Day]
 testData2 = sort
-  [ m
-    2010
-    1
-    1
-    1
-    ["is_female"]
-    (Demographics (Gender "Female"))
-  , m
-    2010
-    1
-    1
-    1
-    ["is_birth_year"]
-    (Demographics (BirthYear 1980)
-    )
-  , m 2016 1 1 730 ["enrollment"] Enrollment
-  , m 2018 1 1 30  ["enrollment"] Enrollment
-  , m 2018 2 1 30  ["enrollment"] Enrollment
+  [ m 2010 1 1 1   ["is_female"]     (Demographics (Gender "Female"))
+  , m 2010 1 1 1   ["is_birth_year"] (Demographics (BirthYear 1980))
+  , m 2016 1 1 730 ["enrollment"]    Enrollment
+  , m 2018 1 1 30  ["enrollment"]    Enrollment
+  , m 2018 2 1 30  ["enrollment"]    Enrollment
   ]
 
 testSubject2 :: Subject [Event Text ExampleModel Day]

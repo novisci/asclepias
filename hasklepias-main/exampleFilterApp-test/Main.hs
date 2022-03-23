@@ -93,38 +93,38 @@ main = do
       -- FIXME: add generated test files and golden files to gitignore?
       throwIO (e :: ExitCode))
 
-runTest :: String -> IO ()
-runTest x = do
-    -- The filter application writes to stdout as it goes, hence I use the
-    -- capture function to collect that output. Unfortunately, this has the 
-    -- effect of adding some non-determinism to the test suite because it can 
-    -- happen that the output of the test module itself is also captured.
-    -- Hence, I'm adding some stdout flushing and delays to try to prevent that.
-    -- FWIW, the filter app could probably be architected such that capture is
-    -- not needed, but that requires more willpower and knowledge than I have 
-    -- at the moment. -- bsaul 2021-10-27
-  hFlush stdout -- flush stdout as test info sometimes being sent to file if running test
-  threadDelay 500 -- pause 500 microseconds
-  r <- capture $ runFilterAppWithLocation
-    (Local (localTestDataDir <> "test-" <> x <> ".jsonl"))
-    exampleFilterApp
+-- runTest :: String -> IO ()
+-- runTest x = do
+--     -- The filter application writes to stdout as it goes, hence I use the
+--     -- capture function to collect that output. Unfortunately, this has the
+--     -- effect of adding some non-determinism to the test suite because it can
+--     -- happen that the output of the test module itself is also captured.
+--     -- Hence, I'm adding some stdout flushing and delays to try to prevent that.
+--     -- FWIW, the filter app could probably be architected such that capture is
+--     -- not needed, but that requires more willpower and knowledge than I have
+--     -- at the moment. -- bsaul 2021-10-27
+--   hFlush stdout -- flush stdout as test info sometimes being sent to file if running test
+--   threadDelay 500 -- pause 500 microseconds
+--   r <- capture $ runFilterAppWithLocation
+--     (Local (localTestDataDir <> "test-" <> x <> ".jsonl"))
+--     exampleFilterApp
 
-  hFlush stdout -- flush stdout as test info sometimes being sent to file if running tests
-  B.writeFile (localTestDataDir <> "test-" <> x <> ".result") (B.pack (fst r) <> snd r)
+--   hFlush stdout -- flush stdout as test info sometimes being sent to file if running tests
+--   B.writeFile (localTestDataDir <> "test-" <> x <> ".result") (B.pack (fst r) <> snd r)
 
-makeTest :: TestName -> String -> TestTree
-makeTest n x = goldenVsFile n
-                            (localTestDataDir <> "test-" <> x <> ".golden")
-                            (localTestDataDir <> "test-" <> x <> ".result")
-                            (runTest x)
+-- makeTest :: TestName -> String -> TestTree
+-- makeTest n x = goldenVsFile n
+--                             (localTestDataDir <> "test-" <> x <> ".golden")
+--                             (localTestDataDir <> "test-" <> x <> ".result")
+--                             (runTest x)
 
-makeTests :: [String] -> [TestTree]
-makeTests = fmap (\x -> makeTest ("Test case " <> x) x)
+-- makeTests :: [String] -> [TestTree]
+-- makeTests = fmap (\x -> makeTest ("Test case " <> x) x)
 
-tests :: TestTree
-tests = testGroup
-  "Tests of exampleFilterApp"
-  (makeTests testIds)
+-- tests :: TestTree
+-- tests = testGroup
+--   "Tests of exampleFilterApp"
+--   (makeTests testIds)
 
 testIds =
   [ "0-0-1"

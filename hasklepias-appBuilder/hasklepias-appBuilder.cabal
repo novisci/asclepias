@@ -25,6 +25,8 @@ library
       Hasklepias.AppUtilities
       Hasklepias.MakeCohortApp
       Hasklepias.MakeFilterApp
+      TestUtils.BuildLargeTestData
+      TestUtils.SessionId
   hs-source-dirs:
       src
   build-depends:
@@ -48,6 +50,8 @@ library
     , interval-algebra == 1.3.0
     , microlens == 0.4.12.0
     , optparse-applicative == 0.16.1.0
+    , regex-compat >= 0.95
+    , time >= 1.11
     , text >= 2.0 
     , vector == 0.12.2.0
     , witch >= 1.0

@@ -1,4 +1,4 @@
-module HasklepiasMainTestUtils.SessionId
+module TestUtils.SessionId
   ( getSessionId
   ) where
 

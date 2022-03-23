@@ -1,4 +1,4 @@
-module HasklepiasMainTestUtils.BuildLargeTestData
+module TestUtils.BuildLargeTestData
   ( generateGoldenManySubjectsRw
   , generateGoldenManySubjectsCw
   , generateTestDataManySubjects
@@ -37,10 +37,10 @@ generateTestDataManyEvents infilepath outfilepath = do
 generateGoldenManySubjectsRw :: String -> IO ()
 generateGoldenManySubjectsRw outfilepath =
   writeFile outfilepath concatLines where
-    concatLines = (
+    concatLines =
       concat goldenManySubjectsStart
-      ++ intercalate "," goldenRwPatientManys
-      ++ concat goldenRwEnd)
+        ++ intercalate "," goldenRwPatientManys
+        ++ concat goldenRwEnd
 
 -- Generates a new golden testing file corresponding to the test data produced
 -- by `generateTestDataManySubjects` for a cohort using the column-wise version
@@ -48,12 +48,12 @@ generateGoldenManySubjectsRw outfilepath =
 generateGoldenManySubjectsCw :: String -> IO ()
 generateGoldenManySubjectsCw outfilepath =
   writeFile outfilepath concatLines where
-    concatLines = (
+    concatLines =
       concat goldenManySubjectsStart
-      ++ intercalate "," goldenCwVarManys
-      ++ "],\"ids\":["
-      ++ intercalate "," goldenCwPatientManys
-      ++ concat goldenCwEnd)
+        ++ intercalate "," goldenCwVarManys
+        ++ "],\"ids\":["
+        ++ intercalate "," goldenCwPatientManys
+        ++ concat goldenCwEnd
 
 -- A helper function to read in test data from file, perform a transformation on
 -- the data, and write out the updated data to file

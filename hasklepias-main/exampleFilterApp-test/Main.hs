@@ -13,7 +13,8 @@ import           Control.Exception             ( catch
 import qualified Data.ByteString.Char8         as B
 import           Hasklepias
 import           Hasklepias.ExampleFilterApp
-import           HasklepiasMainTestUtils
+import           TestUtils.BuildLargeTestData
+import           TestUtils.SessionId
 import           System.Directory               ( createDirectoryIfMissing
                                                 -- , removeDirectoryRecursive
                                                 -- , removePathForcibly
@@ -86,6 +87,7 @@ main = do
   defaultMain tests'
     `catch` (\e -> do
       -- removeDirectoryRecursive localResultsDir
+      -- TODO: remove test-1000-1000-1.jsonl, test-1000-1000-1.golden, etc
       -- removeSessionDirFromS3 s3TestDataDir sessionId  -- TODO: uncomment!
       -- removeSessionDirFromS3 s3ResultsDir sessionId  -- TODO: uncomment!
       -- FIXME: add generated test files and golden files to gitignore?

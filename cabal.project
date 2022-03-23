@@ -5,7 +5,6 @@ packages: hasklepias-core
         , hasklepias-templates
         , cohort-collector
         , event-data-theory
-        , event-data-model
         , stype
 
 allow-newer:

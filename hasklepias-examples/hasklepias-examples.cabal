@@ -23,7 +23,7 @@ source-repository head
 library
   exposed-modules:
       Examples
-      CohortExamples
+      -- CohortExamples
       CohortExamples.Example1
       FeatureExamples
       FeatureExamples.Example1
@@ -34,8 +34,7 @@ library
   hs-source-dirs:
       src
   build-depends:
-    , event-data-model
-    , hasklepias-main
+      hasklepias-main
     , base >=4.14 && <5
   default-language: Haskell2010
   default-extensions:

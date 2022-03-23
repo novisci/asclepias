@@ -19,8 +19,7 @@ module Hasklepias
     See that pacakge's documentation for information about the types and functions 
     for working with intervals.
     -}
-    module EventData
-  , module EventDataTheory
+   module EventDataTheory
 
     -- * Working with Features
     -- $features
@@ -65,7 +64,6 @@ module Hasklepias
 
 import           AssessmentIntervals
 
-import           EventData
 import           EventDataTheory
 
 import           Features

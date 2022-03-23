@@ -26,8 +26,8 @@ source-repository head
 library
   exposed-modules:
       Hasklepias
-      Hasklepias.ExampleApp
-      Hasklepias.ExampleFilterApp
+      -- Hasklepias.ExampleApp
+      -- Hasklepias.ExampleFilterApp
       Hasklepias.Misc
       Hasklepias.Reexports
       Hasklepias.ReexportsUnsafe
@@ -35,8 +35,7 @@ library
       src
   build-depends:
     -- Internal packages
-      event-data-model
-    , event-data-theory
+      event-data-theory
     , hasklepias-appBuilder
     , hasklepias-core
     , hasklepias-templates
@@ -58,58 +57,58 @@ library
     , witch >= 1.0
   default-language: Haskell2010
 
-executable exampleAppCW
-  main-is: Main.hs
-  hs-source-dirs:
-      exampleAppCW
-  build-depends:
-      hasklepias-main
-  default-language: Haskell2010
+-- executable exampleAppCW
+--   main-is: Main.hs
+--   hs-source-dirs:
+--       exampleAppCW
+--   build-depends:
+--       hasklepias-main
+--   default-language: Haskell2010
 
-executable exampleAppRW
-  main-is: Main.hs
-  hs-source-dirs:
-      exampleAppRW
-  build-depends:
-      hasklepias-main
-  default-language: Haskell2010
--- end::devel-docs-components[]
+-- executable exampleAppRW
+--   main-is: Main.hs
+--   hs-source-dirs:
+--       exampleAppRW
+--   build-depends:
+--       hasklepias-main
+--   default-language: Haskell2010
+-- -- end::devel-docs-components[]
 
-test-suite exampleApp-test
-  type: exitcode-stdio-1.0
-  main-is: Main.hs
-  hs-source-dirs:
-      exampleApp-test
-  build-depends:
-      hasklepias-main
-    , hasklepias-core
-    , hasklepias-appBuilder
-    , base >=4.14 && <5
-    , tasty 
-    , tasty-silver 
-    , bytestring
-  default-language: Haskell2010
+-- test-suite exampleApp-test
+--   type: exitcode-stdio-1.0
+--   main-is: Main.hs
+--   hs-source-dirs:
+--       exampleApp-test
+--   build-depends:
+--       hasklepias-main
+--     , hasklepias-core
+--     , hasklepias-appBuilder
+--     , base >=4.14 && <5
+--     , tasty 
+--     , tasty-silver 
+--     , bytestring
+--   default-language: Haskell2010
 
-executable exampleFilterApp
-  main-is: Main.hs
-  hs-source-dirs:
-      exampleFilterApp
-  build-depends:
-      hasklepias-main
-  default-language: Haskell2010
+-- executable exampleFilterApp
+--   main-is: Main.hs
+--   hs-source-dirs:
+--       exampleFilterApp
+--   build-depends:
+--       hasklepias-main
+--   default-language: Haskell2010
 
-test-suite exampleFilterApp-test
-  type: exitcode-stdio-1.0
-  main-is: Main.hs
-  hs-source-dirs:
-      exampleFilterApp-test
-  build-depends:
-      hasklepias-main
-    , hasklepias-core
-    , hasklepias-appBuilder
-    , base >=4.14 && <5
-    , tasty  
-    , tasty-silver 
-    , bytestring
-    , silently >= 1.2.5.1
-  default-language: Haskell2010
+-- test-suite exampleFilterApp-test
+--   type: exitcode-stdio-1.0
+--   main-is: Main.hs
+--   hs-source-dirs:
+--       exampleFilterApp-test
+--   build-depends:
+--       hasklepias-main
+--     , hasklepias-core
+--     , hasklepias-appBuilder
+--     , base >=4.14 && <5
+--     , tasty  
+--     , tasty-silver 
+--     , bytestring
+--     , silently >= 1.2.5.1
+--   default-language: Haskell2010

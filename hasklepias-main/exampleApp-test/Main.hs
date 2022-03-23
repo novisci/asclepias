@@ -179,8 +179,8 @@ appGoldenVsFile :: String -> AppType -> TestDataType -> TestInputType -> TestOut
 appGoldenVsFile sessionId appType testDataType testInputType testOutputType =
   goldenVsFile
     (constructTestName appType testDataType testInputType testOutputType)
-    (constructTestLocGolden appType testDataType)
-    (localResultsFilepath (resultsFilename appType testDataType testInputType testOutputType))
+    (createLocalFilepathForGolden appType testDataType)
+    (createLocalFilepathForResults (createFilenameForResults appType testDataType testInputType testOutputType))
     (appTest sessionId appType testDataType testInputType testOutputType)
 
 -- Build a shell command represented by string and run the command as a
@@ -189,7 +189,7 @@ appGoldenVsFile sessionId appType testDataType testInputType testOutputType =
 -- local filesystem
 appTest :: String -> AppType -> TestDataType -> TestInputType -> TestOutputType -> IO ()
 appTest sessionId appType testDataType testInputType testOutputType = do
-  let outfilename = resultsFilename appType testDataType testInputType testOutputType
+  let outfilename = createFilenameForResults appType testDataType testInputType testOutputType
   let isS3out = case testOutputType of
         TestOutputS3 -> True
         _ -> False
@@ -209,19 +209,19 @@ appTestCmd :: String -> AppType -> TestDataType -> TestInputType -> TestOutputTy
 appTestCmd sessionId appType testDataType testInputType testOutputType =
   appCmd ++ " " ++ inputFragm ++ " " ++ outputFragm
   where
-    infilename = localInputDataLoc testDataType
-    outfilename = resultsFilename appType testDataType testInputType testOutputType
+    infilename = createLocalFilepathForTest testDataType
+    outfilename = createFilenameForResults appType testDataType testInputType testOutputType
     appCmd = case appType of
         AppRowWise -> "exampleAppRW"
         AppColumnWise -> "exampleAppCW"
     inputFragm = case testInputType of
         TestInputFile -> "-f " ++ infilename
         TestInputStdin -> "< " ++ infilename
-        TestInputS3 -> "-r us-east-1 -b " ++ s3Bucket ++ " -k " ++ s3TestDataKey sessionId testDataType
+        TestInputS3 -> "-r us-east-1 -b " ++ s3Bucket ++ " -k " ++ createS3keyforTest sessionId testDataType
     outputFragm = case testOutputType of
-        TestOutputFile -> "-o " ++ localResultsFilepath outfilename
-        TestOutputStdout -> "> " ++ localResultsFilepath outfilename
-        TestOutputS3 -> "--outregion us-east-1 --outbucket " ++ s3Bucket ++ " --outkey " ++ s3ResultsKey sessionId outfilename
+        TestOutputFile -> "-o " ++ createLocalFilepathForResults outfilename
+        TestOutputStdout -> "> " ++ createLocalFilepathForResults outfilename
+        TestOutputS3 -> "--outregion us-east-1 --outbucket " ++ s3Bucket ++ " --outkey " ++ createS3keyForResults sessionId outfilename
 
 -- Construct the test data for the "many subjects" test scenario and write it to
 -- the filesystem
@@ -256,50 +256,50 @@ generateGoldenManySubjectsCwPtl =
 -- Copy test data to S3
 writeTestDataToS3 :: String -> TestDataType -> IO ()
 writeTestDataToS3 sessionId testDataType = pure cmd >>= callCommand where
-  from = localInputDataLoc testDataType
-  to   = s3FileURI $ s3TestDataKey sessionId testDataType
+  from = createLocalFilepathForTest testDataType
+  to   = createS3uriForTest $ createS3keyforTest sessionId testDataType
   cmd  = "aws s3 cp " ++ from ++ " " ++ to
 
 -- Copy results from S3
 copyResultsFromS3 :: String -> String -> IO ()
 copyResultsFromS3 sessionId filename =
   pure cmd >>= callCommand where
-    uri = s3FileURI $ s3ResultsKey sessionId filename
-    cmd = "aws s3 cp " ++ uri ++ " " ++ localResultsFilepath filename
+    uri = createS3uriForTest $ createS3keyForResults sessionId filename
+    cmd = "aws s3 cp " ++ uri ++ " " ++ createLocalFilepathForResults filename
 
 -- Delete results from S3
 removeSessionDirFromS3 :: String -> String -> IO ()
 removeSessionDirFromS3 prefix sessionId =
   pure cmd >>= callCommand where
     fileglob = prefix ++ sessionId
-    uri      = s3FileURI fileglob
+    uri      = createS3uriForTest fileglob
     cmd      = "aws s3 rm --recursive " ++ uri
 
 -- Create the local filepath where the test data is stored
-localInputDataLoc :: TestDataType -> String
-localInputDataLoc TestDataEmpty = localTestDataDir ++ "testEmptyData.jsonl"
-localInputDataLoc TestDataSmall = localTestDataDir ++ "testData.jsonl"
-localInputDataLoc TestDataManySubj = localTestDataDir ++ "testmanysubjects.jsonl"
-localInputDataLoc TestDataManyEvent = localTestDataDir ++ "testmanyevents.jsonl"
+createLocalFilepathForTest :: TestDataType -> String
+createLocalFilepathForTest TestDataEmpty = localTestDataDir ++ "testEmptyData.jsonl"
+createLocalFilepathForTest TestDataSmall = localTestDataDir ++ "testData.jsonl"
+createLocalFilepathForTest TestDataManySubj = localTestDataDir ++ "testmanysubjects.jsonl"
+createLocalFilepathForTest TestDataManyEvent = localTestDataDir ++ "testmanyevents.jsonl"
 
 -- Helper function to create the local filpath from a filename
-localResultsFilepath :: String -> String
-localResultsFilepath = (localResultsDir ++)
+createLocalFilepathForResults :: String -> String
+createLocalFilepathForResults = (localResultsDir ++)
 
 -- Create the S3 key where the test data will be located (once paired with a bucket)
-s3TestDataKey :: String -> TestDataType -> String
-s3TestDataKey sessionId TestDataEmpty = s3TestDataDir ++ sessionId ++ "/testdata-empty.jsonl"
-s3TestDataKey sessionId TestDataSmall = s3TestDataDir ++ sessionId ++ "/testdata-small.jsonl"
-s3TestDataKey sessionId TestDataManySubj = s3TestDataDir ++ sessionId ++ "/testdata-manysubj.jsonl"
-s3TestDataKey sessionId TestDataManyEvent = s3TestDataDir ++ sessionId ++ "/testdata-manyevent.jsonl"
+createS3keyforTest :: String -> TestDataType -> String
+createS3keyforTest sessionId TestDataEmpty = s3TestDataDir ++ sessionId ++ "/testdata-empty.jsonl"
+createS3keyforTest sessionId TestDataSmall = s3TestDataDir ++ sessionId ++ "/testdata-small.jsonl"
+createS3keyforTest sessionId TestDataManySubj = s3TestDataDir ++ sessionId ++ "/testdata-manysubj.jsonl"
+createS3keyforTest sessionId TestDataManyEvent = s3TestDataDir ++ sessionId ++ "/testdata-manyevent.jsonl"
 
 -- Create the S3 key where the results will be located (once paired with a bucket)
-s3ResultsKey :: String -> String -> String
-s3ResultsKey sessionId filename = s3ResultsDir ++ sessionId ++ "/" ++ filename
+createS3keyForResults :: String -> String -> String
+createS3keyForResults sessionId filename = s3ResultsDir ++ sessionId ++ "/" ++ filename
 
 -- Create the S3 URI where the test data will be located
-s3FileURI  :: String -> String
-s3FileURI = (("s3://" ++ s3Bucket ++ "/") ++)
+createS3uriForTest  :: String -> String
+createS3uriForTest = (("s3://" ++ s3Bucket ++ "/") ++)
 
 -- Construct a name to use as a label for a given test
 constructTestName :: AppType -> TestDataType -> TestInputType -> TestOutputType -> String
@@ -327,8 +327,8 @@ constructTestName appType testDataType testInputType testOutputType = concat
   ]
 
 -- Construct the local filepath where the golden file is found for a given test
-constructTestLocGolden :: AppType -> TestDataType -> String
-constructTestLocGolden appType testDataType = concat
+createLocalFilepathForGolden :: AppType -> TestDataType -> String
+createLocalFilepathForGolden appType testDataType = concat
   [ localTestDataDir
   , "test"
   , case testDataType of
@@ -343,8 +343,8 @@ constructTestLocGolden appType testDataType = concat
   ]
 
 -- Construct the filename for the output for a given test
-resultsFilename :: AppType -> TestDataType -> TestInputType -> TestOutputType -> String
-resultsFilename appType testDataType testInputType testOutputType = concat
+createFilenameForResults :: AppType -> TestDataType -> TestInputType -> TestOutputType -> String
+createFilenameForResults appType testDataType testInputType testOutputType = concat
   [ "results-"
   , case appType of
       AppRowWise -> "rw"

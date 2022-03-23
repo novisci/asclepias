@@ -253,28 +253,6 @@ generateGoldenManySubjectsCwPtl =
   generateGoldenManySubjectsCw
     (localTestDataDir ++ "testmanysubjectscw.golden")
 
--- Copy test data to S3
-writeTestDataToS3 :: String -> TestDataType -> IO ()
-writeTestDataToS3 sessionId testDataType = pure cmd >>= callCommand where
-  from = createLocalFilepathForTest testDataType
-  to   = createS3uriForTest $ createS3keyforTest sessionId testDataType
-  cmd  = "aws s3 cp " ++ from ++ " " ++ to
-
--- Copy results from S3
-copyResultsFromS3 :: String -> String -> IO ()
-copyResultsFromS3 sessionId filename =
-  pure cmd >>= callCommand where
-    uri = createS3uriForTest $ createS3keyForResults sessionId filename
-    cmd = "aws s3 cp " ++ uri ++ " " ++ createLocalFilepathForResults filename
-
--- Delete results from S3
-removeSessionDirFromS3 :: String -> String -> IO ()
-removeSessionDirFromS3 prefix sessionId =
-  pure cmd >>= callCommand where
-    fileglob = prefix ++ sessionId
-    uri      = createS3uriForTest fileglob
-    cmd      = "aws s3 rm --recursive " ++ uri
-
 -- Create the local filepath where the test data is stored
 createLocalFilepathForTest :: TestDataType -> String
 createLocalFilepathForTest TestDataEmpty = localTestDataDir ++ "testEmptyData.jsonl"
@@ -367,3 +345,25 @@ createFilenameForResults appType testDataType testInputType testOutputType = con
       TestOutputS3 -> "s3out"
   , ".json"
   ]
+
+-- Copy test data to S3
+writeTestDataToS3 :: String -> TestDataType -> IO ()
+writeTestDataToS3 sessionId testDataType = pure cmd >>= callCommand where
+  from = createLocalFilepathForTest testDataType
+  to   = createS3uriForTest $ createS3keyforTest sessionId testDataType
+  cmd  = "aws s3 cp " ++ from ++ " " ++ to
+
+-- Copy results from S3
+copyResultsFromS3 :: String -> String -> IO ()
+copyResultsFromS3 sessionId filename =
+  pure cmd >>= callCommand where
+    uri = createS3uriForTest $ createS3keyForResults sessionId filename
+    cmd = "aws s3 cp " ++ uri ++ " " ++ createLocalFilepathForResults filename
+
+-- Delete results from S3
+removeSessionDirFromS3 :: String -> String -> IO ()
+removeSessionDirFromS3 prefix sessionId =
+  pure cmd >>= callCommand where
+    fileglob = prefix ++ sessionId
+    uri      = createS3uriForTest fileglob
+    cmd      = "aws s3 rm --recursive " ++ uri

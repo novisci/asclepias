@@ -13,8 +13,9 @@ import           Control.Monad                 ( when )
 import qualified Data.ByteString.Lazy          as B
 import           Data.Char                     ( isDigit )
 import           Hasklepias
+import           TestUtils.BuildLargeTestData
 import           Hasklepias.ExampleApp
-import           HasklepiasMainTestUtils
+import           TestUtils.SessionId
 import           Hasklepias.MakeCohortApp       ( runApp )
 import           System.Directory               ( createDirectoryIfMissing
                                                 , removeDirectoryRecursive
@@ -252,6 +253,28 @@ generateGoldenManySubjectsCwPtl =
   generateGoldenManySubjectsCw
     (localTestDataDir ++ "testmanysubjectscw.golden")
 
+-- Copy test data to S3
+writeTestDataToS3 :: String -> TestDataType -> IO ()
+writeTestDataToS3 sessionId testDataType = pure cmd >>= callCommand where
+  from = localInputDataLoc testDataType
+  to   = s3FileURI $ s3TestDataKey sessionId testDataType
+  cmd  = "aws s3 cp " ++ from ++ " " ++ to
+
+-- Copy results from S3
+copyResultsFromS3 :: String -> String -> IO ()
+copyResultsFromS3 sessionId filename =
+  pure cmd >>= callCommand where
+    uri = s3FileURI $ s3ResultsKey sessionId filename
+    cmd = "aws s3 cp " ++ uri ++ " " ++ localResultsFilepath filename
+
+-- Delete results from S3
+removeSessionDirFromS3 :: String -> String -> IO ()
+removeSessionDirFromS3 prefix sessionId =
+  pure cmd >>= callCommand where
+    fileglob = prefix ++ sessionId
+    uri      = s3FileURI fileglob
+    cmd      = "aws s3 rm --recursive " ++ uri
+
 -- Create the local filepath where the test data is stored
 localInputDataLoc :: TestDataType -> String
 localInputDataLoc TestDataEmpty = localTestDataDir ++ "testEmptyData.jsonl"
@@ -277,28 +300,6 @@ s3ResultsKey sessionId filename = s3ResultsDir ++ sessionId ++ "/" ++ filename
 -- Create the S3 URI where the test data will be located
 s3FileURI  :: String -> String
 s3FileURI = (("s3://" ++ s3Bucket ++ "/") ++)
-
--- Copy test data to S3
-writeTestDataToS3 :: String -> TestDataType -> IO ()
-writeTestDataToS3 sessionId testDataType = pure cmd >>= callCommand where
-  from = localInputDataLoc testDataType
-  to   = s3FileURI $ s3TestDataKey sessionId testDataType
-  cmd  = "aws s3 cp " ++ from ++ " " ++ to
-
--- Copy results from S3
-copyResultsFromS3 :: String -> String -> IO ()
-copyResultsFromS3 sessionId filename =
-  pure cmd >>= callCommand where
-    uri = s3FileURI $ s3ResultsKey sessionId filename
-    cmd = "aws s3 cp " ++ uri ++ " " ++ localResultsFilepath filename
-
--- Delete results from S3
-removeSessionDirFromS3 :: String -> String -> IO ()
-removeSessionDirFromS3 prefix sessionId =
-  pure cmd >>= callCommand where
-    fileglob = prefix ++ sessionId
-    uri      = s3FileURI fileglob
-    cmd      = "aws s3 rm --recursive " ++ uri
 
 -- Construct a name to use as a label for a given test
 constructTestName :: AppType -> TestDataType -> TestInputType -> TestOutputType -> String

@@ -41,6 +41,12 @@ data TestScenarioCohort = TestScenarioCohort
 --     -> a
 --     -> String
 
+class InputTypeAble a where
+  extractTestInputType :: a -> TestInputType
+
+instance InputTypeAble TestScenarioCohort where
+  extractTestInputType = getCohortTestInputType
+
 -- instance InputFragmAble TestScenarioCohort where
 --   constructInputFragm testScenarioCohort =
 
@@ -57,17 +63,18 @@ data TestScenarioCohort = TestScenarioCohort
 -- type TestElem = AppType -> TestDataType -> TestInputType -> TestOutputType -> TestTree
 
 constructTestInputFragm ::
-     (TestScenarioCohort -> FilePath)
-  -> (TestScenarioCohort -> String)
-  -> (TestScenarioCohort -> String)
-  -> TestScenarioCohort
+  (InputTypeAble a)
+  => (a -> FilePath)
+  -> (a -> String)
+  -> (a -> String)
+  -> a
   -> String
 constructTestInputFragm
   constructFilePathForTest
   constructBucketForTest
   constructS3KeyForTest
   testScenario =
-    case getCohortTestInputType testScenario of
+    case extractTestInputType testScenario of
           TestInputFile -> "-f " ++ filePathForTest
           TestInputStdin -> "< " ++ filePathForTest
           TestInputS3 -> "-r us-east-1 -b " ++ bucket ++ " -k " ++ s3KeyForTest

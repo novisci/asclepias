@@ -64,10 +64,10 @@ appTestCmd appTestCmdString testScenario =
       cmd = appTestCmdString testScenario
 
 appTestCmdString ::
-     (TestScenarioCohort -> String)
-  -> (TestScenarioCohort -> String)
-  -> (TestScenarioCohort -> String)
-  -> TestScenarioCohort
+     (a -> String)
+  -> (a -> String)
+  -> (a -> String)
+  -> a
   -> String
 appTestCmdString
   constructTestExecutableFragm
@@ -79,6 +79,8 @@ appTestCmdString
       testExecutableFragm = constructTestExecutableFragm testScenario
       testInputFragm = constructTestInputFragm testScenario
       testOutputFragm = constructTestOutputFragm testScenario
+
+
 
 -- -- Build a shell command represented by string and run the command as a
 -- -- subprocess, where the command is a cohort-building application. If the

@@ -13,6 +13,7 @@ module TestUtils.TestCases
 import           Test.Tasty                     ( TestTree
                                                 , testGroup
                                                 )
+import           TestUtils.S3Utils
 
 -- Enumeration of test applications
 data AppType = AppRowWise | AppColumnWise
@@ -72,24 +73,6 @@ instance InputTypeAbleFSS TestScenarioCohort where
 
 -- preCmdHook :: TestScenarioCohort -> IO ()
 -- preCmdHook _ = pure ()
-
--- postCmdHook :: TestScenarioCohort -> IO ()
-postCmdHook ::
-     (TestScenarioCohort -> String)
-  -> (TestScenarioCohort -> FilePath)
-  -> TestScenarioCohort
-  -> IO ()
-postCmdHook constructS3UriForResult constructFilepathForResult testScenario =
-  do
-    let a = 22
-    pure ()
-    -- let isS3out = case testOutputType of
-    --   ITestOutputS3 -> True
-    --   _ -> False
-    -- when isS3out $
-    --   s3Copy
-    --     (constructS3UriForResult testScenario)
-    --     (convNameToPathResult testScenario)
 
 -- Enumerate the test cases
 createTestsCartesian :: String -> (TestScenarioCohort -> TestTree) -> TestTree

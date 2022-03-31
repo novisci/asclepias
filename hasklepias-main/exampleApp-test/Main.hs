@@ -7,9 +7,9 @@ module Main
   ( main
   ) where
 
+import           Control.Monad                  ( when )  -- FIXME after removing unneeded code using this
 import           Control.Exception             ( catch
                                                , throwIO )
-import           Control.Monad                 ( when )
 import qualified Data.ByteString.Lazy          as B
 import           Data.Char                     ( isDigit )
 import           Hasklepias
@@ -18,6 +18,7 @@ import           Hasklepias.ExampleApp
 import           TestUtils.ConstructTestTree
 import           TestUtils.SessionId
 import           TestUtils.TestCases
+import           TestUtils.S3Utils                        -- FIXME after removing unneeded code using this
 import           Hasklepias.MakeCohortApp       ( runApp )
 import           System.Directory               ( createDirectoryIfMissing
                                                 , removeDirectoryRecursive
@@ -30,7 +31,7 @@ import           Test.Tasty                     ( TestTree
                                                 , testGroup
                                                 )
 import           Test.Tasty.Silver
-import TestUtils.TestCases (TestScenarioCohort (getCohortTestDataType), TestDataType)
+import TestUtils.TestCases (TestScenarioCohort(getCohortTestDataType))
 
 localTestDataDir :: String
 localTestDataDir = "exampleApp-test/test/"
@@ -85,11 +86,12 @@ main = do
   --     throwIO (e :: ExitCode))
   pure ()
 
--- appTest' :: String -> TestScenarioCohort -> IO ()
--- appTest' sessionId =
---   appTest
---     (pure ())
---     (appTestCmd' sessionId)
+appTest' :: String -> TestScenarioCohort -> IO ()
+appTest' sessionId =
+  appTest
+    (\_ -> pure ())
+    (appTestCmd' sessionId)
+    (postCmdHookS3 (createS3UriForResult sessionId) createFilepathForResult')
 
 appTestCmd' :: String -> TestScenarioCohort -> IO ()
 appTestCmd' sessionId = appTestCmd (appTestCmdString' sessionId)
@@ -97,9 +99,10 @@ appTestCmd' sessionId = appTestCmd (appTestCmdString' sessionId)
 appTestCmdString' :: String -> TestScenarioCohort -> String
 appTestCmdString' sessionId testScenario =
   appTestCmdString
-    (constructTestExecutableFragm testScenario)
-    (constructTestInputFragm' sessionId testScenario)
-    (constructTestOutputFragm' sessionId testScenario)
+    constructTestExecutableFragm
+    (constructTestInputFragm' sessionId)
+    (constructTestOutputFragm' sessionId)
+    testScenario
 
 constructTestExecutableFragm :: TestScenarioCohort -> String
 constructTestExecutableFragm testScenarioCohort =
@@ -110,16 +113,17 @@ constructTestExecutableFragm testScenarioCohort =
 constructTestInputFragm' :: String -> TestScenarioCohort -> String
 constructTestInputFragm' sessionId testScenarioCohort =
   constructTestInputFragmFSS
-    (createFilepathForTest (getCohortTestDataType testScenarioCohort))
+    (createFilepathForTest . getCohortTestDataType)
     (\_ -> s3Bucket)
-    (createS3KeyForTest sessionId testScenarioCohort)
+    (createS3KeyForTest sessionId . getCohortTestDataType)
+    testScenarioCohort
 
 constructTestOutputFragm' :: String -> TestScenarioCohort -> String
-constructTestOutputFragm' sessionId testScenarioCohort =
+constructTestOutputFragm' sessionId =
   constructTestOutputFragmFSS
-    (createFilepathForResult testScenarioCohort)
+    createFilepathForResult'
     (\_ -> s3Bucket)
-    (createS3KeyForResult sessionId testScenarioCohort)
+    (createS3KeyForResult sessionId)
 
 -- Conduct a single test
 appGoldenVsFile :: String -> AppType -> TestDataType -> TestInputType -> TestOutputType -> TestTree
@@ -128,19 +132,19 @@ appGoldenVsFile sessionId appType testDataType testInputType testOutputType =
     (constructTestName appType testDataType testInputType testOutputType)
     (createFilepathForGolden appType testDataType)
     (createFilepathForResult appType testDataType testInputType testOutputType)
-    (appTest sessionId appType testDataType testInputType testOutputType)
+    (appTestLocal sessionId appType testDataType testInputType testOutputType)
 
 -- Build a shell command represented by string and run the command as a
 -- subprocess, where the command is a cohort-building application. If the
 -- application writes the results to S3 then copy those results back to the
 -- local filesystem
-appTest :: String -> AppType -> TestDataType -> TestInputType -> TestOutputType -> IO ()
-appTest sessionId appType testDataType testInputType testOutputType = do
+appTestLocal :: String -> AppType -> TestDataType -> TestInputType -> TestOutputType -> IO ()
+appTestLocal sessionId appType testDataType testInputType testOutputType = do
   let outFilename = createFilenameForResult appType testDataType testInputType testOutputType
   let isS3out = case testOutputType of
         TestOutputS3 -> True
         _ -> False
-  let cmd = appTestCmd sessionId appType testDataType testInputType testOutputType
+  let cmd = appTestCmdLocal sessionId appType testDataType testInputType testOutputType
   print $ "TEST COMMAND:  " ++ cmd
   pure cmd >>= callCommand
   when isS3out $
@@ -155,8 +159,8 @@ appTest sessionId appType testDataType testInputType testOutputType = do
 -- fragment like `"< /path/to/file"` is inserted in the middle of the command
 -- string. While this is not usual practice, the shell removes the fragment
 -- prior to processing and things do indeed work as intended
-appTestCmd :: String -> AppType -> TestDataType -> TestInputType -> TestOutputType -> String
-appTestCmd sessionId appType testDataType testInputType testOutputType =
+appTestCmdLocal :: String -> AppType -> TestDataType -> TestInputType -> TestOutputType -> String
+appTestCmdLocal sessionId appType testDataType testInputType testOutputType =
   appCmd ++ " " ++ inputFragm ++ " " ++ outputFragm
   where
     inFilename = createFilenameForTest testDataType
@@ -211,6 +215,32 @@ createFilenameForTest TestDataManySubj = "testmanysubjects.jsonl"
 createFilenameForTest TestDataManyEvent = "testmanyevents.jsonl"
 
 -- Construct the filename for the output for a given test
+createFilenameForResult' :: TestScenarioCohort -> String
+createFilenameForResult' testScenarioCohort = concat
+  [ "results-"
+  , case getCohortAppType testScenarioCohort of
+      AppRowWise -> "rw"
+      AppColumnWise -> "cw"
+  , "-"
+  , case getCohortTestDataType testScenarioCohort of
+      TestDataEmpty -> "emptydata"
+      TestDataSmall -> "small"
+      TestDataManySubj -> "manysubjectss"
+      TestDataManyEvent -> "manyevents"
+  , "-"
+  , case getCohortTestInputType testScenarioCohort of
+      TestInputFile -> "filein"
+      TestInputStdin -> "stdin"
+      TestInputS3 -> "s3in"
+  , "-"
+  , case getCohortTestOutputType testScenarioCohort of
+      TestOutputFile -> "fileout"
+      TestOutputStdout -> "stdout"
+      TestOutputS3 -> "s3out"
+  , ".json"
+  ]
+
+-- Construct the filename for the output for a given test
 createFilenameForResult :: AppType -> TestDataType -> TestInputType -> TestOutputType -> String
 createFilenameForResult appType testDataType testInputType testOutputType = concat
   [ "results-"
@@ -256,6 +286,11 @@ createFilepathForTest testDataType =
   localTestDataDir ++ createFilenameForTest testDataType
 
 -- Helper function to create the local filpath from a filename
+createFilepathForResult' :: TestScenarioCohort -> String
+createFilepathForResult' testScenarioCohort =
+  localResultsDir ++ createFilenameForResult' testScenarioCohort
+
+-- Helper function to create the local filpath from a filename
 createFilepathForResult :: AppType -> TestDataType -> TestInputType -> TestOutputType -> String
 createFilepathForResult appType testDataType testInputType testOutputType =
   localResultsDir ++ createFilenameForResult appType testDataType testInputType testOutputType
@@ -274,9 +309,13 @@ createS3KeyForTest :: String -> TestDataType -> String
 createS3KeyForTest sessionId testDataType =
   convFilenameToS3KeyTest' sessionId (createFilenameForTest testDataType)
 
-createS3KeyForResult :: String -> TestDataType -> String
-createS3KeyForResult sessionId testDataType =
-  convFilenameToS3KeyResult sessionId (createFilenameForResult testDataType)
+createS3KeyForResult :: String -> TestScenarioCohort -> String
+createS3KeyForResult sessionId testScenarioCohort =
+  convFilenameToS3KeyResult sessionId (createFilenameForResult' testScenarioCohort)
+
+createS3UriForResult :: String -> TestScenarioCohort -> String
+createS3UriForResult sessionId testScenarioCohort =
+  convNameToS3UriResult sessionId (createFilenameForResult' testScenarioCohort)
 
 -- Create the S3 key where the test data will be located (once paired with a
 -- bucket)

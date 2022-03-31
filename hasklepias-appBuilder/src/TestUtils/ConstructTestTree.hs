@@ -1,17 +1,22 @@
 -- |
 
 module TestUtils.ConstructTestTree
-  ( appTestCmdString
+  ( appGoldenVsFile
+  , appTest
+  , appTestCmd
+  , appTestCmdString
   , constructTestInputFragmFSS
   , constructTestOutputFragmFSS
-  )where
+  , postCmdHookS3
+  ) where
 
-import           TestUtils.TestCases
+import           Control.Monad                  ( when )
 import           Test.Tasty                     ( TestTree )
 import           Test.Tasty.Silver              ( goldenVsFile )
+import           TestUtils.TestCases
+import           TestUtils.S3Utils
 import           System.IO                      (FilePath)
 import           System.Process                 ( callCommand )
-import           TestUtils.TestCases            (TestScenarioCohort)
 
 -- -- Conduct a single test
 -- appGoldenVsFile :: String -> TestScenarioCohort -> TestTree
@@ -125,6 +130,21 @@ constructTestOutputFragmFSS
       bucket = constructBucketForResult testScenario
       s3KeyForResult = constructS3KeyForResult testScenario
 
+postCmdHookS3 ::
+     (TestScenarioCohort -> String)
+  -> (TestScenarioCohort -> FilePath)
+  -> TestScenarioCohort
+  -> IO ()
+postCmdHookS3 constructS3UriForResult constructFilepathForResult testScenario =
+  when
+    isS3out
+    (s3Copy
+      (constructS3UriForResult testScenario)
+      (constructFilepathForResult testScenario))
+  where
+    isS3out = case getCohortTestOutputType testScenario of
+      TestOutputS3 -> True
+      _ -> False
 
 -- -- Build a shell command represented by string and run the command as a
 -- -- subprocess, where the command is a cohort-building application. If the

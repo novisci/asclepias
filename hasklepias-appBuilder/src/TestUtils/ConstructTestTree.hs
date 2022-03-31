@@ -1,6 +1,10 @@
 -- |
 
-module TestUtils.ConstructTestTree where
+module TestUtils.ConstructTestTree
+  ( appTestCmdString
+  , constructTestInputFragmFSS
+  , constructTestOutputFragmFSS
+  )where
 
 import           TestUtils.TestCases
 import           Test.Tasty                     ( TestTree )
@@ -80,6 +84,46 @@ appTestCmdString
       testInputFragm = constructTestInputFragm testScenario
       testOutputFragm = constructTestOutputFragm testScenario
 
+constructTestInputFragmFSS ::
+  (InputTypeAbleFSS a)
+  => (a -> FilePath)
+  -> (a -> String)
+  -> (a -> String)
+  -> a
+  -> String
+constructTestInputFragmFSS
+  constructFilepathForTest
+  constructBucketForTest
+  constructS3KeyForTest
+  testScenario =
+    case extractTestInputType testScenario of
+          TestInputFile -> "-f " ++ filepathForTest
+          TestInputStdin -> "< " ++ filepathForTest
+          TestInputS3 -> "-r us-east-1 -b " ++ bucket ++ " -k " ++ s3KeyForTest
+    where
+      filepathForTest = constructFilepathForTest testScenario
+      bucket = constructBucketForTest testScenario
+      s3KeyForTest = constructS3KeyForTest testScenario
+
+constructTestOutputFragmFSS ::
+     (TestScenarioCohort -> FilePath)
+  -> (TestScenarioCohort -> String)
+  -> (TestScenarioCohort -> String)
+  -> TestScenarioCohort
+  -> String
+constructTestOutputFragmFSS
+  constructFilepathForResult
+  constructBucketForResult
+  constructS3KeyForResult
+  testScenario =
+    case getCohortTestOutputType testScenario of
+        TestOutputFile -> "-o " ++ filepathForResult
+        TestOutputStdout -> "> " ++ filepathForResult
+        TestOutputS3 -> "--outregion us-east-1 --outbucket " ++ bucket ++ " --outkey " ++ s3KeyForResult
+    where
+      filepathForResult = constructFilepathForResult testScenario
+      bucket = constructBucketForResult testScenario
+      s3KeyForResult = constructS3KeyForResult testScenario
 
 
 -- -- Build a shell command represented by string and run the command as a

@@ -28,6 +28,7 @@ library
       TestUtils.BuildLargeTestData
       TestUtils.ConstructTestTree
       TestUtils.SessionId
+      TestUtils.S3Utils
       TestUtils.TestCases
   hs-source-dirs:
       src

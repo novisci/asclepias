@@ -2,21 +2,22 @@
 
 module TestUtils.TestCases
   ( AppType(..)
+  , InputTypeAbleFSS(..)
   , TestDataType(..)
   , TestInputType(..)
   , TestOutputType(..)
   , TestScenarioCohort(..)
-  -- , createTestsCartesian
+  , createTestsCartesian
   ) where
 
 import           Test.Tasty                     ( TestTree
                                                 , testGroup
                                                 )
 
--- Enumeration of the test applications
+-- Enumeration of test applications
 data AppType = AppRowWise | AppColumnWise
 
--- Enumeration of the test data cases
+-- Enumeration of test data cases
 data TestDataType = TestDataEmpty | TestDataSmall | TestDataManySubj | TestDataManyEvent
 
 -- Enumeration of input sources
@@ -25,7 +26,13 @@ data TestInputType = TestInputFile | TestInputStdin | TestInputS3
 -- Enumeration of output sources
 data TestOutputType = TestOutputFile | TestOutputStdout | TestOutputS3
 
--- Product type of the various scenarios
+-- Test scenario type for the filter application
+data TestScenarioFilter = TestScenarioFilter
+  { getFilterTestDataType :: TestDataType
+  , getFilterTestInputType :: TestInputType
+  }
+
+-- Test scenario type for the cohort application
 data TestScenarioCohort = TestScenarioCohort
   { getCohortAppType :: AppType
   , getCohortTestDataType :: TestDataType
@@ -41,10 +48,10 @@ data TestScenarioCohort = TestScenarioCohort
 --     -> a
 --     -> String
 
-class InputTypeAble a where
+class InputTypeAbleFSS a where
   extractTestInputType :: a -> TestInputType
 
-instance InputTypeAble TestScenarioCohort where
+instance InputTypeAbleFSS TestScenarioCohort where
   extractTestInputType = getCohortTestInputType
 
 -- instance InputFragmAble TestScenarioCohort where
@@ -62,67 +69,27 @@ instance InputTypeAble TestScenarioCohort where
 -- -- Convenience synonym for a TestTree constructor
 -- type TestElem = AppType -> TestDataType -> TestInputType -> TestOutputType -> TestTree
 
-constructTestInputFragm ::
-  (InputTypeAble a)
-  => (a -> FilePath)
-  -> (a -> String)
-  -> (a -> String)
-  -> a
-  -> String
-constructTestInputFragm
-  constructFilePathForTest
-  constructBucketForTest
-  constructS3KeyForTest
-  testScenario =
-    case extractTestInputType testScenario of
-          TestInputFile -> "-f " ++ filePathForTest
-          TestInputStdin -> "< " ++ filePathForTest
-          TestInputS3 -> "-r us-east-1 -b " ++ bucket ++ " -k " ++ s3KeyForTest
-    where
-      filePathForTest = constructFilePathForTest testScenario
-      bucket = constructBucketForTest testScenario
-      s3KeyForTest = constructS3KeyForTest testScenario
-
-constructTestOutputFragm ::
-     (TestScenarioCohort -> FilePath)
-  -> (TestScenarioCohort -> String)
-  -> (TestScenarioCohort -> String)
-  -> TestScenarioCohort
-  -> String
-constructTestOutputFragm
-  constructFilePathForResult
-  constructBucketForResult
-  constructS3KeyForResult
-  testScenario =
-    case getCohortTestOutputType testScenario of
-        TestOutputFile -> "-o " ++ filePathForResult
-        TestOutputStdout -> "> " ++ filePathForResult
-        TestOutputS3 -> "--outregion us-east-1 --outbucket " ++ bucket ++ " --outkey " ++ s3KeyForResult
-    where
-      filePathForResult = constructFilePathForResult testScenario
-      bucket = constructBucketForResult testScenario
-      s3KeyForResult = constructS3KeyForResult testScenario
 
 -- preCmdHook :: TestScenarioCohort -> IO ()
 -- preCmdHook _ = pure ()
 
--- -- postCmdHook :: TestScenarioCohort -> IO ()
--- postCmdHook ::
---      (TestScenarioCohort -> String)
---   -> (TestScenarioCohort -> FilePath)
---   -> TestScenarioCohort
---   -> IO ()
--- postCmdHook constructS3UriForResult constructFilePathForResult testScenario =
---   do
---     let a = 22
---     pure ()
---     -- let isS3out = case testOutputType of
---     --   ITestOutputS3 -> True
---     --   _ -> False
---     -- when isS3out $
---     --   s3Copy
---     --     (constructS3UriForResult testScenario)
---     --     (convNameToPathResult testScenario)
+-- postCmdHook :: TestScenarioCohort -> IO ()
+postCmdHook ::
+     (TestScenarioCohort -> String)
+  -> (TestScenarioCohort -> FilePath)
+  -> TestScenarioCohort
+  -> IO ()
+postCmdHook constructS3UriForResult constructFilepathForResult testScenario =
+  do
+    let a = 22
+    pure ()
+    -- let isS3out = case testOutputType of
+    --   ITestOutputS3 -> True
+    --   _ -> False
+    -- when isS3out $
+    --   s3Copy
+    --     (constructS3UriForResult testScenario)
+    --     (convNameToPathResult testScenario)
 
 -- Enumerate the test cases
 createTestsCartesian :: String -> (TestScenarioCohort -> TestTree) -> TestTree

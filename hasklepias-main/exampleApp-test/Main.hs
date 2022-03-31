@@ -15,6 +15,7 @@ import           Data.Char                     ( isDigit )
 import           Hasklepias
 import           TestUtils.BuildLargeTestData
 import           Hasklepias.ExampleApp
+import           TestUtils.ConstructTestTree
 import           TestUtils.SessionId
 import           TestUtils.TestCases
 import           Hasklepias.MakeCohortApp       ( runApp )
@@ -29,6 +30,7 @@ import           Test.Tasty                     ( TestTree
                                                 , testGroup
                                                 )
 import           Test.Tasty.Silver
+import TestUtils.TestCases (TestScenarioCohort (getCohortTestDataType), TestDataType)
 
 localTestDataDir :: String
 localTestDataDir = "exampleApp-test/test/"
@@ -72,15 +74,52 @@ main = do
   writeTestDataToS3 sessionId TestDataManySubj
   writeTestDataToS3 sessionId TestDataManyEvent
 
-  -- Run the tests and perform cleanup. Note that ANY CODE WRITTEN AFTER THIS
-  -- EXPRESION WILL BE SILENTLY IGNORED
-  defaultMain (createTestsCartesian $ appGoldenVsFile sessionId)
-    `catch` (\e -> do
-      -- removeDirectoryRecursive localResultsDir
-      -- s3RecursiveRm s3RootDir sessionId  -- TODO: uncomment!
-      -- s3RecursiveRm s3RootDir sessionId  -- TODO: uncomment!
-      -- FIXME: add generated test files and golden files to gitignore?
-      throwIO (e :: ExitCode))
+  -- -- Run the tests and perform cleanup. Note that ANY CODE WRITTEN AFTER THIS
+  -- -- EXPRESION WILL BE SILENTLY IGNORED
+  -- defaultMain (createTestsCartesian $ appGoldenVsFile sessionId)
+  --   `catch` (\e -> do
+  --     -- removeDirectoryRecursive localResultsDir
+  --     -- s3RecursiveRm s3RootDir sessionId  -- TODO: uncomment!
+  --     -- s3RecursiveRm s3RootDir sessionId  -- TODO: uncomment!
+  --     -- FIXME: add generated test files and golden files to gitignore?
+  --     throwIO (e :: ExitCode))
+  pure ()
+
+-- appTest' :: String -> TestScenarioCohort -> IO ()
+-- appTest' sessionId =
+--   appTest
+--     (pure ())
+--     (appTestCmd' sessionId)
+
+appTestCmd' :: String -> TestScenarioCohort -> IO ()
+appTestCmd' sessionId = appTestCmd (appTestCmdString' sessionId)
+
+appTestCmdString' :: String -> TestScenarioCohort -> String
+appTestCmdString' sessionId testScenario =
+  appTestCmdString
+    (constructTestExecutableFragm testScenario)
+    (constructTestInputFragm' sessionId testScenario)
+    (constructTestOutputFragm' sessionId testScenario)
+
+constructTestExecutableFragm :: TestScenarioCohort -> String
+constructTestExecutableFragm testScenarioCohort =
+   case getCohortAppType testScenarioCohort of
+    AppRowWise -> "exampleAppRW"
+    AppColumnWise -> "exampleAppCW"
+
+constructTestInputFragm' :: String -> TestScenarioCohort -> String
+constructTestInputFragm' sessionId testScenarioCohort =
+  constructTestInputFragmFSS
+    (createFilepathForTest (getCohortTestDataType testScenarioCohort))
+    (\_ -> s3Bucket)
+    (createS3KeyForTest sessionId testScenarioCohort)
+
+constructTestOutputFragm' :: String -> TestScenarioCohort -> String
+constructTestOutputFragm' sessionId testScenarioCohort =
+  constructTestOutputFragmFSS
+    (createFilepathForResult testScenarioCohort)
+    (\_ -> s3Bucket)
+    (createS3KeyForResult sessionId testScenarioCohort)
 
 -- Conduct a single test
 appGoldenVsFile :: String -> AppType -> TestDataType -> TestInputType -> TestOutputType -> TestTree
@@ -231,11 +270,35 @@ convNameToPathTest = (localTestDataDir ++)
 convNameToPathResult :: String -> String
 convNameToPathResult = (localResultsDir ++)
 
+createS3KeyForTest :: String -> TestDataType -> String
+createS3KeyForTest sessionId testDataType =
+  convFilenameToS3KeyTest' sessionId (createFilenameForTest testDataType)
+
+createS3KeyForResult :: String -> TestDataType -> String
+createS3KeyForResult sessionId testDataType =
+  convFilenameToS3KeyResult sessionId (createFilenameForResult testDataType)
+
 -- Create the S3 key where the test data will be located (once paired with a
 -- bucket)
+convFilenameToS3KeyTest' :: String -> String -> String
+convFilenameToS3KeyTest' filename sessionId =
+  s3RootDir ++ sessionId ++ "/testdata/" ++ filename
+
+-- Create the S3 key where the test data will be located (once paired with a
+-- bucket)
+convFilenameToS3KeyTest :: String -> String -> String
+convFilenameToS3KeyTest filename sessionId =
+  s3RootDir ++ sessionId ++ "/testdata/" ++ filename
+
 convNameToS3KeyTest :: String -> String -> String
 convNameToS3KeyTest sessionId filename =
   s3RootDir ++ sessionId ++ "/testdata/" ++ filename
+
+-- Create the S3 key where the results will be located (once paired with a
+-- bucket)
+convFilenameToS3KeyResult :: String -> String -> String
+convFilenameToS3KeyResult sessionId filename =
+  s3RootDir ++ sessionId ++ "/results/" ++ filename
 
 -- Create the S3 key where the results will be located (once paired with a
 -- bucket)
@@ -286,19 +349,6 @@ writeTestDataToS3 sessionId testDataType =
     filename = createFilenameForTest testDataType
     from = convNameToPathTest filename
     to = convNameToS3UriTest sessionId filename
-
--- Copy a file, possibly from and/or to S3
-s3Copy :: String -> String -> IO ()
-s3Copy from to =
-  pure cmd >>= callCommand where
-    cmd = "aws s3 cp " ++ from ++ " " ++ to
-
--- Delete all objects in S3 starting with the prefix `uri`
-s3RecursiveRm :: String -> IO ()
-s3RecursiveRm uri =
-  pure cmd >>= callCommand
-  where
-    cmd = "aws s3 rm --recursive " ++ uri
 
 convS3KeyToUri :: String -> String
 convS3KeyToUri s3Key = "s3://" ++ s3Bucket ++ "/" ++ s3Key

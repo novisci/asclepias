@@ -156,10 +156,10 @@ testIds =
   , "3-0-2"
   , "3-0-3"
   , "3-0-4"
-  , (createLargeNewId 1 1 1)
-  , (createLargeNewId 1 1 2)
-  , (createLargeNewId 1 1 3)
-  , (createLargeNewId 1 1 4)
+  , createLargeNewId 1 1 1
+  , createLargeNewId 1 1 2
+  , createLargeNewId 1 1 3
+  , createLargeNewId 1 1 4
   ]
 
 createTests :: String -> [TestTree]
@@ -168,7 +168,7 @@ createTests sessionId =
   where
     testInputTypes = [TestInputFile, TestInputStdin, TestInputS3]
     testPtlByIds = map (appGoldenVsFile sessionId) testIds
-    nestedTests = map (\f -> map (\d -> f d) testInputTypes) testPtlByIds
+    nestedTests = map (\f -> map f testInputTypes) testPtlByIds
 
 -- Conduct a single test
 appGoldenVsFile :: String -> String -> TestInputType -> TestTree
@@ -263,11 +263,11 @@ createFilenameForGolden id = "test-" ++ id ++ ".golden"
 -- Construct the filename for the output for a given test
 createFilenameForResults :: String -> TestInputType -> String
 createFilenameForResults id testInputType =
-  ("result-"
-   ++ id
-   ++ "-"
-   ++ inputStr
-   ++ ".jsonl")
+  "result-"
+    ++ id
+    ++ "-"
+    ++ inputStr
+    ++ ".jsonl"
   where
     inputStr = case testInputType of
       TestInputFile -> "filein"
@@ -287,18 +287,18 @@ createLocalFilepathForResults id testInputType =
 -- Create the S3 key where the test data will be located (once paired with a bucket)
 createS3keyForTest :: String -> String -> String
 createS3keyForTest sessionId id =
-  (s3TestDataDir
-   ++ "filterApp/"
-   ++ sessionId
-   ++ "/testdata/"
-   ++ createFilenameForTest id)
+  s3TestDataDir
+    ++ "filterApp/"
+    ++ sessionId
+    ++ "/testdata/"
+    ++ createFilenameForTest id
 
 -- Create the S3 URI where the test data will be located
 createS3uriForTest sessionId id =
-  ("s3://"
-   ++ s3Bucket
-   ++ "/"
-   ++ createS3keyForTest sessionId id)
+  "s3://"
+    ++ s3Bucket
+    ++ "/"
+    ++ createS3keyForTest sessionId id
 
 createId :: Int -> Int -> Int -> String
 createId n m v = printf "%d-%d-%d" n m v

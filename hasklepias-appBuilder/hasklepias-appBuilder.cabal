@@ -27,6 +27,7 @@ library
       Hasklepias.MakeFilterApp
       TestUtils.BuildLargeTestData
       TestUtils.SessionId
+      TestUtils.TestCases
   hs-source-dirs:
       src
   build-depends:
@@ -51,6 +52,8 @@ library
     , microlens == 0.4.12.0
     , optparse-applicative == 0.16.1.0
     , regex-compat >= 0.95
+    , tasty  == 1.4.1
+    , tasty-silver == 3.3.1
     , time >= 1.11
     , text >= 2.0 
     , vector == 0.12.2.0

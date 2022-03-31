@@ -16,6 +16,7 @@ import           Hasklepias
 import           TestUtils.BuildLargeTestData
 import           Hasklepias.ExampleApp
 import           TestUtils.SessionId
+import           TestUtils.TestCases
 import           Hasklepias.MakeCohortApp       ( runApp )
 import           System.Directory               ( createDirectoryIfMissing
                                                 , removeDirectoryRecursive
@@ -40,18 +41,6 @@ s3Bucket = "download.novisci.com"
 
 s3RootDir :: String
 s3RootDir = "hasklepias/sandbox-testapps/cohortApp/"
-
--- Enumeration of the test applications
-data AppType = AppRowWise | AppColumnWise
-
--- Enumeration of the test data cases
-data TestDataType = TestDataEmpty | TestDataSmall | TestDataManySubj | TestDataManyEvent
-
--- Enumeration of input sources
-data TestInputType = TestInputFile | TestInputStdin | TestInputS3
-
--- Enumeration of output sources
-data TestOutputType = TestOutputFile | TestOutputStdout | TestOutputS3
 
 -- Run the tests
 --
@@ -85,91 +74,13 @@ main = do
 
   -- Run the tests and perform cleanup. Note that ANY CODE WRITTEN AFTER THIS
   -- EXPRESION WILL BE SILENTLY IGNORED
-  defaultMain (tests sessionId)
+  defaultMain (createTestsCartesian $ appGoldenVsFile sessionId)
     `catch` (\e -> do
       -- removeDirectoryRecursive localResultsDir
       -- s3RecursiveRm s3RootDir sessionId  -- TODO: uncomment!
       -- s3RecursiveRm s3RootDir sessionId  -- TODO: uncomment!
       -- FIXME: add generated test files and golden files to gitignore?
       throwIO (e :: ExitCode))
-
--- Enumerate the test cases
-tests :: String -> TestTree
-tests sessionId = testGroup
-  "Tests of exampleApp"
-  [ appGoldenVsFile sessionId AppRowWise    TestDataEmpty     TestInputFile  TestOutputFile
-  , appGoldenVsFile sessionId AppRowWise    TestDataEmpty     TestInputFile  TestOutputStdout
-  , appGoldenVsFile sessionId AppRowWise    TestDataEmpty     TestInputFile  TestOutputS3
-  , appGoldenVsFile sessionId AppRowWise    TestDataEmpty     TestInputStdin TestOutputFile
-  , appGoldenVsFile sessionId AppRowWise    TestDataEmpty     TestInputStdin TestOutputStdout
-  , appGoldenVsFile sessionId AppRowWise    TestDataEmpty     TestInputStdin TestOutputS3
-  , appGoldenVsFile sessionId AppRowWise    TestDataEmpty     TestInputS3    TestOutputFile
-  , appGoldenVsFile sessionId AppRowWise    TestDataEmpty     TestInputS3    TestOutputStdout
-  , appGoldenVsFile sessionId AppRowWise    TestDataEmpty     TestInputS3    TestOutputS3
-  , appGoldenVsFile sessionId AppRowWise    TestDataSmall     TestInputFile  TestOutputFile
-  , appGoldenVsFile sessionId AppRowWise    TestDataSmall     TestInputFile  TestOutputStdout
-  , appGoldenVsFile sessionId AppRowWise    TestDataSmall     TestInputFile  TestOutputS3
-  , appGoldenVsFile sessionId AppRowWise    TestDataSmall     TestInputStdin TestOutputFile
-  , appGoldenVsFile sessionId AppRowWise    TestDataSmall     TestInputStdin TestOutputStdout
-  , appGoldenVsFile sessionId AppRowWise    TestDataSmall     TestInputStdin TestOutputS3
-  , appGoldenVsFile sessionId AppRowWise    TestDataSmall     TestInputS3    TestOutputFile
-  , appGoldenVsFile sessionId AppRowWise    TestDataSmall     TestInputS3    TestOutputStdout
-  , appGoldenVsFile sessionId AppRowWise    TestDataSmall     TestInputS3    TestOutputS3
-  , appGoldenVsFile sessionId AppRowWise    TestDataManySubj  TestInputFile  TestOutputFile
-  , appGoldenVsFile sessionId AppRowWise    TestDataManySubj  TestInputFile  TestOutputStdout
-  , appGoldenVsFile sessionId AppRowWise    TestDataManySubj  TestInputFile  TestOutputS3
-  , appGoldenVsFile sessionId AppRowWise    TestDataManySubj  TestInputStdin TestOutputFile
-  , appGoldenVsFile sessionId AppRowWise    TestDataManySubj  TestInputStdin TestOutputStdout
-  , appGoldenVsFile sessionId AppRowWise    TestDataManySubj  TestInputStdin TestOutputS3
-  , appGoldenVsFile sessionId AppRowWise    TestDataManySubj  TestInputS3    TestOutputFile
-  , appGoldenVsFile sessionId AppRowWise    TestDataManySubj  TestInputS3    TestOutputStdout
-  , appGoldenVsFile sessionId AppRowWise    TestDataManySubj  TestInputS3    TestOutputS3
-  , appGoldenVsFile sessionId AppRowWise    TestDataManyEvent TestInputFile  TestOutputFile
-  , appGoldenVsFile sessionId AppRowWise    TestDataManyEvent TestInputFile  TestOutputStdout
-  , appGoldenVsFile sessionId AppRowWise    TestDataManyEvent TestInputFile  TestOutputS3
-  , appGoldenVsFile sessionId AppRowWise    TestDataManyEvent TestInputStdin TestOutputFile
-  , appGoldenVsFile sessionId AppRowWise    TestDataManyEvent TestInputStdin TestOutputStdout
-  , appGoldenVsFile sessionId AppRowWise    TestDataManyEvent TestInputStdin TestOutputS3
-  , appGoldenVsFile sessionId AppRowWise    TestDataManyEvent TestInputS3    TestOutputFile
-  , appGoldenVsFile sessionId AppRowWise    TestDataManyEvent TestInputS3    TestOutputStdout
-  , appGoldenVsFile sessionId AppRowWise    TestDataManyEvent TestInputS3    TestOutputS3
-  , appGoldenVsFile sessionId AppColumnWise TestDataEmpty     TestInputFile  TestOutputFile
-  , appGoldenVsFile sessionId AppColumnWise TestDataEmpty     TestInputFile  TestOutputStdout
-  , appGoldenVsFile sessionId AppColumnWise TestDataEmpty     TestInputFile  TestOutputS3
-  , appGoldenVsFile sessionId AppColumnWise TestDataEmpty     TestInputStdin TestOutputFile
-  , appGoldenVsFile sessionId AppColumnWise TestDataEmpty     TestInputStdin TestOutputStdout
-  , appGoldenVsFile sessionId AppColumnWise TestDataEmpty     TestInputStdin TestOutputS3
-  , appGoldenVsFile sessionId AppColumnWise TestDataEmpty     TestInputS3    TestOutputFile
-  , appGoldenVsFile sessionId AppColumnWise TestDataEmpty     TestInputS3    TestOutputStdout
-  , appGoldenVsFile sessionId AppColumnWise TestDataEmpty     TestInputS3    TestOutputS3
-  , appGoldenVsFile sessionId AppColumnWise TestDataSmall     TestInputFile  TestOutputFile
-  , appGoldenVsFile sessionId AppColumnWise TestDataSmall     TestInputFile  TestOutputStdout
-  , appGoldenVsFile sessionId AppColumnWise TestDataSmall     TestInputFile  TestOutputS3
-  , appGoldenVsFile sessionId AppColumnWise TestDataSmall     TestInputStdin TestOutputFile
-  , appGoldenVsFile sessionId AppColumnWise TestDataSmall     TestInputStdin TestOutputStdout
-  , appGoldenVsFile sessionId AppColumnWise TestDataSmall     TestInputStdin TestOutputS3
-  , appGoldenVsFile sessionId AppColumnWise TestDataSmall     TestInputS3    TestOutputFile
-  , appGoldenVsFile sessionId AppColumnWise TestDataSmall     TestInputS3    TestOutputStdout
-  , appGoldenVsFile sessionId AppColumnWise TestDataSmall     TestInputS3    TestOutputS3
-  , appGoldenVsFile sessionId AppColumnWise TestDataManySubj  TestInputFile  TestOutputFile
-  , appGoldenVsFile sessionId AppColumnWise TestDataManySubj  TestInputFile  TestOutputStdout
-  , appGoldenVsFile sessionId AppColumnWise TestDataManySubj  TestInputFile  TestOutputS3
-  , appGoldenVsFile sessionId AppColumnWise TestDataManySubj  TestInputStdin TestOutputFile
-  , appGoldenVsFile sessionId AppColumnWise TestDataManySubj  TestInputStdin TestOutputStdout
-  , appGoldenVsFile sessionId AppColumnWise TestDataManySubj  TestInputStdin TestOutputS3
-  , appGoldenVsFile sessionId AppColumnWise TestDataManySubj  TestInputS3    TestOutputFile
-  , appGoldenVsFile sessionId AppColumnWise TestDataManySubj  TestInputS3    TestOutputStdout
-  , appGoldenVsFile sessionId AppColumnWise TestDataManySubj  TestInputS3    TestOutputS3
-  , appGoldenVsFile sessionId AppColumnWise TestDataManyEvent TestInputFile  TestOutputFile
-  , appGoldenVsFile sessionId AppColumnWise TestDataManyEvent TestInputFile  TestOutputStdout
-  , appGoldenVsFile sessionId AppColumnWise TestDataManyEvent TestInputFile  TestOutputS3
-  , appGoldenVsFile sessionId AppColumnWise TestDataManyEvent TestInputStdin TestOutputFile
-  , appGoldenVsFile sessionId AppColumnWise TestDataManyEvent TestInputStdin TestOutputStdout
-  , appGoldenVsFile sessionId AppColumnWise TestDataManyEvent TestInputStdin TestOutputS3
-  , appGoldenVsFile sessionId AppColumnWise TestDataManyEvent TestInputS3    TestOutputFile
-  , appGoldenVsFile sessionId AppColumnWise TestDataManyEvent TestInputS3    TestOutputStdout
-  , appGoldenVsFile sessionId AppColumnWise TestDataManyEvent TestInputS3    TestOutputS3
-  ]
 
 -- Conduct a single test
 appGoldenVsFile :: String -> AppType -> TestDataType -> TestInputType -> TestOutputType -> TestTree

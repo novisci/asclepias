@@ -5,7 +5,8 @@ module TestUtils.TestCases
   , TestDataType(..)
   , TestInputType(..)
   , TestOutputType(..)
-  , createTestsCartesian
+  , TestScenarioCohort(..)
+  -- , createTestsCartesian
   ) where
 
 import           Test.Tasty                     ( TestTree
@@ -24,91 +25,175 @@ data TestInputType = TestInputFile | TestInputStdin | TestInputS3
 -- Enumeration of output sources
 data TestOutputType = TestOutputFile | TestOutputStdout | TestOutputS3
 
---
-data TestScenario = TestScenario
-  { getAppType :: AppType
-  , getTestDataType :: TestDataType
-  , getTestInputType :: TestInputType
-  , getTestOutputType :: TestOutputType
+-- Product type of the various scenarios
+data TestScenarioCohort = TestScenarioCohort
+  { getCohortAppType :: AppType
+  , getCohortTestDataType :: TestDataType
+  , getCohortTestInputType :: TestInputType
+  , getCohortTestOutputType :: TestOutputType
   }
 
--- Convenience synonym for a TestTree constructor
-type TestElem = AppType -> TestDataType -> TestInputType -> TestOutputType -> TestTree
+-- class InputFragmAble a where
+--   constructInputFragm ::
+--        (a -> FilePath)
+--     -> (a -> String)
+--     -> (a -> String)
+--     -> a
+--     -> String
+
+-- instance InputFragmAble TestScenarioCohort where
+--   constructInputFragm testScenarioCohort =
+
+
+-- -- Product type of the various scenarios
+-- data TestScenarioCohort' = TestScenarioCohort'
+--   { getAppType :: AppType
+--   , getTestDataType :: TestDataType
+--   , getTestInputType :: TestInputType
+--   , getTestOutputType :: TestOutputType
+--   }
+
+-- -- Convenience synonym for a TestTree constructor
+-- type TestElem = AppType -> TestDataType -> TestInputType -> TestOutputType -> TestTree
+
+constructTestInputFragm ::
+     (TestScenarioCohort -> FilePath)
+  -> (TestScenarioCohort -> String)
+  -> (TestScenarioCohort -> String)
+  -> TestScenarioCohort
+  -> String
+constructTestInputFragm
+  constructFilePathForTest
+  constructBucketForTest
+  constructS3KeyForTest
+  testScenario =
+    case getCohortTestInputType testScenario of
+          TestInputFile -> "-f " ++ filePathForTest
+          TestInputStdin -> "< " ++ filePathForTest
+          TestInputS3 -> "-r us-east-1 -b " ++ bucket ++ " -k " ++ s3KeyForTest
+    where
+      filePathForTest = constructFilePathForTest testScenario
+      bucket = constructBucketForTest testScenario
+      s3KeyForTest = constructS3KeyForTest testScenario
+
+constructTestOutputFragm ::
+     (TestScenarioCohort -> FilePath)
+  -> (TestScenarioCohort -> String)
+  -> (TestScenarioCohort -> String)
+  -> TestScenarioCohort
+  -> String
+constructTestOutputFragm
+  constructFilePathForResult
+  constructBucketForResult
+  constructS3KeyForResult
+  testScenario =
+    case getCohortTestOutputType testScenario of
+        TestOutputFile -> "-o " ++ filePathForResult
+        TestOutputStdout -> "> " ++ filePathForResult
+        TestOutputS3 -> "--outregion us-east-1 --outbucket " ++ bucket ++ " --outkey " ++ s3KeyForResult
+    where
+      filePathForResult = constructFilePathForResult testScenario
+      bucket = constructBucketForResult testScenario
+      s3KeyForResult = constructS3KeyForResult testScenario
+
+-- preCmdHook :: TestScenarioCohort -> IO ()
+-- preCmdHook _ = pure ()
+
+-- -- postCmdHook :: TestScenarioCohort -> IO ()
+-- postCmdHook ::
+--      (TestScenarioCohort -> String)
+--   -> (TestScenarioCohort -> FilePath)
+--   -> TestScenarioCohort
+--   -> IO ()
+-- postCmdHook constructS3UriForResult constructFilePathForResult testScenario =
+--   do
+--     let a = 22
+--     pure ()
+--     -- let isS3out = case testOutputType of
+--     --   ITestOutputS3 -> True
+--     --   _ -> False
+--     -- when isS3out $
+--     --   s3Copy
+--     --     (constructS3UriForResult testScenario)
+--     --     (convNameToPathResult testScenario)
 
 -- Enumerate the test cases
-createTestsCartesian :: TestElem -> TestTree
-createTestsCartesian f = testGroup
+createTestsCartesian :: String -> (TestScenarioCohort -> TestTree) -> TestTree
+createTestsCartesian name appTest = testGroup
   "Tests of exampleApp"
-  [ f AppRowWise    TestDataEmpty     TestInputFile  TestOutputFile
-  , f AppRowWise    TestDataEmpty     TestInputFile  TestOutputStdout
-  , f AppRowWise    TestDataEmpty     TestInputFile  TestOutputS3
-  , f AppRowWise    TestDataEmpty     TestInputStdin TestOutputFile
-  , f AppRowWise    TestDataEmpty     TestInputStdin TestOutputStdout
-  , f AppRowWise    TestDataEmpty     TestInputStdin TestOutputS3
-  , f AppRowWise    TestDataEmpty     TestInputS3    TestOutputFile
-  , f AppRowWise    TestDataEmpty     TestInputS3    TestOutputStdout
-  , f AppRowWise    TestDataEmpty     TestInputS3    TestOutputS3
-  , f AppRowWise    TestDataSmall     TestInputFile  TestOutputFile
-  , f AppRowWise    TestDataSmall     TestInputFile  TestOutputStdout
-  , f AppRowWise    TestDataSmall     TestInputFile  TestOutputS3
-  , f AppRowWise    TestDataSmall     TestInputStdin TestOutputFile
-  , f AppRowWise    TestDataSmall     TestInputStdin TestOutputStdout
-  , f AppRowWise    TestDataSmall     TestInputStdin TestOutputS3
-  , f AppRowWise    TestDataSmall     TestInputS3    TestOutputFile
-  , f AppRowWise    TestDataSmall     TestInputS3    TestOutputStdout
-  , f AppRowWise    TestDataSmall     TestInputS3    TestOutputS3
-  , f AppRowWise    TestDataManySubj  TestInputFile  TestOutputFile
-  , f AppRowWise    TestDataManySubj  TestInputFile  TestOutputStdout
-  , f AppRowWise    TestDataManySubj  TestInputFile  TestOutputS3
-  , f AppRowWise    TestDataManySubj  TestInputStdin TestOutputFile
-  , f AppRowWise    TestDataManySubj  TestInputStdin TestOutputStdout
-  , f AppRowWise    TestDataManySubj  TestInputStdin TestOutputS3
-  , f AppRowWise    TestDataManySubj  TestInputS3    TestOutputFile
-  , f AppRowWise    TestDataManySubj  TestInputS3    TestOutputStdout
-  , f AppRowWise    TestDataManySubj  TestInputS3    TestOutputS3
-  , f AppRowWise    TestDataManyEvent TestInputFile  TestOutputFile
-  , f AppRowWise    TestDataManyEvent TestInputFile  TestOutputStdout
-  , f AppRowWise    TestDataManyEvent TestInputFile  TestOutputS3
-  , f AppRowWise    TestDataManyEvent TestInputStdin TestOutputFile
-  , f AppRowWise    TestDataManyEvent TestInputStdin TestOutputStdout
-  , f AppRowWise    TestDataManyEvent TestInputStdin TestOutputS3
-  , f AppRowWise    TestDataManyEvent TestInputS3    TestOutputFile
-  , f AppRowWise    TestDataManyEvent TestInputS3    TestOutputStdout
-  , f AppRowWise    TestDataManyEvent TestInputS3    TestOutputS3
-  , f AppColumnWise TestDataEmpty     TestInputFile  TestOutputFile
-  , f AppColumnWise TestDataEmpty     TestInputFile  TestOutputStdout
-  , f AppColumnWise TestDataEmpty     TestInputFile  TestOutputS3
-  , f AppColumnWise TestDataEmpty     TestInputStdin TestOutputFile
-  , f AppColumnWise TestDataEmpty     TestInputStdin TestOutputStdout
-  , f AppColumnWise TestDataEmpty     TestInputStdin TestOutputS3
-  , f AppColumnWise TestDataEmpty     TestInputS3    TestOutputFile
-  , f AppColumnWise TestDataEmpty     TestInputS3    TestOutputStdout
-  , f AppColumnWise TestDataEmpty     TestInputS3    TestOutputS3
-  , f AppColumnWise TestDataSmall     TestInputFile  TestOutputFile
-  , f AppColumnWise TestDataSmall     TestInputFile  TestOutputStdout
-  , f AppColumnWise TestDataSmall     TestInputFile  TestOutputS3
-  , f AppColumnWise TestDataSmall     TestInputStdin TestOutputFile
-  , f AppColumnWise TestDataSmall     TestInputStdin TestOutputStdout
-  , f AppColumnWise TestDataSmall     TestInputStdin TestOutputS3
-  , f AppColumnWise TestDataSmall     TestInputS3    TestOutputFile
-  , f AppColumnWise TestDataSmall     TestInputS3    TestOutputStdout
-  , f AppColumnWise TestDataSmall     TestInputS3    TestOutputS3
-  , f AppColumnWise TestDataManySubj  TestInputFile  TestOutputFile
-  , f AppColumnWise TestDataManySubj  TestInputFile  TestOutputStdout
-  , f AppColumnWise TestDataManySubj  TestInputFile  TestOutputS3
-  , f AppColumnWise TestDataManySubj  TestInputStdin TestOutputFile
-  , f AppColumnWise TestDataManySubj  TestInputStdin TestOutputStdout
-  , f AppColumnWise TestDataManySubj  TestInputStdin TestOutputS3
-  , f AppColumnWise TestDataManySubj  TestInputS3    TestOutputFile
-  , f AppColumnWise TestDataManySubj  TestInputS3    TestOutputStdout
-  , f AppColumnWise TestDataManySubj  TestInputS3    TestOutputS3
-  , f AppColumnWise TestDataManyEvent TestInputFile  TestOutputFile
-  , f AppColumnWise TestDataManyEvent TestInputFile  TestOutputStdout
-  , f AppColumnWise TestDataManyEvent TestInputFile  TestOutputS3
-  , f AppColumnWise TestDataManyEvent TestInputStdin TestOutputFile
-  , f AppColumnWise TestDataManyEvent TestInputStdin TestOutputStdout
-  , f AppColumnWise TestDataManyEvent TestInputStdin TestOutputS3
-  , f AppColumnWise TestDataManyEvent TestInputS3    TestOutputFile
-  , f AppColumnWise TestDataManyEvent TestInputS3    TestOutputStdout
-  , f AppColumnWise TestDataManyEvent TestInputS3    TestOutputS3
+  [ appTestWrp AppRowWise    TestDataEmpty     TestInputFile  TestOutputFile
+  , appTestWrp AppRowWise    TestDataEmpty     TestInputFile  TestOutputStdout
+  , appTestWrp AppRowWise    TestDataEmpty     TestInputFile  TestOutputS3
+  , appTestWrp AppRowWise    TestDataEmpty     TestInputStdin TestOutputFile
+  , appTestWrp AppRowWise    TestDataEmpty     TestInputStdin TestOutputStdout
+  , appTestWrp AppRowWise    TestDataEmpty     TestInputStdin TestOutputS3
+  , appTestWrp AppRowWise    TestDataEmpty     TestInputS3    TestOutputFile
+  , appTestWrp AppRowWise    TestDataEmpty     TestInputS3    TestOutputStdout
+  , appTestWrp AppRowWise    TestDataEmpty     TestInputS3    TestOutputS3
+  , appTestWrp AppRowWise    TestDataSmall     TestInputFile  TestOutputFile
+  , appTestWrp AppRowWise    TestDataSmall     TestInputFile  TestOutputStdout
+  , appTestWrp AppRowWise    TestDataSmall     TestInputFile  TestOutputS3
+  , appTestWrp AppRowWise    TestDataSmall     TestInputStdin TestOutputFile
+  , appTestWrp AppRowWise    TestDataSmall     TestInputStdin TestOutputStdout
+  , appTestWrp AppRowWise    TestDataSmall     TestInputStdin TestOutputS3
+  , appTestWrp AppRowWise    TestDataSmall     TestInputS3    TestOutputFile
+  , appTestWrp AppRowWise    TestDataSmall     TestInputS3    TestOutputStdout
+  , appTestWrp AppRowWise    TestDataSmall     TestInputS3    TestOutputS3
+  , appTestWrp AppRowWise    TestDataManySubj  TestInputFile  TestOutputFile
+  , appTestWrp AppRowWise    TestDataManySubj  TestInputFile  TestOutputStdout
+  , appTestWrp AppRowWise    TestDataManySubj  TestInputFile  TestOutputS3
+  , appTestWrp AppRowWise    TestDataManySubj  TestInputStdin TestOutputFile
+  , appTestWrp AppRowWise    TestDataManySubj  TestInputStdin TestOutputStdout
+  , appTestWrp AppRowWise    TestDataManySubj  TestInputStdin TestOutputS3
+  , appTestWrp AppRowWise    TestDataManySubj  TestInputS3    TestOutputFile
+  , appTestWrp AppRowWise    TestDataManySubj  TestInputS3    TestOutputStdout
+  , appTestWrp AppRowWise    TestDataManySubj  TestInputS3    TestOutputS3
+  , appTestWrp AppRowWise    TestDataManyEvent TestInputFile  TestOutputFile
+  , appTestWrp AppRowWise    TestDataManyEvent TestInputFile  TestOutputStdout
+  , appTestWrp AppRowWise    TestDataManyEvent TestInputFile  TestOutputS3
+  , appTestWrp AppRowWise    TestDataManyEvent TestInputStdin TestOutputFile
+  , appTestWrp AppRowWise    TestDataManyEvent TestInputStdin TestOutputStdout
+  , appTestWrp AppRowWise    TestDataManyEvent TestInputStdin TestOutputS3
+  , appTestWrp AppRowWise    TestDataManyEvent TestInputS3    TestOutputFile
+  , appTestWrp AppRowWise    TestDataManyEvent TestInputS3    TestOutputStdout
+  , appTestWrp AppRowWise    TestDataManyEvent TestInputS3    TestOutputS3
+  , appTestWrp AppColumnWise TestDataEmpty     TestInputFile  TestOutputFile
+  , appTestWrp AppColumnWise TestDataEmpty     TestInputFile  TestOutputStdout
+  , appTestWrp AppColumnWise TestDataEmpty     TestInputFile  TestOutputS3
+  , appTestWrp AppColumnWise TestDataEmpty     TestInputStdin TestOutputFile
+  , appTestWrp AppColumnWise TestDataEmpty     TestInputStdin TestOutputStdout
+  , appTestWrp AppColumnWise TestDataEmpty     TestInputStdin TestOutputS3
+  , appTestWrp AppColumnWise TestDataEmpty     TestInputS3    TestOutputFile
+  , appTestWrp AppColumnWise TestDataEmpty     TestInputS3    TestOutputStdout
+  , appTestWrp AppColumnWise TestDataEmpty     TestInputS3    TestOutputS3
+  , appTestWrp AppColumnWise TestDataSmall     TestInputFile  TestOutputFile
+  , appTestWrp AppColumnWise TestDataSmall     TestInputFile  TestOutputStdout
+  , appTestWrp AppColumnWise TestDataSmall     TestInputFile  TestOutputS3
+  , appTestWrp AppColumnWise TestDataSmall     TestInputStdin TestOutputFile
+  , appTestWrp AppColumnWise TestDataSmall     TestInputStdin TestOutputStdout
+  , appTestWrp AppColumnWise TestDataSmall     TestInputStdin TestOutputS3
+  , appTestWrp AppColumnWise TestDataSmall     TestInputS3    TestOutputFile
+  , appTestWrp AppColumnWise TestDataSmall     TestInputS3    TestOutputStdout
+  , appTestWrp AppColumnWise TestDataSmall     TestInputS3    TestOutputS3
+  , appTestWrp AppColumnWise TestDataManySubj  TestInputFile  TestOutputFile
+  , appTestWrp AppColumnWise TestDataManySubj  TestInputFile  TestOutputStdout
+  , appTestWrp AppColumnWise TestDataManySubj  TestInputFile  TestOutputS3
+  , appTestWrp AppColumnWise TestDataManySubj  TestInputStdin TestOutputFile
+  , appTestWrp AppColumnWise TestDataManySubj  TestInputStdin TestOutputStdout
+  , appTestWrp AppColumnWise TestDataManySubj  TestInputStdin TestOutputS3
+  , appTestWrp AppColumnWise TestDataManySubj  TestInputS3    TestOutputFile
+  , appTestWrp AppColumnWise TestDataManySubj  TestInputS3    TestOutputStdout
+  , appTestWrp AppColumnWise TestDataManySubj  TestInputS3    TestOutputS3
+  , appTestWrp AppColumnWise TestDataManyEvent TestInputFile  TestOutputFile
+  , appTestWrp AppColumnWise TestDataManyEvent TestInputFile  TestOutputStdout
+  , appTestWrp AppColumnWise TestDataManyEvent TestInputFile  TestOutputS3
+  , appTestWrp AppColumnWise TestDataManyEvent TestInputStdin TestOutputFile
+  , appTestWrp AppColumnWise TestDataManyEvent TestInputStdin TestOutputStdout
+  , appTestWrp AppColumnWise TestDataManyEvent TestInputStdin TestOutputS3
+  , appTestWrp AppColumnWise TestDataManyEvent TestInputS3    TestOutputFile
+  , appTestWrp AppColumnWise TestDataManyEvent TestInputS3    TestOutputStdout
+  , appTestWrp AppColumnWise TestDataManyEvent TestInputS3    TestOutputS3
   ]
+  where
+    appTestWrp appRowWise testDataEmpty testInputFile testOutputFile =
+      appTest (TestScenarioCohort appRowWise testDataEmpty testInputFile testOutputFile)

@@ -26,6 +26,7 @@ library
       Hasklepias.MakeCohortApp
       Hasklepias.MakeFilterApp
       TestUtils.BuildLargeTestData
+      TestUtils.ConstructTestTree
       TestUtils.SessionId
       TestUtils.TestCases
   hs-source-dirs:
@@ -51,6 +52,7 @@ library
     , interval-algebra == 1.3.0
     , microlens == 0.4.12.0
     , optparse-applicative == 0.16.1.0
+    , process >= 1.6.14
     , regex-compat >= 0.95
     , tasty  == 1.4.1
     , tasty-silver == 3.3.1

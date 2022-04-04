@@ -76,7 +76,7 @@ main = do
 appGoldenVsFile' :: String -> TestScenarioCohort -> TestTree
 appGoldenVsFile' sessionId =
   appGoldenVsFile
-    constructTestName'
+    constructTestName
     createFilepathForTest
     createFilepathForGolden
     createFilepathForResult
@@ -96,80 +96,28 @@ appTestCmdString' :: String -> TestScenarioCohort -> String
 appTestCmdString' sessionId =
   appTestCmdString
     constructTestExecutableFragm
-    (constructTestInputFragm' sessionId)
-    (constructTestOutputFragm' sessionId)
+    (constructTestInputFragmFSS' sessionId)
+    (constructTestOutputFragmFSS' sessionId)
 
 constructTestExecutableFragm :: TestScenarioCohort -> String
 constructTestExecutableFragm testScenarioCohort =
-   case getCohortAppType testScenarioCohort of
+  case getCohortAppType testScenarioCohort of
     AppRowWise -> "exampleAppRW"
     AppColumnWise -> "exampleAppCW"
 
-constructTestInputFragm' :: String -> TestScenarioCohort -> String
-constructTestInputFragm' sessionId =
+constructTestInputFragmFSS' :: String -> TestScenarioCohort -> String
+constructTestInputFragmFSS' sessionId =
   constructTestInputFragmFSS
     createFilepathForTest
     (const s3Bucket)
     (createS3KeyForTest sessionId)
 
-constructTestOutputFragm' :: String -> TestScenarioCohort -> String
-constructTestOutputFragm' sessionId =
+constructTestOutputFragmFSS' :: String -> TestScenarioCohort -> String
+constructTestOutputFragmFSS' sessionId =
   constructTestOutputFragmFSS
     createFilepathForResult
     (const s3Bucket)
     (createS3KeyForResult sessionId)
-
--- -- Conduct a single test
--- appGoldenVsFile :: String -> AppType -> TestDataType -> TestInputType -> TestOutputType -> TestTree
--- appGoldenVsFile sessionId appType testDataType testInputType testOutputType =
---   goldenVsFile
---     (constructTestName appType testDataType testInputType testOutputType)
---     (createFilepathForGolden appType testDataType)
---     (createFilepathForResult appType testDataType testInputType testOutputType)
---     (appTestLocal sessionId appType testDataType testInputType testOutputType)
-
--- -- Build a shell command represented by string and run the command as a
--- -- subprocess, where the command is a cohort-building application. If the
--- -- application writes the results to S3 then copy those results back to the
--- -- local filesystem
--- appTestLocal :: String -> AppType -> TestDataType -> TestInputType -> TestOutputType -> IO ()
--- appTestLocal sessionId appType testDataType testInputType testOutputType = do
---   let outFilename = createFilenameForResult appType testDataType testInputType testOutputType
---   let isS3out = case testOutputType of
---         TestOutputS3 -> True
---         _ -> False
---   let cmd = appTestCmdLocal sessionId appType testDataType testInputType testOutputType
---   print $ "TEST COMMAND:  " ++ cmd
---   pure cmd >>= callCommand
---   when isS3out $
---     s3Copy
---       (convNameToS3UriResult sessionId outFilename)
---       (convFilenameToFilepathResult outFilename)
-
--- -- Construct a string representing a shell command that runs one of the testing
--- -- cohort-building applications on the test data
--- --
--- -- Note that if the input is specified as coming from standard input, then a
--- -- fragment like `"< /path/to/file"` is inserted in the middle of the command
--- -- string. While this is not usual practice, the shell removes the fragment
--- -- prior to processing and things do indeed work as intended
--- appTestCmdLocal :: String -> AppType -> TestDataType -> TestInputType -> TestOutputType -> String
--- appTestCmdLocal sessionId appType testDataType testInputType testOutputType =
---   appCmd ++ " " ++ inputFragm ++ " " ++ outputFragm
---   where
---     inFilename = createFilenameForTest testDataType
---     outFilename = createFilenameForResult appType testDataType testInputType testOutputType
---     appCmd = case appType of
---         AppRowWise -> "exampleAppRW"
---         AppColumnWise -> "exampleAppCW"
---     inputFragm = case testInputType of
---         TestInputFile -> "-f " ++ convFilenameToFilepathTest inFilename
---         TestInputStdin -> "< " ++ convFilenameToFilepathTest inFilename
---         TestInputS3 -> "-r us-east-1 -b " ++ s3Bucket ++ " -k " ++ convNameToS3KeyTest sessionId inFilename
---     outputFragm = case testOutputType of
---         TestOutputFile -> "-o " ++ convFilenameToFilepathResult outFilename
---         TestOutputStdout -> "> " ++ convFilenameToFilepathResult outFilename
---         TestOutputS3 -> "--outregion us-east-1 --outbucket " ++ s3Bucket ++ " --outkey " ++ convNameToS3KeyResult sessionId outFilename
 
 -- Construct the test data for the "many subjects" test scenario and write it to
 -- the filesystem
@@ -201,8 +149,8 @@ generateGoldenManySubjectsCwPtl =
   generateGoldenManySubjectsCw
     (localTestDataDir ++ "testmanysubjectscw.golden")
 
-constructTestName' :: TestScenarioCohort -> String
-constructTestName' testScenarioCohort =
+constructTestName :: TestScenarioCohort -> String
+constructTestName testScenarioCohort =
   "ExampleApp of a "
     ++ case getCohortAppType testScenarioCohort of
          AppRowWise-> "row-wise"
@@ -223,31 +171,6 @@ constructTestName' testScenarioCohort =
          TestOutputFile -> "file"
          TestOutputStdout -> "standard output"
          TestOutputS3 -> "S3"
-
--- -- Construct a name to use as a label for a given test
--- constructTestName :: AppType -> TestDataType -> TestInputType -> TestOutputType -> String
--- constructTestName appType testDataType testInputType testOutputType = concat
---   [ "ExampleApp of a "
---   , case appType of
---       AppRowWise-> "row-wise"
---       AppColumnWise -> "column-wise"
---   , " cohort performed on "
---   , case testDataType of
---       TestDataEmpty -> "empty data"
---       TestDataSmall -> "small data"
---       TestDataManySubj -> "many subjects data"
---       TestDataManyEvent -> "many evetns data"
---   , " reading from "
---   , case testInputType of
---       TestInputFile -> "file"
---       TestInputStdin -> "standard input"
---       TestInputS3 -> "S3"
---   , " and writing to "
---   , case testOutputType of
---       TestOutputFile -> "file"
---       TestOutputStdout -> "standard output"
---       TestOutputS3 -> "S3"
---   ]
 
 -- Copy local test data to S3
 writeTestDataToS3 :: String -> TestDataType -> IO ()

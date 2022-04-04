@@ -139,48 +139,48 @@ constructTestOutputFragm' sessionId =
 --     (createFilepathForResult appType testDataType testInputType testOutputType)
 --     (appTestLocal sessionId appType testDataType testInputType testOutputType)
 
--- Build a shell command represented by string and run the command as a
--- subprocess, where the command is a cohort-building application. If the
--- application writes the results to S3 then copy those results back to the
--- local filesystem
-appTestLocal :: String -> AppType -> TestDataType -> TestInputType -> TestOutputType -> IO ()
-appTestLocal sessionId appType testDataType testInputType testOutputType = do
-  let outFilename = createFilenameForResult appType testDataType testInputType testOutputType
-  let isS3out = case testOutputType of
-        TestOutputS3 -> True
-        _ -> False
-  let cmd = appTestCmdLocal sessionId appType testDataType testInputType testOutputType
-  print $ "TEST COMMAND:  " ++ cmd
-  pure cmd >>= callCommand
-  when isS3out $
-    s3Copy
-      (convNameToS3UriResult sessionId outFilename)
-      (convNameToPathResult outFilename)
+-- -- Build a shell command represented by string and run the command as a
+-- -- subprocess, where the command is a cohort-building application. If the
+-- -- application writes the results to S3 then copy those results back to the
+-- -- local filesystem
+-- appTestLocal :: String -> AppType -> TestDataType -> TestInputType -> TestOutputType -> IO ()
+-- appTestLocal sessionId appType testDataType testInputType testOutputType = do
+--   let outFilename = createFilenameForResult appType testDataType testInputType testOutputType
+--   let isS3out = case testOutputType of
+--         TestOutputS3 -> True
+--         _ -> False
+--   let cmd = appTestCmdLocal sessionId appType testDataType testInputType testOutputType
+--   print $ "TEST COMMAND:  " ++ cmd
+--   pure cmd >>= callCommand
+--   when isS3out $
+--     s3Copy
+--       (convNameToS3UriResult sessionId outFilename)
+--       (convNameToPathResult outFilename)
 
--- Construct a string representing a shell command that runs one of the testing
--- cohort-building applications on the test data
---
--- Note that if the input is specified as coming from standard input, then a
--- fragment like `"< /path/to/file"` is inserted in the middle of the command
--- string. While this is not usual practice, the shell removes the fragment
--- prior to processing and things do indeed work as intended
-appTestCmdLocal :: String -> AppType -> TestDataType -> TestInputType -> TestOutputType -> String
-appTestCmdLocal sessionId appType testDataType testInputType testOutputType =
-  appCmd ++ " " ++ inputFragm ++ " " ++ outputFragm
-  where
-    inFilename = createFilenameForTest testDataType
-    outFilename = createFilenameForResult appType testDataType testInputType testOutputType
-    appCmd = case appType of
-        AppRowWise -> "exampleAppRW"
-        AppColumnWise -> "exampleAppCW"
-    inputFragm = case testInputType of
-        TestInputFile -> "-f " ++ convNameToPathTest inFilename
-        TestInputStdin -> "< " ++ convNameToPathTest inFilename
-        TestInputS3 -> "-r us-east-1 -b " ++ s3Bucket ++ " -k " ++ convNameToS3KeyTest sessionId inFilename
-    outputFragm = case testOutputType of
-        TestOutputFile -> "-o " ++ convNameToPathResult outFilename
-        TestOutputStdout -> "> " ++ convNameToPathResult outFilename
-        TestOutputS3 -> "--outregion us-east-1 --outbucket " ++ s3Bucket ++ " --outkey " ++ convNameToS3KeyResult sessionId outFilename
+-- -- Construct a string representing a shell command that runs one of the testing
+-- -- cohort-building applications on the test data
+-- --
+-- -- Note that if the input is specified as coming from standard input, then a
+-- -- fragment like `"< /path/to/file"` is inserted in the middle of the command
+-- -- string. While this is not usual practice, the shell removes the fragment
+-- -- prior to processing and things do indeed work as intended
+-- appTestCmdLocal :: String -> AppType -> TestDataType -> TestInputType -> TestOutputType -> String
+-- appTestCmdLocal sessionId appType testDataType testInputType testOutputType =
+--   appCmd ++ " " ++ inputFragm ++ " " ++ outputFragm
+--   where
+--     inFilename = createFilenameForTest testDataType
+--     outFilename = createFilenameForResult appType testDataType testInputType testOutputType
+--     appCmd = case appType of
+--         AppRowWise -> "exampleAppRW"
+--         AppColumnWise -> "exampleAppCW"
+--     inputFragm = case testInputType of
+--         TestInputFile -> "-f " ++ convNameToPathTest inFilename
+--         TestInputStdin -> "< " ++ convNameToPathTest inFilename
+--         TestInputS3 -> "-r us-east-1 -b " ++ s3Bucket ++ " -k " ++ convNameToS3KeyTest sessionId inFilename
+--     outputFragm = case testOutputType of
+--         TestOutputFile -> "-o " ++ convNameToPathResult outFilename
+--         TestOutputStdout -> "> " ++ convNameToPathResult outFilename
+--         TestOutputS3 -> "--outregion us-east-1 --outbucket " ++ s3Bucket ++ " --outkey " ++ convNameToS3KeyResult sessionId outFilename
 
 -- Construct the test data for the "many subjects" test scenario and write it to
 -- the filesystem
@@ -245,31 +245,31 @@ createFilenameForResult' testScenarioCohort = concat
   , ".json"
   ]
 
--- Construct the filename for the output for a given test
-createFilenameForResult :: AppType -> TestDataType -> TestInputType -> TestOutputType -> String
-createFilenameForResult appType testDataType testInputType testOutputType = concat
-  [ "results-"
-  , case appType of
-      AppRowWise -> "rw"
-      AppColumnWise -> "cw"
-  , "-"
-  , case testDataType of
-      TestDataEmpty -> "emptydata"
-      TestDataSmall -> "small"
-      TestDataManySubj -> "manysubjectss"
-      TestDataManyEvent -> "manyevents"
-  , "-"
-  , case testInputType of
-      TestInputFile -> "filein"
-      TestInputStdin -> "stdin"
-      TestInputS3 -> "s3in"
-  , "-"
-  , case testOutputType of
-      TestOutputFile -> "fileout"
-      TestOutputStdout -> "stdout"
-      TestOutputS3 -> "s3out"
-  , ".json"
-  ]
+-- -- Construct the filename for the output for a given test
+-- createFilenameForResult :: AppType -> TestDataType -> TestInputType -> TestOutputType -> String
+-- createFilenameForResult appType testDataType testInputType testOutputType = concat
+--   [ "results-"
+--   , case appType of
+--       AppRowWise -> "rw"
+--       AppColumnWise -> "cw"
+--   , "-"
+--   , case testDataType of
+--       TestDataEmpty -> "emptydata"
+--       TestDataSmall -> "small"
+--       TestDataManySubj -> "manysubjectss"
+--       TestDataManyEvent -> "manyevents"
+--   , "-"
+--   , case testInputType of
+--       TestInputFile -> "filein"
+--       TestInputStdin -> "stdin"
+--       TestInputS3 -> "s3in"
+--   , "-"
+--   , case testOutputType of
+--       TestOutputFile -> "fileout"
+--       TestOutputStdout -> "stdout"
+--       TestOutputS3 -> "s3out"
+--   , ".json"
+--   ]
 
 -- Construct the local filepath where the golden file is found for a given test
 createFilenameForGolden' :: TestScenarioCohort -> String
@@ -285,20 +285,20 @@ createFilenameForGolden' testScenarioCohort =
         AppColumnWise -> "cw"
     ++ ".golden"
 
--- Construct the local filepath where the golden file is found for a given test
-createFilenameForGolden :: AppType -> TestDataType -> String
-createFilenameForGolden appType testDataType = concat
-  [ "test"
-  , case testDataType of
-      TestDataEmpty -> "empty"
-      TestDataSmall -> ""
-      TestDataManySubj -> "manysubjects"
-      TestDataManyEvent -> "manyevents"
-  , case appType of
-      AppRowWise -> "rw"
-      AppColumnWise -> "cw"
-  , ".golden"
-  ]
+-- -- Construct the local filepath where the golden file is found for a given test
+-- createFilenameForGolden :: AppType -> TestDataType -> String
+-- createFilenameForGolden appType testDataType = concat
+--   [ "test"
+--   , case testDataType of
+--       TestDataEmpty -> "empty"
+--       TestDataSmall -> ""
+--       TestDataManySubj -> "manysubjects"
+--       TestDataManyEvent -> "manyevents"
+--   , case appType of
+--       AppRowWise -> "rw"
+--       AppColumnWise -> "cw"
+--   , ".golden"
+--   ]
 
 createFilepathForTest' ::  TestScenarioCohort -> String
 createFilepathForTest' testScenarioCohort =
@@ -315,18 +315,18 @@ createFilepathForResult' testScenarioCohort =
 -- createFilepathForResult' testScenarioCohort =
 --   localResultsDir ++ createFilenameForResult' testScenarioCohort
 
--- Helper function to create the local filpath from a filename
-createFilepathForResult :: AppType -> TestDataType -> TestInputType -> TestOutputType -> String
-createFilepathForResult appType testDataType testInputType testOutputType =
-  localResultsDir ++ createFilenameForResult appType testDataType testInputType testOutputType
+-- -- Helper function to create the local filpath from a filename
+-- createFilepathForResult :: AppType -> TestDataType -> TestInputType -> TestOutputType -> String
+-- createFilepathForResult appType testDataType testInputType testOutputType =
+--   localResultsDir ++ createFilenameForResult appType testDataType testInputType testOutputType
 
 createFilepathForGolden' :: TestScenarioCohort -> String
 createFilepathForGolden' testScenarioCohort =
   localTestDataDir ++ createFilenameForGolden' testScenarioCohort
 
-createFilepathForGolden :: AppType -> TestDataType -> String
-createFilepathForGolden appType testDataType =
-  localTestDataDir ++ createFilenameForGolden appType testDataType
+-- createFilepathForGolden :: AppType -> TestDataType -> String
+-- createFilepathForGolden appType testDataType =
+--   localTestDataDir ++ createFilenameForGolden appType testDataType
 
 convNameToPathTest :: String -> String
 convNameToPathTest = (localTestDataDir ++)
@@ -409,30 +409,30 @@ constructTestName' testScenarioCohort =
          TestOutputStdout -> "standard output"
          TestOutputS3 -> "S3"
 
--- Construct a name to use as a label for a given test
-constructTestName :: AppType -> TestDataType -> TestInputType -> TestOutputType -> String
-constructTestName appType testDataType testInputType testOutputType = concat
-  [ "ExampleApp of a "
-  , case appType of
-      AppRowWise-> "row-wise"
-      AppColumnWise -> "column-wise"
-  , " cohort performed on "
-  , case testDataType of
-      TestDataEmpty -> "empty data"
-      TestDataSmall -> "small data"
-      TestDataManySubj -> "many subjects data"
-      TestDataManyEvent -> "many evetns data"
-  , " reading from "
-  , case testInputType of
-      TestInputFile -> "file"
-      TestInputStdin -> "standard input"
-      TestInputS3 -> "S3"
-  , " and writing to "
-  , case testOutputType of
-      TestOutputFile -> "file"
-      TestOutputStdout -> "standard output"
-      TestOutputS3 -> "S3"
-  ]
+-- -- Construct a name to use as a label for a given test
+-- constructTestName :: AppType -> TestDataType -> TestInputType -> TestOutputType -> String
+-- constructTestName appType testDataType testInputType testOutputType = concat
+--   [ "ExampleApp of a "
+--   , case appType of
+--       AppRowWise-> "row-wise"
+--       AppColumnWise -> "column-wise"
+--   , " cohort performed on "
+--   , case testDataType of
+--       TestDataEmpty -> "empty data"
+--       TestDataSmall -> "small data"
+--       TestDataManySubj -> "many subjects data"
+--       TestDataManyEvent -> "many evetns data"
+--   , " reading from "
+--   , case testInputType of
+--       TestInputFile -> "file"
+--       TestInputStdin -> "standard input"
+--       TestInputS3 -> "S3"
+--   , " and writing to "
+--   , case testOutputType of
+--       TestOutputFile -> "file"
+--       TestOutputStdout -> "standard output"
+--       TestOutputS3 -> "S3"
+--   ]
 
 -- Copy local test data to S3
 writeTestDataToS3 :: String -> TestDataType -> IO ()

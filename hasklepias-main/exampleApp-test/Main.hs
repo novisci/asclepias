@@ -7,6 +7,7 @@ module Main
   ( main
   ) where
 
+import           ConstructPaths
 import           Control.Monad                  ( when )  -- FIXME after removing unneeded code using this
 import           Control.Exception             ( catch
                                                , throwIO )
@@ -31,18 +32,6 @@ import           Test.Tasty                     ( TestTree
                                                 , testGroup
                                                 )
 import           Test.Tasty.Silver
-
-localTestDataDir :: String
-localTestDataDir = "exampleApp-test/test/"
-
-localResultsDir :: String
-localResultsDir = "exampleApp-test/results/"
-
-s3Bucket :: String
-s3Bucket = "download.novisci.com"
-
-s3RootDir :: String
-s3RootDir = "hasklepias/sandbox-testapps/cohortApp/"
 
 -- Run the tests
 --

@@ -27,20 +27,6 @@ s3Bucket = "download.novisci.com"
 s3RootDir :: String
 s3RootDir = "hasklepias/sandbox-testapps/cohortApp/"
 
--- Construct the local filepath where the golden file is found for a given test
-createFilenameForGolden :: TestScenarioCohort -> String
-createFilenameForGolden testScenarioCohort =
-  "test"
-    ++ case getCohortTestDataType testScenarioCohort of
-        TestDataEmpty -> "empty"
-        TestDataSmall -> ""
-        TestDataManySubj -> "manysubjects"
-        TestDataManyEvent -> "manyevents"
-    ++ case getCohortAppType testScenarioCohort of
-        AppRowWise -> "rw"
-        AppColumnWise -> "cw"
-    ++ ".golden"
-
 -- Create the local filepath where the test data is stored
 createFilenameForTest :: TestDataType -> String
 createFilenameForTest TestDataEmpty = "testEmptyData.jsonl"
@@ -74,16 +60,31 @@ createFilenameForResult testScenarioCohort = concat
   , ".json"
   ]
 
-createFilepathForGolden :: TestScenarioCohort -> String
-createFilepathForGolden testScenarioCohort =
-  localTestDataDir ++ createFilenameForGolden testScenarioCohort
+-- Construct the local filepath where the golden file is found for a given test
+createFilenameForGolden :: TestScenarioCohort -> String
+createFilenameForGolden testScenarioCohort =
+  "test"
+    ++ case getCohortTestDataType testScenarioCohort of
+        TestDataEmpty -> "empty"
+        TestDataSmall -> ""
+        TestDataManySubj -> "manysubjects"
+        TestDataManyEvent -> "manyevents"
+    ++ case getCohortAppType testScenarioCohort of
+        AppRowWise -> "rw"
+        AppColumnWise -> "cw"
+    ++ ".golden"
 
--- Helper function to create the local filpath from a filename
-createFilepathForResult :: TestScenarioCohort -> String
-createFilepathForResult testScenarioCohort =
-  localResultsDir ++ createFilenameForResult testScenarioCohort
 
 createFilepathForTest ::  TestScenarioCohort -> String
 createFilepathForTest testScenarioCohort =
   localTestDataDir
     ++ createFilenameForTest (getCohortTestDataType testScenarioCohort)
+
+-- Helper function to create the local filepath based on a test scenario
+createFilepathForResult :: TestScenarioCohort -> String
+createFilepathForResult testScenarioCohort =
+  localResultsDir ++ createFilenameForResult testScenarioCohort
+
+createFilepathForGolden :: TestScenarioCohort -> String
+createFilepathForGolden testScenarioCohort =
+  localTestDataDir ++ createFilenameForGolden testScenarioCohort

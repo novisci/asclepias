@@ -31,7 +31,6 @@ import           Test.Tasty                     ( TestTree
                                                 , testGroup
                                                 )
 import           Test.Tasty.Silver
-import TestUtils.TestCases (TestScenarioCohort(getCohortTestDataType))
 
 localTestDataDir :: String
 localTestDataDir = "exampleApp-test/test/"
@@ -75,16 +74,25 @@ main = do
   writeTestDataToS3 sessionId TestDataManySubj
   writeTestDataToS3 sessionId TestDataManyEvent
 
-  -- -- Run the tests and perform cleanup. Note that ANY CODE WRITTEN AFTER THIS
-  -- -- EXPRESION WILL BE SILENTLY IGNORED
-  -- defaultMain (createTestsCartesian $ appGoldenVsFile sessionId)
-  --   `catch` (\e -> do
-  --     -- removeDirectoryRecursive localResultsDir
-  --     -- s3RecursiveRm s3RootDir sessionId  -- TODO: uncomment!
-  --     -- s3RecursiveRm s3RootDir sessionId  -- TODO: uncomment!
-  --     -- FIXME: add generated test files and golden files to gitignore?
-  --     throwIO (e :: ExitCode))
-  pure ()
+  -- Run the tests and perform cleanup. Note that ANY CODE WRITTEN AFTER THIS
+  -- EXPRESION WILL BE SILENTLY IGNORED
+  defaultMain (createTestsCartesian "Cohort creation tests" (appGoldenVsFile' sessionId))
+    `catch` (\e -> do
+      -- removeDirectoryRecursive localResultsDir
+      -- s3RecursiveRm s3RootDir sessionId  -- TODO: uncomment!
+      -- s3RecursiveRm s3RootDir sessionId  -- TODO: uncomment!
+      -- FIXME: add generated test files and golden files to gitignore?
+      throwIO (e :: ExitCode))
+
+appGoldenVsFile' :: String -> TestScenarioCohort -> TestTree
+appGoldenVsFile' sessionId =
+  appGoldenVsFile
+    constructTestName'
+    createFilepathForTest'
+    createFilepathForGolden'
+    createFilepathForResult'
+    (appTest' sessionId)
+
 
 appTest' :: String -> TestScenarioCohort -> IO ()
 appTest' sessionId =
@@ -113,26 +121,26 @@ constructTestExecutableFragm testScenarioCohort =
 constructTestInputFragm' :: String -> TestScenarioCohort -> String
 constructTestInputFragm' sessionId testScenarioCohort =
   constructTestInputFragmFSS
-    (createFilepathForTest . getCohortTestDataType)
-    (\_ -> s3Bucket)
-    (createS3KeyForTest sessionId . getCohortTestDataType)
+    createFilepathForTest'
+    (const s3Bucket)
+    (createS3KeyForTest sessionId)
     testScenarioCohort
 
 constructTestOutputFragm' :: String -> TestScenarioCohort -> String
 constructTestOutputFragm' sessionId =
   constructTestOutputFragmFSS
     createFilepathForResult'
-    (\_ -> s3Bucket)
+    (const s3Bucket)
     (createS3KeyForResult sessionId)
 
--- Conduct a single test
-appGoldenVsFile :: String -> AppType -> TestDataType -> TestInputType -> TestOutputType -> TestTree
-appGoldenVsFile sessionId appType testDataType testInputType testOutputType =
-  goldenVsFile
-    (constructTestName appType testDataType testInputType testOutputType)
-    (createFilepathForGolden appType testDataType)
-    (createFilepathForResult appType testDataType testInputType testOutputType)
-    (appTestLocal sessionId appType testDataType testInputType testOutputType)
+-- -- Conduct a single test
+-- appGoldenVsFile :: String -> AppType -> TestDataType -> TestInputType -> TestOutputType -> TestTree
+-- appGoldenVsFile sessionId appType testDataType testInputType testOutputType =
+--   goldenVsFile
+--     (constructTestName appType testDataType testInputType testOutputType)
+--     (createFilepathForGolden appType testDataType)
+--     (createFilepathForResult appType testDataType testInputType testOutputType)
+--     (appTestLocal sessionId appType testDataType testInputType testOutputType)
 
 -- Build a shell command represented by string and run the command as a
 -- subprocess, where the command is a cohort-building application. If the
@@ -267,6 +275,20 @@ createFilenameForResult appType testDataType testInputType testOutputType = conc
   ]
 
 -- Construct the local filepath where the golden file is found for a given test
+createFilenameForGolden' :: TestScenarioCohort -> String
+createFilenameForGolden' testScenarioCohort =
+  "test"
+    ++ case getCohortTestDataType testScenarioCohort of
+        TestDataEmpty -> "empty"
+        TestDataSmall -> ""
+        TestDataManySubj -> "manysubjects"
+        TestDataManyEvent -> "manyevents"
+    ++ case getCohortAppType testScenarioCohort of
+        AppRowWise -> "rw"
+        AppColumnWise -> "cw"
+    ++ ".golden"
+
+-- Construct the local filepath where the golden file is found for a given test
 createFilenameForGolden :: AppType -> TestDataType -> String
 createFilenameForGolden appType testDataType = concat
   [ "test"
@@ -281,19 +303,29 @@ createFilenameForGolden appType testDataType = concat
   , ".golden"
   ]
 
-createFilepathForTest ::  TestDataType -> String
-createFilepathForTest testDataType =
-  localTestDataDir ++ createFilenameForTest testDataType
+createFilepathForTest' ::  TestScenarioCohort -> String
+createFilepathForTest' testScenarioCohort =
+  localTestDataDir
+    ++ createFilenameForTest (getCohortTestDataType testScenarioCohort)
 
 -- Helper function to create the local filpath from a filename
 createFilepathForResult' :: TestScenarioCohort -> String
 createFilepathForResult' testScenarioCohort =
   localResultsDir ++ createFilenameForResult' testScenarioCohort
 
+-- -- Helper function to create the local filpath from a filename
+-- createFilepathForResult' :: TestScenarioCohort -> String
+-- createFilepathForResult' testScenarioCohort =
+--   localResultsDir ++ createFilenameForResult' testScenarioCohort
+
 -- Helper function to create the local filpath from a filename
 createFilepathForResult :: AppType -> TestDataType -> TestInputType -> TestOutputType -> String
 createFilepathForResult appType testDataType testInputType testOutputType =
   localResultsDir ++ createFilenameForResult appType testDataType testInputType testOutputType
+
+createFilepathForGolden' :: TestScenarioCohort -> String
+createFilepathForGolden' testScenarioCohort =
+  localTestDataDir ++ createFilenameForGolden' testScenarioCohort
 
 createFilepathForGolden :: AppType -> TestDataType -> String
 createFilepathForGolden appType testDataType =
@@ -305,9 +337,11 @@ convNameToPathTest = (localTestDataDir ++)
 convNameToPathResult :: String -> String
 convNameToPathResult = (localResultsDir ++)
 
-createS3KeyForTest :: String -> TestDataType -> String
-createS3KeyForTest sessionId testDataType =
-  convFilenameToS3KeyTest' sessionId (createFilenameForTest testDataType)
+createS3KeyForTest :: String -> TestScenarioCohort -> String
+createS3KeyForTest sessionId testScenarioCohort =
+  convFilenameToS3KeyTest'
+    sessionId
+    (createFilenameForTest (getCohortTestDataType testScenarioCohort))
 
 createS3KeyForResult :: String -> TestScenarioCohort -> String
 createS3KeyForResult sessionId testScenarioCohort =
@@ -354,6 +388,29 @@ convNameToS3UriTest sessionId filename = convS3KeyToUri $ convNameToS3KeyTest se
 -- bucket)
 convNameToS3UriResult :: String -> String -> String
 convNameToS3UriResult sessionId filename = convS3KeyToUri $ convNameToS3KeyResult sessionId filename
+
+constructTestName' :: TestScenarioCohort -> String
+constructTestName' testScenarioCohort =
+  "ExampleApp of a "
+    ++ case getCohortAppType testScenarioCohort of
+         AppRowWise-> "row-wise"
+         AppColumnWise -> "column-wise"
+    ++ " getCohortCohort performed on "
+    ++ case getCohortTestDataType testScenarioCohort of
+         TestDataEmpty -> "empty data"
+         TestDataSmall -> "small data"
+         TestDataManySubj -> "many subjects data"
+         TestDataManyEvent -> "many evetns data"
+    ++ " reading from "
+    ++ case getCohortTestInputType testScenarioCohort of
+         TestInputFile -> "file"
+         TestInputStdin -> "standard input"
+         TestInputS3 -> "S3"
+    ++ " and writing to "
+    ++ case getCohortTestOutputType testScenarioCohort of
+         TestOutputFile -> "file"
+         TestOutputStdout -> "standard output"
+         TestOutputS3 -> "S3"
 
 -- Construct a name to use as a label for a given test
 constructTestName :: AppType -> TestDataType -> TestInputType -> TestOutputType -> String

@@ -76,8 +76,8 @@ instance InputTypeAbleFSS TestScenarioCohort where
 
 -- Enumerate the test cases
 createTestsCartesian :: String -> (TestScenarioCohort -> TestTree) -> TestTree
-createTestsCartesian name appTest = testGroup
-  "Tests of exampleApp"
+createTestsCartesian testName appTest = testGroup
+  testName
   [ appTestWrp AppRowWise    TestDataEmpty     TestInputFile  TestOutputFile
   , appTestWrp AppRowWise    TestDataEmpty     TestInputFile  TestOutputStdout
   , appTestWrp AppRowWise    TestDataEmpty     TestInputFile  TestOutputS3

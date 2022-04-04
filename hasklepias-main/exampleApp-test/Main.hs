@@ -93,7 +93,6 @@ appGoldenVsFile' sessionId =
     createFilepathForResult'
     (appTest' sessionId)
 
-
 appTest' :: String -> TestScenarioCohort -> IO ()
 appTest' sessionId =
   appTest
@@ -105,12 +104,11 @@ appTestCmd' :: String -> TestScenarioCohort -> IO ()
 appTestCmd' sessionId = appTestCmd (appTestCmdString' sessionId)
 
 appTestCmdString' :: String -> TestScenarioCohort -> String
-appTestCmdString' sessionId testScenario =
+appTestCmdString' sessionId =
   appTestCmdString
     constructTestExecutableFragm
     (constructTestInputFragm' sessionId)
     (constructTestOutputFragm' sessionId)
-    testScenario
 
 constructTestExecutableFragm :: TestScenarioCohort -> String
 constructTestExecutableFragm testScenarioCohort =
@@ -119,12 +117,11 @@ constructTestExecutableFragm testScenarioCohort =
     AppColumnWise -> "exampleAppCW"
 
 constructTestInputFragm' :: String -> TestScenarioCohort -> String
-constructTestInputFragm' sessionId testScenarioCohort =
+constructTestInputFragm' sessionId =
   constructTestInputFragmFSS
     createFilepathForTest'
     (const s3Bucket)
     (createS3KeyForTest sessionId)
-    testScenarioCohort
 
 constructTestOutputFragm' :: String -> TestScenarioCohort -> String
 constructTestOutputFragm' sessionId =

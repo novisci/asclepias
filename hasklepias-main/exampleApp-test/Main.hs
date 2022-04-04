@@ -144,7 +144,7 @@ constructTestOutputFragm' sessionId =
 --   when isS3out $
 --     s3Copy
 --       (convNameToS3UriResult sessionId outFilename)
---       (convNameToPathResult outFilename)
+--       (convFilenameToFilepathResult outFilename)
 
 -- -- Construct a string representing a shell command that runs one of the testing
 -- -- cohort-building applications on the test data
@@ -163,12 +163,12 @@ constructTestOutputFragm' sessionId =
 --         AppRowWise -> "exampleAppRW"
 --         AppColumnWise -> "exampleAppCW"
 --     inputFragm = case testInputType of
---         TestInputFile -> "-f " ++ convNameToPathTest inFilename
---         TestInputStdin -> "< " ++ convNameToPathTest inFilename
+--         TestInputFile -> "-f " ++ convFilenameToFilepathTest inFilename
+--         TestInputStdin -> "< " ++ convFilenameToFilepathTest inFilename
 --         TestInputS3 -> "-r us-east-1 -b " ++ s3Bucket ++ " -k " ++ convNameToS3KeyTest sessionId inFilename
 --     outputFragm = case testOutputType of
---         TestOutputFile -> "-o " ++ convNameToPathResult outFilename
---         TestOutputStdout -> "> " ++ convNameToPathResult outFilename
+--         TestOutputFile -> "-o " ++ convFilenameToFilepathResult outFilename
+--         TestOutputStdout -> "> " ++ convFilenameToFilepathResult outFilename
 --         TestOutputS3 -> "--outregion us-east-1 --outbucket " ++ s3Bucket ++ " --outkey " ++ convNameToS3KeyResult sessionId outFilename
 
 -- Construct the test data for the "many subjects" test scenario and write it to
@@ -201,64 +201,6 @@ generateGoldenManySubjectsCwPtl =
   generateGoldenManySubjectsCw
     (localTestDataDir ++ "testmanysubjectscw.golden")
 
-convNameToPathTest :: String -> String
-convNameToPathTest = (localTestDataDir ++)
-
-convNameToPathResult :: String -> String
-convNameToPathResult = (localResultsDir ++)
-
-createS3KeyForTest :: String -> TestScenarioCohort -> String
-createS3KeyForTest sessionId testScenarioCohort =
-  convFilenameToS3KeyTest'
-    sessionId
-    (createFilenameForTest (getCohortTestDataType testScenarioCohort))
-
-createS3KeyForResult :: String -> TestScenarioCohort -> String
-createS3KeyForResult sessionId testScenarioCohort =
-  convFilenameToS3KeyResult sessionId (createFilenameForResult testScenarioCohort)
-
-createS3UriForResult :: String -> TestScenarioCohort -> String
-createS3UriForResult sessionId testScenarioCohort =
-  convNameToS3UriResult sessionId (createFilenameForResult testScenarioCohort)
-
--- Create the S3 key where the test data will be located (once paired with a
--- bucket)
-convFilenameToS3KeyTest' :: String -> String -> String
-convFilenameToS3KeyTest' filename sessionId =
-  s3RootDir ++ sessionId ++ "/testdata/" ++ filename
-
--- Create the S3 key where the test data will be located (once paired with a
--- bucket)
-convFilenameToS3KeyTest :: String -> String -> String
-convFilenameToS3KeyTest filename sessionId =
-  s3RootDir ++ sessionId ++ "/testdata/" ++ filename
-
-convNameToS3KeyTest :: String -> String -> String
-convNameToS3KeyTest sessionId filename =
-  s3RootDir ++ sessionId ++ "/testdata/" ++ filename
-
--- Create the S3 key where the results will be located (once paired with a
--- bucket)
-convFilenameToS3KeyResult :: String -> String -> String
-convFilenameToS3KeyResult sessionId filename =
-  s3RootDir ++ sessionId ++ "/results/" ++ filename
-
--- Create the S3 key where the results will be located (once paired with a
--- bucket)
-convNameToS3KeyResult :: String -> String -> String
-convNameToS3KeyResult sessionId filename =
-  s3RootDir ++ sessionId ++ "/results/" ++ filename
-
--- Create the S3 key where the test data will be located (once paired with a
--- bucket)
-convNameToS3UriTest :: String -> String -> String
-convNameToS3UriTest sessionId filename = convS3KeyToUri $ convNameToS3KeyTest sessionId filename
-
--- Create the S3 key where the test data will be located (once paired with a
--- bucket)
-convNameToS3UriResult :: String -> String -> String
-convNameToS3UriResult sessionId filename = convS3KeyToUri $ convNameToS3KeyResult sessionId filename
-
 constructTestName' :: TestScenarioCohort -> String
 constructTestName' testScenarioCohort =
   "ExampleApp of a "
@@ -270,7 +212,7 @@ constructTestName' testScenarioCohort =
          TestDataEmpty -> "empty data"
          TestDataSmall -> "small data"
          TestDataManySubj -> "many subjects data"
-         TestDataManyEvent -> "many evetns data"
+         TestDataManyEvent -> "many events data"
     ++ " reading from "
     ++ case getCohortTestInputType testScenarioCohort of
          TestInputFile -> "file"
@@ -312,9 +254,6 @@ writeTestDataToS3 :: String -> TestDataType -> IO ()
 writeTestDataToS3 sessionId testDataType =
   s3Copy from to
   where
-    filename = createFilenameForTest testDataType
-    from = convNameToPathTest filename
-    to = convNameToS3UriTest sessionId filename
-
-convS3KeyToUri :: String -> String
-convS3KeyToUri s3Key = "s3://" ++ s3Bucket ++ "/" ++ s3Key
+    filename = createFilenameForTestBase testDataType
+    from = convFilenameToFilepathTest filename
+    to = convFilenameToS3UriTest sessionId filename

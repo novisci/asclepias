@@ -201,39 +201,6 @@ generateGoldenManySubjectsCwPtl =
   generateGoldenManySubjectsCw
     (localTestDataDir ++ "testmanysubjectscw.golden")
 
--- Create the local filepath where the test data is stored
-createFilenameForTest :: TestDataType -> String
-createFilenameForTest TestDataEmpty = "testEmptyData.jsonl"
-createFilenameForTest TestDataSmall = "testData.jsonl"
-createFilenameForTest TestDataManySubj = "testmanysubjects.jsonl"
-createFilenameForTest TestDataManyEvent = "testmanyevents.jsonl"
-
--- Construct the filename for the output for a given test
-createFilenameForResult' :: TestScenarioCohort -> String
-createFilenameForResult' testScenarioCohort = concat
-  [ "results-"
-  , case getCohortAppType testScenarioCohort of
-      AppRowWise -> "rw"
-      AppColumnWise -> "cw"
-  , "-"
-  , case getCohortTestDataType testScenarioCohort of
-      TestDataEmpty -> "emptydata"
-      TestDataSmall -> "small"
-      TestDataManySubj -> "manysubjectss"
-      TestDataManyEvent -> "manyevents"
-  , "-"
-  , case getCohortTestInputType testScenarioCohort of
-      TestInputFile -> "filein"
-      TestInputStdin -> "stdin"
-      TestInputS3 -> "s3in"
-  , "-"
-  , case getCohortTestOutputType testScenarioCohort of
-      TestOutputFile -> "fileout"
-      TestOutputStdout -> "stdout"
-      TestOutputS3 -> "s3out"
-  , ".json"
-  ]
-
 -- -- Construct the filename for the output for a given test
 -- createFilenameForResult :: AppType -> TestDataType -> TestInputType -> TestOutputType -> String
 -- createFilenameForResult appType testDataType testInputType testOutputType = concat
@@ -260,20 +227,6 @@ createFilenameForResult' testScenarioCohort = concat
 --   , ".json"
 --   ]
 
--- Construct the local filepath where the golden file is found for a given test
-createFilenameForGolden' :: TestScenarioCohort -> String
-createFilenameForGolden' testScenarioCohort =
-  "test"
-    ++ case getCohortTestDataType testScenarioCohort of
-        TestDataEmpty -> "empty"
-        TestDataSmall -> ""
-        TestDataManySubj -> "manysubjects"
-        TestDataManyEvent -> "manyevents"
-    ++ case getCohortAppType testScenarioCohort of
-        AppRowWise -> "rw"
-        AppColumnWise -> "cw"
-    ++ ".golden"
-
 -- -- Construct the local filepath where the golden file is found for a given test
 -- createFilenameForGolden :: AppType -> TestDataType -> String
 -- createFilenameForGolden appType testDataType = concat
@@ -289,15 +242,10 @@ createFilenameForGolden' testScenarioCohort =
 --   , ".golden"
 --   ]
 
-createFilepathForTest' ::  TestScenarioCohort -> String
-createFilepathForTest' testScenarioCohort =
-  localTestDataDir
-    ++ createFilenameForTest (getCohortTestDataType testScenarioCohort)
-
 -- Helper function to create the local filpath from a filename
 createFilepathForResult' :: TestScenarioCohort -> String
 createFilepathForResult' testScenarioCohort =
-  localResultsDir ++ createFilenameForResult' testScenarioCohort
+  localResultsDir ++ createFilenameForResult testScenarioCohort
 
 -- -- Helper function to create the local filpath from a filename
 -- createFilepathForResult' :: TestScenarioCohort -> String

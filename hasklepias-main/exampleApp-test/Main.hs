@@ -77,7 +77,7 @@ appGoldenVsFile' :: String -> TestScenarioCohort -> TestTree
 appGoldenVsFile' sessionId =
   appGoldenVsFile
     constructTestName'
-    createFilepathForTest'
+    createFilepathForTest
     createFilepathForGolden'
     createFilepathForResult'
     (appTest' sessionId)
@@ -108,7 +108,7 @@ constructTestExecutableFragm testScenarioCohort =
 constructTestInputFragm' :: String -> TestScenarioCohort -> String
 constructTestInputFragm' sessionId =
   constructTestInputFragmFSS
-    createFilepathForTest'
+    createFilepathForTest
     (const s3Bucket)
     (createS3KeyForTest sessionId)
 
@@ -259,7 +259,7 @@ createFilepathForResult' testScenarioCohort =
 
 createFilepathForGolden' :: TestScenarioCohort -> String
 createFilepathForGolden' testScenarioCohort =
-  localTestDataDir ++ createFilenameForGolden' testScenarioCohort
+  localTestDataDir ++ createFilenameForGolden testScenarioCohort
 
 -- createFilepathForGolden :: AppType -> TestDataType -> String
 -- createFilepathForGolden appType testDataType =
@@ -279,11 +279,11 @@ createS3KeyForTest sessionId testScenarioCohort =
 
 createS3KeyForResult :: String -> TestScenarioCohort -> String
 createS3KeyForResult sessionId testScenarioCohort =
-  convFilenameToS3KeyResult sessionId (createFilenameForResult' testScenarioCohort)
+  convFilenameToS3KeyResult sessionId (createFilenameForResult testScenarioCohort)
 
 createS3UriForResult :: String -> TestScenarioCohort -> String
 createS3UriForResult sessionId testScenarioCohort =
-  convNameToS3UriResult sessionId (createFilenameForResult' testScenarioCohort)
+  convNameToS3UriResult sessionId (createFilenameForResult testScenarioCohort)
 
 -- Create the S3 key where the test data will be located (once paired with a
 -- bucket)

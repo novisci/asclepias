@@ -7,13 +7,16 @@ module ConstructPaths
   , convFilenameToS3KeyTest
   , convFilenameToS3UriResult
   , convFilenameToS3UriTest
+  , convS3KeyToUri
   , createFilenameForGolden
+  , createFilepathForGoldenBase
   , createFilenameForResult
   , createFilenameForTest
   , createFilenameForTestBase
   , createFilepathForGolden
   , createFilepathForResult
   , createFilepathForTest
+  , createFilepathForTestBase
   , createS3KeyForResult
   , createS3KeyForTest
   , createS3UriForTest
@@ -76,29 +79,44 @@ createFilenameForResult testScenarioCohort = concat
   , ".json"
   ]
 
--- Construct the local filepath where the golden file is found for a given test
 createFilenameForGolden :: TestScenarioCohort -> String
 createFilenameForGolden testScenarioCohort =
+  createFilenameForGoldenBase
+    (getCohortAppType testScenarioCohort)
+    (getCohortTestDataType testScenarioCohort)
+
+-- Construct the local filepath where the golden file is found for a given test
+createFilenameForGoldenBase :: AppType -> TestDataType -> String
+createFilenameForGoldenBase appType testDataType =
   "test"
-    ++ case getCohortTestDataType testScenarioCohort of
+    ++ case testDataType of
         TestDataEmpty -> "empty"
         TestDataSmall -> ""
         TestDataManySubj -> "manysubjects"
         TestDataManyEvent -> "manyevents"
-    ++ case getCohortAppType testScenarioCohort of
+    ++ case appType of
         AppRowWise -> "rw"
         AppColumnWise -> "cw"
     ++ ".golden"
 
-createFilepathForTest ::  TestScenarioCohort -> String
-createFilepathForTest testScenarioCohort =
+createFilepathForTestBase :: TestDataType -> String
+createFilepathForTestBase testDataType =
   localTestDataDir
-    ++ createFilenameForTest testScenarioCohort
+    ++ createFilenameForTestBase testDataType
+
+createFilepathForTest ::  TestScenarioCohort -> String
+createFilepathForTest =
+  createFilepathForTestBase . getCohortTestDataType
 
 -- Helper function to create the local filepath based on a test scenario
 createFilepathForResult :: TestScenarioCohort -> String
 createFilepathForResult testScenarioCohort =
   localResultsDir ++ createFilenameForResult testScenarioCohort
+
+createFilepathForGoldenBase :: AppType -> TestDataType -> String
+createFilepathForGoldenBase appType testDataType =
+  localTestDataDir
+    ++ createFilenameForGoldenBase appType testDataType
 
 createFilepathForGolden :: TestScenarioCohort -> String
 createFilepathForGolden testScenarioCohort =

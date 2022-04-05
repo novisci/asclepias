@@ -32,6 +32,7 @@ import           Test.Tasty                     ( TestTree
                                                 , testGroup
                                                 )
 import           Test.Tasty.Silver
+import TestUtils.TestCases (AppType(AppColumnWise, AppRowWise))
 
 -- Run the tests
 --
@@ -68,10 +69,12 @@ main = do
   -- EXPRESION WILL BE SILENTLY IGNORED
   defaultMain (createTestsCartesian "Cohort creation tests" (appGoldenVsFile' sessionId))
     `catch` (\e -> do
-      -- removeDirectoryRecursive localResultsDir
-      -- s3RecursiveRm s3RootDir sessionId  -- TODO: uncomment!
-      -- s3RecursiveRm s3RootDir sessionId  -- TODO: uncomment!
-      -- FIXME: add generated test files and golden files to gitignore?
+      removeDirectoryRecursive localResultsDir
+      s3RecursiveRm (convS3KeyToUri s3RootDir)
+      removePathForcibly (createFilepathForTestBase TestDataManyEvent)
+      removePathForcibly (createFilepathForTestBase TestDataManySubj)
+      removePathForcibly (createFilepathForGoldenBase AppColumnWise TestDataManySubj)
+      removePathForcibly (createFilepathForGoldenBase AppRowWise TestDataManySubj)
       throwIO (e :: ExitCode))
 
 appGoldenVsFile' :: String -> TestScenarioCohort -> TestTree

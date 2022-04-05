@@ -17,9 +17,10 @@ import           Hasklepias.ExampleFilterApp
 import           TestUtils.BuildLargeTestData
 import           TestUtils.SessionId
 import           TestUtils.TestCases            ( TestInputType(..) )
+import           TestUtils.S3Utils
 import           System.Directory               ( createDirectoryIfMissing
-                                                -- , removeDirectoryRecursive
-                                                -- , removePathForcibly
+                                                , removeDirectoryRecursive
+                                                , removePathForcibly
                                                 )
 import           System.Exit                    ( ExitCode )
 import           System.IO
@@ -31,6 +32,7 @@ import           Test.Tasty                     ( TestTree
                                                 )
 import           Test.Tasty.Silver
 import           Text.Printf
+import ConstructPaths (createFilepathForGolden)
 
 {-
 Test case file names follow this convention:
@@ -71,11 +73,18 @@ main = do
   let tests' = testGroup "Tests of exampleFilterApp" (createTests sessionId)
   defaultMain tests'
     `catch` (\e -> do
-      -- removeDirectoryRecursive localResultsDir
-      -- TODO: remove test-1000-1000-1.jsonl, test-1000-1000-1.golden, etc
-      -- removeSessionDirFromS3 s3TestDataDir sessionId  -- TODO: uncomment!
-      -- removeSessionDirFromS3 s3ResultsDir sessionId  -- TODO: uncomment!
-      -- FIXME: add generated test files and golden files to gitignore?
+      removeDirectoryRecursive localResultsDir
+      let removeManySubjectsFileTest = removePathForcibly . createFilepathForTest
+      let removeManySubjectsFileGolden = removePathForcibly . createFilepathForGolden
+      removeManySubjectsFileTest (createLargeNewId 1 1 1)
+      removeManySubjectsFileTest (createLargeNewId 1 1 2)
+      removeManySubjectsFileTest (createLargeNewId 1 1 3)
+      removeManySubjectsFileTest (createLargeNewId 1 1 4)
+      removeManySubjectsFileGolden (createLargeNewId 1 1 1)
+      removeManySubjectsFileGolden (createLargeNewId 1 1 2)
+      removeManySubjectsFileGolden (createLargeNewId 1 1 3)
+      removeManySubjectsFileGolden (createLargeNewId 1 1 4)
+      s3RecursiveRm  ("s3://" ++ s3Bucket ++ "/" ++ s3TestDataDir)
       throwIO (e :: ExitCode))
 
 -- runTest :: String -> IO ()

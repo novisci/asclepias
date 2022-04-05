@@ -10,6 +10,7 @@ module ConstructPaths
   , localResultsDir
   , localTestDataDir
   , s3Bucket
+  , s3TestDataDir
   ) where
 
 import           TestUtils.BuildLargeTestData ( largeInputSize )
@@ -27,7 +28,7 @@ s3Bucket :: String
 s3Bucket = "download.novisci.com"
 
 s3TestDataDir :: String
-s3TestDataDir = "hasklepias/sandbox-testapps/"
+s3TestDataDir = "hasklepias/sandbox-testapps/filterApp/"
 
 
 -- File location routines ------------------------------------------------------
@@ -66,7 +67,6 @@ createFilepathForResults id testInputType =
 createS3KeyForTest :: String -> String -> String
 createS3KeyForTest sessionId id =
   s3TestDataDir
-    ++ "filterApp/"
     ++ sessionId
     ++ "/testdata/"
     ++ createFilenameForTest id

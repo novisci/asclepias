@@ -3,6 +3,9 @@
 module TestUtils.TestCases
   ( AppType(..)
   , InputTypeAbleFSS(..)
+  , TestCollectorInputType(..)
+  , TestCollectorOutputType(..)
+  , TestCollectorScenario(..)
   , TestDataType(..)
   , TestInputType(..)
   , TestOutputType(..)
@@ -27,6 +30,19 @@ data TestInputType = TestInputFile | TestInputStdin | TestInputS3
 -- Enumeration of output sources
 data TestOutputType = TestOutputFile | TestOutputStdout | TestOutputS3
 
+-- Enumeration of input sources for cohort-collector
+--
+-- TODO: there are other input sources not covered here: --dir and --bucket
+data TestCollectorInputType = TestCollectorInputFile | TestCollectorInputS3
+
+-- Enumeration of output sources for cohort-collector
+--
+-- TODO: there are other output sources not covered here: --outdir
+data TestCollectorOutputType =
+    TestCollectorOutputFile
+  | TestCollectorOutputStdout
+  | TestCollectorOutputS3
+
 -- Test scenario type for the filter application
 data TestScenarioFilter = TestScenarioFilter
   { getFilterTestDataType :: TestDataType
@@ -39,6 +55,13 @@ data TestScenarioCohort = TestScenarioCohort
   , getCohortTestDataType :: TestDataType
   , getCohortTestInputType :: TestInputType
   , getCohortTestOutputType :: TestOutputType
+  }
+
+-- Test scenario type for the cohort-collector application
+data TestCollectorScenario = TestCollectorScenario
+  { getTestCollectorAppType :: AppType
+  , getTestCollectorInputType :: TestCollectorInputType
+  , getTestCollectorOutputType :: TestCollectorOutputType
   }
 
 -- class InputFragmAble a where
@@ -54,6 +77,15 @@ class InputTypeAbleFSS a where
 
 instance InputTypeAbleFSS TestScenarioCohort where
   extractTestInputType = getCohortTestInputType
+
+-- class OutputTypeAbleFSS a where
+--   extractTestOutputType :: a -> TestOutputType
+
+-- instance OutputTypeAbleFSS TestScenarioCohort where
+--   extractTestOutputType = getCohortTestOutputType
+
+-- instance OutputTypeAbleFSS TestCollectorScenario where
+--   extractTestOutputType = getTestCollectorOutputType
 
 -- instance InputFragmAble TestScenarioCohort where
 --   constructInputFragm testScenarioCohort =

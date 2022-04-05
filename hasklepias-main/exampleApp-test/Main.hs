@@ -35,13 +35,14 @@ import           Test.Tasty.Silver
 
 -- Run the tests
 --
--- Note that changing the number of events for the "many events" test data
--- doesn't change the output of the cohort creation since the cohort definition
--- throws that data away anyway, so for this reason we create a golden file and
--- store it in the repository. On the other hand, for the "many subjects" test
--- data we generate the data and corresponding golden file each time we do the
--- testing so as to (i) prevent storing large files in the repository, and (ii)
--- so that we can change the number of test subjects with ease.
+-- With regards to test data generation: note that changing the number of events
+-- for the "many events" test data doesn't change the output of the cohort
+-- creation (since the cohort definition throws that data away anyway), so for
+-- this reason we create a golden file and store it in the repository. On the
+-- other hand, for the "many subjects" test data do we generate the data and
+-- corresponding golden file each time we do the testing so as to (i) prevent
+-- storing large files in the repository, and (ii) so that we can change the
+-- number of test subjects with ease.
 main :: IO ()
 main = do
 
@@ -73,6 +74,7 @@ main = do
       -- FIXME: add generated test files and golden files to gitignore?
       throwIO (e :: ExitCode))
 
+--
 appGoldenVsFile' :: String -> TestScenarioCohort -> TestTree
 appGoldenVsFile' sessionId =
   appGoldenVsFile

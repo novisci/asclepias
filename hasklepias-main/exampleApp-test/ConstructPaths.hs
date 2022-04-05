@@ -38,7 +38,7 @@ s3Bucket = "download.novisci.com"
 s3RootDir :: String
 s3RootDir = "hasklepias/sandbox-testapps/cohortApp/"
 
--- -- Create the local filepath where the test data is stored
+-- Create the local filepath where the test data is stored
 createFilenameForTestBase :: TestDataType -> String
 createFilenameForTestBase TestDataEmpty = "testEmptyData.jsonl"
 createFilenameForTestBase TestDataSmall = "testData.jsonl"

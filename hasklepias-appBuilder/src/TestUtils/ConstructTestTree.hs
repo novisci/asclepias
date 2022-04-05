@@ -3,8 +3,11 @@ module TestUtils.ConstructTestTree
   , appTest
   , appTestCmd
   , appTestCmdString
+  , constructTestCollectorInputFragm
+  , constructTestCollectorOutputFragm
   , constructTestInputFragmFSS
   , constructTestOutputFragmFSS
+  , postCollectorCmdHookS3
   , postCmdHookS3
   ) where
 
@@ -15,6 +18,7 @@ import           TestUtils.TestCases
 import           TestUtils.S3Utils
 import           System.IO                      (FilePath)
 import           System.Process                 ( callCommand )
+import Amazonka.S3.HeadObject (headObjectResponse_replicationStatus)
 
 -- Conduct a single test
 appGoldenVsFile ::
@@ -40,12 +44,7 @@ appGoldenVsFile
 
 -- Perform a pre-command action, perform the command that the test will be
 -- assessing, and then perform a post-command action
-appTest ::
-     (TestScenarioCohort -> IO ())
-  -> (TestScenarioCohort -> IO ())
-  -> (TestScenarioCohort -> IO ())
-  -> TestScenarioCohort
-  -> IO ()
+appTest :: (a -> IO ()) -> (a -> IO ()) -> (a -> IO ()) -> a -> IO ()
 appTest preCmdHook appTestCmd postCmdHook testScenario =
   do
     preCmdHook testScenario
@@ -53,10 +52,7 @@ appTest preCmdHook appTestCmd postCmdHook testScenario =
     postCmdHook testScenario
 
 -- Perform the command that the test will be assessing
-appTestCmd ::
-     (TestScenarioCohort -> String)
-  -> TestScenarioCohort
-  -> IO ()
+appTestCmd :: (a -> String) -> a -> IO ()
 appTestCmd appTestCmdString testScenario =
   do
     print $ "TEST COMMAND:  " ++ cmd
@@ -114,9 +110,30 @@ constructTestInputFragmFSS
       bucket = constructBucketForTest testScenario
       s3KeyForTest = constructS3KeyForTest testScenario
 
+-- NOTE: this is nearly identical to the above function, but with different
+-- input types. Can we combine the two somehow?
+constructTestCollectorInputFragm ::
+     (TestCollectorScenario -> FilePath)
+  -> (TestCollectorScenario -> String)
+  -> (TestCollectorScenario -> String)
+  -> TestCollectorScenario
+  -> String
+constructTestCollectorInputFragm
+  constructFilepathForTest
+  constructBucketForTest
+  constructS3KeyForTest
+  testCollectorScenario =
+    case getTestCollectorInputType testCollectorScenario of
+      TestCollectorInputFile -> "-f " ++ filepathForTest
+      TestCollectorInputS3 -> "-r us-east-1 -b " ++ bucket ++ " -k " ++ s3KeyForTest
+    where
+      filepathForTest = constructFilepathForTest testCollectorScenario
+      bucket = constructBucketForTest testCollectorScenario
+      s3KeyForTest = constructS3KeyForTest testCollectorScenario
+
 -- Construct a fragment of a shell string specifying the output for a testing
--- scenario where the input can come from a file, standard input, or from Amazon
--- S3
+-- scenario where the output can be written to a file, standard output, or from
+-- Amazon S3
 constructTestOutputFragmFSS ::
      (TestScenarioCohort -> FilePath)
   -> (TestScenarioCohort -> String)
@@ -132,6 +149,31 @@ constructTestOutputFragmFSS
         TestOutputFile -> "-o " ++ filepathForResult
         TestOutputStdout -> "> " ++ filepathForResult
         TestOutputS3 -> "--outregion us-east-1 --outbucket " ++ bucket ++ " --outkey " ++ s3KeyForResult
+    where
+      filepathForResult = constructFilepathForResult testScenario
+      bucket = constructBucketForResult testScenario
+      s3KeyForResult = constructS3KeyForResult testScenario
+
+-- Construct a fragment of a shell string specifying the output for a testing
+-- scenario for the cohort-collector application
+--
+-- NOTE: this is nearly identical to the above function, but with different
+-- output types. Can we combine the two somehow?
+constructTestCollectorOutputFragm ::
+     (TestCollectorScenario -> FilePath)
+  -> (TestCollectorScenario -> String)
+  -> (TestCollectorScenario -> String)
+  -> TestCollectorScenario
+  -> String
+constructTestCollectorOutputFragm
+  constructFilepathForResult
+  constructBucketForResult
+  constructS3KeyForResult
+  testScenario =
+    case getTestCollectorOutputType testScenario of
+        TestCollectorOutputFile -> "-o " ++ filepathForResult
+        TestCollectorOutputStdout -> "> " ++ filepathForResult
+        TestCollectorOutputS3 -> "--outregion us-east-1 --outbucket " ++ bucket ++ " --outkey " ++ s3KeyForResult
     where
       filepathForResult = constructFilepathForResult testScenario
       bucket = constructBucketForResult testScenario
@@ -153,4 +195,21 @@ postCmdHookS3 constructS3UriForResult constructFilepathForResult testScenario =
   where
     isS3out = case getCohortTestOutputType testScenario of
       TestOutputS3 -> True
+      _ -> False
+
+-- NOTE: this is very similar to `postCmdHookS3`, can they be combined?
+postCollectorCmdHookS3 ::
+     (TestCollectorScenario -> String)
+  -> (TestCollectorScenario -> FilePath)
+  -> TestCollectorScenario
+  -> IO ()
+postCollectorCmdHookS3 constructS3UriForResult constructFilepathForResult testScenario =
+  when
+    isS3out
+    (s3Copy
+      (constructS3UriForResult testScenario)
+      (constructFilepathForResult testScenario))
+  where
+    isS3out = case getTestCollectorOutputType testScenario of
+      TestCollectorOutputS3 -> True
       _ -> False

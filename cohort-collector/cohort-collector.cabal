@@ -58,5 +58,7 @@ test-suite collector-test
   hs-source-dirs:
       test
   build-depends:
-      cohort-collector, base
+      base
+      , cohort-collector
+      , hasklepias-appBuilder
   default-language: Haskell2010

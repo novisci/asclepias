@@ -53,9 +53,6 @@ s3Bucket = "download.novisci.com"
 s3TestDataDir :: String
 s3TestDataDir = "hasklepias/sandbox-testapps/"
 
-largeInputSize :: Int
-largeInputSize = 1000
-
 -- Enumeration of input sources
 data TestInputType = TestInputFile | TestInputStdin | TestInputS3
 
@@ -66,24 +63,25 @@ main = do
   sessionId <- getSessionId
   createDirectoryIfMissing True localResultsDir
 
-  -- Generate the "large" test data and corresponding golden files
-  generateLargeTestAndGolden 1 1 1
-  generateLargeTestAndGolden 1 1 2
-  generateLargeTestAndGolden 1 1 3
-  generateLargeTestAndGolden 1 1 4
+  -- Generate the "many subjects" test data and corresponding golden files.
+  --
+  -- TODO: there is currently no "many events per subject" test generation. It
+  -- would be nice to add this group of test scenarios
+  --
+  -- TODO: it would be better to store this enumeration of transformed test
+  -- cases (i.e the (1, 1, 1), (1, 1, 2), ...) so that it can be reused when
+  -- constructing `testIds`
+  generateManySubjectsTestAndGolden 1 1 1
+  generateManySubjectsTestAndGolden 1 1 2
+  generateManySubjectsTestAndGolden 1 1 3
+  generateManySubjectsTestAndGolden 1 1 4
 
   -- Copy the test data to S3 with session-specific keys to avoid collisions
   mapM_ (writeTestDataToS3 sessionId) testIds
 
-  -- -- Copy the test data to S3 with session-specific keys to avoid collisions
-  -- writeTestDataToS3 sessionId TestDataEmpty
-  -- writeTestDataToS3 sessionId TestDataSmall
-  -- writeTestDataToS3 sessionId TestDataManySubj
-  -- writeTestDataToS3 sessionId TestDataManyEvent
-  let tests' = testGroup "Tests of exampleFilterApp" (createTests sessionId)
-
   -- Run the tests and perform cleanup. Note that ANY CODE WRITTEN AFTER THIS
   -- EXPRESION WILL BE SILENTLY IGNORED
+  let tests' = testGroup "Tests of exampleFilterApp" (createTests sessionId)
   defaultMain tests'
     `catch` (\e -> do
       -- removeDirectoryRecursive localResultsDir
@@ -126,6 +124,8 @@ main = do
 --   "Tests of exampleFilterApp"
 --   (makeTests testIds)
 
+-- Create a list of strings with each element representing a fragment of a
+-- filename for a given test scenario
 testIds =
   [ "0-0-1"
   , "0-1-1"
@@ -162,6 +162,8 @@ testIds =
   , createLargeNewId 1 1 4
   ]
 
+-- Create a collection of tests by obtaining the cartesian product of all of the
+-- (i) test data inputs and (ii) sources of inputs
 createTests :: String -> [TestTree]
 createTests sessionId =
   concat nestedTests
@@ -243,8 +245,12 @@ writeTestDataToS3 sessionId id = pure cmd >>= callCommand where
 --     (localTestDataDir ++ "test-" ++ id ++ ".golden")
 --     (localTestDataDir ++ "test-" ++ newId ++ ".golden")
 
-generateLargeTestAndGolden :: Int -> Int -> Int -> IO ()
-generateLargeTestAndGolden n m v = do
+-- Generates the "many subjects" test data and golden file by replicating the
+-- subjects in the existing test data and golden file for the n-m-v scenario
+-- (and giving the generated subjects unique IDs). The number of replications is
+-- fixed by `generateTestDataManySubjects`
+generateManySubjectsTestAndGolden :: Int -> Int -> Int -> IO ()
+generateManySubjectsTestAndGolden n m v = do
   let id = createId n m v
   let newId = createLargeNewId n m v
   generateTestDataManySubjects
@@ -301,7 +307,7 @@ createS3uriForTest sessionId id =
     ++ createS3keyForTest sessionId id
 
 createId :: Int -> Int -> Int -> String
-createId n m v = printf "%d-%d-%d" n m v
+createId = printf "%d-%d-%d"
 
 createNewId :: Int -> Int -> Int -> Int -> String
 createNewId largeInputSize n m v =

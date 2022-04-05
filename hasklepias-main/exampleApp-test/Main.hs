@@ -74,7 +74,6 @@ main = do
       -- FIXME: add generated test files and golden files to gitignore?
       throwIO (e :: ExitCode))
 
---
 appGoldenVsFile' :: String -> TestScenarioCohort -> TestTree
 appGoldenVsFile' sessionId =
   appGoldenVsFile

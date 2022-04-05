@@ -3,6 +3,7 @@ module TestUtils.BuildLargeTestData
   , generateGoldenManySubjectsCw
   , generateTestDataManySubjects
   , generateTestDataManyEvents
+  , largeInputSize
   ) where
 
 import Data.List ( sort
@@ -25,6 +26,10 @@ generateTestDataManySubjects infilepath outfilepath = do
 -- Generates new test data by dropping all subjects except the subject with
 -- subject ID `"a"`, and replicating that subject's events `largeInputSize`
 -- number of times
+--
+-- TODO: this is quite fragile -- if the form of the test data changes then this
+-- routine have unintended behavior without any warning. We should add an
+-- assertion or think of a better approach altogether -- DP 2022-04-05
 generateTestDataManyEvents :: String -> String -> IO ()
 generateTestDataManyEvents infilepath outfilepath = do
   generateTestDataBase infilepath outfilepath transform where

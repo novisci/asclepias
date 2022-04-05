@@ -7,6 +7,7 @@ module Main
   ( main
   ) where
 
+import           ConstructPaths
 import           Control.Concurrent
 import           Control.Exception             ( catch
                                                , throwIO )
@@ -15,6 +16,7 @@ import           Hasklepias
 import           Hasklepias.ExampleFilterApp
 import           TestUtils.BuildLargeTestData
 import           TestUtils.SessionId
+import           TestUtils.TestCases            ( TestInputType(..) )
 import           System.Directory               ( createDirectoryIfMissing
                                                 -- , removeDirectoryRecursive
                                                 -- , removePathForcibly
@@ -40,21 +42,6 @@ test-n-m-v.jsonl
      +------- number of subject that *do* have some event satisfying predicate
 
 -}
-
-localTestDataDir :: String
-localTestDataDir = "exampleFilterApp-test/test/"
-
-localResultsDir :: String
-localResultsDir = "exampleFilterApp-test/results/"
-
-s3Bucket :: String
-s3Bucket = "download.novisci.com"
-
-s3TestDataDir :: String
-s3TestDataDir = "hasklepias/sandbox-testapps/"
-
--- Enumeration of input sources
-data TestInputType = TestInputFile | TestInputStdin | TestInputS3
 
 main :: IO ()
 main = do
@@ -177,8 +164,8 @@ appGoldenVsFile :: String -> String -> TestInputType -> TestTree
 appGoldenVsFile sessionId id testInputType =
   goldenVsFile
     ("Test case " ++ id ++ " reading from " ++ inputStr)
-    (createLocalFilepathForGolden id)
-    (createLocalFilepathForResults id testInputType)
+    (createFilepathForGolden id)
+    (createFilepathForResults id testInputType)
     (appTest sessionId id testInputType)
     where
       inputStr = case testInputType of
@@ -206,18 +193,10 @@ appTestCmd sessionId id testInputType =
   "exampleFilterApp " ++ inputFragm ++ " > " ++ outfilename
   where
     inputFragm = case testInputType of
-      TestInputFile -> "-f " ++ createLocalFilepathForTest id
-      TestInputStdin -> "< " ++ createLocalFilepathForTest id
-      TestInputS3 -> "-r us-east-1 -b " ++ s3Bucket ++ " -k " ++ createS3keyForTest sessionId id
-    outfilename = createLocalFilepathForResults id testInputType
-
--- -- Create the local filepath where the test data is stored
--- inputDataFilename :: String -> String
--- inputDataFilename testId = "test-" ++ testId ++ ".jsonl"
-
--- -- Helper function to create the local filpath from a filename
--- localInputDataFilepath :: String -> String
--- localInputDataFilepath = (localTestDataDir ++)
+      TestInputFile -> "-f " ++ createFilepathForTest id
+      TestInputStdin -> "< " ++ createFilepathForTest id
+      TestInputS3 -> "-r us-east-1 -b " ++ s3Bucket ++ " -k " ++ createS3KeyForTest sessionId id
+    outfilename = createFilepathForResults id testInputType
 
 -- Helper function to create the local filpath from a filename
 localResultsFilepath :: String -> String
@@ -226,24 +205,9 @@ localResultsFilepath = (localResultsDir ++)
 -- Copy test data to S3
 writeTestDataToS3 :: String -> String -> IO ()
 writeTestDataToS3 sessionId id = pure cmd >>= callCommand where
-  from = createLocalFilepathForTest id
-  to   = createS3uriForTest sessionId id
+  from = createFilepathForTest id
+  to   = createS3UriForTest sessionId id
   cmd  = "aws s3 cp " ++ from ++ " " ++ to
-
--- -- the filesystem
--- generateTestDataManySubjectsWrp :: String -> String -> IO ()
--- generateTestDataManySubjectsWrp id newId =
--- generateTestDataManySubjects
---     (localTestDataDir ++ "test-" ++ id ++ ".jsonl")
---     (localTestDataDir ++ "test-" ++ newId ++ ".jsonl")
-
--- -- Construct the golden file for the "many subjects" test scenario and write it
--- -- to the filesystem
--- generateGoldenManySubjectsWrp :: String -> String -> IO ()
--- generateGoldenManySubjectsWrp id newId =
---   generateTestDataManySubjects
---     (localTestDataDir ++ "test-" ++ id ++ ".golden")
---     (localTestDataDir ++ "test-" ++ newId ++ ".golden")
 
 -- Generates the "many subjects" test data and golden file by replicating the
 -- subjects in the existing test data and golden file for the n-m-v scenario
@@ -254,57 +218,11 @@ generateManySubjectsTestAndGolden n m v = do
   let id = createId n m v
   let newId = createLargeNewId n m v
   generateTestDataManySubjects
-    (createLocalFilepathForTest id)
-    (createLocalFilepathForTest newId)
+    (createFilepathForTest id)
+    (createFilepathForTest newId)
   generateTestDataManySubjects
-    (createLocalFilepathForGolden id)
-    (createLocalFilepathForGolden newId)
-
-createFilenameForTest :: String -> String
-createFilenameForTest id = "test-" ++ id ++ ".jsonl"
-
-createFilenameForGolden :: String -> String
-createFilenameForGolden id = "test-" ++ id ++ ".golden"
-
--- Construct the filename for the output for a given test
-createFilenameForResults :: String -> TestInputType -> String
-createFilenameForResults id testInputType =
-  "result-"
-    ++ id
-    ++ "-"
-    ++ inputStr
-    ++ ".jsonl"
-  where
-    inputStr = case testInputType of
-      TestInputFile -> "filein"
-      TestInputStdin -> "stdin"
-      TestInputS3 -> "s3in"
-
-createLocalFilepathForTest :: String -> String
-createLocalFilepathForTest id = localTestDataDir ++ createFilenameForTest id
-
-createLocalFilepathForGolden :: String -> String
-createLocalFilepathForGolden id = localTestDataDir ++ createFilenameForGolden id
-
-createLocalFilepathForResults :: String -> TestInputType -> String
-createLocalFilepathForResults id testInputType =
-  localResultsDir ++ createFilenameForResults id testInputType
-
--- Create the S3 key where the test data will be located (once paired with a bucket)
-createS3keyForTest :: String -> String -> String
-createS3keyForTest sessionId id =
-  s3TestDataDir
-    ++ "filterApp/"
-    ++ sessionId
-    ++ "/testdata/"
-    ++ createFilenameForTest id
-
--- Create the S3 URI where the test data will be located
-createS3uriForTest sessionId id =
-  "s3://"
-    ++ s3Bucket
-    ++ "/"
-    ++ createS3keyForTest sessionId id
+    (createFilepathForGolden id)
+    (createFilepathForGolden newId)
 
 createId :: Int -> Int -> Int -> String
 createId = printf "%d-%d-%d"

@@ -59,6 +59,8 @@ test-suite collector-test
       test
   build-depends:
       base
-      , cohort-collector
-      , hasklepias-appBuilder
+    , cohort-collector
+    , directory
+    , hasklepias-appBuilder
+    , tasty  >= 1.4.1
   default-language: Haskell2010

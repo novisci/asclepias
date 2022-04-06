@@ -32,7 +32,6 @@ import           Test.Tasty                     ( TestTree
                                                 , testGroup
                                                 )
 import           Test.Tasty.Silver
-import TestUtils.TestCases (AppType(AppColumnWise, AppRowWise))
 
 -- Run the tests
 --
@@ -159,7 +158,7 @@ constructTestName testScenarioCohort =
     ++ case getCohortAppType testScenarioCohort of
          AppRowWise-> "row-wise"
          AppColumnWise -> "column-wise"
-    ++ " getCohortCohort performed on "
+    ++ " cohort performed on "
     ++ case getCohortTestDataType testScenarioCohort of
          TestDataEmpty -> "empty data"
          TestDataSmall -> "small data"

@@ -10,6 +10,7 @@ module TestUtils.TestCases
   , TestInputType(..)
   , TestOutputType(..)
   , TestScenarioCohort(..)
+  , createCollectorTests
   , createTestsCartesian
   ) where
 
@@ -184,5 +185,25 @@ createTestsCartesian testName appTest = testGroup
   , appTestWrp AppColumnWise TestDataManyEvent TestInputS3    TestOutputS3
   ]
   where
-    appTestWrp appRowWise testDataEmpty testInputFile testOutputFile =
-      appTest (TestScenarioCohort appRowWise testDataEmpty testInputFile testOutputFile)
+    appTestWrp appType testDataType testInputType testOutputType =
+      appTest (TestScenarioCohort appType testDataType testInputType testOutputType)
+
+createCollectorTests :: String -> (TestCollectorScenario -> TestTree) -> TestTree
+createCollectorTests testName appTest = testGroup
+  testName
+  [ appTestWrp AppRowWise    TestCollectorInputFile TestCollectorOutputFile
+  , appTestWrp AppRowWise    TestCollectorInputFile TestCollectorOutputStdout
+  , appTestWrp AppRowWise    TestCollectorInputFile TestCollectorOutputS3
+  -- , appTestWrp AppRowWise    TestCollectorInputS3   TestCollectorOutputFile
+  -- , appTestWrp AppRowWise    TestCollectorInputS3   TestCollectorOutputStdout
+  -- , appTestWrp AppRowWise    TestCollectorInputS3   TestCollectorOutputS3
+  , appTestWrp AppColumnWise TestCollectorInputFile TestCollectorOutputFile
+  , appTestWrp AppColumnWise TestCollectorInputFile TestCollectorOutputStdout
+  , appTestWrp AppColumnWise TestCollectorInputFile TestCollectorOutputS3
+  -- , appTestWrp AppColumnWise TestCollectorInputS3   TestCollectorOutputFile
+  -- , appTestWrp AppColumnWise TestCollectorInputS3   TestCollectorOutputStdout
+  -- , appTestWrp AppColumnWise TestCollectorInputS3   TestCollectorOutputS3
+  ]
+  where
+    appTestWrp appType inputType outputType =
+      appTest (TestCollectorScenario appType inputType outputType)

@@ -22,12 +22,12 @@ import Amazonka.S3.HeadObject (headObjectResponse_replicationStatus)
 
 -- Conduct a single test
 appGoldenVsFile ::
-     (TestScenarioCohort -> String)
-  -> (TestScenarioCohort -> FilePath)
-  -> (TestScenarioCohort -> FilePath)
-  -> (TestScenarioCohort -> FilePath)
-  -> (TestScenarioCohort -> IO ())
-  -> TestScenarioCohort
+     (a -> String)
+  -> (a -> FilePath)
+  -> (a -> FilePath)
+  -> (a -> FilePath)
+  -> (a -> IO ())
+  -> a
   -> TestTree
 appGoldenVsFile
   constructTestName

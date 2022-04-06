@@ -32,7 +32,6 @@ import           Test.Tasty                     ( TestTree
                                                 )
 import           Test.Tasty.Silver
 import           Text.Printf
-import ConstructPaths (createFilepathForGolden)
 
 {-
 Test case file names follow this convention:

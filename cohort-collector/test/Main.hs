@@ -6,17 +6,21 @@ module Main
   ) where
 
 import           CohortCollectionTests
+import           Control.Exception             ( catch
+                                               , throwIO )
 import           System.Directory               ( createDirectoryIfMissing
                                                 , removeDirectoryRecursive
                                                 , removePathForcibly
                                                 )
+import           System.Exit                    ( ExitCode )
 import           Test.Tasty                     ( TestTree
                                                 , defaultMain
                                                 , testGroup
                                                 )
+import           TestUtils.ConstructTestTree
+import           TestUtils.S3Utils
 import           TestUtils.SessionId
 import           TestUtils.TestCases
-import           TestUtils.ConstructTestTree
 
 main :: IO ()
 main = do
@@ -25,12 +29,14 @@ main = do
   sessionId <- getSessionId
   createDirectoryIfMissing True localResultsDir
 
-  -- -- Copy the test data to S3 with session-specific keys to avoid collisions
-  -- writeTestDataToS3 sessionId TestDataEmpty
-  -- writeTestDataToS3 sessionId TestDataSmall
-  -- writeTestDataToS3 sessionId TestDataManySubj
-  -- writeTestDataToS3 sessionId TestDataManyEvent
+  -- Copy the test data to S3 with session-specific keys to avoid collisions
+  let testDataFiles =
+        [ "testcw.locations", "testcw1.json", "testcw2.json", "testcw3.json"
+        , "testrw.locations", "testrw1.json", "testrw2.json", "testrw3.json"
+        ]
+  mapM_ (writeTestDataToS3 sessionId) testDataFiles
 
+  -- Create a TestTree of I/O tests
   let testsIO =
         createCollectorTests
           "Tests of cohort collection (IO)"
@@ -39,6 +45,10 @@ main = do
   -- Run the tests and perform cleanup. Note that ANY CODE WRITTEN AFTER THIS
   -- EXPRESION WILL BE SILENTLY IGNORED
   defaultMain (testGroup "cohort-collector tests" [tests, testsIO])
+    `catch` (\e -> do
+      removeDirectoryRecursive localResultsDir
+      s3RecursiveRm  (convS3KeyToUri (s3RootDir ++ sessionId))
+      throwIO (e :: ExitCode))
 
 localTestDataDir :: String
 localTestDataDir = "test/tests/"
@@ -125,11 +135,7 @@ constructFilenameForResult testCollectorScenario =
 
 constructFilenameForGolden :: TestCollectorScenario -> FilePath
 constructFilenameForGolden testCollectorScenario =
-  -- constructFilenameForTestBase . getTestCollectorAppType
-  localTestDataDir ++ filename
-  where
-    filename =
-      case getTestCollectorAppType testCollectorScenario of
+  case getTestCollectorAppType testCollectorScenario of
         AppRowWise -> "testrw.golden"
         AppColumnWise -> "testcw.golden"
 
@@ -146,31 +152,38 @@ constructFilepathForResult =
 
 constructFilepathForGolden :: TestCollectorScenario -> FilePath
 constructFilepathForGolden =
-  (localResultsDir ++) . constructFilenameForGolden
+  (localTestDataDir ++) . constructFilenameForGolden
 
 constructBucketForTest :: TestCollectorScenario -> String
 constructBucketForTest = const s3Bucket
 
-constructS3KeyForTest :: String -> TestCollectorScenario -> FilePath
+constructS3KeyForTest :: String -> TestCollectorScenario -> String
 constructS3KeyForTest sessionId testCollectorScenario =
   convFilenameToS3KeyTest
     sessionId
     (constructFilenameForTest testCollectorScenario)
 
-constructS3KeyForResult :: String -> TestCollectorScenario -> FilePath
+constructS3KeyForResult :: String -> TestCollectorScenario -> String
 constructS3KeyForResult sessionId testCollectorScenario =
   convFilenameToS3KeyResult
     sessionId
     (constructFilenameForResult testCollectorScenario)
 
-constructS3UriForResult :: String -> TestCollectorScenario -> FilePath
+constructS3UriForResult :: String -> TestCollectorScenario -> String
 constructS3UriForResult sessionId testCollectorScenario =
   convS3KeyToUri
     (constructS3KeyForResult sessionId testCollectorScenario)
 
+convFilenameToFilepathTest :: FilePath -> FilePath
+convFilenameToFilepathTest = (localTestDataDir ++)
+
 convFilenameToS3KeyTest :: String -> String -> String
 convFilenameToS3KeyTest sessionId filename =
   s3RootDir ++ sessionId ++ "/testdata/" ++ filename
+
+convFilenameToS3UriTest :: String -> String -> String
+convFilenameToS3UriTest sessionId =
+  convS3KeyToUri . convFilenameToS3KeyTest sessionId
 
 convFilenameToS3KeyResult :: String -> String -> String
 convFilenameToS3KeyResult sessionId filename =
@@ -194,3 +207,10 @@ constructCollectorTestName testCollectorScenario =
          TestCollectorOutputFile -> "file"
          TestCollectorOutputStdout -> "standard output"
          TestCollectorOutputS3 -> "S3"
+
+writeTestDataToS3 :: String -> String -> IO ()
+writeTestDataToS3 sessionId filename =
+  s3Copy from to
+  where
+    from = convFilenameToFilepathTest filename
+    to = convFilenameToS3UriTest sessionId filename

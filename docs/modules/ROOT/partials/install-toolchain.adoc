@@ -17,7 +17,7 @@ run the following commands:
 
 [source,shell]
 ----
-ghcup install ghc {ghc}
+ghcup install ghc 8.10.7
 ghcup install cabal
 ghcup install hls
 ----

@@ -33,7 +33,7 @@ ui:
     snapshot: true
 EOM
 
-cd $builddir && npx antora --fetch playbook.yml
+cd $builddir && antora --fetch playbook.yml
 
 # TODO: add tear down option
 # cd .. && rm -rf $builddir

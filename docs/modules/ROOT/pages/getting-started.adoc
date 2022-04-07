@@ -3,6 +3,24 @@
 
 = Getting Started 
 
+== Prerequisites
+For M1 Mac users:
+
+* Install homebrew
+* Install llvm
+
+[source,shell]
+----
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+brew install llvm
+----
+* You may also need to install git: 
+
+[source,shell]
+----
+brew install git
+----
+
 == Installing the toolchain
 
 include::partial$install-toolchain.adoc[leveloffset=+1]

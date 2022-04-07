@@ -4,7 +4,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
-module Hasklepias.ExampleApp
+module Hasklepias.AppExampleCohort
   ( exampleAppRW
   , exampleAppCW
   ) where

@@ -1,6 +1,6 @@
 {-# LANGUAGE NoImplicitPrelude #-}
 
-module Hasklepias.ExampleFilterApp
+module Hasklepias.AppExampleFilter
   ( exampleFilterApp
   ) where
 import           Hasklepias

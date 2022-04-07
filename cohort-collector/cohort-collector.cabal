@@ -49,7 +49,7 @@ executable cohort-collector
   hs-source-dirs:
       app
   build-depends:
-    cohort-collector, base
+      cohort-collector, base
   default-language: Haskell2010
 
 test-suite collector-test
@@ -58,5 +58,11 @@ test-suite collector-test
   hs-source-dirs:
       test
   build-depends:
-      cohort-collector, base
+      base
+    , cohort-collector
+    , directory
+    , hasklepias-appBuilder
+    , tasty  >= 1.4.1
+  other-modules:
+      ConstructPaths
   default-language: Haskell2010

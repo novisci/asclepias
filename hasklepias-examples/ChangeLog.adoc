@@ -1,0 +1,5 @@
+= Changelog for hasklepias-examples
+
+== 0.1.0
+
+* Move and update examples from `hasklepias-main`.

@@ -84,9 +84,14 @@ library
 --     , hasklepias-core
 --     , hasklepias-appBuilder
 --     , base >=4.14 && <5
---     , tasty 
---     , tasty-silver 
 --     , bytestring
+--     , directory
+--     , process >= 1.6.14
+--     , regex-compat
+--     , tasty
+--     , tasty-silver
+--   other-modules:
+--       ConstructPaths
 --   default-language: Haskell2010
 
 -- executable exampleFilterApp
@@ -107,8 +112,12 @@ library
 --     , hasklepias-core
 --     , hasklepias-appBuilder
 --     , base >=4.14 && <5
---     , tasty  
---     , tasty-silver 
 --     , bytestring
+--     , directory
+--     , process >= 1.6.14
 --     , silently >= 1.2.5.1
+--     , tasty
+--     , tasty-silver
+--   other-modules:
+--       ConstructPaths
 --   default-language: Haskell2010

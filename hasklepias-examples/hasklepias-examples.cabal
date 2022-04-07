@@ -23,6 +23,8 @@ source-repository head
 library
   exposed-modules:
       Examples
+      AppExamples.CohortApp
+      AppExamples.FilterApp
       CohortExamples
       CohortExamples.Example1
       FeatureExamples
@@ -42,7 +44,7 @@ library
   -- DataKinds and TypeApplications are used frequently in the examples
   -- but brittany v0.13.1.2 does NOT format code idempotently unless
   -- these extensions are enables within module.
-  -- The brittrany formatter does not appear to check the .cabal file
+  -- The brittany formatter does not appear to check the .cabal file
   -- for enabled extensions. 
   -- Hence, these extensions are turned on as needed within modules.
       NoImplicitPrelude

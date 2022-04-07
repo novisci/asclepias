@@ -61,3 +61,11 @@ test-suite examples
   build-depends:
       hasklepias-examples, base
   default-language: Haskell2010
+
+-- executable exampleCohortCwApp
+--   main-is: Main.hs
+--   hs-source-dirs:
+--       exampleCohortCwApp
+--   build-depends:
+--       hasklepias-main
+--   default-language: Haskell2010

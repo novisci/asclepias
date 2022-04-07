@@ -57,14 +57,6 @@ library
     , witch >= 1.0
   default-language: Haskell2010
 
--- executable exampleAppCW
---   main-is: Main.hs
---   hs-source-dirs:
---       exampleAppCW
---   build-depends:
---       hasklepias-main
---   default-language: Haskell2010
-
 -- executable exampleAppRW
 --   main-is: Main.hs
 --   hs-source-dirs:

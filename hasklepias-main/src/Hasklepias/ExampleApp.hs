@@ -8,7 +8,7 @@ module Hasklepias.ExampleApp
   ( exampleAppRW
   , exampleAppCW
   ) where
-import           EventData                      ( ClaimsSchema )
+import           EventData                      ( ExampleModel )
 import           Hasklepias
 {-------------------------------------------------------------------------------
   Features used by inclusion/exclusion (and possibly other places too)
@@ -16,14 +16,14 @@ import           Hasklepias
 
 -- | Lift a subject's events in a feature
 featureEvents
-  :: [Event Text ClaimsSchema Day]
-  -> Feature "allEvents" [Event Text ClaimsSchema Day]
+  :: [Event Text ExampleModel Day]
+  -> Feature "allEvents" [Event Text ExampleModel Day]
 featureEvents = pure
 
 -- | Lift a subject's events in a feature
 featureDummy
   :: Definition
-       (  Feature "allEvents" [Event Text ClaimsSchema Day]
+       (  Feature "allEvents" [Event Text ExampleModel Day]
        -> Feature "myVar1" Count
        )
 featureDummy = define $ pure 5
@@ -32,7 +32,7 @@ featureDummy = define $ pure 5
 anotherDummy
   :: Bool
   -> Definition
-       (  Feature "allEvents" [Event Text ClaimsSchema Day]
+       (  Feature "allEvents" [Event Text ExampleModel Day]
        -> Feature "myVar2" Bool
        )
 anotherDummy x = define $ const x
@@ -40,7 +40,7 @@ anotherDummy x = define $ const x
 -- | Include the subject if she has an enrollment interval concurring with index.
 critTrue
   :: Definition
-       (  Feature "allEvents" [Event Text ClaimsSchema Day]
+       (  Feature "allEvents" [Event Text ExampleModel Day]
        -> Feature "dummy" Status
        )
 critTrue = define $ pure Include
@@ -60,11 +60,11 @@ instance HasAttributes "myVar2" Bool where
 -------------------------------------------------------------------------------}
 
 -- | 
-makeIndexRunner :: [Event Text ClaimsSchema Day] -> IndexSet (Interval Day)
+makeIndexRunner :: [Event Text ExampleModel Day] -> IndexSet (Interval Day)
 makeIndexRunner _ = makeIndexSet [beginerval 1 (fromGregorian 2010 7 6)]
 
 -- | Make a function that runs the criteria
-makeCriteriaRunner :: Interval Day -> [Event Text ClaimsSchema Day] -> Criteria
+makeCriteriaRunner :: Interval Day -> [Event Text ExampleModel Day] -> Criteria
 makeCriteriaRunner _ events = criteria $ pure (criterion crit1)
  where
   crit1   = eval critTrue featEvs
@@ -72,7 +72,7 @@ makeCriteriaRunner _ events = criteria $ pure (criterion crit1)
 
 -- | Make a function that runs the features for a calendar index
 makeFeatureRunner
-  :: Interval Day -> [Event Text ClaimsSchema Day] -> Featureset
+  :: Interval Day -> [Event Text ExampleModel Day] -> Featureset
 makeFeatureRunner _ events = featureset
   (  packFeature (eval featureDummy ef)
   :| [packFeature (eval (anotherDummy True) ef)]
@@ -80,9 +80,9 @@ makeFeatureRunner _ events = featureset
   where ef = featureEvents events
 
 -- | Make a cohort specification set
--- cohortSpecs :: CohortSetSpec [Event Text ClaimsSchema Day] Featureset (Interval Day)
+-- cohortSpecs :: CohortSetSpec [Event Text ExampleModel Day] Featureset (Interval Day)
 cohortSpecs
-  :: CohortMapSpec [Event Text ClaimsSchema Day] Featureset (Interval Day)
+  :: CohortMapSpec [Event Text ExampleModel Day] Featureset (Interval Day)
 cohortSpecs = makeCohortSpecs
   [("example", makeIndexRunner, makeCriteriaRunner, makeFeatureRunner)]
 

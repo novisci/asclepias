@@ -358,7 +358,7 @@ The @TimeLine@ value IS NOT changed.
 Only those fields in the context that align with the factsline
 are modified.
 -}
-updateFactsLine :: (Data m' ) => FactsLine m a -> Context c m' -> FactsLine m'  a
+updateFactsLine :: (Data m') => FactsLine m a -> Context c m' -> FactsLine m' a
 updateFactsLine (MkFactsLine dmn tm _ sid _ vld) x = MkFactsLine
   { domain     = pack $ show $ toConstr (getFacts x)
   , time       = tm
@@ -378,11 +378,11 @@ Only those fields in the context that align with the factsline
 are modified.
 -}
 updateFactsLineWithInterval
-  :: (Data m' , Ord a')
+  :: (Data m', Ord a')
   => FactsLine m a
   -> Context c m'
   -> Interval a'
-  -> FactsLine m'  a'
+  -> FactsLine m' a'
 updateFactsLineWithInterval (MkFactsLine _ _ _ sid _ vld) x i = MkFactsLine
   { domain     = pack $ show $ toConstr (getFacts x)
   , time       = MkTimeLine (begin i) (Just $ end i)
@@ -399,10 +399,10 @@ Modifies data in an @EventLine@
 from data in an @Event@.
 -}
 updateEventLineFromEvent
-  :: (Data m' , Ord a', ToJSON a', Ord c')
+  :: (Data m', Ord a', ToJSON a', Ord c')
   => EventLine c m a
-  -> Event c' m'  a'
-  -> EventLine c' m'  a'
+  -> Event c' m' a'
+  -> EventLine c' m' a'
 updateEventLineFromEvent (MkEventLine _ _ _ _ _ f) x =
   let ctxt = getContext x
   in  let i = getInterval x
@@ -421,17 +421,17 @@ that operates on the Context
 within the Event corresponding to the EventLine.
 -}
 eitherModifyEventLineFromContext
-  :: forall m m'  c c' a b e
+  :: forall m m' c c' a b e
    . ( Eventable c m a
      , EventLineAble c m a b
      , FromJSONEvent c m a
      , Ord c'
-     , Data m' 
+     , Data m'
      )
   => ParseEventLineOption
-  -> (Context c m -> Context c' m' )
+  -> (Context c m -> Context c' m')
   -> EventLine c m a
-  -> Either String (EventLine c' m'  a)
+  -> Either String (EventLine c' m' a)
 eitherModifyEventLineFromContext opt g (MkEventLine a b c m e f) = do
   ev <- first show $ tryInto @(Event c m a) (MkEventLine a b c m e f, opt)
   let ctxt  = g (getContext ev)
@@ -442,18 +442,18 @@ eitherModifyEventLineFromContext opt g (MkEventLine a b c m e f) = do
 TODO
 -}
 eitherModifyEventLineFromEvent
-  :: forall m m'  c c' a a' b e
+  :: forall m m' c c' a a' b e
    . ( Eventable c m a
-     , Eventable c' m'  a'
+     , Eventable c' m' a'
      , EventLineAble c m a b
      , FromJSONEvent c m a
      , ToJSON a'
-     , Data m' 
+     , Data m'
      )
   => ParseEventLineOption
-  -> (Event c m a -> Event c' m'  a')
+  -> (Event c m a -> Event c' m' a')
   -> EventLine c m a
-  -> Either String (EventLine c' m'  a')
+  -> Either String (EventLine c' m' a')
 eitherModifyEventLineFromEvent opt g x = do
   ev1 <- first show $ tryInto @(Event c m a) (x, opt)
   let ev2 = g ev1
@@ -478,17 +478,17 @@ nor any of the first four elements of the 'EventLine'.
 See 'modifyEventLineWithEvent' for a function that can also modify the interval. 
 -}
 modifyEventLineWithContext
-  :: forall m m'  c c' a b
+  :: forall m m' c c' a b
    . ( Eventable c m a
      , EventLineAble c m a b
      , FromJSONEvent c m a
-     , Eventable c' m'  a
-     , Data m' 
+     , Eventable c' m' a
+     , Data m'
      )
   => ParseEventLineOption
-  -> (Context c m -> Context c' m' )
+  -> (Context c m -> Context c' m')
   -> B.ByteString
-  -> Either String (EventLine c' m'  a)
+  -> Either String (EventLine c' m' a)
 modifyEventLineWithContext opt f x =
   let el = eitherDecode @(EventLine c m a) x
   in  eitherModifyEventLineFromContext opt f =<< el
@@ -518,18 +518,18 @@ Therefore, USER BEWARE.
 
 -}
 modifyEventLineWithEvent
-  :: forall m m'  c c' a a' b
+  :: forall m m' c c' a a' b
    . ( FromJSONEvent c m a
      , Eventable c m a
-     , Eventable c' m'  a'
+     , Eventable c' m' a'
      , EventLineAble c m a b
      , ToJSON a'
-     , Data m' 
+     , Data m'
      )
   => ParseEventLineOption
-  -> (Event c m a -> Event c' m'  a')
+  -> (Event c m a -> Event c' m' a')
   -> B.ByteString
-  -> Either String (EventLine c' m'  a')
+  -> Either String (EventLine c' m' a')
 modifyEventLineWithEvent opt f x =
   let el = eitherDecode @(EventLine c m a) x
   in  eitherModifyEventLineFromEvent opt f =<< el

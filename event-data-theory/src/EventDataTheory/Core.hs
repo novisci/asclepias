@@ -580,7 +580,7 @@ class ContextFunction f c c' m m'  where
   Lifts a function @f@ of a component of an 'Context'
   to a function on an 'Context'
   -}
-  liftToContextFunction :: (Ord c, Ord c') => f -> Context c m -> Context c' m' 
+  liftToContextFunction :: (Ord c, Ord c') => f -> Context c m -> Context c' m'
 
 instance ContextFunction (Concepts c -> Concepts c') c c' m m where
   liftToContextFunction f (MkContext x y z) = MkContext (f x) y z

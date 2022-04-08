@@ -83,12 +83,12 @@ collectBySubject x = M.toList $ M.fromListWith (++) (fmap (fmap pure) x)
 TODO
 -}
 mapIntoPop
-  :: forall d c a
-   . (Ord a, Ord c, Eq d)
-  => [(SubjectID, Event c d a)]
-  -> Population [Event c d a]
+  :: forall m c a
+   . (Ord a, Ord c, Eq m)
+  => [(SubjectID, Event c m a)]
+  -> Population [Event c m a]
 mapIntoPop l = into $ fmap
-  (\(id, es) -> into @(Subject [Event c d a]) (into @Text id, sort es)) -- TODO: is there a way to avoid the sort?
+  (\(id, es) -> into @(Subject [Event c m a]) (into @Text id, sort es)) -- TODO: is there a way to avoid the sort?
   (collectBySubject l)
 
 {-| INTERNAL

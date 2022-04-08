@@ -106,8 +106,8 @@ instance Semigroup FilterState where
 -- Initialize a FilterState using a given parser and predicate function.
 initFilterState
   :: (Show a, FromJSON a, IntervalSizeable a b)
-  => (C.ByteString -> Maybe (Event c d a)) -- ^ Event parser
-  -> (Event c d a -> Bool) -- ^ Predicate on events
+  => (C.ByteString -> Maybe (Event c m a)) -- ^ Event parser
+  -> (Event c m a -> Bool) -- ^ Predicate on events
   -> C.ByteString -- ^ the data to (attempt to) parse into an event
   -> FilterState
 initFilterState f p x = FilterState (id, b, x)
@@ -179,12 +179,12 @@ desc =
   \Lines that fail to parse as an `Event` do not satisfy the predicate, but are not \
   \dropped from the output. In other words, all of a subject's data is returned in \
   \the same order as the input, provided that at least one line successfully parses \
-  \into an Event d c and satisfies the predicate."
+  \into an Event c m and satisfies the predicate."
 
 {- | 
 Create a application that filters event data with two arguments: 
   * a string for the name of the application (e.g. the project ID)
-  * a predicate function of type @Event c d a -> Bool@. 
+  * a predicate function of type @Event c m a -> Bool@. 
 
 The application takes event data formatted as [`ndjson`](http://ndjson.org/)
 (i.e. one event per line). The application returns the event data filtered to

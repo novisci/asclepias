@@ -300,12 +300,7 @@ instance Functor (Context c) where
   fmap f (MkContext c d s) = MkContext c (f d) s
 
 -- | Smart constructor for a 'Context',
-context
-  :: (Generic d, Ord c, Typeable c)
-  => Concepts c
-  -> d
-  -> Maybe Source
-  -> Context c d
+context :: (Ord c) => Concepts c -> d -> Maybe Source -> Context c d
 context = MkContext
 
 {-|

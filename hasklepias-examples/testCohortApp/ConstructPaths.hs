@@ -30,10 +30,10 @@ module ConstructPaths
 import           TestUtils.TestCases
 
 localTestDataDir :: String
-localTestDataDir = "exampleApp-test/test/"
+localTestDataDir = "testCohortApp/test/"
 
 localResultsDir :: String
-localResultsDir = "exampleApp-test/results/"
+localResultsDir = "testCohortApp/results/"
 
 s3Bucket :: String
 s3Bucket = "download.novisci.com"

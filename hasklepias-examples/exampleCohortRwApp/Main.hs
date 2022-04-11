@@ -14,7 +14,7 @@ module Main
   ( main
   ) where
 import           Hasklepias
-import           Hasklepias.ExampleApp
+import           AppExamples.CohortApp
 
 main :: IO ()
 main = runApp exampleAppRW

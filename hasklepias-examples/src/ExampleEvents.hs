@@ -32,8 +32,16 @@ data ExampleModel =
   | Demographics Demographic
   deriving (Eq, Show, Ord, Generic)
 
-instance FromJSON ExampleModel
+-- instance FromJSON ExampleModel
 instance FromJSON Demographic
+instance FromJSON ExampleModel where
+  parseJSON = genericParseJSON
+    (defaultOptions
+      { sumEncoding = TaggedObject { tagFieldName      = "domain"
+                                   , contentsFieldName = "facts"
+                                   }
+      }
+    )
 
 exampleEvents1 :: [Event Text ExampleModel Int]
 exampleEvents1 = toEvents exampleEvents1Data

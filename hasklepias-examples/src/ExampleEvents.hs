@@ -19,6 +19,7 @@ module ExampleEvents
   , ExampleModel(..)
   ) where
 
+import           Data.Aeson
 import           Hasklepias
 
 data Demographic =
@@ -31,6 +32,8 @@ data ExampleModel =
   | Demographics Demographic
   deriving (Eq, Show, Ord, Generic)
 
+instance FromJSON ExampleModel
+instance FromJSON Demographic
 
 exampleEvents1 :: [Event Text ExampleModel Int]
 exampleEvents1 = toEvents exampleEvents1Data

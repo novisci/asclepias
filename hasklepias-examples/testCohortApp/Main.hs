@@ -105,8 +105,8 @@ appTestCmdString' sessionId =
 constructTestExecutableFragm :: TestScenarioCohort -> String
 constructTestExecutableFragm testScenarioCohort =
   case getCohortAppType testScenarioCohort of
-    AppRowWise -> "exampleCohortRwApp"
-    AppColumnWise -> "exampleCohortCwApp"
+    AppRowWise -> "cabal run exampleCohortRwApp --"
+    AppColumnWise -> "cabal run exampleCohortCwApp --"
 
 constructTestInputFragmFSS' :: String -> TestScenarioCohort -> String
 constructTestInputFragmFSS' sessionId =

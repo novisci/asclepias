@@ -74,15 +74,17 @@ import           Lens.Micro.Extras              ( view )
 import           Options.Applicative
 
 
+import qualified Control.Monad.Trans.AWS       as AWS
+import           Data.Either                    ( fromRight )
+import           Data.Text                      ( Text
+                                                , pack
+                                                )
 -- imports for amazonka < 2
 import           Network.AWS
 import           Network.AWS.Data
 import           Network.AWS.S3
-import qualified Control.Monad.Trans.AWS       as AWS
-import           System.IO                      ( stderr, putStrLn )
-import           Data.Either                    ( fromRight )
-import           Data.Text                      ( Text
-                                                , pack
+import           System.IO                      ( putStrLn
+                                                , stderr
                                                 )
 
 
@@ -190,12 +192,12 @@ getS3Object r b k = do
 -- 
 
 class (ToBody a) => PutS3 a where
-  putS3Object :: Region -> BucketName -> ObjectKey -> a -> IO () 
+  putS3Object :: Region -> BucketName -> ObjectKey -> a -> IO ()
   putS3Object r b k o = do
     lgr <- newLogger Error stderr
     env <- newEnv Discover <&> set envLogger lgr . set envRegion r
     AWS.runResourceT . AWS.runAWST env $ do
-      void . send $ set poACL (Just OBucketOwnerFullControl) (putObject b k (toBody o)) 
+      void . send $ set poACL (Just OBucketOwnerFullControl) (putObject b k (toBody o))
       liftIO
         .  putStrLn
         $  "Successfully Uploaded contents to "

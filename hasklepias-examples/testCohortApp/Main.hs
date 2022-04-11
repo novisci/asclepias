@@ -15,7 +15,7 @@ import qualified Data.ByteString.Lazy          as B
 import           Data.Char                     ( isDigit )
 import           Hasklepias
 import           TestUtils.BuildLargeTestData
-import           Hasklepias.ExampleApp
+import           AppExamples.CohortApp
 import           TestUtils.ConstructTestTree
 import           TestUtils.SessionId
 import           TestUtils.TestCases

@@ -14,7 +14,7 @@ module Main
   ( main
   ) where
 import           Hasklepias
-import           Hasklepias.ExampleFilterApp
+import           AppExamples.FilterApp
 
 main :: IO ()
 main = runFilterApp exampleFilterApp

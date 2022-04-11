@@ -44,14 +44,4 @@ ghcup install hls
 . Compile all of the project components (this may take half an hour): `cabal build all`
 . Set up your editor for Haskell development using HLS.
   This is editor-specific.
-. Install the Antora toolchain
-.. Install node
-.. Install Antora globally
-+
-[source,shell]
-----
-brew install node
-npm i -g @antora/cli@3.0.0 @antora/site-generator@3.0.0
-----
-+
 

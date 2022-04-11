@@ -13,7 +13,7 @@ import           Control.Exception             ( catch
                                                , throwIO )
 import qualified Data.ByteString.Char8         as B
 import           Hasklepias
-import           Hasklepias.ExampleFilterApp
+import           AppExamples.FilterApp
 import           TestUtils.BuildLargeTestData
 import           TestUtils.SessionId
 import           TestUtils.TestCases            ( TestInputType(..) )
@@ -198,7 +198,7 @@ appTest sessionId testId testInputType = do
 -- prior to processing and things do indeed work as intended
 appTestCmd :: String -> String -> TestInputType -> String
 appTestCmd sessionId id testInputType =
-  "exampleFilterApp " ++ inputFragm ++ " > " ++ outfilename
+  "cabal run testFilterApp -- " ++ inputFragm ++ " > " ++ outfilename
   where
     inputFragm = case testInputType of
       TestInputFile -> "-f " ++ createFilepathForTest id

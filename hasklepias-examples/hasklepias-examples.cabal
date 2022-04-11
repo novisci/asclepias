@@ -73,3 +73,12 @@ executable exampleCohortCwApp
       hasklepias-examples
     , hasklepias-main
   default-language: Haskell2010
+
+executable exampleCohortRwApp
+  main-is: Main.hs
+  hs-source-dirs:
+      exampleCohortRwApp
+  build-depends:
+      hasklepias-examples
+    , hasklepias-main
+  default-language: Haskell2010

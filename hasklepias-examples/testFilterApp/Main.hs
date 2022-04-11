@@ -198,7 +198,7 @@ appTest sessionId testId testInputType = do
 -- prior to processing and things do indeed work as intended
 appTestCmd :: String -> String -> TestInputType -> String
 appTestCmd sessionId id testInputType =
-  "cabal run testFilterApp -- " ++ inputFragm ++ " > " ++ outfilename
+  "cabal run exampleFilterApp -- " ++ inputFragm ++ " > " ++ outfilename
   where
     inputFragm = case testInputType of
       TestInputFile -> "-f " ++ createFilepathForTest id

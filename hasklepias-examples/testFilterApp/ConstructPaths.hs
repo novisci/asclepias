@@ -19,10 +19,10 @@ import           TestUtils.TestCases ( TestInputType(..) )
 -- Data constants --------------------------------------------------------------
 
 localTestDataDir :: String
-localTestDataDir = "exampleFilterApp-test/test/"
+localTestDataDir = "testFilterApp/test/"
 
 localResultsDir :: String
-localResultsDir = "exampleFilterApp-test/results/"
+localResultsDir = "testFilterApp/results/"
 
 s3Bucket :: String
 s3Bucket = "download.novisci.com"

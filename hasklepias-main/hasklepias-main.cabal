@@ -42,7 +42,7 @@ library
     , hasklepias-templates
     , stype
     -- External packages
-    , aeson >= 2.0.2.0
+    , aeson == 1.5.6.0
     , base >=4.14 && <5
     , containers == 0.6.5.1
     , flow >= 2.0.0.0
@@ -51,7 +51,7 @@ library
     , safe >= 0.3
     , tasty  >= 1.4.1
     , tasty-hunit >= 0.10
-    , text >= 2.0
+    , text == 1.2.4.1
     , time >= 1.11
     , tuple >= 0.3
     , witherable >= 0.4.1

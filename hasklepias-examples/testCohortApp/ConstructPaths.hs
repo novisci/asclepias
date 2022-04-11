@@ -1,5 +1,3 @@
--- |
-
 module ConstructPaths
   ( convFilenameToFilepathResult
   , convFilenameToFilepathTest

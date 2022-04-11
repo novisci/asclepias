@@ -1,5 +1,5 @@
 :description: how to install toolchain needed for asclepias
-:ghc:
+:ghc: 8.10.7
 
 [TIP]
 For a more detailed installation instructions with detailed explanations,
@@ -15,9 +15,9 @@ include::dev-guide:partial$install-ghcup.adoc[leveloffset=+1]
 Once `ghcup` is installed,
 run the following commands:
 
-[source,shell]
+[source,shell,subs="attributes"]
 ----
-ghcup install ghc 8.10.7
+ghcup install ghc {ghc}
 ghcup install cabal
 ghcup install hls
 ----

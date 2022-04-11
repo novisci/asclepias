@@ -32,27 +32,6 @@ or
 https://github.com/purcell/emacs.d[Purcell Emacs], 
 among many others.
 
-=== Setting up VS Code
-
-Installing Extensions
-
-* The following extensions may be useful and can be installed via the VS Code marketplace:
-** GitLab Workflow
-** AsciiDoc
-** Haskell
-** Haskell Syntax Highlighting
-
-
-Connecting to GitLab
-
-* Request Modifier permissions on the nsStat repo.
-* Set up SSH Key
-** Follow the instructions here: https://docs.gitlab.com/ee/user/ssh.html
-* If using the VS Code GitLab Workflow extension:
-** Follow the Setup instructions here: https://gitlab.com/gitlab-org/gitlab-vscode-extension/-/blob/main/README.md
-** In VS Code go to Code > Preferences > Settings > Extensions > GitLab Workflow and update Instance URL to `https://gitlab.novisci.com`
-
-
 == Installing the Haskell Language Server
 
 The 

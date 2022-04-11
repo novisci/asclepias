@@ -1,5 +1,6 @@
 :description: How to install a Haskell toolchain
 :source-highlighter: highlightjs
+:ghc: 8.10.7
 
 = Installing GHC and Cabal
 
@@ -71,9 +72,9 @@ Then for example,
 the `ghc` file located in that directory is
 a symbolic link to the active version of GHC according to `ghcup`
 (a similar pattern is used for other applications managed by `ghcup`).
-So suppose that the active version of GHC was GHC 8.10.7, 
-then running the command `ghc` in your shell would run GHC 8.10.7 
-because the `+${HOME}/.ghup/bin/ghc+` file would a symbolic link pointing to GHC 8.10.7.
+So suppose that the active version of GHC was GHC {ghc}, 
+then running the command `ghc` in your shell would run GHC {ghc} 
+because the `+${HOME}/.ghup/bin/ghc+` file would a symbolic link pointing to GHC {ghc}.
 
 NOTE: If you wanted to run a different version of GHC, 
 say GHC 9.2.1, 
@@ -86,7 +87,7 @@ since this is one of the files in `$HOME/.ghcup/bin`
 == Installing GHC and Cabal using ghcup
 
 To install an application you can use a command
-such as `ghcup install ghc 8.10.7`.
+such as `ghcup install ghc {ghc}`.
 Supplying the version number is optional,
 and if not supplied then `ghcup` will install
 what it considers to be the recommended version.
@@ -105,9 +106,9 @@ in which case either or both of these commands can be omitted as appropriate
 (however there is no harm in running them, 
 since `ghcup` is smart enough to not download an existing application a second time).
 
-[source,shell]
+[source,shell,subs="attributes"]
 ----
-ghcup install ghc 8.10.7  # double-check to ensure this is the correct version
+ghcup install ghc {ghc}  # double-check to ensure this is the correct version
 ghcup install cabal
 ----
 

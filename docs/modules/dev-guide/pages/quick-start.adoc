@@ -1,5 +1,6 @@
 :description: How to get starting developing on asclepias
 :source-highlighter: highlightjs
+:ghc: 8.10.7
 
 = Quick start
 
@@ -32,10 +33,10 @@ git clone ++git@gitlab.novisci.com:nsStat/asclepias.git++
 .. You may need to install Cabal
 .. You may need to install HLS
 +
-[source,shell]
+[source,shell,subs="attributes"]
 ----
 curl --proto '=https' --tlsv1.2 -sSf ++https://get-ghcup.haskell.org++ | sh
-ghcup install ghc 8.10.7
+ghcup install ghc {ghc}
 ghcup install cabal
 ghcup install hls
 ----

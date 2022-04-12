@@ -7,8 +7,8 @@ module Main
 
 import           CohortCollectionTests
 import           ConstructPaths
-import           Control.Exception             ( catch
-                                               , throwIO )
+import           Control.Exception              ( catch
+                                                , throwIO )
 import           System.Directory               ( createDirectoryIfMissing
                                                 , removeDirectoryRecursive
                                                 , removePathForcibly
@@ -73,7 +73,7 @@ appTestCmd' sessionId = appTestCmd (appTestCmdString' sessionId)
 appTestCmdString' :: String -> TestCollectorScenario -> String
 appTestCmdString' sessionId =
   appTestCmdString
-    (const "cohort-collector")
+    (const "cabal run --verbose=0 cohort-collector --")
     (constructTestInputFragm' sessionId)
     (constructTestOutputFragm' sessionId)
 

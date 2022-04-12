@@ -63,47 +63,11 @@ data TestCollectorScenario = TestCollectorScenario
   , getTestCollectorOutputType :: TestCollectorOutputType
   }
 
--- class InputFragmAble a where
---   constructInputFragm ::
---        (a -> FilePath)
---     -> (a -> String)
---     -> (a -> String)
---     -> a
---     -> String
-
 class InputTypeAbleFSS a where
   extractTestInputType :: a -> TestInputType
 
 instance InputTypeAbleFSS TestScenarioCohort where
   extractTestInputType = getCohortTestInputType
-
--- class OutputTypeAbleFSS a where
---   extractTestOutputType :: a -> TestOutputType
-
--- instance OutputTypeAbleFSS TestScenarioCohort where
---   extractTestOutputType = getCohortTestOutputType
-
--- instance OutputTypeAbleFSS TestCollectorScenario where
---   extractTestOutputType = getTestCollectorOutputType
-
--- instance InputFragmAble TestScenarioCohort where
---   constructInputFragm testScenarioCohort =
-
-
--- -- Product type of the various scenarios
--- data TestScenarioCohort' = TestScenarioCohort'
---   { getAppType :: AppType
---   , getTestDataType :: TestDataType
---   , getTestInputType :: TestInputType
---   , getTestOutputType :: TestOutputType
---   }
-
--- -- Convenience synonym for a TestTree constructor
--- type TestElem = AppType -> TestDataType -> TestInputType -> TestOutputType -> TestTree
-
-
--- preCmdHook :: TestScenarioCohort -> IO ()
--- preCmdHook _ = pure ()
 
 -- Enumerate the test cases
 createTestsCartesian :: String -> (TestScenarioCohort -> TestTree) -> TestTree

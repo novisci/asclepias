@@ -41,9 +41,7 @@ test-n-m-v.jsonl
      | | +--- version (e.g. for different numbers of events or permutations of the order of subject and/or their events)
      | +----- number of subject that do NOT have any event satisfying predicate
      +------- number of subject that *do* have some event satisfying predicate
-
 -}
-
 main :: IO ()
 main = do
 
@@ -157,8 +155,10 @@ testIds =
   , createLargeNewId 1 1 4
   ]
 
--- Create a collection of tests by obtaining the cartesian product of all of the
--- (i) test data inputs and (ii) sources of inputs
+{-
+Create a collection of tests by obtaining the cartesian product of all of the
+(i) test data inputs and (ii) sources of inputs
+-}
 createTests :: String -> [TestTree]
 createTests sessionId =
   concat nestedTests
@@ -167,7 +167,9 @@ createTests sessionId =
     testPtlByIds = map (appGoldenVsFile sessionId) testIds
     nestedTests = map (\f -> map f testInputTypes) testPtlByIds
 
--- Conduct a single test
+{-
+Conduct a single test
+-}
 appGoldenVsFile :: String -> String -> TestInputType -> TestTree
 appGoldenVsFile sessionId id testInputType =
   goldenVsFile
@@ -181,24 +183,28 @@ appGoldenVsFile sessionId id testInputType =
         TestInputStdin -> "standard input"
         TestInputS3 -> "S3"
 
--- Build a shell command represented by string and run the command as a
--- subprocess, where the command is a cohort-building application
+{-
+Build a shell command represented by string and run the command as a subprocess,
+where the command is a cohort-building application
+-}
 appTest :: String -> String -> TestInputType -> IO ()
 appTest sessionId testId testInputType = do
   let outfilename = createFilenameForResults testId testInputType
   let cmd = appTestCmd sessionId testId testInputType
   pure cmd >>= callCommand
 
--- Construct a string representing a shell command that runs one of the testing
--- cohort-building applications on the test data
---
--- Note that if the input is specified as coming from standard input, then a
--- fragment like `"< /path/to/file"` is inserted in the middle of the command
--- string. While this is not usual practice, the shell removes the fragment
--- prior to processing and things do indeed work as intended
+{-
+Construct a string representing a shell command that runs one of the testing
+cohort-building applications on the test data
+
+Note that if the input is specified as coming from standard input, then a
+fragment like `"< /path/to/file"` is inserted in the middle of the command
+string. While this is not usual practice, the shell removes the fragment prior
+to processing and things do indeed work as intended
+-}
 appTestCmd :: String -> String -> TestInputType -> String
 appTestCmd sessionId id testInputType =
-  "cabal run exampleFilterApp -- " ++ inputFragm ++ " > " ++ outfilename
+  "cabal run --verbose=0 exampleFilterApp -- " ++ inputFragm ++ " > " ++ outfilename
   where
     inputFragm = case testInputType of
       TestInputFile -> "-f " ++ createFilepathForTest id
@@ -206,21 +212,27 @@ appTestCmd sessionId id testInputType =
       TestInputS3 -> "-r us-east-1 -b " ++ s3Bucket ++ " -k " ++ createS3KeyForTest sessionId id
     outfilename = createFilepathForResults id testInputType
 
--- Helper function to create the local filpath from a filename
+{-
+Helper function to create the local filpath from a filename
+-}
 localResultsFilepath :: String -> String
 localResultsFilepath = (localResultsDir ++)
 
--- Copy test data to S3
+{-
+Copy test data to S3
+-}
 writeTestDataToS3 :: String -> String -> IO ()
 writeTestDataToS3 sessionId id = pure cmd >>= callCommand where
   from = createFilepathForTest id
   to   = createS3UriForTest sessionId id
   cmd  = "aws s3 cp " ++ from ++ " " ++ to
 
--- Generates the "many subjects" test data and golden file by replicating the
--- subjects in the existing test data and golden file for the n-m-v scenario
--- (and giving the generated subjects unique IDs). The number of replications is
--- fixed by `generateTestDataManySubjects`
+{-
+Generates the "many subjects" test data and golden file by replicating the
+subjects in the existing test data and golden file for the n-m-v scenario (and
+giving the generated subjects unique IDs). The number of replications is fixed
+by `generateTestDataManySubjects`
+-}
 generateManySubjectsTestAndGolden :: Int -> Int -> Int -> IO ()
 generateManySubjectsTestAndGolden n m v = do
   let id = createId n m v

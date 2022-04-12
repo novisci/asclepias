@@ -1,5 +1,3 @@
--- |
-
 module TestUtils.TestCases
   ( AppType(..)
   , InputTypeAbleFSS(..)

@@ -33,16 +33,18 @@ import           Test.Tasty                     ( TestTree
                                                 )
 import           Test.Tasty.Silver
 
--- Run the tests
---
--- With regards to test data generation: note that changing the number of events
--- for the "many events" test data doesn't change the output of the cohort
--- creation (since the cohort definition throws that data away anyway), so for
--- this reason we create a golden file and store it in the repository. On the
--- other hand, for the "many subjects" test data do we generate the data and
--- corresponding golden file each time we do the testing so as to (i) prevent
--- storing large files in the repository, and (ii) so that we can change the
--- number of test subjects with ease.
+{-
+Run the tests
+
+With regards to test data generation: note that changing the number of events
+for the "many events" test data doesn't change the output of the cohort
+creation (since the cohort definition throws that data away anyway), so for
+this reason we create a golden file and store it in the repository. On the
+other hand, for the "many subjects" test data do we generate the data and
+corresponding golden file each time we do the testing so as to (i) prevent
+storing large files in the repository, and (ii) so that we can change the
+number of test subjects with ease.
+-}
 main :: IO ()
 main = do
 
@@ -66,7 +68,7 @@ main = do
 
   -- Run the tests and perform cleanup. Note that ANY CODE WRITTEN AFTER THIS
   -- EXPRESION WILL BE SILENTLY IGNORED
-  defaultMain (createTestsCartesian "Cohort creation tests" (appGoldenVsFile' sessionId))
+  defaultMain (createTestsCartesian "Cohort creation tests" (appGoldenVsFileDrv sessionId))
     `catch` (\e -> do
       removeDirectoryRecursive localResultsDir
       s3RecursiveRm (convS3KeyToUri s3RootDir)
@@ -76,47 +78,47 @@ main = do
       removePathForcibly (createFilepathForGoldenBase AppRowWise TestDataManySubj)
       throwIO (e :: ExitCode))
 
-appGoldenVsFile' :: String -> TestScenarioCohort -> TestTree
-appGoldenVsFile' sessionId =
+appGoldenVsFileDrv :: String -> TestScenarioCohort -> TestTree
+appGoldenVsFileDrv sessionId =
   appGoldenVsFile
     constructTestName
     createFilepathForTest
     createFilepathForGolden
     createFilepathForResult
-    (appTest' sessionId)
+    (appTestDrv sessionId)
 
-appTest' :: String -> TestScenarioCohort -> IO ()
-appTest' sessionId =
+appTestDrv :: String -> TestScenarioCohort -> IO ()
+appTestDrv sessionId =
   appTest
     (\_ -> pure ())
-    (appTestCmd' sessionId)
+    (appTestCmdDrv sessionId)
     (postCmdHookS3 (createS3UriForResult sessionId) createFilepathForResult)
 
-appTestCmd' :: String -> TestScenarioCohort -> IO ()
-appTestCmd' sessionId = appTestCmd (appTestCmdString' sessionId)
+appTestCmdDrv :: String -> TestScenarioCohort -> IO ()
+appTestCmdDrv sessionId = appTestCmd (appTestCmdStringDrv sessionId)
 
-appTestCmdString' :: String -> TestScenarioCohort -> String
-appTestCmdString' sessionId =
+appTestCmdStringDrv :: String -> TestScenarioCohort -> String
+appTestCmdStringDrv sessionId =
   appTestCmdString
     constructTestExecutableFragm
-    (constructTestInputFragmFSS' sessionId)
-    (constructTestOutputFragmFSS' sessionId)
+    (constructTestInputFragmFSSDrv sessionId)
+    (constructTestOutputFragmFSSDrv sessionId)
 
 constructTestExecutableFragm :: TestScenarioCohort -> String
 constructTestExecutableFragm testScenarioCohort =
   case getCohortAppType testScenarioCohort of
-    AppRowWise -> "exampleCohortRwApp"
-    AppColumnWise -> "exampleCohortCwApp"
+    AppRowWise -> "cabal run exampleCohortRwApp --"
+    AppColumnWise -> "cabal run exampleCohortCwApp --"
 
-constructTestInputFragmFSS' :: String -> TestScenarioCohort -> String
-constructTestInputFragmFSS' sessionId =
+constructTestInputFragmFSSDrv :: String -> TestScenarioCohort -> String
+constructTestInputFragmFSSDrv sessionId =
   constructTestInputFragmFSS
     createFilepathForTest
     (const s3Bucket)
     (createS3KeyForTest sessionId)
 
-constructTestOutputFragmFSS' :: String -> TestScenarioCohort -> String
-constructTestOutputFragmFSS' sessionId =
+constructTestOutputFragmFSSDrv :: String -> TestScenarioCohort -> String
+constructTestOutputFragmFSSDrv sessionId =
   constructTestOutputFragmFSS
     createFilepathForResult
     (const s3Bucket)

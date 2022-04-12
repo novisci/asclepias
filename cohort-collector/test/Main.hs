@@ -58,7 +58,7 @@ main = do
   let testsIO =
         createCollectorTests
           "Tests of cohort collection (IO)"
-          (appGoldenVsFile' sessionId)
+          (appGoldenVsFileDrv sessionId)
 
   -- Run the tests and perform cleanup. Note that ANY CODE WRITTEN AFTER THIS
   -- EXPRESION WILL BE SILENTLY IGNORED
@@ -70,48 +70,48 @@ main = do
       s3RecursiveRm  (convS3KeyToUri (s3RootDir ++ sessionId))
       throwIO (e :: ExitCode))
 
-appGoldenVsFile' :: String -> TestCollectorScenario -> TestTree
-appGoldenVsFile' sessionId =
+appGoldenVsFileDrv :: String -> TestCollectorScenario -> TestTree
+appGoldenVsFileDrv sessionId =
   appGoldenVsFile
     constructCollectorTestName
     constructFilepathForTest
     constructFilepathForGolden
     constructFilepathForResult
-    (appTest' sessionId)
+    (appTestDrv sessionId)
 
-appTest' :: String -> TestCollectorScenario -> IO ()
-appTest' sessionId =
+appTestDrv :: String -> TestCollectorScenario -> IO ()
+appTestDrv sessionId =
   appTest
     (\_ -> pure ())
-    (appTestCmd' sessionId)
-    (postCollectorCmdHookS3' sessionId)
+    (appTestCmdDrv sessionId)
+    (postCollectorCmdHookS3Drv sessionId)
 
-appTestCmd' :: String -> TestCollectorScenario -> IO ()
-appTestCmd' sessionId = appTestCmd (appTestCmdString' sessionId)
+appTestCmdDrv :: String -> TestCollectorScenario -> IO ()
+appTestCmdDrv sessionId = appTestCmd (appTestCmdStringDrv sessionId)
 
-appTestCmdString' :: String -> TestCollectorScenario -> String
-appTestCmdString' sessionId =
+appTestCmdStringDrv :: String -> TestCollectorScenario -> String
+appTestCmdStringDrv sessionId =
   appTestCmdString
     (const "cabal run --verbose=0 cohort-collector --")
-    (constructTestInputFragm' sessionId)
-    (constructTestOutputFragm' sessionId)
+    (constructTestInputFragmDrv sessionId)
+    (constructTestOutputFragmDrv sessionId)
 
-constructTestInputFragm' :: String -> TestCollectorScenario -> String
-constructTestInputFragm' sessionId =
+constructTestInputFragmDrv :: String -> TestCollectorScenario -> String
+constructTestInputFragmDrv sessionId =
   constructTestCollectorInputFragm
     constructFilepathForTest
     constructBucketForTest
     (constructS3KeyForTest sessionId)
 
-constructTestOutputFragm' :: String -> TestCollectorScenario -> String
-constructTestOutputFragm' sessionId =
+constructTestOutputFragmDrv :: String -> TestCollectorScenario -> String
+constructTestOutputFragmDrv sessionId =
   constructTestCollectorOutputFragm
     constructFilepathForResult
     (const s3Bucket)
     (constructS3KeyForResult sessionId)
 
-postCollectorCmdHookS3' :: String -> TestCollectorScenario -> IO ()
-postCollectorCmdHookS3' sessionId =
+postCollectorCmdHookS3Drv :: String -> TestCollectorScenario -> IO ()
+postCollectorCmdHookS3Drv sessionId =
   postCollectorCmdHookS3
     (constructS3UriForResult sessionId)
     constructFilepathForResult

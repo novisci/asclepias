@@ -63,6 +63,7 @@ test-suite collector-test
     , directory
     , hasklepias-appBuilder
     , tasty  >= 1.4.1
+    , temporary >= 1.3
   other-modules:
       ConstructPaths
   default-language: Haskell2010

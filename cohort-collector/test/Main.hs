@@ -13,6 +13,7 @@ import           System.Directory               ( createDirectoryIfMissing
                                                 , removeDirectoryRecursive
                                                 , removePathForcibly
                                                 )
+import           System.IO.Temp                 ( writeSystemTempFile )
 import           System.Exit                    ( ExitCode )
 import           Test.Tasty                     ( TestTree
                                                 , defaultMain
@@ -31,11 +32,27 @@ main = do
   createDirectoryIfMissing True localResultsDir
 
   -- Copy the test data to S3 with session-specific keys to avoid collisions
-  let testDataFiles =
-        [ "testcw.locations", "testcw1.json", "testcw2.json", "testcw3.json"
-        , "testrw.locations", "testrw1.json", "testrw2.json", "testrw3.json"
-        ]
-  mapM_ (writeTestDataToS3 sessionId) testDataFiles
+  let testDataFilesCw =
+        ["testcw1.json", "testcw2.json", "testcw3.json"]
+  let testDataFilesRw =
+        ["testrw1.json", "testrw2.json", "testrw3.json"]
+  mapM_ (writeTestDataToS3 sessionId) (testDataFilesCw ++ testDataFilesRw)
+
+  -- Write the S3-specific manifests to disk
+  s3manifestCwFilepath <- writeSystemTempFile
+    "s3manifestcw.txt"
+    (unlines (map (convFilenameToS3KeyTest sessionId) testDataFilesCw))
+  s3manifestRwFilepath <- writeSystemTempFile
+    "-s3manifestrw.txt"
+    (unlines (map (convFilenameToS3KeyTest sessionId) testDataFilesRw))
+
+  -- Copy the S3-specific manifests to S3
+  s3Copy
+    s3manifestCwFilepath
+    (convFilenameToS3UriTest sessionId "manifestcw.txt")
+  s3Copy
+    s3manifestRwFilepath
+    (convFilenameToS3UriTest sessionId "manifestrw.txt")
 
   -- Create a TestTree of I/O tests
   let testsIO =
@@ -48,6 +65,8 @@ main = do
   defaultMain (testGroup "cohort-collector tests" [tests, testsIO])
     `catch` (\e -> do
       removeDirectoryRecursive localResultsDir
+      removePathForcibly s3manifestCwFilepath
+      removePathForcibly s3manifestRwFilepath
       s3RecursiveRm  (convS3KeyToUri (s3RootDir ++ sessionId))
       throwIO (e :: ExitCode))
 

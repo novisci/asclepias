@@ -44,8 +44,8 @@ s3RootDir = "hasklepias/sandbox-testapps/collectorApp/"
 -- File location routines ------------------------------------------------------
 
 constructFilenameForTestBase :: AppType -> FilePath
-constructFilenameForTestBase AppRowWise = "testrw.locations"
-constructFilenameForTestBase AppColumnWise = "testcw.locations"
+constructFilenameForTestBase AppRowWise = "manifestrw.txt"
+constructFilenameForTestBase AppColumnWise = "manifestcw.txt"
 
 constructFilenameForTest :: TestCollectorScenario -> FilePath
 constructFilenameForTest =

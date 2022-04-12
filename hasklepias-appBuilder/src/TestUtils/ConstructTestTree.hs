@@ -111,7 +111,8 @@ constructTestInputFragmFSS
       s3KeyForTest = constructS3KeyForTest testScenario
 
 -- NOTE: this is nearly identical to the above function, but with different
--- input types. Can we combine the two somehow?
+-- input types (and `-m` option instead of `-k`). Can we combine the two
+-- somehow?
 constructTestCollectorInputFragm ::
      (TestCollectorScenario -> FilePath)
   -> (TestCollectorScenario -> String)
@@ -125,7 +126,7 @@ constructTestCollectorInputFragm
   testCollectorScenario =
     case getTestCollectorInputType testCollectorScenario of
       TestCollectorInputFile -> "-f " ++ filepathForTest
-      TestCollectorInputS3 -> "-r us-east-1 -b " ++ bucket ++ " -k " ++ s3KeyForTest
+      TestCollectorInputS3 -> "-b " ++ bucket ++ " -m " ++ s3KeyForTest
     where
       filepathForTest = constructFilepathForTest testCollectorScenario
       bucket = constructBucketForTest testCollectorScenario

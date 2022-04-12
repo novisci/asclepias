@@ -8,30 +8,25 @@ module Main
   ) where
 
 import           ConstructPaths
-import           Control.Monad                  ( when )  -- FIXME after removing unneeded code using this
-import           Control.Exception             ( catch
-                                               , throwIO )
-import qualified Data.ByteString.Lazy          as B
-import           Data.Char                     ( isDigit )
+import           Control.Exception              ( catch
+                                                , throwIO )
+import qualified Data.ByteString.Lazy           as B
 import           Hasklepias
 import           TestUtils.BuildLargeTestData
 import           AppExamples.CohortApp
 import           TestUtils.ConstructTestTree
 import           TestUtils.SessionId
 import           TestUtils.TestCases
-import           TestUtils.S3Utils                        -- FIXME after removing unneeded code using this
+import           TestUtils.S3Utils
 import           Hasklepias.MakeCohortApp       ( runApp )
 import           System.Directory               ( createDirectoryIfMissing
                                                 , removeDirectoryRecursive
                                                 , removePathForcibly
                                                 )
 import           System.Exit                    ( ExitCode )
-import           System.Process                 ( callCommand )
 import           Test.Tasty                     ( TestTree
                                                 , defaultMain
-                                                , testGroup
                                                 )
-import           Test.Tasty.Silver
 
 {-
 Run the tests

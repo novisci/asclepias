@@ -8,13 +8,6 @@ cabal build all \
   --enable-tests \
   --enable-benchmarks
 
-# The `exampleAppRW` and `exampleAppCW` applications are required to perform the
-# testing
-# cabal install hasklepias-examples:exampleAppRW --install-method=copy --installdir="$(pwd)"
-# cabal install hasklepias-examples:exampleAppCW --install-method=copy --installdir="$(pwd)"
-# PATH=$(pwd):$PATH
-# export PATH
-
 cabal test all \
   -j \
   --test-show-details=always

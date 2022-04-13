@@ -82,9 +82,7 @@ import           Data.Text                      ( Text
 import           Network.AWS
 import           Network.AWS.Data
 import           Network.AWS.S3
-import           System.IO                      ( putStrLn
-                                                , stderr
-                                                )
+import           System.IO                      ( stderr )
 
 
 -- IMPORTS for amazonka 2.0
@@ -198,11 +196,11 @@ class (ToBody a) => PutS3 a where
     AWS.runResourceT . AWS.runAWST env $ do
       void . send $ set poACL (Just OBucketOwnerFullControl) (putObject b k (toBody o))
       liftIO
-        .  putStrLn
+        .  T.putStrLn
         $  "Successfully Uploaded contents to "
-        <> show b
+        <> pack (show b)
         <> " - "
-        <> show k
+        <> pack (show k)
 
 -- amazonka 2.0...
 -- class (ToBody a) => PutS3 a where

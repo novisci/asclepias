@@ -26,8 +26,6 @@ source-repository head
 library
   exposed-modules:
       Hasklepias
-      -- Hasklepias.CohortExampleApp
-      -- Hasklepias.ExampleFilterApp
       Hasklepias.Misc
       Hasklepias.Reexports
       Hasklepias.ReexportsUnsafe

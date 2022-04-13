@@ -83,8 +83,9 @@ Create `largeInputSize` copies of each subject, and where each subject ID is
 postfixed with a number so as to make the replicated subject IDs unique
 -}
 generateNewSubjs :: Regex -> [String] -> [String]
-generateNewSubjs re lines = concatMap updateIdsPtl replacements where
-  updateIdsPtl = \replacement -> updateIds re replacement lines
+generateNewSubjs re lines = concatMap updateIdsPtl replacements
+ where
+  updateIdsPtl replacement = updateIds re replacement lines
   replacements =
     map (constructReplacement . formatNum) [0 .. (largeInputSize - 1)]
 
@@ -94,7 +95,7 @@ on every entry in a list of strings
 -}
 updateIds :: Regex -> String -> [String] -> [String]
 updateIds pat replacement = map subRegexPtl
-  where subRegexPtl = \line -> subRegex pat line replacement
+  where subRegexPtl line = subRegex pat line replacement
 
 {-
 Create `largeInputSize` copies of each event

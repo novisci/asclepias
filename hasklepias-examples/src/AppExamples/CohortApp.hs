@@ -8,7 +8,7 @@ module AppExamples.CohortApp
   ( exampleAppRW
   , exampleAppCW
   ) where
-import           ExampleEvents                      ( ExampleModel )
+import           ExampleEvents                  ( ExampleModel )
 import           Hasklepias
 {-------------------------------------------------------------------------------
   Features used by inclusion/exclusion (and possibly other places too)

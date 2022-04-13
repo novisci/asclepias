@@ -7,17 +7,14 @@ module Main
   ( main
   ) where
 
+import           AppExamples.FilterApp
 import           ConstructPaths
 import           Control.Concurrent
-import           Control.Exception             ( catch
-                                               , throwIO )
+import           Control.Exception              ( catch
+                                                , throwIO
+                                                )
 import qualified Data.ByteString.Char8         as B
 import           Hasklepias
-import           AppExamples.FilterApp
-import           TestUtils.BuildLargeTestData
-import           TestUtils.SessionId
-import           TestUtils.TestCases            ( TestInputType(..) )
-import           TestUtils.S3Utils
 import           System.Directory               ( createDirectoryIfMissing
                                                 , removeDirectoryRecursive
                                                 , removePathForcibly
@@ -31,6 +28,10 @@ import           Test.Tasty                     ( TestTree
                                                 , testGroup
                                                 )
 import           Test.Tasty.Silver
+import           TestUtils.BuildLargeTestData
+import           TestUtils.S3Utils
+import           TestUtils.SessionId
+import           TestUtils.TestCases            ( TestInputType(..) )
 import           Text.Printf
 
 {-
@@ -70,19 +71,22 @@ main = do
   let tests' = testGroup "Tests of exampleFilterApp" (createTests sessionId)
   defaultMain tests'
     `catch` (\e -> do
-      removeDirectoryRecursive localResultsDir
-      let removeManySubjectsFileTest = removePathForcibly . createFilepathForTest
-      let removeManySubjectsFileGolden = removePathForcibly . createFilepathForGolden
-      removeManySubjectsFileTest (createLargeNewId 1 1 1)
-      removeManySubjectsFileTest (createLargeNewId 1 1 2)
-      removeManySubjectsFileTest (createLargeNewId 1 1 3)
-      removeManySubjectsFileTest (createLargeNewId 1 1 4)
-      removeManySubjectsFileGolden (createLargeNewId 1 1 1)
-      removeManySubjectsFileGolden (createLargeNewId 1 1 2)
-      removeManySubjectsFileGolden (createLargeNewId 1 1 3)
-      removeManySubjectsFileGolden (createLargeNewId 1 1 4)
-      s3RecursiveRm  ("s3://" ++ s3Bucket ++ "/" ++ s3TestDataDir)
-      throwIO (e :: ExitCode))
+              removeDirectoryRecursive localResultsDir
+              let removeManySubjectsFileTest =
+                    removePathForcibly . createFilepathForTest
+              let removeManySubjectsFileGolden =
+                    removePathForcibly . createFilepathForGolden
+              removeManySubjectsFileTest (createLargeNewId 1 1 1)
+              removeManySubjectsFileTest (createLargeNewId 1 1 2)
+              removeManySubjectsFileTest (createLargeNewId 1 1 3)
+              removeManySubjectsFileTest (createLargeNewId 1 1 4)
+              removeManySubjectsFileGolden (createLargeNewId 1 1 1)
+              removeManySubjectsFileGolden (createLargeNewId 1 1 2)
+              removeManySubjectsFileGolden (createLargeNewId 1 1 3)
+              removeManySubjectsFileGolden (createLargeNewId 1 1 4)
+              s3RecursiveRm ("s3://" ++ s3Bucket ++ "/" ++ s3TestDataDir)
+              throwIO (e :: ExitCode)
+            )
 
 -- runTest :: String -> IO ()
 -- runTest x = do
@@ -160,28 +164,26 @@ Create a collection of tests by obtaining the cartesian product of all of the
 (i) test data inputs and (ii) sources of inputs
 -}
 createTests :: String -> [TestTree]
-createTests sessionId =
-  concat nestedTests
-  where
-    testInputTypes = [TestInputFile, TestInputStdin, TestInputS3]
-    testPtlByIds = map (appGoldenVsFile sessionId) testIds
-    nestedTests = map (\f -> map f testInputTypes) testPtlByIds
+createTests sessionId = concat nestedTests
+ where
+  testInputTypes = [TestInputFile, TestInputStdin, TestInputS3]
+  testPtlByIds   = map (appGoldenVsFile sessionId) testIds
+  nestedTests    = map (`map` testInputTypes) testPtlByIds
 
 {-
 Conduct a single test
 -}
 appGoldenVsFile :: String -> String -> TestInputType -> TestTree
-appGoldenVsFile sessionId id testInputType =
-  goldenVsFile
-    ("Test case " ++ id ++ " reading from " ++ inputStr)
-    (createFilepathForGolden id)
-    (createFilepathForResults id testInputType)
-    (appTest sessionId id testInputType)
-    where
-      inputStr = case testInputType of
-        TestInputFile -> "file"
-        TestInputStdin -> "standard input"
-        TestInputS3 -> "S3"
+appGoldenVsFile sessionId id testInputType = goldenVsFile
+  ("Test case " ++ id ++ " reading from " ++ inputStr)
+  (createFilepathForGolden id)
+  (createFilepathForResults id testInputType)
+  (appTest sessionId id testInputType)
+ where
+  inputStr = case testInputType of
+    TestInputFile  -> "file"
+    TestInputStdin -> "standard input"
+    TestInputS3    -> "S3"
 
 {-
 Build a shell command represented by string and run the command as a subprocess,
@@ -190,7 +192,7 @@ where the command is a cohort-building application
 appTest :: String -> String -> TestInputType -> IO ()
 appTest sessionId testId testInputType = do
   let outfilename = createFilenameForResults testId testInputType
-  let cmd = appTestCmd sessionId testId testInputType
+  let cmd         = appTestCmd sessionId testId testInputType
   pure cmd >>= callCommand
 
 {-
@@ -204,13 +206,20 @@ to processing and things do indeed work as intended
 -}
 appTestCmd :: String -> String -> TestInputType -> String
 appTestCmd sessionId id testInputType =
-  "cabal run --verbose=0 exampleFilterApp -- " ++ inputFragm ++ " > " ++ outfilename
-  where
-    inputFragm = case testInputType of
-      TestInputFile -> "-f " ++ createFilepathForTest id
-      TestInputStdin -> "< " ++ createFilepathForTest id
-      TestInputS3 -> "-r us-east-1 -b " ++ s3Bucket ++ " -k " ++ createS3KeyForTest sessionId id
-    outfilename = createFilepathForResults id testInputType
+  "cabal run --verbose=0 exampleFilterApp -- "
+    ++ inputFragm
+    ++ " > "
+    ++ outfilename
+ where
+  inputFragm = case testInputType of
+    TestInputFile  -> "-f " ++ createFilepathForTest id
+    TestInputStdin -> "< " ++ createFilepathForTest id
+    TestInputS3 ->
+      "-r us-east-1 -b "
+        ++ s3Bucket
+        ++ " -k "
+        ++ createS3KeyForTest sessionId id
+  outfilename = createFilepathForResults id testInputType
 
 {-
 Helper function to create the local filpath from a filename
@@ -235,25 +244,19 @@ by `generateTestDataManySubjects`
 -}
 generateManySubjectsTestAndGolden :: Int -> Int -> Int -> IO ()
 generateManySubjectsTestAndGolden n m v = do
-  let id = createId n m v
+  let id    = createId n m v
   let newId = createLargeNewId n m v
-  generateTestDataManySubjects
-    (createFilepathForTest id)
-    (createFilepathForTest newId)
-  generateTestDataManySubjects
-    (createFilepathForGolden id)
-    (createFilepathForGolden newId)
+  generateTestDataManySubjects (createFilepathForTest id)
+                               (createFilepathForTest newId)
+  generateTestDataManySubjects (createFilepathForGolden id)
+                               (createFilepathForGolden newId)
 
 createId :: Int -> Int -> Int -> String
 createId = printf "%d-%d-%d"
 
 createNewId :: Int -> Int -> Int -> Int -> String
-createNewId largeInputSize n m v =
-  printf
-    "%d-%d-%d"
-    (largeInputSize * n)
-    (largeInputSize * m)
-    v
+createNewId largeInputSize n m =
+  printf "%d-%d-%d" (largeInputSize * n) (largeInputSize * m)
 
 createLargeNewId :: Int -> Int -> Int -> String
 createLargeNewId = createNewId largeInputSize

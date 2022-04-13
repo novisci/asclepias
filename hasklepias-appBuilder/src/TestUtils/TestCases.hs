@@ -44,22 +44,22 @@ data TestCollectorOutputType =
 
 -- Test scenario type for the filter application
 data TestScenarioFilter = TestScenarioFilter
-  { getFilterTestDataType :: TestDataType
+  { getFilterTestDataType  :: TestDataType
   , getFilterTestInputType :: TestInputType
   }
 
 -- Test scenario type for the cohort application
 data TestScenarioCohort = TestScenarioCohort
-  { getCohortAppType :: AppType
-  , getCohortTestDataType :: TestDataType
-  , getCohortTestInputType :: TestInputType
+  { getCohortAppType        :: AppType
+  , getCohortTestDataType   :: TestDataType
+  , getCohortTestInputType  :: TestInputType
   , getCohortTestOutputType :: TestOutputType
   }
 
 -- Test scenario type for the cohort-collector application
 data TestCollectorScenario = TestCollectorScenario
-  { getTestCollectorAppType :: AppType
-  , getTestCollectorInputType :: TestCollectorInputType
+  { getTestCollectorAppType    :: AppType
+  , getTestCollectorInputType  :: TestCollectorInputType
   , getTestCollectorOutputType :: TestCollectorOutputType
   }
 
@@ -146,11 +146,12 @@ createTestsCartesian testName appTest = testGroup
   , appTestWrp AppColumnWise TestDataManyEvent TestInputS3    TestOutputStdout
   , appTestWrp AppColumnWise TestDataManyEvent TestInputS3    TestOutputS3
   ]
-  where
-    appTestWrp appType testDataType testInputType testOutputType =
-      appTest (TestScenarioCohort appType testDataType testInputType testOutputType)
+ where
+  appTestWrp appType testDataType testInputType testOutputType = appTest
+    (TestScenarioCohort appType testDataType testInputType testOutputType)
 
-createCollectorTests :: String -> (TestCollectorScenario -> TestTree) -> TestTree
+createCollectorTests
+  :: String -> (TestCollectorScenario -> TestTree) -> TestTree
 createCollectorTests testName appTest = testGroup
   testName
   [ appTestWrp AppRowWise    TestCollectorInputFile TestCollectorOutputFile
@@ -166,6 +167,6 @@ createCollectorTests testName appTest = testGroup
   , appTestWrp AppColumnWise TestCollectorInputS3   TestCollectorOutputStdout
   , appTestWrp AppColumnWise TestCollectorInputS3   TestCollectorOutputS3
   ]
-  where
-    appTestWrp appType inputType outputType =
-      appTest (TestCollectorScenario appType inputType outputType)
+ where
+  appTestWrp appType inputType outputType =
+    appTest (TestCollectorScenario appType inputType outputType)

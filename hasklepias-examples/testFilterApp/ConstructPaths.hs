@@ -13,8 +13,8 @@ module ConstructPaths
   , s3TestDataDir
   ) where
 
-import           TestUtils.BuildLargeTestData ( largeInputSize )
-import           TestUtils.TestCases ( TestInputType(..) )
+import           TestUtils.BuildLargeTestData   ( largeInputSize )
+import           TestUtils.TestCases            ( TestInputType(..) )
 
 -- Data constants --------------------------------------------------------------
 
@@ -42,16 +42,12 @@ createFilenameForGolden id = "test-" ++ id ++ ".golden"
 -- Construct the filename for the output for a given test
 createFilenameForResults :: String -> TestInputType -> String
 createFilenameForResults id testInputType =
-  "result-"
-    ++ id
-    ++ "-"
-    ++ inputStr
-    ++ ".jsonl"
-  where
-    inputStr = case testInputType of
-      TestInputFile -> "filein"
-      TestInputStdin -> "stdin"
-      TestInputS3 -> "s3in"
+  "result-" ++ id ++ "-" ++ inputStr ++ ".jsonl"
+ where
+  inputStr = case testInputType of
+    TestInputFile  -> "filein"
+    TestInputStdin -> "stdin"
+    TestInputS3    -> "s3in"
 
 createFilepathForTest :: String -> String
 createFilepathForTest id = localTestDataDir ++ createFilenameForTest id
@@ -66,14 +62,8 @@ createFilepathForResults id testInputType =
 -- Create the S3 key where the test data will be located (once paired with a bucket)
 createS3KeyForTest :: String -> String -> String
 createS3KeyForTest sessionId id =
-  s3TestDataDir
-    ++ sessionId
-    ++ "/testdata/"
-    ++ createFilenameForTest id
+  s3TestDataDir ++ sessionId ++ "/testdata/" ++ createFilenameForTest id
 
 -- Create the S3 URI where the test data will be located
 createS3UriForTest sessionId id =
-  "s3://"
-    ++ s3Bucket
-    ++ "/"
-    ++ createS3KeyForTest sessionId id
+  "s3://" ++ s3Bucket ++ "/" ++ createS3KeyForTest sessionId id

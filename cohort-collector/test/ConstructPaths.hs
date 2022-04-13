@@ -44,7 +44,7 @@ s3RootDir = "hasklepias/sandbox-testapps/collectorApp/"
 -- File location routines ------------------------------------------------------
 
 constructFilenameForTestBase :: AppType -> FilePath
-constructFilenameForTestBase AppRowWise = "manifestrw.txt"
+constructFilenameForTestBase AppRowWise    = "manifestrw.txt"
 constructFilenameForTestBase AppColumnWise = "manifestcw.txt"
 
 constructFilenameForTest :: TestCollectorScenario -> FilePath
@@ -55,59 +55,55 @@ constructFilenameForResult :: TestCollectorScenario -> String
 constructFilenameForResult testCollectorScenario =
   "results-"
     ++ case getTestCollectorAppType testCollectorScenario of
-        AppRowWise -> "rw"
-        AppColumnWise -> "cw"
+         AppRowWise    -> "rw"
+         AppColumnWise -> "cw"
     ++ "-"
     ++ case getTestCollectorInputType testCollectorScenario of
-        TestCollectorInputFile -> "filein"
-        TestCollectorInputS3 -> "s3in"
+         TestCollectorInputFile -> "filein"
+         TestCollectorInputS3   -> "s3in"
     ++ "-"
     ++ case getTestCollectorOutputType testCollectorScenario of
-        TestCollectorOutputFile -> "fileout"
-        TestCollectorOutputStdout -> "stdout"
-        TestCollectorOutputS3 -> "s3out"
+         TestCollectorOutputFile   -> "fileout"
+         TestCollectorOutputStdout -> "stdout"
+         TestCollectorOutputS3     -> "s3out"
     ++ ".json"
 
 constructFilenameForGolden :: TestCollectorScenario -> FilePath
 constructFilenameForGolden testCollectorScenario =
   case getTestCollectorAppType testCollectorScenario of
-        AppRowWise -> "testrw.golden"
-        AppColumnWise -> "testcw.golden"
+    AppRowWise    -> "testrw.golden"
+    AppColumnWise -> "testcw.golden"
 
 constructFilepathForTestBase :: AppType -> FilePath
 constructFilepathForTestBase =
   (localTestDataDir ++) . constructFilenameForTestBase
 
 constructFilepathForTest :: TestCollectorScenario -> FilePath
-constructFilepathForTest = constructFilepathForTestBase . getTestCollectorAppType
+constructFilepathForTest =
+  constructFilepathForTestBase . getTestCollectorAppType
 
 constructFilepathForResult :: TestCollectorScenario -> FilePath
-constructFilepathForResult =
-  (localResultsDir ++) . constructFilenameForResult
+constructFilepathForResult = (localResultsDir ++) . constructFilenameForResult
 
 constructFilepathForGolden :: TestCollectorScenario -> FilePath
-constructFilepathForGolden =
-  (localTestDataDir ++) . constructFilenameForGolden
+constructFilepathForGolden = (localTestDataDir ++) . constructFilenameForGolden
 
 constructBucketForTest :: TestCollectorScenario -> String
 constructBucketForTest = const s3Bucket
 
 constructS3KeyForTest :: String -> TestCollectorScenario -> String
-constructS3KeyForTest sessionId testCollectorScenario =
-  convFilenameToS3KeyTest
-    sessionId
-    (constructFilenameForTest testCollectorScenario)
+constructS3KeyForTest sessionId testCollectorScenario = convFilenameToS3KeyTest
+  sessionId
+  (constructFilenameForTest testCollectorScenario)
 
 constructS3KeyForResult :: String -> TestCollectorScenario -> String
 constructS3KeyForResult sessionId testCollectorScenario =
-  convFilenameToS3KeyResult
-    sessionId
-    (constructFilenameForResult testCollectorScenario)
+  convFilenameToS3KeyResult sessionId
+                            (constructFilenameForResult testCollectorScenario)
 
 constructS3UriForResult :: String -> TestCollectorScenario -> String
 constructS3UriForResult sessionId testCollectorScenario =
-  convS3KeyToUri
-    (constructS3KeyForResult sessionId testCollectorScenario)
+  convS3KeyToUri (constructS3KeyForResult sessionId testCollectorScenario)
 
 convFilenameToFilepathTest :: FilePath -> FilePath
 convFilenameToFilepathTest = (localTestDataDir ++)

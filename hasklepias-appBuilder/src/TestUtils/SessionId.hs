@@ -2,13 +2,13 @@ module TestUtils.SessionId
   ( getSessionId
   ) where
 
-import           Control.Monad                 ( guard )
-import           Control.Exception             ( tryJust )
-import           Data.Time                     ( getCurrentTime )
-import           Data.Time.Clock.POSIX         ( utcTimeToPOSIXSeconds )
-import           Data.Time.Clock               ( nominalDiffTimeToSeconds )
-import           System.Environment ( getEnv )
-import           System.IO.Error ( isDoesNotExistError )
+import           Control.Exception              ( tryJust )
+import           Control.Monad                  ( guard )
+import           Data.Time                      ( getCurrentTime )
+import           Data.Time.Clock                ( nominalDiffTimeToSeconds )
+import           Data.Time.Clock.POSIX          ( utcTimeToPOSIXSeconds )
+import           System.Environment             ( getEnv )
+import           System.IO.Error                ( isDoesNotExistError )
 
 -- Create a unique ID based on the GitLab environmental variable $CI_PIPELINE_ID
 -- if one is defined, otherwise the computation fails with `isDoesNotExistError`
@@ -21,5 +21,7 @@ getSessionId :: IO String
 getSessionId = do
   r <- tryJust (guard . isDoesNotExistError) getCIPipelineId
   case r of
-    Left  e -> fmap (show . floor . nominalDiffTimeToSeconds . utcTimeToPOSIXSeconds) getCurrentTime
+    Left e -> fmap
+      (show . floor . nominalDiffTimeToSeconds . utcTimeToPOSIXSeconds)
+      getCurrentTime
     Right v -> getCIPipelineId

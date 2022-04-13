@@ -6,11 +6,11 @@ module TestUtils.BuildLargeTestData
   , largeInputSize
   ) where
 
-import Data.List ( sort
-                 , intercalate
-                 )
-import Text.Printf
-import Text.Regex
+import           Data.List                      ( intercalate
+                                                , sort
+                                                )
+import           Text.Printf
+import           Text.Regex
 
 {-
 The number of times to replicate the data to create the "large data" tests
@@ -38,8 +38,8 @@ or think of a better approach altogether -- DP 2022-04-05
 generateTestDataManyEvents :: String -> String -> IO ()
 generateTestDataManyEvents infilepath outfilepath = do
   generateTestDataBase infilepath outfilepath transform where
-    checkIfSubjA s = (s !! 2 == 'a') && (s !! 3 == '"')
-    transform = generateNewEvents . filter checkIfSubjA
+  checkIfSubjA s = (s !! 2 == 'a') && (s !! 3 == '"')
+  transform = generateNewEvents . filter checkIfSubjA
 
 {-
 Generates a new golden testing file corresponding to the test data produced by
@@ -47,12 +47,11 @@ Generates a new golden testing file corresponding to the test data produced by
 cohort-building application
 -}
 generateGoldenManySubjectsRw :: String -> IO ()
-generateGoldenManySubjectsRw outfilepath =
-  writeFile outfilepath concatLines where
-    concatLines =
-      concat goldenManySubjectsStart
-        ++ intercalate "," goldenRwPatientManys
-        ++ concat goldenRwEnd
+generateGoldenManySubjectsRw outfilepath = writeFile outfilepath concatLines where
+  concatLines =
+    concat goldenManySubjectsStart
+      ++ intercalate "," goldenRwPatientManys
+      ++ concat goldenRwEnd
 
 {-
 Generates a new golden testing file corresponding to the test data produced by
@@ -60,14 +59,13 @@ Generates a new golden testing file corresponding to the test data produced by
 cohort-building application
 -}
 generateGoldenManySubjectsCw :: String -> IO ()
-generateGoldenManySubjectsCw outfilepath =
-  writeFile outfilepath concatLines where
-    concatLines =
-      concat goldenManySubjectsStart
-        ++ intercalate "," goldenCwVarManys
-        ++ "],\"ids\":["
-        ++ intercalate "," goldenCwPatientManys
-        ++ concat goldenCwEnd
+generateGoldenManySubjectsCw outfilepath = writeFile outfilepath concatLines where
+  concatLines =
+    concat goldenManySubjectsStart
+      ++ intercalate "," goldenCwVarManys
+      ++ "],\"ids\":["
+      ++ intercalate "," goldenCwPatientManys
+      ++ concat goldenCwEnd
 
 {-
 A helper function to read in test data from file, perform a transformation on
@@ -77,7 +75,7 @@ generateTestDataBase :: String -> String -> ([String] -> [String]) -> IO ()
 generateTestDataBase infilePath outfilePath transform = do
   infileLines <- readLines infilePath
   let updatedLines = transform infileLines
-  let concatLines = foldr (\x y -> x ++ "\n" ++ y) "" updatedLines
+  let concatLines  = foldr (\x y -> x ++ "\n" ++ y) "" updatedLines
   writeFile outfilePath concatLines
 
 {-
@@ -85,19 +83,18 @@ Create `largeInputSize` copies of each subject, and where each subject ID is
 postfixed with a number so as to make the replicated subject IDs unique
 -}
 generateNewSubjs :: Regex -> [String] -> [String]
-generateNewSubjs re lines =
-  concatMap updateIdsPtl replacements where
+generateNewSubjs re lines = concatMap updateIdsPtl replacements where
   updateIdsPtl = \replacement -> updateIds re replacement lines
-  replacements = map (constructReplacement . formatNum) [0..(largeInputSize - 1)]
+  replacements =
+    map (constructReplacement . formatNum) [0 .. (largeInputSize - 1)]
 
 {-
 Given a regex `pattern` and `replacement` inputs, perform a search and replace
 on every entry in a list of strings
 -}
 updateIds :: Regex -> String -> [String] -> [String]
-updateIds pattern replacement =
-  map subRegexPtl where
-  subRegexPtl = \line -> subRegex pattern line replacement
+updateIds pat replacement = map subRegexPtl
+  where subRegexPtl = \line -> subRegex pat line replacement
 
 {-
 Create `largeInputSize` copies of each event
@@ -155,10 +152,7 @@ goldenCwPatientManys = sort $ generateNewSubjs patientRe goldenCwPatientEntries
 The column-wise data to be replicated (and where the subject IDs are changed)
 -}
 goldenCwVarEntries :: [String]
-goldenCwVarEntries =
-  [ "5,5"
-  , "true,true"
-  ]
+goldenCwVarEntries = ["5,5", "true,true"]
 
 {-
 Replicate each element once for each patient in the input data, and then
@@ -166,8 +160,9 @@ surround the replicated entries by "[]" (i.e. making them a JSON array). Thus,
 each element in the return list is a string representing a JSON array
 -}
 goldenCwVarManys :: [String]
-goldenCwVarManys = map (\s -> "[" ++ replicateEntries s ++ "]") goldenCwVarEntries where
-  replicateEntries = intercalate "," . replicate largeInputSize
+goldenCwVarManys = map (\s -> "[" ++ replicateEntries s ++ "]")
+                       goldenCwVarEntries
+  where replicateEntries = intercalate "," . replicate largeInputSize
 
 {-
 The concluding fragment for the "many subjects" row-wise golden file

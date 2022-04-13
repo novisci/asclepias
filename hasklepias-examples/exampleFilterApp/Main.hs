@@ -13,8 +13,8 @@ cat hasklepias-main/exampleApp/exampleData.jsonl | cabal exec exampleApp
 module Main
   ( main
   ) where
-import           Hasklepias
 import           AppExamples.FilterApp
+import           Hasklepias
 
 main :: IO ()
 main = runFilterApp exampleFilterApp

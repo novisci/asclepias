@@ -1,3 +1,0 @@
-sandbox/testcw1.json
-sandbox/testcw2.json
-sandbox/testcw3.json

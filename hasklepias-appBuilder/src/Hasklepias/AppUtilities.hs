@@ -124,7 +124,7 @@ readData (S3 r b k) = getS3Object r b k
 
 -- | Write data from a @Location@ to lazy @ByteString@
 writeData :: Location -> B.ByteString -> IO ()
-writeData Std        x = B.putStrLn x
+writeData Std        x = B.putStr x
 writeData (Local f ) x = B.writeFile f x
 writeData (S3 r b k) x = putS3Object r b k x
 

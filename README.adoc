@@ -12,4 +12,3 @@ named after Linnaeus after the greek god of healing, Asclepius.
 from temporally ordered events using the 
 https://hackage.haskell.org/package/interval-algebra[interval algebra].
 
-#TODO link to getting started and docs site# 

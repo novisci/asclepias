@@ -1,3 +1,3 @@
-testcw1.json
-testcw2.json
-testcw3.json
+test/tests/testcw1.json
+test/tests/testcw2.json
+test/tests/testcw3.json

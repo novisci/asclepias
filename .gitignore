@@ -23,9 +23,3 @@ dist-newstyle*
 install/*
 builds/*
 docs-site/*
-
-# test artifacts
-cohort-collector/test/tests/testcw.json
-cohort-collector/test/tests/testrw.json
-
-

@@ -67,7 +67,8 @@ upload-haddock-docs:
       optional: false
       artifacts: true
   rules:
-    - changes: ["**/*.cabal", "**/*.hs"]
+    - if: '$PARENT_CI_PIPELINE_SOURCE == "merge_request_event" || $PARENT_CI_PIPELINE_SOURCE == "push"'
+      changes: ["**/*.cabal", "**/*.hs"]
     - if: '$CI_COMMIT_MESSAGE =~ /-build/'
   stage: deploy
   script:

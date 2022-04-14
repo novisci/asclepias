@@ -1,4 +1,5 @@
 -- IGNORE: i have explicitly turned off certain compiler warnings.
+{-# HLINT ignore #-}
 {-# OPTIONS_GHC -Wno-unused-type-patterns #-}
 {-# OPTIONS_GHC -Wno-missing-signatures #-}
 {-# OPTIONS_GHC -Wno-type-defaults #-}
@@ -26,7 +27,10 @@
      --}
 
 -- IGNORE for now and skip to SIGNATURES section
-module TypeExamples ( Hour(..), Tree ) where
+module TypeExamples
+  ( Hour(..)
+  , Tree
+  ) where
 
 
    {- SIGNATURES and basic types-}
@@ -310,8 +314,7 @@ data Rainbow = R | O | Y | G | B | I | V
 -- These can also be defined with the data keyword. They represent types with
 -- multiple values, like this common example of a 2D Point.
 
-data Point
-  = MkPoint Double Double
+data Point = MkPoint Double Double
 
 -- Combining sum and product
 -- You can combine these types, and make them recursive even. The classic
@@ -396,7 +399,7 @@ pointToTuple (MkPoint x y) = (x, y)
 -- This function will recurse through the Tree, adding the values together as
 -- it goes. Generic over all types for which + is valid.
 treeSum :: Num a => Tree a -> a
-treeSum (Leaf x)     = x
+treeSum (Leaf x    ) = x
 treeSum (Node t1 t2) = treeSum t1 + treeSum t2
 
 
@@ -410,15 +413,15 @@ treeSum (Node t1 t2) = treeSum t1 + treeSum t2
 -- x : xs matches a list that is non-empty and has first element x.
 -- NOTE: xs here might be [] but x must be a value, hence this pattern *only* matches non-empty lists.
 headOrZero :: [Int] -> Int
-headOrZero []     = 0
-headOrZero (x:xs) = x
+headOrZero []       = 0
+headOrZero (x : xs) = x
 
 -- match patterns can continue in this fashion
 -- the _ in x:y:_ is again the arbitrary placeholder for a variable we do not
 -- use on the right-hand-side
 firstTwoOrNothing :: [a] -> [a]
-firstTwoOrNothing []      = []
-firstTwoOrNothing (x:y:_) = [x, y]
+firstTwoOrNothing []          = []
+firstTwoOrNothing (x : y : _) = [x, y]
 
 -- Convert a list to a binary Tree
 -- NOTE: you can use 'literal' matches for lists, such as [x], instead of x:[],
@@ -432,9 +435,9 @@ firstTwoOrNothing (x:y:_) = [x, y]
 -- NOTE: this throws an error at run time if called on an empty list. Not what
 -- you want probably. You can fix this in the exercises.
 listToTree :: [a] -> Tree a
-listToTree []     = undefined
-listToTree [x]    = Leaf x
-listToTree (x:xs) = Node (Leaf x) (listToTree xs)
+listToTree []       = undefined
+listToTree [x     ] = Leaf x
+listToTree (x : xs) = Node (Leaf x) (listToTree xs)
 
 
    {- MAYBE wrapper type example -}
@@ -454,8 +457,8 @@ listToTree (x:xs) = Node (Leaf x) (listToTree xs)
 -- on an empty list.
 
 safeHead :: [a] -> Maybe a
-safeHead []    = Nothing
-safeHead (x:_) = Just x
+safeHead []      = Nothing
+safeHead (x : _) = Just x
 
 
    {- TYPECLASSES: DEFINING CLASSES AND INSTANCES -}
@@ -478,11 +481,11 @@ instance Show Natl where
    -- out of our Natl type. on the right-hand side we use the fact that Integer
    -- x is itself an instance of show. This is *not* recursion. It is using
    -- different definitions of show on both sides of =.
-   show (MkNatl x) = show x
+  show (MkNatl x) = show x
 
 -- Eq also is easy and could be derived
 instance Eq Natl where
-   (MkNatl x) == (MkNatl y) = x == y
+  (MkNatl x) == (MkNatl y) = x == y
 
 -- NOTE: there are no type signatures on the methods. Those are supplied by the
 -- class definition. See below.
@@ -502,14 +505,14 @@ instance Eq Natl where
 -- instance of Num, without some kind of redesign. The compiler doesn't save
 -- you here.
 instance Num Natl where
-   (MkNatl x) + (MkNatl y) = toNatlTrunc (x + y)
-   (MkNatl x) * (MkNatl y) = toNatlTrunc (x * y)
-   abs (MkNatl x) = MkNatl (abs x)
-   -- Natl can only be zero or positive ... in principle
-   signum (MkNatl 0) = 0
-   signum (MkNatl x) = 1
-   fromInteger = toNatlTrunc
-   negate _ = MkNatl 0
+  (MkNatl x) + (MkNatl y) = toNatlTrunc (x + y)
+  (MkNatl x) * (MkNatl y) = toNatlTrunc (x * y)
+  abs (MkNatl x) = MkNatl (abs x)
+  -- Natl can only be zero or positive ... in principle
+  signum (MkNatl 0) = 0
+  signum (MkNatl x) = 1
+  fromInteger = toNatlTrunc
+  negate _ = MkNatl 0
 
 
 -- Define your own typeclass with the class keyword.
@@ -531,8 +534,8 @@ class Colorable a where
 
 -- paint all leaves red, and everything else is yellow
 instance Colorable (Tree a) where
-   toColor (Leaf _) = R
-   toColor (Node _ _) = B
+  toColor (Leaf _  ) = R
+  toColor (Node _ _) = B
 
 -- we get isRed for free
 yesItIs :: Bool

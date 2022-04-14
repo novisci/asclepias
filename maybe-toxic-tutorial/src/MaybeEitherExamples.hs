@@ -1,5 +1,6 @@
-
-module MaybeEitherExamples ( ) where
+{-# HLINT ignore #-}
+module MaybeEitherExamples
+  () where
 
 import           Control.Monad
 import           Data.Maybe
@@ -75,11 +76,9 @@ round' = round
 -- lossless. Here, we return the result wrapped in a Maybe container, with
 -- Nothing representing a failed conversion. Try this in ghci on doubles 1.0 and 1.5.
 safeRound :: Double -> Maybe Integer
-safeRound x
-  | r == 0 = Just i
-  | otherwise = Nothing
-  where
-    (i, r) = properFraction x
+safeRound x | r == 0    = Just i
+            | otherwise = Nothing
+  where (i, r) = properFraction x
 
 -- Why is this 'safe?'
 -- For example, we can now pass the output of safeRound to a function that

@@ -4,6 +4,7 @@
 {-# OPTIONS_GHC -Wno-type-defaults #-}
 {-# OPTIONS_GHC -Wno-unused-top-binds #-}
 {-# OPTIONS_GHC -Wno-unused-matches #-}
+{-# HLINT ignore #-}
 
   {--
      WHAT YOU WILL LEARN
@@ -29,9 +30,13 @@
 
      --}
 
-module FunctionalExamples ( ) where
+module FunctionalExamples
+  () where
 
-import           Data.List (intersect, nub, permutations)
+import           Data.List                      ( intersect
+                                                , nub
+                                                , permutations
+                                                )
 
    {- FUNCTIONS IN HASKELL
        SIDE-BAR on SIDE-EFFECTS
@@ -289,22 +294,24 @@ myLair x = princeConstant - x
 
 complicatedOp :: (Num a, Show a) => a -> a -> String
 complicatedOp x y = show out
-   where out = y' + x
-         y' = y + 2 * y
+ where
+  out = y' + x
+  y'  = y + 2 * y
 
 -- same as
 complicatedOp' :: (Num a, Show a) => a -> a -> String
 complicatedOp' x y =
-   let out = y' + x
-       y' = y + 2 * y
-   in show out
+  let out = y' + x
+      y'  = y + 2 * y
+  in  show out
 
 -- you can define local *functions* as well
 complicatedOp'' :: (Num a, Show a) => a -> a -> String
 complicatedOp'' x = show . op2 . op
    -- x in op2 is captured from the complicatedOp'' scope
-   where op2 y = y + x
-         op y = y + 2 * y
+ where
+  op2 y = y + x
+  op y = y + 2 * y
 
 
    {- IF-THEN-ELSE and GUARDS -}
@@ -343,14 +350,14 @@ filterBiggerThan' = filter . flip (>)
 -- intuitive syntax familiar to python users
 
 mapPlusOne' :: Num a => [a] -> [a]
-mapPlusOne' xs = [x + 1 | x <- xs]
+mapPlusOne' xs = [ x + 1 | x <- xs ]
 
 filterBiggerThan'' :: (Ord a) => a -> [a] -> [a]
-filterBiggerThan'' x xs = [y | y <- xs, y > x]
+filterBiggerThan'' x xs = [ y | y <- xs, y > x ]
 
 -- great for combining filters and maps
 comboThing :: (Ord a, Num a) => a -> [a] -> [a]
-comboThing x xs = [y + 1 | y <- xs, y > x]
+comboThing x xs = [ y + 1 | y <- xs, y > x ]
 
 -- FOLDS
 -- TODO Like Reduce in R. requires some explanation
@@ -361,8 +368,7 @@ map' :: (a -> b) -> [a] -> [b]
 map' f = foldl op [] where op xs x = f x : xs
 
 filter' :: (a -> Bool) -> [a] -> [a]
-filter' p = foldl op []
-   where op xs x = if p x then x : xs else xs
+filter' p = foldl op [] where op xs x = if p x then x : xs else xs
 
 
    {- ADDITIONAL EXAMPLES -}
@@ -371,14 +377,14 @@ complete :: [a] -> [(a, a)]
 complete xs = map (,) xs <*> xs
 
 complete' :: [a] -> [(a, a)]
-complete' xs = [(x, y) | x <- xs, y <- xs]
+complete' xs = [ (x, y) | x <- xs, y <- xs ]
 
 completeIf :: ((a, a) -> Bool) -> [a] -> [(a, a)]
-completeIf p xs = [(x, y) | x <- xs, y <- xs, p (x, y)]
+completeIf p xs = [ (x, y) | x <- xs, y <- xs, p (x, y) ]
 
 foldr' :: (a -> b -> b) -> b -> [a] -> b
-foldr' _ start []     = start
-foldr' f start (x:xs) = f x (foldr' f start xs)
+foldr' _ start []       = start
+foldr' f start (x : xs) = f x (foldr' f start xs)
 
 -- EXAMPLE: making a path
 
@@ -393,17 +399,18 @@ foldr' f start (x:xs) = f x (foldr' f start xs)
 path, path', path'' :: Eq a => [a] -> [(a, a)]
 -- with foldr
 path = foldr join []
-  where
-    join x []          = [(x, x)]
-    join x ((y, z):ys) = if y == z then (x, y) : ys else (x, y) : (y, z) : ys
+ where
+  join x []            = [(x, x)]
+  join x ((y, z) : ys) = if y == z then (x, y) : ys else (x, y) : (y, z) : ys
 
 -- with recursion
-path' [] = []
-path' [x] = []
-path' (x:xs) = join x xs : path' xs
+path' []       = []
+path' [x     ] = []
+path' (x : xs) = join x xs : path' xs
   -- NOTE this first case is unreachable
-  where join y []     = (y, y)
-        join y (z:zs) = (y, z)
+ where
+  join y []       = (y, y)
+  join y (z : zs) = (y, z)
 
 -- first argument is kept in case of duplicates
 path'' = path' . nub
@@ -423,12 +430,13 @@ pathPermutations = map path' . permutations . nub
 --                     = [(1, 2), (2, 3)] : [[(2, 1), (1, 3)], [(2, 3), (3, 1)]]
 pathPermutations' :: Eq a => [a] -> [[(a, a)]]
 pathPermutations' = foldr (concatMap . rot) [[]] . path''
-  where
-    rot (x, y) [] = [[(x, y)], [(y, x)]]
-    -- NOTE: you presume _ and y are the same value
-    rot (x, _) ((y, z) : zs) = ((x, y) : (y, z) : zs) : map (attach y) (rot (x, z) zs)
-    attach y []            = [(y, y)]
-    attach y ((z, u) : us) = (y, z) : (z, u) : us
+ where
+  rot (x, y) [] = [[(x, y)], [(y, x)]]
+  -- NOTE: you presume _ and y are the same value
+  rot (x, _) ((y, z) : zs) =
+    ((x, y) : (y, z) : zs) : map (attach y) (rot (x, z) zs)
+  attach y []            = [(y, y)]
+  attach y ((z, u) : us) = (y, z) : (z, u) : us
 
 adHocCheck :: Bool
 thing = "kjhasdaaa"

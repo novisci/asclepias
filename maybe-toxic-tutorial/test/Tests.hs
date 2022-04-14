@@ -1,5 +1,6 @@
 {-# OPTIONS_GHC -F -pgmF hspec-discover #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# HLINT ignore #-}
 
 import           Test.Hspec
 import           TypeExercises
@@ -17,7 +18,7 @@ specs = describe "First type exercises" $ do
     doublePower (4.5 :: Double) (1 :: Int) `shouldBe` 4.5 :: Double
 
   it "doublePower Int Int" $ do
-    doublePower (4 :: Int) ((-1):: Int) `shouldBe` 0.25 :: Int
+    doublePower (4 :: Int) ((-1) :: Int) `shouldBe` 0.25 :: Int
 
 
 -- TODO implement something like this, cribbed from exercism

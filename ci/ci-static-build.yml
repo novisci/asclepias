@@ -80,7 +80,7 @@ check-docs:
 deploy-aws-cohort-collector-static:
   stage: deploy
   needs: ["build-cohort-collector-static"]
-  image: registry.novisci.com/nsstat/nsbuild/aws
+  image: registry.novisci.com/nsstat/nsbuild/ubuntu:20.04
   script:
     - export BUNDLE=$(< install/cohort-collector.bundle)
     - | 
@@ -97,8 +97,10 @@ deploy-docker-cohort-collector-static:
   needs: ["build-cohort-collector-static"]
   image: docker:$DOCKER
   script:
-    - export FILE=$(< install/cohort-collector.bundle)
-    - export VERSION=$(< install/cohort-collector.version)
+    - export FILE=$(head -1 install/cohort-collector.name)
+    - export VERSION=$(head -1 install/cohort-collector.version)
+    - echo "$FILE"
+    - echo $VERSION
     - ./ci/ci-docker-build-cohort-collector.sh $VERSION install/$FILE
-  rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  # rules:
+  #   - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH

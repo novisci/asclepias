@@ -124,7 +124,7 @@
   - { name: DeriveAnyClass, within: [] } # Dangerous
   
   # 20211206: commenting DuplicateRecordFields out for now as it is used 
-  #           extensively within event-data-model module and would require substantial work
+  #           within event-data-theory and would require substantial work
   #           to avoid. I'm not sure it's worth it.
   # - { name: DuplicateRecordFields, within: [] }
 

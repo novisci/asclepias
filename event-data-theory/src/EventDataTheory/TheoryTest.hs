@@ -289,7 +289,8 @@ testAddConceptViaEventLine =
         singleEventGoodIn
   in  case x of
         Left  s -> assertFailure s
-        Right e -> encode e @?= singleEventGoodOut
+        Right e -> decode (encode e)
+          @?= decode @(EventLine Text SillySchema Day) singleEventGoodOut
 
 -- | Unit tests on utilities
 coreUtilitiesUnitTests :: TestTree

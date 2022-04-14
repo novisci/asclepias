@@ -3,6 +3,7 @@
 ## 0.22.5
 
 * Bumping version for updates to the CI and internal packages.
+* Move examples and tests into `hasklepias-examples`.
 
 ## 0.22.4
 

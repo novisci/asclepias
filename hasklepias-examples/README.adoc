@@ -1,0 +1,3 @@
+= hasklepias examples
+
+Provides examples to serve as documentation for the asclepias project.

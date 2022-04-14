@@ -11,7 +11,6 @@ These functions may be moved to more appropriate modules in future versions.
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE GADTs #-}
-{-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE DataKinds #-}
 
 module Hasklepias.AppUtilities
@@ -47,24 +46,6 @@ import qualified Data.Text.IO                  as T
 import           GHC.Generics                   ( Generic )
 import           GHC.Show                       ( Show(..) )
 
-import           Amazonka                       ( Credentials(Discover)
-                                                , LogLevel(Debug, Error)
-                                                , Region
-                                                , ToBody(..)
-                                                , newEnv
-                                                , newLogger
-                                                , runResourceT
-                                                , send
-                                                , sinkBody
-                                                )
-import           Amazonka.S3                    ( BucketName
-                                                , ObjectCannedACL
-                                                  ( ObjectCannedACL_Bucket_owner_full_control
-                                                  )
-                                                , ObjectKey
-                                                , newGetObject
-                                                , newPutObject
-                                                )
 
 import           Control.Applicative            ( (<$>)
                                                 , Applicative((<*>), pure)
@@ -90,7 +71,40 @@ import           Lens.Micro                     ( (<&>)
                                                 )
 import           Lens.Micro.Extras              ( view )
 import           Options.Applicative
+
+
+import qualified Control.Monad.Trans.AWS       as AWS
+import           Data.Either                    ( fromRight )
+import           Data.Text                      ( Text
+                                                , pack
+                                                )
+-- imports for amazonka < 2
+import           Network.AWS
+import           Network.AWS.Data
+import           Network.AWS.S3
 import           System.IO                      ( stderr )
+
+
+-- IMPORTS for amazonka 2.0
+-- import           System.IO                      ( stderr )
+-- import           Amazonka                       ( Credentials(Discover)
+--                                                 , LogLevel(Debug, Error)
+--                                                 , Region
+--                                                 , ToBody(..)
+--                                                 , newEnv
+--                                                 , newLogger
+--                                                 , runResourceT
+--                                                 , send
+--                                                 , sinkBody
+--                                                 )
+-- import           Amazonka.S3                    ( BucketName
+--                                                 , ObjectCannedACL
+--                                                   ( ObjectCannedACL_Bucket_owner_full_control
+--                                                   )
+--                                                 , ObjectKey
+--                                                 , newGetObject
+--                                                 , newPutObject
+--                                                 )
 
 
 
@@ -116,6 +130,13 @@ data Output =
    | S3Output  String BucketName ObjectKey
    deriving (Show)
 
+-- for amazonka < 2
+-- | Defines @IsString@ instance for @Region@. Sets the default to @NorthVirginia@ 
+--   (us-east-1) if the region can't be parsed
+instance IsString Region where
+  fromString x = fromRight NorthVirginia (fromText (pack x))
+
+
 -- | Read data from a @Location@ to lazy @ByteString@
 readData :: Location -> IO B.ByteString
 readData Std        = B.getContents
@@ -124,7 +145,7 @@ readData (S3 r b k) = getS3Object r b k
 
 -- | Write data from a @Location@ to lazy @ByteString@
 writeData :: Location -> B.ByteString -> IO ()
-writeData Std        x = B.putStrLn x
+writeData Std        x = B.putStr x
 writeData (Local f ) x = B.writeFile f x
 writeData (S3 r b k) x = putS3Object r b k x
 
@@ -143,37 +164,62 @@ writeDataStrict (S3 r b k) x = putS3Object r b k x
 -- | Get an object from S3. 
 getS3Object :: Region -> BucketName -> ObjectKey -> IO B.ByteString
 getS3Object r b k = do
-  lgr <- newLogger Debug stderr
-  env <-
-    newEnv Discover
-    <&> set (field @"_envLogger") lgr
-    .   set (field @"_envRegion") r
-  runResourceT $ do
-    result <- send env (newGetObject b k)
-    view (field @"body") result `sinkBody` sinkLbs
+  lgr <- newLogger Error stderr
+  env <- newEnv Discover <&> set envLogger lgr . set envRegion r
+  runResourceT . runAWS env $ do
+    result <- send $ getObject b k
+    (result ^. gorsBody) `sinkBody` sinkLbs
+
+-- amazonka 2.0...
+-- getS3Object :: Region -> BucketName -> ObjectKey -> IO B.ByteString
+-- getS3Object r b k = do
+--   lgr <- newLogger Debug stderr
+--   env <-
+--     newEnv Discover
+--     <&> set (field @"_envLogger") lgr
+--     .   set (field @"_envRegion") r
+--   runResourceT $ do
+--     result <- send env (newGetObject b k)
+--     view (field @"body") result `sinkBody` sinkLbs
 
 -- | Put an object on S3. 
 --
 -- NOTE: the put request uses the bucket-owner-full-control 
 -- <https://docs.aws.amazon.com/AmazonS3/latest/userguide/about-object-ownership.html canned ACL>.
 -- 
+
 class (ToBody a) => PutS3 a where
   putS3Object :: Region -> BucketName -> ObjectKey -> a -> IO ()
   putS3Object r b k o = do
     lgr <- newLogger Error stderr
-    env <-
-      newEnv Discover
-      <&> set (field @"_envLogger") lgr
-      .   set (field @"_envRegion") r
-    let obj = set (field @"acl") (Just ObjectCannedACL_Bucket_owner_full_control)
-              (newPutObject b k (toBody o))
-    runResourceT $ do
-      void . send env $ obj
-      liftIO . T.putStrLn $
-          "Successfully Uploaded contents to "
-        <> T.pack (show b)
+    env <- newEnv Discover <&> set envLogger lgr . set envRegion r
+    AWS.runResourceT . AWS.runAWST env $ do
+      void . send $ set poACL (Just OBucketOwnerFullControl) (putObject b k (toBody o))
+      liftIO
+        .  T.putStrLn
+        $  "Successfully Uploaded contents to "
+        <> pack (show b)
         <> " - "
-        <> T.pack (show k)
+        <> pack (show k)
+
+-- amazonka 2.0...
+-- class (ToBody a) => PutS3 a where
+--   putS3Object :: Region -> BucketName -> ObjectKey -> a -> IO ()
+--   putS3Object r b k o = do
+--     lgr <- newLogger Error stderr
+--     env <-
+--       newEnv Discover
+--       <&> set (field @"_envLogger") lgr
+--       .   set (field @"_envRegion") r
+--     let obj = set (field @"acl") (Just ObjectCannedACL_Bucket_owner_full_control)
+--               (newPutObject b k (toBody o))
+--     runResourceT $ do
+--       void . send env $ obj
+--       liftIO . T.putStrLn $
+--           "Successfully Uploaded contents to "
+--         <> T.pack (show b)
+--         <> " - "
+--         <> T.pack (show k)
 
 instance PutS3 B.ByteString
 instance PutS3 C.ByteString

@@ -10,7 +10,6 @@ module Templates.FeatureReqs
   , module Data.Maybe
   , module Data.Text
   , module Data.Time
-  -- , module EventData
   , module EventDataTheory
   , module Features
   , module Flow
@@ -27,7 +26,6 @@ import           Data.Foldable                  ( toList )
 import           Data.Maybe                     ( catMaybes )
 import           Data.Text                      ( Text )
 import           Data.Time                      ( Day )
--- import           EventData
 import           EventDataTheory
 import           Features
 import           Flow                           ( (.>) )

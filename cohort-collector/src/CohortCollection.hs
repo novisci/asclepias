@@ -8,8 +8,7 @@ module CohortCollection
   , collectorApp
   ) where
 
-import           Amazonka.Auth
-import           Amazonka.S3
+
 import           Cohort.Output                  ( CohortMapJSON )
 import           Conduit                        ( (.|)
                                                 , foldMapMC
@@ -39,6 +38,14 @@ import           Hasklepias.AppUtilities       as H
 import           Options.Applicative
 import           System.IO                      ( stderr )
 
+
+-- imports for amazonka >= 2
+import           Network.AWS
+import           Network.AWS.S3
+
+-- imports for amazonka < 2 
+-- import           Amazonka.Auth
+-- import           Amazonka.S3
 
 getCohortData :: Location -> IO (Maybe CohortMapJSON)
 getCohortData x = fmap decode (readData x)

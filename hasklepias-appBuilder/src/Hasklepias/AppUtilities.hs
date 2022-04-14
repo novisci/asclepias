@@ -189,7 +189,7 @@ getS3Object r b k = do
 -- 
 
 class (ToBody a) => PutS3 a where
-  putS3Object :: Region -> BucketName -> ObjectKey -> a -> IO () 
+  putS3Object :: Region -> BucketName -> ObjectKey -> a -> IO ()
   putS3Object r b k o = do
     lgr <- newLogger Error stderr
     env <- newEnv Discover <&> set envLogger lgr . set envRegion r

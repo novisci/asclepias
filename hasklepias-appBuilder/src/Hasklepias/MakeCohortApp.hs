@@ -83,12 +83,12 @@ collectBySubject x = M.toList $ M.fromListWith (++) (fmap (fmap pure) x)
 TODO
 -}
 mapIntoPop
-  :: forall d c a
-   . (Ord a, Ord c, Eq d)
-  => [(SubjectID, Event c d a)]
-  -> Population [Event c d a]
+  :: forall m c a
+   . (Ord a, Ord c, Eq m)
+  => [(SubjectID, Event c m a)]
+  -> Population [Event c m a]
 mapIntoPop l = into $ fmap
-  (\(id, es) -> into @(Subject [Event c d a]) (into @Text id, sort es)) -- TODO: is there a way to avoid the sort?
+  (\(id, es) -> into @(Subject [Event c m a]) (into @Text id, sort es)) -- TODO: is there a way to avoid the sort?
   (collectBySubject l)
 
 {-| INTERNAL
@@ -112,17 +112,17 @@ makeAppArgs name version = Options.Applicative.info
 Creates a cohort builder function
 -}
 makeCohortBuilder
-  :: ( Eventable c d a
-     , EventLineAble c d a b
-     , FromJSONEvent c d a
+  :: ( Eventable c m a
+     , EventLineAble c m a b
+     , FromJSONEvent c m a
      , ToJSON d0
      , ShapeCohort d0 i
-     , Monad m
+     , Monad f
      )
   => CohortEvalOptions
-  -> CohortMapSpec [Event c d a] d0 i
+  -> CohortMapSpec [Event c m a] d0 i
   -> B.ByteString
-  -> m ([LineParseError], CohortMap d0 i)
+  -> f ([LineParseError], CohortMap d0 i)
 makeCohortBuilder opts specs x = do
   let doEvaluation = makeCohortSpecsEvaluator opts specs
   let dat = second mapIntoPop $ parseEventLinesL defaultParseEventLineOption x
@@ -154,16 +154,16 @@ newtype CohortApp m = MkCohortApp { runCohortApp :: Maybe Location -> m B.ByteSt
 
 -- | Make a command line cohort building application.
 makeCohortApp
-  :: ( Eventable c d a
-     , EventLineAble c d a b
-     , FromJSONEvent c d a
+  :: ( Eventable c m a
+     , EventLineAble c m a b
+     , FromJSONEvent c m a
      , ToJSON d0
      , ShapeCohort d0 i
      )
   => String  -- ^ cohort name
   -> String  -- ^ app version
   -> (Cohort d0 i -> CohortJSON) -- ^ a function which specifies the output shape
-  -> CohortMapSpec [Event c d a] d0 i  -- ^ a list of cohort specifications
+  -> CohortMapSpec [Event c m a] d0 i  -- ^ a list of cohort specifications
   -> CohortApp IO
 makeCohortApp name version shape spec = MkCohortApp $ \l -> do
   options <- execParser (makeAppArgs name version)

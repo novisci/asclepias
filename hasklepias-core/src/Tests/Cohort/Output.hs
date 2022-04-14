@@ -1,5 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE TypeApplications #-}
 
 module Tests.Cohort.Output
   ( tests
@@ -113,12 +114,12 @@ tests = testGroup
   $   (decode cw1 <> decode cw2)
   @?= Just cwt
   , testCase "columnwise cohort data can be combined and serialized"
-  $   encode (decode cw1 <> decode cw2 :: Maybe CohortDataShapeJSON)
-  @?= cw1p2
+  $   decode (encode (decode cw1 <> decode cw2 :: Maybe CohortDataShapeJSON))
+  @?= decode @CohortDataShapeJSON cw1p2
   , testCase "rowwise cohort data can be combined"
   $   (decode rw1 <> decode rw2)
   @?= Just rwt
   , testCase "rowwise cohort data can be combined and serialized"
-  $   encode (decode rw1 <> decode rw2 :: Maybe CohortDataShapeJSON)
-  @?= rw1p2
+  $   decode (encode (decode rw1 <> decode rw2 :: Maybe CohortDataShapeJSON))
+  @?= decode @CohortDataShapeJSON rw1p2
   ]

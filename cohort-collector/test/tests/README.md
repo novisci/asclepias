@@ -13,8 +13,7 @@ cabal install cohort-collector
 ```
 
 ```sh
-
-cohort-collector -f cohort-collector/test/tests/manifestcw.txt -d cohort-collector/test/tests/
+cohort-collector -f cohort-collector/test/tests/manifestcw.txt -d cohort-collector
 ```
 
 ## Generating input test files
@@ -25,15 +24,15 @@ Test files were produces in the following way:
 cabal build hasklepias-main
 
 ```sh
-cat hasklepias-main/exampleData/exampleData1.jsonl | cabal exec exampleAppCW > cohort-collector/test/tests/testcw1.json
-cat hasklepias-main/exampleData/exampleData2.jsonl | cabal exec exampleAppCW > cohort-collector/test/tests/testcw2.json
-cat hasklepias-main/exampleData/exampleData3.jsonl | cabal exec exampleAppCW > cohort-collector/test/tests/testcw3.json
+cat hasklepias-examples/exampleData/exampleData1.jsonl | cabal exec exampleCohortCwApp > cohort-collector/test/tests/testcw1.json
+cat hasklepias-examples/exampleData/exampleData2.jsonl | cabal exec exampleCohortCwApp > cohort-collector/test/tests/testcw2.json
+cat hasklepias-examples/exampleData/exampleData3.jsonl | cabal exec exampleCohortCwApp > cohort-collector/test/tests/testcw3.json
 ```
 
 ```sh
-cat hasklepias-main/exampleData/exampleData1.jsonl | cabal exec exampleAppRW > cohort-collector/test/tests/testrw1.json
-cat hasklepias-main/exampleData/exampleData2.jsonl | cabal exec exampleAppRW > cohort-collector/test/tests/testrw2.json
-cat hasklepias-main/exampleData/exampleData3.jsonl | cabal exec exampleAppRW > cohort-collector/test/tests/testrw3.json
+cat hasklepias-examples/exampleData/exampleData1.jsonl | cabal exec exampleCohortRwApp > cohort-collector/test/tests/testrw1.json
+cat hasklepias-examples/exampleData/exampleData2.jsonl | cabal exec exampleCohortRwApp > cohort-collector/test/tests/testrw2.json
+cat hasklepias-examples/exampleData/exampleData3.jsonl | cabal exec exampleCohortRwApp > cohort-collector/test/tests/testrw3.json
 ```
 
 ## Creating golden files

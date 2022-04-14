@@ -51,7 +51,7 @@ import qualified Witherable                    as W
 Creates a predicate to check that an 'Event' contains
 any of a given set of concepts.
 -}
-containsConcepts :: (Ord c) => [c] -> Predicate (Event c d a)
+containsConcepts :: (Ord c) => [c] -> Predicate (Event c m a)
 containsConcepts cpt = Predicate (`hasAnyConcepts` cpt)
 
 {-|
@@ -59,9 +59,9 @@ Filter a container of events by a predicate.
 -}
 filterEvents
   :: (W.Filterable f)
-  => Predicate (Event c d a)
-  -> f (Event c d a)
-  -> f (Event c d a)
+  => Predicate (Event c m a)
+  -> f (Event c m a)
+  -> f (Event c m a)
 filterEvents p = W.filter (getPredicate p)
 
 {-|
@@ -76,10 +76,10 @@ see 'firstOccurrenceOfConcept' and
 -}
 findOccurrenceOfEvent
   :: (W.Filterable f)
-  => (f (Event c d a) -> Maybe (Event c d a)) -- ^ function used to select a single event after the container is filtered
-  -> Predicate (Event c d a) -- ^ predicate by which to filter
-  -> f (Event c d a) -- ^ a container of events
-  -> Maybe (Event c d a)
+  => (f (Event c m a) -> Maybe (Event c m a)) -- ^ function used to select a single event after the container is filtered
+  -> Predicate (Event c m a) -- ^ predicate by which to filter
+  -> f (Event c m a) -- ^ a container of events
+  -> Maybe (Event c m a)
 findOccurrenceOfEvent f p = f . filterEvents p
 
 {-|
@@ -88,7 +88,7 @@ if one exists.
 Assumes the input events are appropriately sorted.
 -}
 firstOccurrenceOfConcept
-  :: (W.Witherable f, Ord c) => [c] -> f (Event c d a) -> Maybe (Event c d a)
+  :: (W.Witherable f, Ord c) => [c] -> f (Event c m a) -> Maybe (Event c m a)
 firstOccurrenceOfConcept x =
   findOccurrenceOfEvent (headMay . toList) (containsConcepts x)
 
@@ -98,7 +98,7 @@ if one exists.
 Assumes the input events list are appropriately sorted.
 -}
 lastOccurrenceOfConcept
-  :: (W.Witherable f, Ord c) => [c] -> f (Event c d a) -> Maybe (Event c d a)
+  :: (W.Witherable f, Ord c) => [c] -> f (Event c m a) -> Maybe (Event c m a)
 lastOccurrenceOfConcept x =
   findOccurrenceOfEvent (lastMay . toList) (containsConcepts x)
 
@@ -116,8 +116,8 @@ splitByConcepts
   :: (W.Filterable f, Ord c)
   => [c]
   -> [c]
-  -> f (Event c d a)
-  -> (f (Event c d a), f (Event c d a))
+  -> f (Event c m a)
+  -> (f (Event c m a), f (Event c m a))
 splitByConcepts c1 c2 es =
   (filterEvents (containsConcepts c1) es, filterEvents (containsConcepts c2) es)
 
@@ -125,7 +125,7 @@ splitByConcepts c1 c2 es =
 Tally the number of events in a container satisfying the given predicate.
 -}
 tallyEvents
-  :: (W.Witherable f) => Predicate (Event c d a) -> f (Event c d a) -> Int
+  :: (W.Witherable f) => Predicate (Event c m a) -> f (Event c m a) -> Int
 tallyEvents p = length . filterEvents p
 
 -- | Create a predicate function that checks whether within a provided spanning

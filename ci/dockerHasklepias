@@ -22,6 +22,7 @@ COPY hasklepias-examples/hasklepias-examples.cabal hasklepias-examples/hasklepia
 COPY cohort-collector/cohort-collector.cabal cohort-collector/cohort-collector.cabal
 COPY event-data-theory/event-data-theory.cabal event-data-theory/event-data-theory.cabal
 COPY stype/stype.cabal stype/stype.cabal
+COPY maybe-toxic-tutorial/maybe-toxic-tutorial.cabal maybe-toxic-tutorial/maybe-toxic-tutorial.cabal
 
 RUN cabal update
 

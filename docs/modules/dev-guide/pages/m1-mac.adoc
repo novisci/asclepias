@@ -1,0 +1,12 @@
+# M1 Mac Haskell Install
+
+If using an M1 Mac:
+
+. Install homebrew
+. Install llvm
+. Update $\{HOME}/.zshrc to add `export PATH="/opt/homebrew/opt/llvm/bin:$PATH"`
+[source,shell]
+----
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+brew install llvm
+----

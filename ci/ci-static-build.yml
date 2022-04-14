@@ -97,7 +97,7 @@ deploy-docker-cohort-collector-static:
   needs: ["build-cohort-collector-static"]
   image: docker:$DOCKER
   script:
-    - export FILE=$(head -1 install/cohort-collector.bundle)
+    - export FILE=$(head -1 install/cohort-collector.name)
     - export VERSION=$(head -1 install/cohort-collector.version)
     - echo "$FILE"
     - echo $VERSION

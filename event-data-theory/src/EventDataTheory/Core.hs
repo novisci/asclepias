@@ -103,17 +103,17 @@ import           Data.Bifunctor
 The 'Event' type puts a certain amount of structure on
 temporally organized data, 
 while being flexible in the details.
-An 'Event d c a' contains information about
+An 'Event c m a' contains information about
 when something occurred (the 'Interval a')
-and what occurred (the 'Context d c').
-The type parameters @d@, @c@, and @a@ allow to specify 
-the types for the 'Context's @d@omain and @c@oncepts
+and what occurred (the 'Context m c').
+The type parameters @m@, @c@, and @a@ allow to specify 
+the types for the 'Context's @m@odel and @c@oncepts
 and for the type of the 'Interval' end points.
 
 The 'Event' type parameters are ordered from changing the least often to most often.
-A @d@omain tends to be shared across projects.
+A @m@odel tends to be shared across projects.
 For example, multiple projects use data from insurance claims, 
-and thus share a single domain. 
+and thus share a single model. 
 A project often defines its own @c@oncepts, 
 though concepts can be shared across projects.
 Within a project, multiple 'Interval' types may used.
@@ -158,25 +158,25 @@ False
 -}
 
 {- tag::eventType[] -}
-newtype Event c d a = MkEvent ( PairedInterval (Context c d) a )
+newtype Event c m a = MkEvent ( PairedInterval (Context c m) a )
 {- end::eventType[] -}
   deriving (Eq, Show, Generic)
 
-instance (Ord a) => Intervallic (Event c d) a where
+instance (Ord a) => Intervallic (Event c m) a where
   getInterval (MkEvent x) = getInterval x
   setInterval (MkEvent x) y = MkEvent $ setInterval x y
 
-instance Functor (Event c d) where
+instance Functor (Event c m) where
   fmap f (MkEvent x) = MkEvent $ fmap f x
 
 instance Bifunctor (Event c) where
   first f (MkEvent x) = MkEvent $ first (fmap f) x
   second f (MkEvent x) = MkEvent $ second f x
 
-instance Ord c => HasConcept (Event c d a) c where
+instance Ord c => HasConcept (Event c m a) c where
   hasConcept e = hasConcept (getContext e)
 
-instance (Ord a, Ord c, Eq d) => Ord (Event c d a) where
+instance (Ord a, Ord c, Eq m) => Ord (Event c m a) where
   {-|
   Events are first ordered by their intervals.
   In the case two intervals are equal, 
@@ -187,47 +187,47 @@ instance (Ord a, Ord c, Eq d) => Ord (Event c d a) where
     _  -> compare (getConcepts $ getContext x) (getConcepts $ getContext y)
     where ic = compare (getInterval x) (getInterval y)
 
-instance (NFData a, NFData d, NFData c) => NFData (Event c d a)
-instance (Binary d, Binary c, Binary a) => Binary (Event c d a)
+instance (NFData a, NFData m, NFData c) => NFData (Event c m a)
+instance (Binary m, Binary c, Binary a) => Binary (Event c m a)
 -- See NOTE at top of module regarding To/FromJSON instances
 instance ( FromJSON a ) => FromJSON (Interval a)
 instance ( ToJSON a ) => ToJSON (Interval a)
 instance ( FromJSON b, FromJSON a ) => FromJSON (PairedInterval b a)
 instance ( ToJSON b, ToJSON a ) => ToJSON (PairedInterval b a)
-instance ( Ord c, FromJSON c, FromJSON d, FromJSON a ) => FromJSON (Event c d a)
-instance ( Ord c, ToJSON c, ToJSON d, ToJSON a ) => ToJSON (Event c d a)
+instance ( Ord c, FromJSON c, FromJSON m, FromJSON a ) => FromJSON (Event c m a)
+instance ( Ord c, ToJSON c, ToJSON m, ToJSON a ) => ToJSON (Event c m a)
 
-instance (  Eventable c d a
-          , Generic d
+instance (  Eventable c m a
+          , Generic m
           , Typeable c
           , Typeable a
-          , Arbitrary d, Arbitrary c, Arbitrary (Interval a)) =>
-      Arbitrary (Event c d a) where
+          , Arbitrary m, Arbitrary c, Arbitrary (Interval a)) =>
+      Arbitrary (Event c m a) where
   arbitrary = liftM2 event arbitrary arbitrary
 
-instance (Ord a) => From (Event c d a) (Interval a) where
+instance (Ord a) => From (Event c m a) (Interval a) where
   from = getInterval
 
 -- | A synonym for the basic set of constraints an event needs on its types.
-type Eventable c d a = (Eq d, Ord c, Ord a, Show d, Show c, Show a)
+type Eventable c m a = (Eq m, Ord c, Ord a, Show m, Show c, Show a)
   -- Text is not Generic; but c should at least be Typeable
 
 -- | Constraint synonym for @ToJSON@ on an event's component types.
-type ToJSONEvent c d a = (ToJSON d, ToJSON c, ToJSON a)
+type ToJSONEvent c m a = (ToJSON m, ToJSON c, ToJSON a)
 
 -- | Constraint synonym for @FromSON@ on an event's component types.
-type FromJSONEvent c d a = (FromJSON d, FromJSON c, FromJSON a)
+type FromJSONEvent c m a = (FromJSON m, FromJSON c, FromJSON a)
 
--- | A smart constructor for 'Event d c a's.
-event :: (Eventable c d a) => Interval a -> Context c d -> Event c d a
+-- | A smart constructor for 'Event c m a's.
+event :: (Eventable c m a) => Interval a -> Context c m -> Event c m a
 event i c = MkEvent (makePairedInterval c i)
 
 -- | Unpack an 'Event' from its constructor.
-getEvent :: Event c d a -> PairedInterval (Context c d) a
+getEvent :: Event c m a -> PairedInterval (Context c m) a
 getEvent (MkEvent x) = x
 
 -- | Get the 'Context' of an 'Event'. 
-getContext :: Event c d a -> Context c d
+getContext :: Event c m a -> Context c m
 getContext = getPairData . getEvent
 
 {-|
@@ -254,15 +254,15 @@ This information is carried in context's @concepts@ and/or @facts@.
 'Concepts' are set of tags that can be used to identify and filter events
 using the 'hasConcept' function
 or the related 'hasAnyConcepts' and 'hasAllConcepts' functions.
-The @facts@ field contains data of type @d@. 
-The @d@ stands for @d@omain, 
+The @facts@ field contains data of type @m@. 
+The @m@ stands for @m@odel, 
 meaning the scope and shape of facts
 relevant to a particular scientific line of work.
 For example, some studies using health care claims data may be sufficiently different
 in scope, semanitcs, and aims to warrant having a different collection of facts
 from, say, electronic medical records data. 
 However, one could create a collection of facts that includes both claims and EHR data.
-By having a 'Context' parametrized by the shape of a domain's facts,
+By having a 'Context' parametrized by the shape of a model,
 users are free to define the structure of their facts as needed. 
 
 A context also has a @source@ field,
@@ -271,41 +271,41 @@ which carries information about the provenance of the data.
 
 -}
 {- tag::contextType[] -}
-data Context c d = MkContext
+data Context c m = MkContext
   { -- | the 'Concepts' of a @Context@
     getConcepts :: Concepts c -- <1>
     -- | the facts of a @Context@.  
-  , getFacts    :: d -- <2>
+  , getFacts    :: m -- <2>
     -- | the 'Source' of @Context@
   , getSource   :: Maybe Source -- <3>
   }
   {- end::contextType[] -}
   deriving (Eq, Show, Generic)
 
-instance Ord c => HasConcept (Context c d) c where
+instance Ord c => HasConcept (Context c m) c where
   hasConcept c = hasConcept (getConcepts c)
 
-instance (NFData d, NFData c) => NFData (Context c d)
-instance (Binary d, Binary c) => Binary (Context c d)
+instance (NFData m, NFData c) => NFData (Context c m)
+instance (Binary m, Binary c) => Binary (Context c m)
 -- See NOTE at top of module regarding To/FromJSON
-instance ( Ord c, FromJSON c, FromJSON d ) => FromJSON (Context c d)
-instance ( Ord c, ToJSON c, ToJSON d ) => ToJSON (Context c d)
+instance ( Ord c, FromJSON c, FromJSON m ) => FromJSON (Context c m)
+instance ( Ord c, ToJSON c, ToJSON m ) => ToJSON (Context c m)
 
-instance ( Arbitrary d, Show d, Eq d, Generic d
+instance ( Arbitrary m, Show m, Eq m, Generic m
          , Arbitrary c, Show c, Eq c, Ord c, Typeable c) =>
-      Arbitrary (Context c d) where
+      Arbitrary (Context c m) where
   arbitrary = liftM3 MkContext arbitrary arbitrary (pure Nothing)
 
 instance Functor (Context c) where
-  fmap f (MkContext c d s) = MkContext c (f d) s
+  fmap f (MkContext c m s) = MkContext c (f m) s
 
 -- | Smart constructor for a 'Context',
 context
-  :: (Generic d, Ord c, Typeable c)
+  :: (Generic m, Ord c, Typeable c)
   => Concepts c
-  -> d
+  -> m
   -> Maybe Source
-  -> Context c d
+  -> Context c m
 context = MkContext
 
 {-|
@@ -332,7 +332,7 @@ bimapContext g f (MkContext cpts fcts src) =
 {-|
 Turn the 'Source' within a 'Context' to 'Nothing'.
 -}
-dropSource :: Context c d -> Context c d
+dropSource :: Context c m -> Context c m
 dropSource (MkContext cpts fcts _) = MkContext cpts fcts Nothing
 
 {-|
@@ -472,7 +472,7 @@ A Concept Interval is simply a synonym for an 'Interval' paired with 'Concepts'.
 -}
 type ConceptsInterval c a = PairedInterval (Concepts c) a
 
-instance From (Event c d a) (ConceptsInterval c a) where
+instance From (Event c m a) (ConceptsInterval c a) where
   from = first getConcepts . getEvent
 instance (Ord a) => From (ConceptsInterval c a) (Interval a) where
   from = getInterval
@@ -504,35 +504,35 @@ instance From T.Text SubjectID where
 
 {-|
 Provides a common interface to lift a 'Predicate' on some component
-of an 'Event' to a 'Predicate (Event d c a)'.
-For example, if @x@ is a 'Predicate' on some 'Context d c',
-@liftToEventPredicate x@ yields a @Predicate (Event d c a)@, 
+of an 'Event' to a 'Predicate (Event c m a)'.
+For example, if @x@ is a 'Predicate' on some 'Context m c',
+@liftToEventPredicate x@ yields a @Predicate (Event c m a)@, 
 thus the predicate then also be applied to @Event@s.
 
 This class is only used in this 'EventDataTheory.Core' module
 for the purposes of having a single @liftToEventPredicate@ function
 that works on 'Concepts', 'Context', or 'Event' data.
 -}
-class EventPredicate element c d a where
+class EventPredicate element c m a where
   {-|
   Lifts a 'Predicate' of a component of an 'Event'
   to a 'Predicate' on an 'Event'
   -}
-  liftToEventPredicate :: Predicate element -> Predicate (Event c d a)
+  liftToEventPredicate :: Predicate element -> Predicate (Event c m a)
 
-instance EventPredicate (Context c d) c d a where
+instance EventPredicate (Context c m) c m a where
   liftToEventPredicate = contramap getContext
 
-instance EventPredicate d c d a where
+instance EventPredicate m c m a where
   liftToEventPredicate = contramap (getFacts . getContext)
 
-instance EventPredicate (Concepts c) c d a where
+instance EventPredicate (Concepts c) c m a where
   liftToEventPredicate = contramap (getConcepts . getContext)
 
-instance EventPredicate (Maybe Source) c d a where
+instance EventPredicate (Maybe Source) c m a where
   liftToEventPredicate = contramap (getSource . getContext)
 
-instance (Ord a) => EventPredicate (Interval a) c d a where
+instance (Ord a) => EventPredicate (Interval a) c m a where
   liftToEventPredicate = contramap getInterval
 
 {-|
@@ -544,23 +544,23 @@ This class is only used in this 'EventDataTheory.Core' module
 for the purposes of having a single @liftToEventFunction@ function
 that works on 'Concepts', 'Context', or 'Event' data.
 -}
-class EventFunction f c c' d d' a a' where
+class EventFunction f c c' m m'  a a' where
   {-|
   Lifts a function @@ of a component of an 'Event'
   to a function on an 'Event'
   -}
-  liftToEventFunction :: (Ord c, Ord c') => f -> Event c d a -> Event c' d' a'
+  liftToEventFunction :: (Ord c, Ord c') => f -> Event c m a -> Event c' m'  a'
 
-instance EventFunction (c -> c') c c' d d a a where
+instance EventFunction (c -> c') c c' m m a a where
   liftToEventFunction f = trimapEvent id f id
 
-instance EventFunction (d -> d') c c d d' a a where
+instance EventFunction (m -> m') c c m m' a a where
   liftToEventFunction = trimapEvent id id
 
-instance EventFunction (Context c d -> Context c' d') c c' d d' a a where
+instance EventFunction (Context c m -> Context c' m' ) c c' m m'  a a where
   liftToEventFunction f (MkEvent x) = MkEvent $ first f x
 
-instance EventFunction (a -> a') c c d d a a' where
+instance EventFunction (a -> a') c c m m a a' where
   liftToEventFunction f = trimapEvent f id id
 
 {-|
@@ -575,18 +575,18 @@ that works on 'Concepts', 'Context', or 'Event' data.
 -- NOTE: this kind of constraint solving could probably be done
 -- using the Select monad from Control.Monad.Trans.Select
 -- but it's not clear that would add anything other than additional deps.
-class ContextFunction f c c' d d' where
+class ContextFunction f c c' m m'  where
   {-|
   Lifts a function @f@ of a component of an 'Context'
   to a function on an 'Context'
   -}
-  liftToContextFunction :: (Ord c, Ord c') => f -> Context c d -> Context c' d'
+  liftToContextFunction :: (Ord c, Ord c') => f -> Context c m -> Context c' m'
 
-instance ContextFunction (Concepts c -> Concepts c') c c' d d where
+instance ContextFunction (Concepts c -> Concepts c') c c' m m where
   liftToContextFunction f (MkContext x y z) = MkContext (f x) y z
 
-instance ContextFunction (c -> c') c c' d d where
+instance ContextFunction (c -> c') c c' m m where
   liftToContextFunction f = bimapContext f id
 
-instance ContextFunction (d -> d') c c d d' where
+instance ContextFunction (m -> m') c c m m'  where
   liftToContextFunction = bimapContext id

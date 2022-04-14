@@ -1,1 +1,0 @@
-["abc", "2020-01-01", "2020-01-01", "Death", ["someThing"], {"patient_id":"abc","domain":"Death","facts":{},"source":{"table":"someTable","database":"someDb"},"time":{"begin":"2020-01-01","end":"2020-01-01"}}]

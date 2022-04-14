@@ -1,0 +1,6 @@
+= Changelog for hasklepias-examples
+
+== 0.1.0
+
+* Move and update examples and tests from `hasklepias-main`.
+* Add tests for cohort and filter applications to evaluate reading and writing to/from S3.

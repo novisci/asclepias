@@ -11,7 +11,6 @@ These functions may be moved to more appropriate modules in future versions.
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE GADTs #-}
-{-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE DataKinds #-}
 
 module Hasklepias.AppUtilities
@@ -74,16 +73,16 @@ import           Lens.Micro.Extras              ( view )
 import           Options.Applicative
 
 
--- imports for amazonka < 2
-import           Network.AWS
-import           Network.AWS.Data
-import           Network.AWS.S3
 import qualified Control.Monad.Trans.AWS       as AWS
-import           System.IO                      ( stderr, putStrLn )
 import           Data.Either                    ( fromRight )
 import           Data.Text                      ( Text
                                                 , pack
                                                 )
+-- imports for amazonka < 2
+import           Network.AWS
+import           Network.AWS.Data
+import           Network.AWS.S3
+import           System.IO                      ( stderr )
 
 
 -- IMPORTS for amazonka 2.0
@@ -146,7 +145,7 @@ readData (S3 r b k) = getS3Object r b k
 
 -- | Write data from a @Location@ to lazy @ByteString@
 writeData :: Location -> B.ByteString -> IO ()
-writeData Std        x = B.putStrLn x
+writeData Std        x = B.putStr x
 writeData (Local f ) x = B.writeFile f x
 writeData (S3 r b k) x = putS3Object r b k x
 
@@ -195,13 +194,13 @@ class (ToBody a) => PutS3 a where
     lgr <- newLogger Error stderr
     env <- newEnv Discover <&> set envLogger lgr . set envRegion r
     AWS.runResourceT . AWS.runAWST env $ do
-      void . send $ set poACL (Just OBucketOwnerFullControl) (putObject b k (toBody o)) 
+      void . send $ set poACL (Just OBucketOwnerFullControl) (putObject b k (toBody o))
       liftIO
-        .  putStrLn
+        .  T.putStrLn
         $  "Successfully Uploaded contents to "
-        <> show b
+        <> pack (show b)
         <> " - "
-        <> show k
+        <> pack (show k)
 
 -- amazonka 2.0...
 -- class (ToBody a) => PutS3 a where

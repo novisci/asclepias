@@ -17,13 +17,13 @@ buildContinuousEnrollment
      , IntervalSizeable a b
      )
   => (i0 a -> AssessmentInterval a) -- ^ function which maps index interval to interval in which to assess enrollment
-  -> Predicate (Event c d a)  -- ^ The predicate to filter to events (e.g. 'FeatureEvents.isEnrollment')
+  -> Predicate (Event c m a)  -- ^ The predicate to filter to events (e.g. 'FeatureEvents.isEnrollment')
   -> b  -- ^ duration of allowable gap between intervals
   ->
     {- tag::templateDefSig0 [] -}
      Definition
        (  Feature indexName (i0 a)
-       -> Feature eventsName (container (Event c d a))
+       -> Feature eventsName (container (Event c m a))
        -> Feature prevName Status
        -> Feature varName Status
        )

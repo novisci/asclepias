@@ -4,12 +4,6 @@
 
 = Project Asclepias
 
-_Asclepias (n)_:
+See documentation at the
+https://docs.novisci.com/noviverse/[noviverse].
 
-1. The genus of North American milkweeds
-named after Linnaeus after the greek god of healing, Asclepius.
-2. A language and software project for defining and deriving features 
-from temporally ordered events using the 
-https://hackage.haskell.org/package/interval-algebra[interval algebra].
-
-#TODO link to getting started and docs site# 

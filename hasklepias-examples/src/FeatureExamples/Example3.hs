@@ -11,10 +11,10 @@ import           Hasklepias
 
 {- tag::function[] -}
 examplePairComparison
-  :: (Eventable c d a, IntervalSizeable a b)
+  :: (Eventable c m a, IntervalSizeable a b)
   => ([c], [c])
   -> Interval a
-  -> [Event c d a]
+  -> [Event c m a]
   -> Maybe a
 examplePairComparison (c1, c2) i =
   filterConcur i    --  <1>
@@ -27,9 +27,9 @@ examplePairComparison (c1, c2) i =
 
 {- tag::definition[] -}
 def
-  :: (Eventable c d a, IntervalSizeable a b)
+  :: (Eventable c m a, IntervalSizeable a b)
   => ([c], [c])
-  -> Def (F n1 (Interval a) -> F n2 [Event c d a] -> F n3 (Maybe a))
+  -> Def (F n1 (Interval a) -> F n2 [Event c m a] -> F n3 (Maybe a))
 def cpts = define (examplePairComparison cpts)
 {- end::definition[] -}
 

@@ -10,8 +10,6 @@ cradle:
       component: "hasklepias-appBuilder"
     - path: "./hasklepias-templates/"
       component: "hasklepias-templates"  
-    - path: "./event-data-model/"
-      component: "event-data-model"
     - path: "./event-data-theory/"
       component: "event-data-theory"
     - path: "./cohort-collector/"

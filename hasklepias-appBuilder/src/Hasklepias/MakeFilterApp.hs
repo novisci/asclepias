@@ -137,25 +137,10 @@ fscIO x y = do
 -- here. Their data is accumulated but not output (if it needs to be) by this 
 -- Conduit.
 prefilterC
-  :: ( Show d
-     , Eq d
-     , Generic d
-     , FromJSON d
-     , Typeable d
-     , Show c
-     , Eq c
-     , Ord c
-     , Typeable c
-     , FromJSON c
-     , FromJSON a
-     , Typeable a
-     , Show a
-     , IntervalSizeable a b
-     , Monad m
-     )
-  => (Event c d a -> Bool)
+  :: (Eventable c m a, EventLineAble c m a b, FromJSONEvent c m a, Monad f)
+  => (Event c m a -> Bool)
   -> C.ByteString
-  -> ConduitM i g m (Maybe (IO FilterState))
+  -> ConduitM i g f (Maybe (IO FilterState))
 prefilterC p x =
   yield x
     .| CC.linesUnboundedAscii
@@ -197,23 +182,9 @@ the same order as the input, provided that at least one line successfully parses
 into an `Event` and satisfies the predicate. 
 -}
 makeFilterApp
-  :: ( Show d
-     , Eq d
-     , Generic d
-     , FromJSON d
-     , Show c
-     , Eq c
-     , Ord c
-     , Typeable c
-     , FromJSON c
-     , FromJSON a
-     , Show a
-     , Typeable a
-     , Typeable d
-     , IntervalSizeable a b
-     )
+  :: (Eventable c m a, EventLineAble c m a b, FromJSONEvent c m a)
   => String -- ^ name of the app (e.g. a project's id)
-  -> (Event c d a -> Bool) -- ^ predicate to evaluate for each event
+  -> (Event c m a -> Bool) -- ^ predicate to evaluate for each event
   -> FilterApp IO
 makeFilterApp name predicate = MkFilterApp $ \l -> do
   options <- execParser (makeAppArgs name)

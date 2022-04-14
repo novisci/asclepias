@@ -71,7 +71,7 @@ defBaseline180Enrollment
   :: IntervalSizeable a b
   => Definition
        (  Feature indexName (Interval a)
-       -> Feature eventsName [Event Text d a]
+       -> Feature eventsName [Event Text m a]
        -> Feature varName [b]
        )
 {- tag::example1sig[] -}

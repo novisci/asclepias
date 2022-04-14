@@ -88,8 +88,8 @@ deploy-aws-cohort-collector-static:
         install/${BUNDLE} \
         s3://$(< ci/downloads_path)${BUNDLE} \
         --acl public-read
-  # rules:
-  #   - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
 
 # Deploy the app as a docker container
 deploy-docker-cohort-collector-static:
@@ -97,8 +97,8 @@ deploy-docker-cohort-collector-static:
   needs: ["build-cohort-collector-static"]
   image: docker:$DOCKER
   script:
-    - export FILE=$(< install/cohort-collector.bundle)
-    - export VERSION=$(< install/cohort-collector.version)
+    - export FILE=$(head -1 install/cohort-collector.bundle)
+    - export VERSION=$(head -1 install/cohort-collector.version)
     - echo $FILE
     - echo $VERSION
     - ./ci/ci-docker-build-cohort-collector.sh $VERSION install/$FILE

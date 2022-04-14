@@ -15,10 +15,10 @@ import           Hasklepias
 
 {- tag::function[] -}
 durationsOf
-  :: forall n d c a b
-   . (KnownSymbol n, Eventable c d a, IntervalSizeable a b)
+  :: forall n m c a b
+   . (KnownSymbol n, Eventable c m a, IntervalSizeable a b)
   => [c]
-  -> [Event c d a]
+  -> [Event c m a]
   -> Feature n [b]
 durationsOf cpts =
   filter (`hasAnyConcepts` cpts) -- <1>
@@ -32,9 +32,9 @@ durationsOf cpts =
 
 {- tag::definition[] -}
 def
-  :: (KnownSymbol n1, KnownSymbol n2, Eventable c d a, IntervalSizeable a b)
+  :: (KnownSymbol n1, KnownSymbol n2, Eventable c m a, IntervalSizeable a b)
   => [c] -- <1>
-  -> Def (F n1 [Event c d a] -> F n2 [b]) -- <2>
+  -> Def (F n1 [Event c m a] -> F n2 [b]) -- <2>
 def cpts = defineA (durationsOf cpts)
 {- end::definition[] -}
 

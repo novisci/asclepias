@@ -34,12 +34,12 @@ flwup :: (IntervalSizeable a b) => Interval a -> AssessmentInterval a
 flwup = makeFollowupFromIndex 30
 
 -- | TODO
-atleastNofX :: (Ord c) => Int -> [c] -> [Event c d a] -> Bool
+atleastNofX :: (Ord c) => Int -> [c] -> [Event c m a] -> Bool
 atleastNofX n xs es = tallyEvents (Predicate (`hasAnyConcepts` xs)) es >= n
 
 -- | TODO
 makeConceptsFilter
-  :: (Filterable f, Ord c) => [c] -> f (Event c d a) -> f (Event c d a)
+  :: (Filterable f, Ord c) => [c] -> f (Event c m a) -> f (Event c m a)
 makeConceptsFilter cpts = filter (`hasAnyConcepts` cpts)
 
 {-

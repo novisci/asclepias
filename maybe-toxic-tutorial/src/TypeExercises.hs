@@ -1,4 +1,5 @@
 -- IGNORE: i have explicitly turned off certain compiler warnings.
+{-# HLINT ignore #-}
 {-# OPTIONS_GHC -Wno-unused-type-patterns #-}
 {-# OPTIONS_GHC -Wno-missing-signatures #-}
 {-# OPTIONS_GHC -Wno-type-defaults #-}
@@ -8,9 +9,12 @@
 
 -- NOTE run ghci with src as current working directory, else you will get a
 -- failure to find TypeTribExamples module
-module TypeExercises ( ) where
+module TypeExercises
+  () where
 
-import           TypeExamples (Tree, Hour(..))
+import           TypeExamples                   ( Hour(..)
+                                                , Tree
+                                                )
 
 -- EX 1
 -- write a function that adds 3 to any instance of the typeclass Num

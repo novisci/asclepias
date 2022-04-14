@@ -1,0 +1,12 @@
+:navtitle: Define features
+:toc:
+
+= Defining Features in Ascelpias
+
+[TIP]
+For more explanation on the theory behind features,
+see xref:theory.adoc[].
+
+include::features:example$src/Example2.adoc[leveloffset=+1]
+
+include::features:example$src/Example3.adoc[leveloffset=+1]

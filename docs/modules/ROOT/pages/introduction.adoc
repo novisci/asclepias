@@ -1,0 +1,30 @@
+:navtitle: Introduction
+:haddock-site: #TODO#
+
+= Introduction to Asclepias
+
+This site is the documentation hub for Asclepias,
+a domain specific language for building and analyzing cohorts.
+
+== Where to start
+
+If you're unfamiliar with asclepias and what it can do,
+start by reading the <<motivation>> and <<benefits>> sections below.
+If this is your first time using asclepias,
+read xref:getting-started.adoc[getting started].
+If you're already an asclepias user,
+check out our available tutorials and how-to guides.
+
+[NOTE]
+Reference information for `+hasklepias+` functions is located 
+link:haddock-site:[here].
+
+[#motivation]
+== Motivation
+
+include::partial$motivation.adoc[]
+
+[#benefits]
+== Benefits
+
+include::partial$benefits.adoc[]

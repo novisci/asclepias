@@ -1,6 +1,7 @@
 cabal-version:  2.2
+-- tag::devel-docs-package-properties[]
 name:           hasklepias-main
-version:        0.22.4
+version:        0.24.0
 description:    Please see the README on GitHub at <https://github.com/novisci/asclepias#readme>
 homepage:       https://github.com/novisci/asclepias/#readme
 bug-reports:    https://github.com/novisci/asclepias/issues
@@ -15,90 +16,41 @@ build-type:     Simple
 extra-source-files:
     README.md
     ChangeLog.md
+-- end::devel-docs-package-properties[]
 
 source-repository head
   type: git
   location: https://github.com/novisci/asclepias
 
+-- tag::devel-docs-components[]
 library
   exposed-modules:
       Hasklepias
-      Hasklepias.ExampleApp
-      Hasklepias.ExampleFilterApp
+      Hasklepias.Misc
+      Hasklepias.Reexports
+      Hasklepias.ReexportsUnsafe
   hs-source-dirs:
       src
   build-depends:
     -- Internal packages
-      edm
-    , stype
+      event-data-theory
+    , hasklepias-appBuilder
     , hasklepias-core
     , hasklepias-templates
-
-  default-language: Haskell2010
-
-test-suite examples
-  type: exitcode-stdio-1.0
-  main-is: Main.hs
-  other-modules:
-      ExampleEvents
-      ExampleFeatures1
-      ExampleFeatures2
-      ExampleFeatures3
-      ExampleFeatures4
-      ExampleCohort1
-  hs-source-dirs:
-      examples
-  build-depends:
-      hasklepias-main
-    , hasklepias-core
-    , hspec
-    , base >=4.14 && <4.15
-    , tasty  == 1.4.1
-    , tasty-hunit == 0.10.0.3
-    , tasty-hspec == 1.2
-  default-language: Haskell2010
-
-executable exampleApp
-  main-is: Main.hs
-  hs-source-dirs:
-      exampleApp
-  build-depends:
-      hasklepias-main
-  default-language: Haskell2010
-
-test-suite exampleApp-test
-  type: exitcode-stdio-1.0
-  main-is: Main.hs
-  hs-source-dirs:
-      exampleApp-test
-  build-depends:
-      hasklepias-main
-    , hasklepias-core
-    , base >=4.14 && <4.15
-    , tasty  == 1.4.1
-    , tasty-silver 
-    , bytestring
-  default-language: Haskell2010
-
-executable exampleFilterApp
-  main-is: Main.hs
-  hs-source-dirs:
-      exampleFilterApp
-  build-depends:
-      hasklepias-main
-  default-language: Haskell2010
-
-test-suite exampleFilterApp-test
-  type: exitcode-stdio-1.0
-  main-is: Main.hs
-  hs-source-dirs:
-      exampleFilterApp-test
-  build-depends:
-      hasklepias-main
-    , hasklepias-core
-    , base >=4.14 && <4.15
-    , tasty  == 1.4.1
-    , tasty-silver 
-    , bytestring
-    , silently == 1.2.5.1
+    , stype
+    -- External packages
+    , aeson == 1.5.6.0
+    , base >=4.14 && <5
+    , containers == 0.6.5.1
+    , flow >= 2.0.0.0
+    , generic-lens >= 2.2.0.0
+    , microlens >= 0.4.12.0
+    , safe >= 0.3
+    , tasty  >= 1.4.1
+    , tasty-hunit >= 0.10
+    , text == 1.2.4.1
+    , time >= 1.11
+    , tuple >= 0.3
+    , witherable >= 0.4.1
+    , witch >= 1.0
   default-language: Haskell2010

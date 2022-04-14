@@ -1,0 +1,7 @@
+:navtitle: Cohort templates
+:description: Reference material for all cohort templates
+:toc:
+
+= Cohort Specification Templates
+
+This section includes description and usage guides for cohort specification templates.

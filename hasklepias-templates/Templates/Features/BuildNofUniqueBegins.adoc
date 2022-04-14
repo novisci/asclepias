@@ -1,0 +1,32 @@
+:description: documentation for NofUniqueBegins template
+:source-highlighter: highlightjs
+
+= `buildNofUniqueBegins`: Find the begin of all unique N events
+
+[TIP]
+====
+Use this template to create a `Definition` for a `Feature` that:
+
+* [x] filters a list of events to those satisfying
+both a given predicate and a relate to the assessment interval
+in the given way;
+* [x] returns the a list of pairs `(b, i)` where
+** `b` is the difference between the `begin` of each unique event 
+and the given assessment interval
+** `i` is a counter starting from `1`
+====
+
+== Usage and Examples
+
+#TODO#
+
+== Source code
+
+[%collapsible]
+.View source code
+====
+[source,haskell]
+----
+include::BuildNofUniqueBegins.hs[tag=template0]
+----
+====

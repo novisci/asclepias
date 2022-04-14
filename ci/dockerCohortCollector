@@ -1,0 +1,8 @@
+# Defines a minimal docker image for running the cohort collector application
+FROM scratch
+ARG file
+
+COPY ${file} cohort-collector
+
+ENTRYPOINT ["/cohort-collector"]
+

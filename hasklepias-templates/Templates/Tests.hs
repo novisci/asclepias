@@ -10,7 +10,7 @@ These functions may be moved to more appropriate modules in future versions.
 -- {-# OPTIONS_HADDOCK hide #-}
 
 module Templates.Tests
-  ( templateTests
+  ( testsMain
   ) where
 
 
@@ -22,11 +22,12 @@ import           Templates.Features.BuildIsEnrolled
 import           Templates.Features.BuildNofUniqueBegins
                                                 ( buildNofUniqueBeginsTests )
 import           Templates.Features.BuildNofX   ( buildNofXTests )
-import           Templates.Features.BuildNofXOrNofYWithGap
-                                                ( buildNofXOrNofYWithGapTests )
+import           Templates.Features.BuildNofXOrMofYWithGap
+                                                ( buildNofXOrMofYWithGapTests )
 import           Templates.Features.BuildNofXWithGap
                                                 ( buildNofXWithGapTests )
 import           Test.Tasty                     ( TestTree
+                                                , defaultMain
                                                 , testGroup
                                                 )
 
@@ -37,6 +38,9 @@ templateTests = testGroup
   , buildContinuousEnrollmentTests
   , buildNofXTests
   , buildNofXWithGapTests
-  , buildNofXOrNofYWithGapTests
+  , buildNofXOrMofYWithGapTests
   , buildNofUniqueBeginsTests
   ]
+
+testsMain :: IO ()
+testsMain = defaultMain templateTests

@@ -3,7 +3,7 @@
 -- this places interval-algebra in the ghc package database
 -- only packages in the database will be recognized as importable by ghci
 -- see the list of existing packages by running in the terminal ghc-pkg list
-
+{-# HLINT ignore #-}
 {-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# OPTIONS_GHC -Wno-unused-type-patterns #-}
@@ -13,16 +13,20 @@
 {-# OPTIONS_GHC -Wno-unused-matches #-}
 
 
-module IntervalExamples ( Meeting (..)
-                        , Hour (..)
-                        , MeetingData
-                        , Natural
-                        , naturalFromInteger
-                        , naturalToInteger
-                        , module IntervalAlgebra
-                        ) where
+module IntervalExamples
+  ( Meeting(..)
+  , Hour(..)
+  , MeetingData
+  , Natural
+  , naturalFromInteger
+  , naturalToInteger
+  , module IntervalAlgebra
+  ) where
 
-import           GHC.Natural     (Natural, naturalFromInteger, naturalToInteger)
+import           GHC.Natural                    ( Natural
+                                                , naturalFromInteger
+                                                , naturalToInteger
+                                                )
 import           IntervalAlgebra
 
   {-
@@ -144,17 +148,23 @@ relDefaults = relate beginerDefault enderDefault
 -- NOTE: we're using the 'infix' versions of these functions as indicated by
 -- the backticks, meaning we do x `metBy` y instead of metBy x y
 alwaysFalse :: Bool
-alwaysFalse = (enderDefault `metBy` beginerDefault) && (enderDefault `before` beginerDefault)
+alwaysFalse =
+  (enderDefault `metBy` beginerDefault)
+    && (enderDefault `before` beginerDefault)
 
 -- create a predicate function that is the union (logical 'or') of two predicate functions. Note the type signature and compare to that of the operator (<|>) in docs. In particular the ComparativePredicateOf2 type just wraps functions that take two possibly different types of intervals and return a Bool
 
-metOrBefore :: (Intervallic i0 a, Intervallic i1 a) => ComparativePredicateOf2 (i0 a) (i1 a)
+metOrBefore
+  :: (Intervallic i0 a, Intervallic i1 a)
+  => ComparativePredicateOf2 (i0 a) (i1 a)
 metOrBefore = metBy <|> meets <|> before
 
 -- or in a fold. see the wiki for some nice examples.  similar to Reduce in R
 -- https://wiki.haskell.org/Foldr_Foldl_Foldl'
-metOrBefore' :: (Intervallic i0 a, Intervallic i1 a) => ComparativePredicateOf2 (i0 a) (i1 a)
-metOrBefore' = foldr (<|>)  metBy [meets, before]
+metOrBefore'
+  :: (Intervallic i0 a, Intervallic i1 a)
+  => ComparativePredicateOf2 (i0 a) (i1 a)
+metOrBefore' = foldr (<|>) metBy [meets, before]
 
 -- actually, this is as alternate way to define a version of the
 -- interval-algebra function unionPredicates, with a default of False if we
@@ -168,10 +178,15 @@ metOrBefore' = foldr (<|>)  metBy [meets, before]
 -- The constant False alone there would not work because it doesn't fit the
 -- type signature needed for (<|>)
 
-unionPredicates' :: (Intervallic i0 a, Intervallic i1 a) => [ComparativePredicateOf2 (i0 a) (i1 a)] -> ComparativePredicateOf2 (i0 a) (i1 a)
+unionPredicates'
+  :: (Intervallic i0 a, Intervallic i1 a)
+  => [ComparativePredicateOf2 (i0 a) (i1 a)]
+  -> ComparativePredicateOf2 (i0 a) (i1 a)
 unionPredicates' = foldr (<|>) (\x y -> False)
 
-anotherMetOrBefore :: (Intervallic i0 a, Intervallic i1 a) => ComparativePredicateOf2 (i0 a) (i1 a)
+anotherMetOrBefore
+  :: (Intervallic i0 a, Intervallic i1 a)
+  => ComparativePredicateOf2 (i0 a) (i1 a)
 anotherMetOrBefore = unionPredicates' [metBy, meets, before]
 
 
@@ -201,7 +216,7 @@ startMetOrBefore = metOrBefore startFromEnd beginerDefault
 
 -- build an *infinite* list of intervals of unit duration by mapping over end points
 beginerList :: [Interval Int]
-beginerList = map (beginerval (0::Int)) [0..]
+beginerList = map (beginerval (0 :: Int)) [0 ..]
 
 -- make beginerList finite by taking the first N elements
 beginerListN :: Int -> [Interval Int]
@@ -218,7 +233,13 @@ lengthNInterval = combineIntervals . beginerListN
 -- more interesting is what happens when you have a mix of overlapping and disjoint intervals
 -- guess and check the output
 choppyIntervals :: [Interval Int]
-choppyIntervals = combineIntervals [beginerval 1 0, beginerval 2 0, beginerval 2 1, beginerval 2 4, beginerval 1 5]
+choppyIntervals = combineIntervals
+  [ beginerval 1 0
+  , beginerval 2 0
+  , beginerval 2 1
+  , beginerval 2 4
+  , beginerval 1 5
+  ]
 
 -- there are several filtering operations, which you can think of as comparing a list of intervals and filtering those that satisfy some relation to a reference interval
 -- for example, here we filter beginerList to those such that (10, 11) is *after* a given interval in the list (ie filter intervals before (10, 11)),  where 'after' is the IntervalAlgebra function
@@ -383,7 +404,10 @@ beginerMeet i h = Meeting (beginerval i h)
 
 -- a default meeting we can modify
 meetingDefault :: MeetingData Hour
-meetingDefault = MeetingData { mtgInterval = beginerMeet 0 (Hour 0), mtgName = "", mtgInvited = [] }
+meetingDefault = MeetingData { mtgInterval = beginerMeet 0 (Hour 0)
+                             , mtgName     = ""
+                             , mtgInvited  = []
+                             }
 
 -- modify meetingData to contain a one-hour meeting starting at Hour 9
 -- and to change its name to Standup
@@ -474,17 +498,16 @@ instance (Ord a) => Intervallic Meeting a where
       A Meeting with some metadata. Shows how you can embed intervals into larger data structures.
       -}
 
-data MeetingData c
-  = MeetingData
-      { mtgInterval :: Meeting c
-      , mtgName     :: String
-      , mtgInvited  :: [String]
-      }
-  deriving (Show)
+data MeetingData c = MeetingData
+  { mtgInterval :: Meeting c
+  , mtgName     :: String
+  , mtgInvited  :: [String]
+  }
+  deriving Show
 
 -- using getInterval and setInterval from Meeting Intervallic instance
 instance (Ord a) => Intervallic MeetingData a where
   getInterval MeetingData { mtgInterval = x } = getInterval x
 
-  setInterval md y = md {mtgInterval = setInterval x y}
-    where MeetingData {mtgInterval = x} = md
+  setInterval md y = md { mtgInterval = setInterval x y }
+    where MeetingData { mtgInterval = x } = md

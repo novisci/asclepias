@@ -10,20 +10,22 @@ Maintainer  : bsaul@novisci.com
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE OverloadedStrings #-}
 
-module Stype.Aeson (
-) where
+module Stype.Aeson
+  () where
 
-import Data.Aeson                   
+import           Data.Aeson
+import           Data.Text
+import           Stype.Categorical              ( Binary
+                                                , Nominal
+                                                , toBool
+                                                )
 -- ( ToJSON(..)) 
-import Stype.Numeric                ( Count
-                                    , Continuous(..)
-                                    , NonnegContinuous(..)
-                                    , EventTime(..)
-                                    , MaybeCensored )
-import Stype.Categorical            ( Nominal
-                                    , Binary
-                                    , toBool )
-import Data.Text
+import           Stype.Numeric                  ( Continuous(..)
+                                                , Count
+                                                , EventTime(..)
+                                                , MaybeCensored
+                                                , NonnegContinuous(..)
+                                                )
 
 instance ToJSON Count where
 
@@ -33,8 +35,8 @@ instance ToJSON a => ToJSON (Continuous a) where
   toJSON ContInf    = "Inf"
 
 instance ToJSON a => ToJSON (NonnegContinuous a) where
-  toJSON (NonNegCont x)   = toJSON x
-  toJSON NonNegContInf    = "Inf"
+  toJSON (NonNegCont x) = toJSON x
+  toJSON NonNegContInf  = "Inf"
 
 instance ToJSON a => ToJSON (EventTime a) where
   toJSON (EventTime x) = toJSON x
@@ -44,4 +46,4 @@ instance ToJSON a => ToJSON (MaybeCensored a) where
 instance ToJSON a => ToJSON (Nominal a) where
 
 instance ToJSON Binary where
-    toJSON x = toJSON (toBool x)
+  toJSON x = toJSON (toBool x)

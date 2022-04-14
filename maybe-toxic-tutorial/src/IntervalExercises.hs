@@ -1,10 +1,12 @@
 -- NOTE run ghci with src as current working directory, else you will get a
 -- failure to find the examples module
-
+{-# HLINT ignore #-}
 {-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 
-module IntervalExercises (module IntervalExercises) where
+module IntervalExercises
+  ( module IntervalExercises
+  ) where
 
 -- add imports here as necessary
 -- you might need to add those to the .cabal file first
@@ -148,22 +150,21 @@ isConflict = undefined
 class ChunkSize a where
    chunksizeToNominalDiffTime :: a -> NominalDiffTime
 
-data UTCChunked a
-  = UTCChunked
-      { chunkSize :: a
-      , nChunks   :: Integer
-      }
-  deriving (Eq)
+data UTCChunked a = UTCChunked
+  { chunkSize :: a
+  , nChunks   :: Integer
+  }
+  deriving Eq
 
 
 -- Utilities
 -- could write in terms of defaultUTC rather than hard-coding
 chunkedToUTCTime :: (ChunkSize a, Eq a) => UTCChunked a -> UTCTime
 chunkedToUTCTime cx = addUTCTime dt ref
-   where
-      ref = UTCTime { utctDay = ModifiedJulianDay 0, utctDayTime = 0 }
-      UTCChunked { chunkSize = sx, nChunks = tx } = cx
-      dt = chunksizeToNominalDiffTime sx * fromInteger tx
+ where
+  ref = UTCTime { utctDay = ModifiedJulianDay 0, utctDayTime = 0 }
+  UTCChunked { chunkSize = sx, nChunks = tx } = cx
+  dt  = chunksizeToNominalDiffTime sx * fromInteger tx
 
 -- EXERCISE
 --chunkedFromUTCTime :: (ChunkSize a) => a -> UTCTime -> UTCChunked a
@@ -172,50 +173,54 @@ chunkedToUTCTime cx = addUTCTime dt ref
 
 -- UTCChunked instances
 instance (Eq a, ChunkSize a) => Show (UTCChunked a) where
-   show = show . chunkedToUTCTime
+  show = show . chunkedToUTCTime
 
 instance (Eq a, ChunkSize a) => Ord (UTCChunked a) where
-   (<=) cx cy = tx <= ty
-      where UTCChunked { nChunks = tx } = cx
-            UTCChunked { nChunks = ty } = cy
+  (<=) cx cy = tx <= ty
+   where
+    UTCChunked { nChunks = tx } = cx
+    UTCChunked { nChunks = ty } = cy
 
 -- Note that chunksSize is required to be the same type.
 -- it is up to you to ensure that implies the chunksizes are equal
 instance (Eq a, ChunkSize a) => Num (UTCChunked a) where
-   (+) cx cy = cx { nChunks = ty + tx }
-     where UTCChunked { nChunks = tx } = cx
-           UTCChunked { nChunks = ty } = cy
-   -- EXERCISE
-   (-) = undefined
-   (*) = undefined
-   abs = undefined
-   signum = undefined
-   fromInteger = undefined
+  (+) cx cy = cx { nChunks = ty + tx }
+   where
+    UTCChunked { nChunks = tx } = cx
+    UTCChunked { nChunks = ty } = cy
+  -- EXERCISE
+  (-)         = undefined
+  (*)         = undefined
+  abs         = undefined
+  signum      = undefined
+  fromInteger = undefined
 
 instance (Eq a, ChunkSize a) => IntervalSizeable (UTCChunked a) NominalDiffTime where
-   moment' x  = chunksizeToNominalDiffTime c
-      where UTCChunked { chunkSize = c } = begin $ getInterval x
+  moment' x = chunksizeToNominalDiffTime c
+    where UTCChunked { chunkSize = c } = begin $ getInterval x
 
-   add x c = c { nChunks = dn + t }
-      where
-         UTCChunked { chunkSize = s, nChunks = t } = c
-         dn = toInteger $ truncate (x / chunksizeToNominalDiffTime s)
+  add x c = c { nChunks = dn + t }
+   where
+    UTCChunked { chunkSize = s, nChunks = t } = c
+    dn = toInteger $ truncate (x / chunksizeToNominalDiffTime s)
 
-   -- EXERCISE
-   diff = undefined
+  -- EXERCISE
+  diff = undefined
 
 
 
 -- MAKE STUFF
 
-data FifteenMin = FifteenMin deriving (Show, Eq)
-data OneMin = OneMin deriving (Show, Eq)
+data FifteenMin = FifteenMin
+  deriving (Show, Eq)
+data OneMin = OneMin
+  deriving (Show, Eq)
 
 instance ChunkSize FifteenMin where
-   chunksizeToNominalDiffTime _ = fromRational 60 * 15
+  chunksizeToNominalDiffTime _ = fromRational 60 * 15
 
 instance ChunkSize OneMin where
-   chunksizeToNominalDiffTime _ = fromRational 60
+  chunksizeToNominalDiffTime _ = fromRational 60
 
 m1 = UTCChunked { chunkSize = FifteenMin, nChunks = 10 }
 m2 = UTCChunked { chunkSize = FifteenMin, nChunks = 20 }

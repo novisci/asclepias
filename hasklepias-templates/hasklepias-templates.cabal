@@ -1,6 +1,6 @@
 cabal-version:  2.2
 name:           hasklepias-templates
-version:        0.1.1
+version:        0.2.0
 description:    Please see the README on GitHub at <https://github.com/novisci/asclepias#readme>
 homepage:       https://github.com/novisci/asclepias/#readme
 bug-reports:    https://github.com/novisci/asclepias/issues
@@ -25,13 +25,12 @@ library
       Templates.Features
       Templates.Tests
   other-modules:
-      Templates.Features.BuildScratch
       Templates.Features.BuildIsEnrolled
       Templates.Features.BuildContinuousEnrollment
       Templates.Features.BuildNofXBase
       Templates.Features.BuildNofX
       Templates.Features.BuildNofXWithGap
-      Templates.Features.BuildNofXOrNofYWithGap
+      Templates.Features.BuildNofXOrMofYWithGap
       Templates.Features.BuildNofUniqueBegins
       Templates.FeatureReqs
       Templates.TestUtilities
@@ -39,21 +38,24 @@ library
   build-depends:
     -- Internal packages
         hasklepias-core
-      , edm
+      , event-data-theory
       , stype
     
     -- External packages
+      , base >=4.14 && <5
+      , containers == 0.6.5.1
+      , OneTuple == 0.3.1
+      , flow >= 2.0.0.0
       , tasty  == 1.4.1
-      , OneTuple
-      , markdown-unlit
+      , tasty-hunit == 0.10.0.3
+      , text == 1.2.4.1
+      , time >= 1.11
+      , tuple >= 0.3
+      , witherable >= 0.4.1
   default-language: Haskell2010
-  ghc-options:
-     -pgmL markdown-unlit 
   build-tool-depends: 
-        markdown-unlit:markdown-unlit
-      , autoexporter:autoexporter
+      autoexporter:autoexporter
   default-extensions: 
-    NoImplicitPrelude
     DataKinds
     OverloadedStrings
     TupleSections
@@ -64,8 +66,6 @@ test-suite templates
   hs-source-dirs:
       template-test
   build-depends:
-      hasklepias-templates
-    , base >=4.14 && <42.2
-    , tasty  == 1.4.1
+      hasklepias-templates, base 
   default-language: Haskell2010
 

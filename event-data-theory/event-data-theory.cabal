@@ -1,0 +1,61 @@
+cabal-version:  2.2
+name:           event-data-theory 
+version:        0.2.0
+description:    Please see the README on GitHub at <https://github.com/novisci/asclepias#readme>
+homepage:       https://github.com/novisci/asclepias/#readme
+bug-reports:    https://github.com/novisci/asclepias/issues
+author:         Bradley Saul
+maintainer:     bsaul@novisci.com
+copyright:      NoviSci, Inc
+category:       Data Science
+synopsis:       event data theory 
+license:        BSD-3-Clause
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.adoc
+    ChangeLog.md
+
+source-repository head
+  type: git
+  location: https://github.com/novisci/asclepias
+
+library
+  exposed-modules:
+      EventDataTheory
+      EventDataTheory.Core
+      EventDataTheory.EventLines
+      EventDataTheory.Test
+      EventDataTheory.TheoryTest
+      EventDataTheory.Utilities
+  hs-source-dirs:
+      src
+  build-depends:
+      base >=4.14 && <4.15
+    , aeson == 1.5.6.0
+    , binary == 0.8.8.0
+    , bytestring >= 0.10
+    , containers == 0.6.5.1
+    , deepseq == 1.4.4.0
+    , filepath >= 1.4
+    , interval-algebra == 1.3.0
+    , QuickCheck == 2.14.2
+    , safe >= 0.3
+    , scientific >= 0.3
+    , tasty >= 1.4
+    , tasty-hunit >= 0.10
+    , tasty-silver >= 3.3.1
+    , time >= 1.11
+    , text == 1.2.4.1
+    , witch == 1.0.0.1
+    , witherable >= 0.4.1
+  default-language: Haskell2010
+
+test-suite tests
+  type: exitcode-stdio-1.0
+  main-is: Main.hs
+  hs-source-dirs:
+      test
+  build-depends:
+      event-data-theory, base
+  default-language: Haskell2010

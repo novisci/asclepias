@@ -1,6 +1,6 @@
 cabal-version:  2.2
 name:           cohort-collector
-version:        0.20.2
+version:        0.20.3
 description:    Please see the README on GitHub at <https://github.com/novisci/asclepias#readme>
 homepage:       https://github.com/novisci/asclepias/#readme
 bug-reports:    https://github.com/novisci/asclepias/issues
@@ -13,8 +13,8 @@ license:        BSD-3-Clause
 license-file:   LICENSE
 build-type:     Simple
 extra-source-files:
-    README.md
-    -- ChangeLog.md
+    README.adoc
+    ChangeLog.md
 
 source-repository head
   type: git
@@ -23,21 +23,25 @@ source-repository head
 library
   exposed-modules:
       CohortCollection
+    , CohortCollectionTests
   hs-source-dirs:
       src
   build-depends:
     -- Internal
       hasklepias-core
-    
+    , hasklepias-appBuilder
+
     -- External
-    , aeson >=1.4.0.0 && <2
+    , aeson == 1.5.6.0
     , amazonka == 1.6.1
     , amazonka-s3 == 1.6.1
-    , base >=4.14 && <4.15
-    , bytestring == 0.10.12.0
-    , cmdargs == 0.10.21
-    , conduit
-    , text == 1.2.4.1
+    , base >=4.14 && <5
+    , bytestring >= 0.10
+    , conduit == 1.3.4.2
+    , optparse-applicative
+    , text == 1.2.4.1 
+    , tasty  == 1.4.1
+    , tasty-silver == 3.3.1
   default-language: Haskell2010
 
 executable cohort-collector
@@ -45,13 +49,7 @@ executable cohort-collector
   hs-source-dirs:
       app
   build-depends:
-      -- Internal
-       hasklepias-core
-     , cohort-collector
-    -- External
-     , base >=4.14 && <4.15
-     , bytestring
-     , optparse-applicative
+      cohort-collector, base
   default-language: Haskell2010
 
 test-suite collector-test
@@ -60,9 +58,12 @@ test-suite collector-test
   hs-source-dirs:
       test
   build-depends:
-      cohort-collector
-    , base >=4.14 && <4.15
-    , tasty  == 1.4.1
-    , tasty-silver 
-    , bytestring
+      base
+    , cohort-collector
+    , directory
+    , hasklepias-appBuilder
+    , tasty  >= 1.4.1
+    , temporary >= 1.3
+  other-modules:
+      ConstructPaths
   default-language: Haskell2010

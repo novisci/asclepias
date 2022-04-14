@@ -1,4 +1,4 @@
-{-|
+{-| 
 Module      : Functions and types for creating tests for templates 
 Description : Misc types and functions useful in Hasklepias.
 Copyright   : (c) NoviSci, Inc 2020
@@ -8,13 +8,15 @@ Maintainer  : bsaul@novisci.com
 These functions may be moved to more appropriate modules in future versions.
 -}
 -- {-# OPTIONS_HADDOCK hide #-}
-
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE DeriveGeneric #-}
 
 module Templates.TestUtilities
   ( TestCase(..)
+  , TestSchema(..)
   , readIntervalSafe
+  , isEnrollmentEvent
   , makeEnrollmentEvent
   , makeEventWithConcepts
   , makeTestCase
@@ -23,19 +25,29 @@ module Templates.TestUtilities
   , Solo
   ) where
 
-
-import           Cohort.Index
+-- #endif
+import           Data.Text                      ( Text )
+import           Data.Tuple.Curry
+-- TODO: find a better way to handle this import and/or figure out how use
+--       gcc on a mac on the haskell c-preprocessor without phutzing with a lot
+--       different settings.
+-- #if MIN_VERSION_base(4,16,0)
+-- import          GHC.Tuple (Solo (Solo), getSolo)
+-- #elif MIN_VERSION_base(4,15,0)
+-- import           GHC.Tuple (Solo (Solo))
+-- #else
 import           Data.Tuple.Solo
-import           EventData
-import           Features.Compose               ( Define(..)
+import           EventDataTheory
+import           Features.Core                  ( Define(..)
                                                 , Definition(..)
                                                 , F
                                                 , Feature
                                                 , eval
                                                 )
-import           Hasklepias.Misc
-import           Hasklepias.Reexports
-import           Hasklepias.ReexportsUnsafe
+import           GHC.Generics
+import           Test.Tasty
+import           Test.Tasty.HUnit
+import           Type.Reflection                ( Typeable )
 
 {-
   a just few utilities for constructing intervals/events
@@ -43,16 +55,26 @@ import           Hasklepias.ReexportsUnsafe
 readIntervalSafe :: (Integral b, IntervalSizeable a b) => (a, a) -> Interval a
 readIntervalSafe (b, e) = beginerval (diff e b) b
 
-makeEnrollmentEvent :: (Integral b, IntervalSizeable a b) => (a, a) -> Event a
-makeEnrollmentEvent intrvl = event
-  (readIntervalSafe intrvl)
-  (context (Enrollment emptyEnrollmentFact) mempty Nothing)
+data TestSchema = Enrollment | NotEnrollment deriving (Show, Eq, Generic)
+
+makeEnrollmentEvent
+  :: (Integral b, IntervalSizeable a b, Typeable a, Show a)
+  => (a, a)
+  -> Event Text TestSchema a
+makeEnrollmentEvent intrvl =
+  event (readIntervalSafe intrvl) (context mempty Enrollment Nothing)
 
 makeEventWithConcepts
-  :: (Integral b, IntervalSizeable a b) => [Text] -> (a, a) -> Event a
+  :: (Integral b, IntervalSizeable a b, Typeable a, Show a)
+  => [Text]
+  -> (a, a)
+  -> Event Text TestSchema a
 makeEventWithConcepts cpts intrvl = event
   (readIntervalSafe intrvl)
-  (context (Enrollment emptyEnrollmentFact) (packConcepts cpts) Nothing)
+  (context (packConcepts cpts) Enrollment Nothing)
+
+isEnrollmentEvent :: Predicate (Event c TestSchema a)
+isEnrollmentEvent = liftToEventPredicate (Predicate (== Enrollment))
 
 {-
   types/functions for creating test cases and evaluating them
@@ -68,8 +90,8 @@ data TestCase a b builderArgs = MkTestCase
 
 evalTestCase
   :: TestCase defArgs b builderArgs
-  -> (defArgs -> return)
-  -> (return, Feature "result" b)
+  -> (defArgs -> returnType)
+  -> (returnType, Feature "result" b)
 evalTestCase (MkTestCase buildArgs _ inputs truth) def = (def inputs, truth)
 
 makeAssertion
@@ -92,16 +114,19 @@ makeTestCaseOfIndexAndEvents
   => TestName
   -> bargs
   -> (a, a)
-  -> [Event a]
+  -> [Event Text TestSchema a]
   -> returnType
   -> TestCase
-       (F "index" (Index Interval a), F "events" [Event a])
+       ( F "index" (Interval a)
+       , F "events" [Event Text TestSchema a]
+       )
        returnType
        bargs
 makeTestCaseOfIndexAndEvents name buildArgs intrvl e = makeTestCase
   name
   buildArgs
-  (pure (makeIndex (readIntervalSafe intrvl)), pure e)
+  -- (pure (readIntervalSafe intrvl), pure e)
+  (pure (readIntervalSafe intrvl), pure e)
 
 
 makeBuilderAssertion

@@ -99,8 +99,8 @@ deploy-docker-cohort-collector-static:
   script:
     - export FILE=$(head -1 install/cohort-collector.bundle)
     - export VERSION=$(head -1 install/cohort-collector.version)
-    - echo $FILE
-    - echo $VERSION
+    - echo "$FILE"
+    - echo "$VERSION"
     - ./ci/ci-docker-build-cohort-collector.sh $VERSION install/$FILE
   # rules:
   #   - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH

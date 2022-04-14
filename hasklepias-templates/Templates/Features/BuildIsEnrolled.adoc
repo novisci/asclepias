@@ -1,0 +1,31 @@
+:description: Documentation of the BuildIsEnrolled template
+:source-highlighter: highlightjs
+
+= `buildIsEnrolled`: Does an enrollment event concur with index?
+
+[TIP]
+====
+Use this template to create a `Definition` of a `Feature`
+for a `Status` where:
+
+* [x] you have a predicate for identifying enrollment events;
+* [x] you want to know whether a subject was enrolled
+(in a health plan, e.g.)
+at an index time;
+* [x] the result will be used as inclusion/exclusion status.
+====
+
+== Usage and Examples
+
+#TODO#
+
+== Source code
+
+[%collapsible]
+.View source code
+====
+[source,haskell]
+----
+include::BuildIsEnrolled.hs[tag=template0]
+----
+====

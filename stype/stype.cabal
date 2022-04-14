@@ -13,8 +13,6 @@ license:        BSD-3-Clause
 license-file:   LICENSE
 build-type:     Simple
 extra-source-files:
-    -- README.md
-    -- ChangeLog.md
 
 source-repository head
   type: git
@@ -31,35 +29,28 @@ library
       Stype.Categorical
       Stype.Categorical.Binary
       Stype.Categorical.Nominal
+      Stype.Tests
+  other-modules:
+      Stype.Tests.Aeson
+      Stype.Tests.Censored
   hs-source-dirs:
       src
   build-depends:
-      aeson >=1.4.0.0 && <2
-    , base >=4.14 && <4.15
-    , bytestring == 0.10.12.0
+      aeson == 1.5.6.0
+    , base >=4.14 && <5
+    , bytestring >= 0.10
     , semiring-simple == 1.0.0.1
-    , text == 1.2.4.1
+    , tasty  == 1.4.1
+    , tasty-hunit == 0.10.0.3
+    , text == 1.2.4.1 
   default-language: Haskell2010
 
 test-suite stype-test
   type: exitcode-stdio-1.0
-  main-is: Spec.hs
-  other-modules:
-      Stype.AesonSpec
-      Stype.Numeric.CensoredSpec
-      Paths_stype
-  autogen-modules:
-      Paths_stype
+  main-is: Main.hs
   hs-source-dirs:
       test
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      stype
-    , aeson >=1.4.0.0 && <2
-    , base >=4.7 && <5
-    , bytestring >=0.10
-    , hspec
-    , QuickCheck
+      stype, base
   default-language: Haskell2010
-
-

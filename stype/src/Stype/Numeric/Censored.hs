@@ -12,22 +12,22 @@ Maintainer  : bsaul@novisci.com
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE DeriveGeneric #-}
 
-module Stype.Numeric.Censored (
-    Censorable(..)
+module Stype.Numeric.Censored
+  ( Censorable(..)
   , MaybeCensored(..)
   , ParseIntervalError(..)
-) where
+  ) where
 
-import safe Data.Text                  
+import safe      Data.Text
   -- ( Text, pack, unpack )
-import safe GHC.Generics                 ( Generic )
+import safe      GHC.Generics                   ( Generic )
 
 -- | Data for censored data
 data MaybeCensored a where
-  IntervalCensored :: a -> a -> MaybeCensored a
-  RightCensored :: a -> MaybeCensored a
-  LeftCensored :: a -> MaybeCensored a
-  Uncensored :: a -> MaybeCensored a
+  IntervalCensored ::a -> a -> MaybeCensored a
+  RightCensored ::a -> MaybeCensored a
+  LeftCensored ::a -> MaybeCensored a
+  Uncensored ::a -> MaybeCensored a
   deriving( Eq, Show, Ord, Generic )
 
 -- | A type to hold a reason that interval fails to parse.
@@ -36,7 +36,7 @@ newtype ParseIntervalError = ParseIntervalError Text
 
 -- | A class to censor data
 class (Ord a, Show a) => Censorable a where
- 
+
   parseIntervalCensor :: a -> a -> Either ParseIntervalError (MaybeCensored a)
   parseIntervalCensor x y
     | x < y = Right $ IntervalCensored x y

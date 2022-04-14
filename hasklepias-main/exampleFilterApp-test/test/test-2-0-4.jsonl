@@ -1,4 +1,0 @@
-["b", "2019-01-01", null, "Demographics", [], {"domain" : "Demographics", "time": {"begin" : "2010-01-01", "end" : null}, "facts" : {"demo" : {"field" : "BirthYear", "info" : "1960"} } }]
-["b", "2020-01-01", "2020-12-31", "Enrollment", [], {"domain" : "Enrollment","facts":{"plan":{"exchange":"None"}},"time":{"begin":"2020-01-01","end":"2020-12-31"}}]
-["a", "2018-01-01", "2019-12-31", "Enrollment", [], {"domain" : "Enrollment","facts":{"plan":{"exchange":"None"}},"time":{"begin":"2018-01-01","end":"2019-12-31"}}]
-["a", "2019-01-01", null, "Demographics", [], {"domain" : "Demographics", "time": {"begin" : "2019-01-01", "end" : null}, "facts" : {"demo" : {"field" : "BirthYear", "info" : "1960"} } }]

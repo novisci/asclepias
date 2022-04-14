@@ -1,0 +1,15 @@
+# See: https://docs.antora.org/antora/latest/component-version-descriptor/#provide-metadata-with-antora-yml
+# for information on what antora.yml and what it may contain
+name: asclepias
+title: Asclepias
+# TODO: 
+# how do we check that version aligns
+# with asclepias version in hasklepias-main?
+version: 0.24
+prerelease: -RC
+nav:
+- modules/ROOT/nav.adoc
+start_page: introduction.adoc
+asciidoc: 
+  attributes:
+    ghc: '8.10.7'

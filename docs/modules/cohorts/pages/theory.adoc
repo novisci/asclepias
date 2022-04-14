@@ -1,0 +1,7 @@
+:navtitle: Theory of Cohorts
+:description: Explanation and details of Cohort module design
+:toc: right
+
+= Theory of Cohorts
+
+#TODO#

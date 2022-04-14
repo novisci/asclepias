@@ -1,136 +1,70 @@
-
-before_script:
-  - export MAINVERSION=$(grep -e '^version:' hasklepias-main/hasklepias-main.cabal | sed 's/version:[[:space:]]*//g')
-  # - export NAME=$(grep -e '^name:' hasklepias-core/hasklepias.cabal | sed 's/name:[[:space:]]*//g')
-
+# .gitlab-ci.yml 
+#
+# * The MAINVERSION variable defined in the build_vars job is the version of the 
+#   hasklepias-main package. This version number is used to tag the docker images
+#   used in the build pipeline. This variable is passed to child pipelines via 
+#   the job's dotenv artifacts. 
+# * See https://docs.gitlab.com/ee/ci/pipelines/parent_child_pipelines.html for
+#   more information.
 
 variables:
-  PKG: hasklepias 
+  PKG: hasklepias
+  GHC: "8.10.7"
+  DOCKER: "20.10.11"
 
 stages:
-  - docker
+  - prep
   - build
-  - release
   - deploy
-  - docs
-  - upload-docs
 
-docker-build:
- stage : docker
- image: docker:19.03.8
- script:
-    - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin  $CI_REGISTRY
-    - docker build --tag $CI_REGISTRY_IMAGE/$PKG-build:$MAINVERSION --tag $CI_REGISTRY_IMAGE/$PKG-build:latest .
-    - docker push $CI_REGISTRY_IMAGE/$PKG-build:$MAINVERSION
-    - docker push $CI_REGISTRY_IMAGE/$PKG-build:latest
-
-build-asclepias:
-  stage: build
-  needs: ["docker-build"]
-  # NOTE: I couldn't get the $VERSION variable to work as in:
-  #  image : registry.novisci.com/nsstat/asclepias/$PKG-build:$VERSION
-  # hence, using latest tag, but this may not be ideal
-  image: registry.novisci.com/nsstat/asclepias/$PKG-build:latest
-  cache:
-    key: "$CI_JOB_NAME"
-    paths:
-      - dist-newstyle/
+build_vars:
+  stage: prep
   script:
-    - ghc --version
-    - cabal --version
-    - cabal build all
-
-install-apps:
-  stage: release
-  needs: ["build-asclepias"]
-  # NOTE: I couldn't get the $VERSION variable to work as in:
-  #  image : registry.novisci.com/nsstat/asclepias/$PKG-build:$VERSION
-  # hence, using latest tag, but this may not be ideal
-  image: registry.novisci.com/nsstat/asclepias/$PKG-build:latest
-  cache:
-    key: "$CI_JOB_NAME"
-    paths:
-      - dist-newstyle/
-      - install/
-      - cohort-collector*
-  artifacts :
-    name: "${CI_PROJECT_NAME}-${SAFE_REF_NAME}"
-    paths:
-      - "cohort-collector*.tar.gz"
-    expire_in: 1 week
-  script:
-    - export COLLECTORVERSION=$(./scripts/get-version-from-cabal.sh cohort-collector/cohort-collector.cabalcohort-collector/cohort-collector.cabal)
-    - export COLLECTOR_BUNDLE=cohort-collector-$COLLECTORVERSION-linux-$(uname -m).tar.gz
-    - ghc --version
-    - cabal --version
-    - cabal update
-    - mkdir install -p
-    - cabal install cohort-collector --install-method=copy --installdir=install --overwrite-policy=always
-    - tar -czvf $COLLECTOR_BUNDLE install/cohort-collector
-  # release:
-  #   name: 'Release $TAG'
-  #   description: 'Created using the release-cli $EXTRA_DESCRIPTION'  # $EXTRA_DESCRIPTION and the $TAG
-  #   tag_name: '$TAG'                                                 # variables must be defined elsewhere
-  #   ref: '$CI_COMMIT_SHA'                                            # in the pipeline. For example, in the
-  #   assets:
-  #     links:
-  #       - name: 'asset1'
-  #         url: 'https://download.novisci.com/hasklepias/collector-$VERSION-linux-$CI_RUNNER_EXECUTABLE_ARCH.tar.gz'
-
-install:
-  stage: deploy
-  needs: ["install-apps"]
-  image: registry.novisci.com/nsstat/statocker/aws
-  # cache:
-  #   key: "$CI_JOB_NAME"
-  #   paths:
-  #     - dist-newstyle/
-  #     - install/
-  script:
-    - export COLLECTORVERSION=$(./scripts/get-version-from-cabal.sh cohort-collector/cohort-collector.cabalcohort-collector/cohort-collector.cabal)
-    - export COLLECTOR_BUNDLE=cohort-collector-$COLLECTORVERSION-linux-$(uname -m).tar.gz
-    - aws s3 cp $CI_PROJECT_DIR/$COLLECTOR_BUNDLE s3://download.novisci.com/hasklepias/$COLLECTOR_BUNDLE --acl public-read
-
-
-test:
-  stage: build
-  # NOTE: I couldn't get the $VERSION variable to work as in:
-  #  image : registry.novisci.com/nsstat/asclepias/$PKG-build:$VERSION
-  # hence, using latest tag, but this may not be ideal
-  image: registry.novisci.com/nsstat/asclepias/$PKG-build:latest
-  cache:
-    # https://cabal.readthedocs.io/en/3.4/nix-local-build.html?highlight=dist-newstyle#caching
-    key: "$CI_JOB_NAME"
-    paths:
-      - dist-newstyle/
-  script:
-    - ghc --version
-    - cabal --version
-    - cabal test all --test-show-details=always 
-
-docs: 
-  only: 
-    - master
-  image: registry.novisci.com/nsstat/asclepias/$PKG-build:latest
-  needs: ["docker-build"]
-  stage: docs
+    - echo "MAINVERSION=$(./scripts/get-version-from-cabal.sh hasklepias-main/hasklepias-main.cabal)" >> .env
   artifacts:
-    paths:
-      - dist-newstyle/
-      - haddock-output.txt
-    expire_in: 1 hour
-  script:
-    - ghc --version
-    # - cabal haddock all --haddock-html-location='https://hackage.haskell.org/package/$pkg-$version/docs' --enable-documentation  --haddock-hyperlink-source --haddock-quickjump > haddock-output.txt
-    - cabal haddock all --haddock-html-location='https://docs.novisci.com/asclepias/$pkg/$version' --enable-documentation  --haddock-hyperlink-source --haddock-quickjump > haddock-output.txt
+    reports:
+      dotenv: .env
 
-upload: 
-  image: registry.novisci.com/nsstat/statocker/aws:latest
-  needs: ["docs"]
-  only: 
-    - master
-  stage: upload-docs
+check-source:
+  stage: prep
+  image: registry.novisci.com/nsstat/nsbuild/haskell:$GHC
   script:
-    - cat haddock-output.txt | ./scripts/upload-docs-to-s3.sh
+    - ./scripts/lint.sh
+    - ./ci/ci-check-format.sh
 
+trigger-main-build:
+  stage: build
+  variables:
+    PARENT_PIPELINE_ID: $CI_PIPELINE_ID
+    PARENT_CI_PIPELINE_SOURCE: $CI_PIPELINE_SOURCE
+  trigger: 
+    include: ci/ci-main-build.yml
+    strategy: depend
+
+trigger-static-build:
+  stage: build
+  variables:
+    PARENT_PIPELINE_ID: $CI_PIPELINE_ID
+    PARENT_CI_PIPELINE_SOURCE: $CI_PIPELINE_SOURCE
+  trigger: 
+    include: ci/ci-static-build.yml
+    strategy: depend
+
+# Trigger the downstream noviverse site to build
+trigger-doc-site:
+  stage: build
+  trigger: nsStat/noviverse-site
+
+# # Report the test coverage as described in the following links. If the pipeline
+# # succeeds, the coverage is shown in the merge request widget and in the jobs
+# # table. The coverage is expected to written as an artifact to
+# # `coverage-report.txt` in the form produced by Hpc.
+# # * https://gitlab.novisci.com/help/ci/pipelines/settings#test-coverage-parsing
+# # * https://docs.gitlab.com/13.12/ee/ci/yaml/README.html#coverage
+# coverage-report:
+#   stage: coverage
+#   image: docker:$DOCKER
+#   coverage: '/\d+\% top-level/'
+#   script:
+#     - cat coverage-report.txt
 

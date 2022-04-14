@@ -15,25 +15,17 @@ module Cohort
     module Cohort.Core
 
    -- ** Index
-  , module Cohort.Index
-   -- ** Assessment Intervals
-  , module Cohort.AssessmentIntervals
+  , module Cohort.IndexSet
+
    -- ** Criteria
   , module Cohort.Criteria
-   -- ** Attrition
-  , module Cohort.Attrition
 
    -- ** Cohort I/O
-   -- *** Input
-  , module Cohort.Input
    -- *** Output
   , module Cohort.Output
   ) where
 
-import           Cohort.AssessmentIntervals
-import           Cohort.Attrition (AttritionInfo, AttritionLevel, measureAttrition)
 import           Cohort.Core
 import           Cohort.Criteria
-import           Cohort.Index
-import           Cohort.Input
+import           Cohort.IndexSet
 import           Cohort.Output

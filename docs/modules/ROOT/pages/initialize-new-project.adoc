@@ -1,0 +1,49 @@
+:navtitle: Initialize new project
+:description: How to initialize a new asclepias project
+
+= Initialize an asclepias project
+
+[CAUTION]
+These instructions are a temporary shim
+until an initialization script or application is provided.
+
+In the following,
+change `myProj` to your project ID.
+
+[source,haskell]
+----
+PROJID=myProj
+cabal init --libandexe --application-dir=apps --source-dir=plans --package-name=$PROJID -m -u https://gitlab.novisci.com/nsResearch/$PROJID -d hasklepias 
+cabal update
+----
+
+. Rename `MyLib.hs` to `Cohorts.hs`.
+. Update `myProj.cabal`
+.. expose all modules
+.. set `hasklepias` to a particular version
+.. set library default extensions:
++
+----
+ default-extensions: 
+   NoImplicitPrelude
+   OverloadedStrings
+   LambdaCase
+   FlexibleContexts
+   FlexibleInstances
+   DeriveGeneric
+   MultiParamTypeClasses
+   DataKinds
+   TypeApplications
+----
+. add a `cabal.project` file with:
++
+----
+source-repository-package
+  type: git
+  location: https://github.com/novisci/asclepias.git
+  tag: #SET TO DESIRED COMMIT#
+  subdir: hasklepias-core hasklepias-main hasklepias-templates stype event-data-theory
+
+packages: ./myProj.cabal
+----
+. Start coding.

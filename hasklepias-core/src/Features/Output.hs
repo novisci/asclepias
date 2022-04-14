@@ -14,36 +14,41 @@ Maintainer  : bsaul@novisci.com
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE GADTs #-}
 
-module Features.Output(
-    ShapeOutput(..)
+module Features.Output
+  ( ShapeOutput(..)
   , OutputShape
-) where
+  ) where
 
-import GHC.Generics                 ( Generic )
-import GHC.TypeLits                 ( KnownSymbol, symbolVal )
-import IntervalAlgebra              ( Interval, begin, end )
-import Features.Compose             ( Feature
-                                    , MissingReason
-                                    , FeatureData
-                                    , getFeatureData
-                                    , getFData )
-import Features.Attributes          ( Attributes, Purpose, Role, HasAttributes(..) )
-import Data.Aeson                   ( object
-                                    , KeyValue((.=))
-                                    , ToJSON(toJSON)
-                                    , Value )
-import Data.Proxy                   ( Proxy(Proxy) )
-import Data.Typeable                ( typeRep, Typeable )
-
-instance (ToJSON a, Ord a, Show a)=> ToJSON (Interval a) where
-    toJSON x = object ["begin" .= begin x, "end" .= end x]
-
+import           Data.Aeson                     ( KeyValue((.=))
+                                                , ToJSON(toJSON)
+                                                , Value
+                                                , object
+                                                )
+import           Data.Proxy                     ( Proxy(Proxy) )
+import           Data.Typeable                  ( Typeable
+                                                , typeRep
+                                                )
+import           Features.Attributes            ( Attributes
+                                                , HasAttributes(..)
+                                                , Purpose
+                                                , Role
+                                                )
+import           Features.Core                  ( Feature
+                                                , FeatureData
+                                                , MissingReason
+                                                , getFData
+                                                , getFeatureData
+                                                )
+import           GHC.Generics                   ( Generic )
+import           GHC.TypeLits                   ( KnownSymbol
+                                                , symbolVal
+                                                )
 instance ToJSON MissingReason
 
 instance (ToJSON d) => ToJSON (FeatureData d) where
-    toJSON  x = case getFeatureData x of
-      (Left l)  -> toJSON l
-      (Right r) -> toJSON r
+  toJSON x = case getFeatureData x of
+    (Left  l) -> toJSON l
+    (Right r) -> toJSON r
 
 instance ToJSON Role where
 instance ToJSON Purpose where
@@ -51,18 +56,20 @@ instance ToJSON Attributes where
 
 instance (Typeable d, KnownSymbol n, ToJSON d, HasAttributes n d) =>
   ToJSON (Feature n d) where
-    toJSON x = object [  "name"  .= symbolVal (Proxy @n)
-                       , "attrs" .= toJSON (getAttributes x)
-                       , "type"  .= toJSON (show $ typeRep (Proxy @d))
-                       , "data"  .= toJSON (getFData x) ]
+  toJSON x = object
+    [ "name" .= symbolVal (Proxy @n)
+    , "attrs" .= toJSON (getAttributes x)
+    , "type" .= toJSON (show $ typeRep (Proxy @d))
+    , "data" .= toJSON (getFData x)
+    ]
 
 -- | A type used to determine the output shape of a Feature.
 data OutputShape d where
-  DataOnly :: (ToJSON a, Show a) => a -> OutputShape b
-  NameOnly :: (ToJSON a, Show a) => a -> OutputShape b
-  AttrOnly :: (ToJSON a, Show a) => a -> OutputShape b
-  NameData :: (ToJSON a, Show a) => a -> OutputShape b
-  NameAttr :: (ToJSON a, Show a) => a -> OutputShape b 
+  DataOnly ::(ToJSON a, Show a) => a -> OutputShape b
+  NameOnly ::(ToJSON a, Show a) => a -> OutputShape b
+  AttrOnly ::(ToJSON a, Show a) => a -> OutputShape b
+  NameData ::(ToJSON a, Show a) => a -> OutputShape b
+  NameAttr ::(ToJSON a, Show a) => a -> OutputShape b
 
 -- | A class that provides methods for transforming some type to an 'OutputShape'.
 class (ToJSON a) => ShapeOutput a where
@@ -73,24 +80,28 @@ class (ToJSON a) => ShapeOutput a where
   nameAttr :: a -> OutputShape b
 
 -- | A container for name and attributes.
-data NameTypeAttr = NameTypeAttr { 
-      getName :: String
-    , getType :: String
-    , getAttr :: Attributes }
+data NameTypeAttr = NameTypeAttr
+  { getName :: String
+  , getType :: String
+  , getAttr :: Attributes
+  }
   deriving (Generic, Show)
 
 instance ToJSON NameTypeAttr where
-  toJSON x = object [ "name"  .= getName x
-                    , "type"  .= getType x
-                    , "attrs" .= getAttr x]  
+  toJSON x =
+    object ["name" .= getName x, "type" .= getType x, "attrs" .= getAttr x]
 
-instance (KnownSymbol n, Show d, ToJSON d, Typeable d, HasAttributes n d) => 
+instance (KnownSymbol n, Show d, ToJSON d, Typeable d, HasAttributes n d) =>
   ShapeOutput (Feature n d) where
   dataOnly x = DataOnly (getFData x)
   nameOnly x = NameOnly (symbolVal (Proxy @n))
   attrOnly x = AttrOnly (getAttributes x)
   nameData x = NameData (symbolVal (Proxy @n), getFData x)
-  nameAttr x = NameAttr (NameTypeAttr (symbolVal (Proxy @n)) (show $ typeRep (Proxy @d)) (getAttributes x))
+  nameAttr x = NameAttr
+    (NameTypeAttr (symbolVal (Proxy @n))
+                  (show $ typeRep (Proxy @d))
+                  (getAttributes x)
+    )
 
 instance ToJSON (OutputShape a) where
   toJSON (DataOnly x) = toJSON x

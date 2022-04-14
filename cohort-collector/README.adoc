@@ -1,0 +1,23 @@
+:downloads_path: downloads.novisci.com/hasklepias/
+:registry_path: registry.novisci.com/nsstat/asclepias
+:cohort-collector-version: 0.20.3
+
+= Cohort Collector
+
+The `cohort-collector` application provides a utility for combining cohorts 
+*built from the same cohort specification*. 
+A common use case is combining cohort data created on different partitions of event data. 
+The application takes a single text file containing one filepath per line as input.
+The file can be located either on the local file system or on S3. 
+
+The latest linux executable can be downloaded from: 
+
+- https://{downloads_path}cohort-collector-{cohort-collector-version}-x86_64-linux.tar.gz 
+
+If you have access to our container registry, 
+a minimal docker image containing the application is also available:
+
+[source, subs=attributes+]
+----
+docker pull {registry_path}/cohort-collector:latest
+----

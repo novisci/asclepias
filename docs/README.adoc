@@ -1,0 +1,30 @@
+= Asclepias documentation
+
+This directory contains documentation files for the asclepias repository.
+We use 
+https://docs.antora.org/antora/latest/[Antora]
+for documentation,
+and the files in this repo are organized
+https://docs.antora.org/antora/latest/organize-content-files/[following Antora guidelines].
+
+The asclepias doc pages are built as part of the
+https://gitlab.novisci.com/nsStat/noviverse-site[noviverse-site].
+See the 
+https://gitlab.novisci.com/nsStat/noviverse-site/-/blob/master/antora-playbook.yml[`antora-playbook.yml`]
+file therein for
+which branches of the asclepias repo are included in the noviverse site.
+
+== Testing antora locally
+
+[NOTE]
+You will need to 
+https://docs.antora.org/antora/latest/install/install-antora/[install Antora]
+if you have not previously done so.
+
+You can check that Antora successfully compiles the docs in this repo
+on the current branch with the provided `+test-antora.sh+` script:
+
+[source,shell]
+----
+./scripts/test-antora.sh
+----

@@ -1,0 +1,24 @@
+:description: how to install toolchain needed for asclepias
+:ghc:
+
+[TIP]
+For a more detailed installation instructions with detailed explanations,
+xref:dev-guide:page$installing-ghc-and-cabal.adoc[refer the toolchain section]
+in the 
+xref:dev-guide:page$index.adoc[developer guide].
+
+// install ghcup
+include::dev-guide:partial$install-ghcup.adoc[leveloffset=+1]
+
+== Installing the Haskell toolchain
+
+Once `ghcup` is installed,
+run the following commands:
+
+[source,shell]
+----
+ghcup install ghc {ghc}
+ghcup install cabal
+ghcup install hls
+----
+

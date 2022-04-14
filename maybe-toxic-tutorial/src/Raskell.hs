@@ -1,5 +1,5 @@
-
-   {--
+{-# HLINT ignore #-}
+{--
  RASKELL
  The Haskell version of a split tutorial translating silly things from Haskell
  to R and back, in hopes of creating a mental bridge between the two
@@ -52,7 +52,7 @@
    {--
       PART ONE
       --}
-   
+
 {-- A. IMPORTING LIBRARIES
 
  * import specific modules not entire packages, e.g. Data.List not base package
@@ -63,11 +63,11 @@
  * conflicts are not allowed and must be resolved by importing a module as qualified
 --}
 
-import Data.List
-import qualified Control.Applicative as A
-import qualified GHC.Arr as Arr
+import qualified Control.Applicative           as A
+import           Data.List
 -- from collections package
-import qualified Data.Map as M
+import qualified Data.Map                      as M
+import qualified GHC.Arr                       as Arr
 
 
    {-- B. FUNCTIONS AND ARGUMENTS
@@ -117,7 +117,7 @@ prepend xs x = x : xs
 -- which in R doesn't matter. In R, list("a", "b") is analogous to ["a", "b"].
 
 letters :: [Char]
-letters = ['a'..'z']
+letters = ['a' .. 'z']
 
 -- No need to specify the remaining input names
 prependToLetters :: Char -> [Char]
@@ -150,7 +150,7 @@ myConcat xs ys = foldr (flip prepend) xs ys
 
 
 -- B.3 Examples
-oneToFive = myConcat [4..5] [1..3]
+oneToFive = myConcat [4 .. 5] [1 .. 3]
 
 
 -- B.4
@@ -209,7 +209,7 @@ reciprocal x = (1 / x)
 
 xs :: [Int]
 -- [20, 30, 40, 50]
-xs = map (*2) [2..5]
+xs = map (* 2) [2 .. 5]
 
 good = mapCompose reciprocal shiftOne xs
 
@@ -240,19 +240,15 @@ good' = traverseCompose reciprocal shiftOne xs'
 -- this has all of the flaws of the R version, except argument type checking
 -- you don't want to do this
 whatisit :: String -> Bool -> String
-whatisit x cat = 
-   let 
-     catList = ["bobcat", "highland tiger"]
-     marsList = ["tazmanian devil", "possum", "monito del monte"]
-     checkCat x' = if x' `elem` catList 
-                   then "This is a cat"
-                   else "This is not a cat"
-     -- 'guard' pattern can make for cleaner syntax. can do multiple cases
-     checkMars x'
-       | x' `elem` marsList = "This is a marsupial"
-       | otherwise = "This is not a marsupial"
-   in 
-     if cat then checkCat x else checkMars x
+whatisit x cat =
+  let catList  = ["bobcat", "highland tiger"]
+      marsList = ["tazmanian devil", "possum", "monito del monte"]
+      checkCat x' =
+        if x' `elem` catList then "This is a cat" else "This is not a cat"
+      -- 'guard' pattern can make for cleaner syntax. can do multiple cases
+      checkMars x' | x' `elem` marsList = "This is a marsupial"
+                   | otherwise          = "This is not a marsupial"
+  in  if cat then checkCat x else checkMars x
 
 
 -- whatisitGeneral
@@ -275,12 +271,11 @@ data Anmls = Mongoose [String] | Bear [String] deriving (Show, Eq)
 
 whatisitImproved :: String -> Anmls -> String
 whatisitImproved z' (Mongoose zs') = yesNo z' "mongoose" zs'
-whatisitImproved z' (Bear zs') = yesNo z' "bear" zs'
+whatisitImproved z' (Bear     zs') = yesNo z' "bear" zs'
 
 yesNo :: String -> String -> [String] -> String
-yesNo z msg zs
-  | z `elem` zs = "This is a " ++ msg
-  | otherwise = "This is not a " ++ msg
+yesNo z msg zs | z `elem` zs = "This is a " ++ msg
+               | otherwise   = "This is not a " ++ msg
 
 -- whatisitTellMe
 -- instead of a named list we'll use a list of key-value tuples of type
@@ -301,27 +296,28 @@ yesNo z msg zs
 -- else it returns Right "some name"
 
 -- here, there is a pattern match in the function arguments for an empty list
-whatisitTellMe :: String -> [(String, [String])]  -> Either String (Maybe String)
+whatisitTellMe
+  :: String -> [(String, [String])] -> Either String (Maybe String)
 whatisitTellMe _ [] = Right Nothing
 -- this pattern match is the standard one for a list with first element y and
 -- remaining list ys (which can be [])
-whatisitTellMe x (y:ys) 
+whatisitTellMe x (y : ys)
   | length chk > 1 = Left "Bad anmls input: x found in multiple locations."
-  | otherwise = Right (headMaybe chk)
-   where 
+  | otherwise      = Right (headMaybe chk)
+ where
       -- NOTE: there *is* a lookup function, but it searches by the key not the
       -- value
-      chk = filterMap (isIn x) fst (y:ys)
-      -- is z' in the list of values zs'?
-      isIn z' (_, zs') = z' `elem` zs'
+  chk = filterMap (isIn x) fst (y : ys)
+  -- is z' in the list of values zs'?
+  isIn z' (_, zs') = z' `elem` zs'
 
 -- helpers for whatisitTellMe, broken out for more general use
 filterMap :: (a -> Bool) -> (a -> b) -> [a] -> [b]
 filterMap p f = foldr (\z zs -> if p z then f z : zs else zs) []
 
 headMaybe :: [a] -> Maybe a
-headMaybe [] = Nothing
-headMaybe (y:_) = Just y
+headMaybe []      = Nothing
+headMaybe (y : _) = Just y
 
 -- B.5 Examples
 
@@ -337,7 +333,7 @@ notCat = whatisit "eagle" True
 bears :: Anmls
 bears = Bear ["grizzly bear", "panda"]
 
-isitbear :: String 
+isitbear :: String
 isitbear = whatisitImproved "grizzly bear" bears
 
 -- compiler error!
@@ -361,10 +357,13 @@ mistypedName :: String
 mistypedName = whatisitImproved "grizzly bear" mongeese
 
 anmls :: [(String, [String])]
-anmls = [("bear", ["grizzly bear", "panda"]), ("mongoose", ["meerkat", "kusimanse", "mongoose"])]
+anmls =
+  [ ("bear"    , ["grizzly bear", "panda"])
+  , ("mongoose", ["meerkat", "kusimanse", "mongoose"])
+  ]
 
 isitbear' :: Either String (Maybe String)
-isitbear' = whatisitTellMe "grizzly bear" anmls 
+isitbear' = whatisitTellMe "grizzly bear" anmls
 
 -- still not immune to typos of course
 -- to improve this a little, whatisitTellMe could take a custom data type for
@@ -381,7 +380,10 @@ mistypedBear = whatisitTellMe "sumkinnaburr" anmls
 -- at least this kind of error is better handled
 
 badAnmls :: [(String, [String])]
-badAnmls = [("bear", ["grizzly bear", "panda"]), ("mongoose", ["panda", "meerkat", "kusimanse", "mongoose"])]
+badAnmls =
+  [ ("bear"    , ["grizzly bear", "panda"])
+  , ("mongoose", ["panda", "meerkat", "kusimanse", "mongoose"])
+  ]
 
 badPanda :: Either String (Maybe String)
 badPanda = whatisitTellMe "panda" badAnmls

@@ -1,8 +1,16 @@
 packages: hasklepias-core
+        , hasklepias-examples
         , hasklepias-main
+        , hasklepias-appBuilder
         , hasklepias-templates
         , cohort-collector
-        , edm
+        , event-data-theory
         , stype
         , maybe-toxic-tutorial
 
+-- allow-newer:
+--  amazonka:bytestring,
+--  generic-lens-core:text,
+--  generic-lens:text,
+--  witch:text,
+--  ListLike:text

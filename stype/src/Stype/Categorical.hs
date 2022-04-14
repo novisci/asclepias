@@ -9,10 +9,10 @@ Maintainer  : bsaul@novisci.com
 
 {-# LANGUAGE Safe #-}
 
-module Stype.Categorical (
-    module Stype.Categorical.Nominal 
+module Stype.Categorical
+  ( module Stype.Categorical.Nominal
   , module Stype.Categorical.Binary
-) where
+  ) where
 
-import safe Stype.Categorical.Nominal
-import safe Stype.Categorical.Binary
+import safe      Stype.Categorical.Binary
+import safe      Stype.Categorical.Nominal

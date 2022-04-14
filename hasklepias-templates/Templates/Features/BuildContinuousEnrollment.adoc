@@ -1,0 +1,32 @@
+:description: Documentation for buildContinuousEnrollment template
+:source-highlighter: highlightjs
+
+= `buildContinuousEnrollment`: Does a sequence of enrollment events continuously occur?
+
+[TIP]
+====
+Use this template to create a `Definition` of a `Feature`
+for a "continuous enrollment" `Status` where:
+
+* [x] you have a predicate for identifying enrollment events;
+* [x] you want to know whether a subject was enrolled
+(in a health plan, e.g.)
+during some assessment interval
+with the possibility for an allowable gap in enrollment;
+* [x] the result will be used as inclusion/exclusion status.
+====
+
+== Usage and Examples
+
+#TODO#
+
+== Source code
+
+[%collapsible]
+.View source code
+====
+[source,haskell]
+----
+include::BuildContinuousEnrollment.hs[tag=template0]
+----
+====

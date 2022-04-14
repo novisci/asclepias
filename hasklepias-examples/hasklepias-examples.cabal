@@ -1,0 +1,158 @@
+cabal-version:  2.2
+name:           hasklepias-examples
+version:        0.1.0
+description:    Please see the README on GitHub at <https://github.com/novisci/asclepias#readme>
+homepage:       https://github.com/novisci/asclepias/#readme
+bug-reports:    https://github.com/novisci/asclepias/issues
+author:         Bradley Saul
+maintainer:     bsaul@novisci.com
+copyright:      NoviSci, Inc
+category:       Data Science
+synopsis:       embedded DSL for defining epidemiologic cohorts
+license:        BSD-3-Clause
+--license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.adoc
+    ChangeLog.adoc
+
+source-repository head
+  type: git
+  location: https://github.com/novisci/asclepias
+
+library
+  exposed-modules:
+      Examples
+      AppExamples.CohortApp
+      AppExamples.FilterApp
+      CohortExamples
+      CohortExamples.Example1
+      FeatureExamples
+      FeatureExamples.Example1
+      FeatureExamples.Example2
+      FeatureExamples.Example3
+      FeatureExamples.Example4
+      ExampleEvents
+  hs-source-dirs:
+      src
+  build-depends:
+      aeson == 1.5.6.0 
+    , base >=4.14 && <5
+    , hasklepias-main
+  default-language: Haskell2010
+  default-extensions:
+  -- NOTE: 
+  -- DataKinds and TypeApplications are used frequently in the examples
+  -- but brittany v0.13.1.2 does NOT format code idempotently unless
+  -- these extensions are enables within module.
+  -- The brittany formatter does not appear to check the .cabal file
+  -- for enabled extensions. 
+  -- Hence, these extensions are turned on as needed within modules.
+      NoImplicitPrelude
+      OverloadedStrings
+      LambdaCase
+      FlexibleContexts
+      FlexibleInstances
+      DeriveGeneric
+      MultiParamTypeClasses
+
+test-suite examples
+  type: exitcode-stdio-1.0
+  main-is: Main.hs
+  hs-source-dirs:
+      test
+  build-depends:
+      hasklepias-examples, base
+  default-language: Haskell2010
+
+executable exampleCohortCwApp
+  main-is: Main.hs
+  hs-source-dirs:
+      exampleCohortCwApp
+  build-depends:
+      hasklepias-examples
+    , hasklepias-main
+  default-language: Haskell2010
+
+executable exampleCohortRwApp
+  main-is: Main.hs
+  hs-source-dirs:
+      exampleCohortRwApp
+  build-depends:
+      hasklepias-examples
+    , hasklepias-main
+  default-language: Haskell2010
+
+executable exampleFilterApp
+  main-is: Main.hs
+  hs-source-dirs:
+      exampleFilterApp
+  build-depends:
+      hasklepias-examples
+    , hasklepias-main
+  default-language: Haskell2010
+
+-- FIXME:
+-- 2022-04-13 - BS - 
+-- This test suite is commented out for the time being
+-- as the tests are failing due to not matching golden value.
+-- However, this is due to the fact that the tests and golden files
+-- were orginally written using Aeson >= 2.0
+-- but we've downgraded to aeson 1.5.6.0 until
+-- amazonka 2.0 is released.
+-- The differences are due to the fact that
+-- encoded bytestrings can be different between different versions of
+-- aeson (e.g. the ordering of keys in an object).
+-- 2022-04-14 - BS -
+-- Note on testFilterApp suite also applies here
+
+-- test-suite testCohortApp
+--   type: exitcode-stdio-1.0
+--   main-is: Main.hs
+--   hs-source-dirs:
+--       testCohortApp
+--   build-depends:
+--       hasklepias-main
+--     , hasklepias-core
+--     , hasklepias-appBuilder
+--     , hasklepias-examples
+--     , base >=4.14 && <5
+--     , bytestring
+--     , directory
+--     , process >= 1.6.14
+--     , regex-compat
+--     , tasty
+--     , tasty-silver
+--   other-modules:
+--       ConstructPaths
+--   default-language: Haskell2010
+
+-- FIXME:
+-- 2022-04-14 - BS - 
+-- This is test suite is commented out for now
+-- as the test execution is failing on in the CI
+-- due to errors such as:
+--   exampleFilterApp: MissingFileError "/root/.aws/credentials"
+-- punting this to resolve another day.
+-- see: https://gitlab.novisci.com/nsStat/asclepias/-/issues/205
+
+-- test-suite testFilterApp
+--   type: exitcode-stdio-1.0
+--   main-is: Main.hs
+--   hs-source-dirs:
+--       testFilterApp
+--   build-depends:
+--       hasklepias-appBuilder
+--     , hasklepias-core
+--     , hasklepias-examples
+--     , hasklepias-main
+--     , base >=4.14 && <5
+--     , bytestring
+--     , directory
+--     , process >= 1.6.14
+--     , silently >= 1.2.5.1
+--     , tasty
+--     , tasty-silver
+--   other-modules:
+--       ConstructPaths
+--   default-language: Haskell2010

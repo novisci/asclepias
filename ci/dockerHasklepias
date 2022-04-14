@@ -1,0 +1,30 @@
+# Defines docker images in which all the hasklepias components can be built.
+# These images are built as a first step in the CI pipelines and then used
+# by dependent jobs.
+
+ARG BASE_IMAGE=haskell
+ARG GHC=8.10.7
+
+FROM registry.novisci.com/nsstat/nsbuild/$BASE_IMAGE:$GHC
+
+ARG BASE_IMAGE
+ARG GHC
+
+WORKDIR /project
+
+# TODO: surely there's a clean way to copy in necessary files
+COPY cabal.project .
+COPY hasklepias-core/hasklepias-core.cabal hasklepias-core/hasklepias-core.cabal
+COPY hasklepias-templates/hasklepias-templates.cabal hasklepias-templates/hasklepias-templates.cabal
+COPY hasklepias-appBuilder/hasklepias-appBuilder.cabal hasklepias-appBuilder/hasklepias-appBuilder.cabal
+COPY hasklepias-main/hasklepias-main.cabal hasklepias-main/hasklepias-main.cabal
+COPY hasklepias-examples/hasklepias-examples.cabal hasklepias-examples/hasklepias-examples.cabal
+COPY cohort-collector/cohort-collector.cabal cohort-collector/cohort-collector.cabal
+COPY event-data-theory/event-data-theory.cabal event-data-theory/event-data-theory.cabal
+COPY stype/stype.cabal stype/stype.cabal
+COPY maybe-toxic-tutorial/maybe-toxic-tutorial.cabal maybe-toxic-tutorial/maybe-toxic-tutorial.cabal
+
+RUN cabal update
+
+COPY ci/ci-cabal-build-only-deps.sh ci/ci-cabal-build-only-deps.sh
+RUN ./ci/ci-cabal-build-only-deps.sh $BASE_IMAGE

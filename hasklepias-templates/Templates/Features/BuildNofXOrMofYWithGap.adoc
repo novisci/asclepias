@@ -1,0 +1,38 @@
+:description: Documentation for BuildNofXOrNofYWithGap
+:source-highlighter: highlightjs
+
+= `buildNofXOrNofYWithGap`: Is either `buildNofX` or `buildNofXWithGap` satisfied?
+
+[TIP]
+====
+Use this template to create a `Definition` for a `Feature` that answers:
+
+* [x] Do N events satisfy predicate X?
+* [x] OR are there M gaps of at least the given duration
+between any pair of events that relate
+to the assessment interval by the given relation
+and the satisfy the given predicate Y?
+
+
+Find two outpatient events separated by at least 7 days
+or one inpatient event is an example.
+====
+
+== Usage and Examples
+
+#TODO#
+
+== Specialized Versions
+
+#TODO#
+
+== Source code
+
+[%collapsible]
+.View source code
+====
+[source,haskell]
+----
+include::BuildNofXOrMofYWithGap.hs[tag=template0]
+----
+====

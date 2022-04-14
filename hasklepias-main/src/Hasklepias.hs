@@ -19,18 +19,17 @@ module Hasklepias
     See that pacakge's documentation for information about the types and functions 
     for working with intervals.
     -}
-    module EventData
+    module EventDataTheory
 
     -- * Working with Features
     -- $features
   , module Features
 
-    -- * Feature definition builders 
+    -- * Feature definition builders
     {- | 
     A collection of pre-defined functions which build common feature definitions
     used in epidemiologic cohorts.
     -}
-
   , module Templates.Features
     -- * Utilities for defining Features from Events
     {- |
@@ -40,14 +39,17 @@ module Hasklepias
     can be found on [hackage](https://hackage.haskell.org/package/interval-algebra).
 
     -}
-  , module Hasklepias.FeatureEvents
+  -- , module Hasklepias.FeatureEvents
   , module Hasklepias.Misc
+
+    -- * Intervals based on an index
+  , module AssessmentIntervals
 
     -- * Specifying and building cohorts
   , module Cohort
 
     -- ** Create a cohort application
-  , module Hasklepias.MakeApp
+  , module Hasklepias.MakeCohortApp
   , module Hasklepias.AppUtilities
     -- ** Create an application for filtering subjects
   , module Hasklepias.MakeFilterApp
@@ -60,18 +62,16 @@ module Hasklepias
   , module Hasklepias.ReexportsUnsafe
   ) where
 
+import           AssessmentIntervals
 
-
-import           EventData
-
+import           EventDataTheory
 
 import           Features
 
 import           Cohort
 
-import           Hasklepias.FeatureEvents
 import           Hasklepias.AppUtilities
-import           Hasklepias.MakeApp
+import           Hasklepias.MakeCohortApp
 import           Hasklepias.MakeFilterApp
 import           Hasklepias.Misc
 import           Hasklepias.Reexports

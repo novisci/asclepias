@@ -54,6 +54,7 @@ build-cohort-collector-static:
         - "hasklepias-appBuilder/**/*.hs"
         - "hasklepias-core/**/*.hs"
         - "ci/ci-cabal-build-exe-static.sh"
+        - "ci/ci-static-build.yml"
     - if: '$CI_COMMIT_MESSAGE =~ /-static-build/'
   image: registry.novisci.com/nsstat/asclepias/hasklepias-build-musl:${MAINVERSION}
   artifacts:
@@ -102,5 +103,5 @@ deploy-docker-cohort-collector-static:
     - echo "$FILE"
     - echo $VERSION
     - ./ci/ci-docker-build-cohort-collector.sh $VERSION install/$FILE
-  # rules:
-  #   - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH

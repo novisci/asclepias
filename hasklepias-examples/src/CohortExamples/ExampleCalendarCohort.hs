@@ -82,9 +82,7 @@ makeIndexRunner i _ = makeIndexSet [i]
 -- | Make a function that runs the criteria for a calendar index
 {- tag::criteriarunner[] -}
 makeCriteriaRunner :: Interval Day -> [Evnt Day] -> Criteria
-makeCriteriaRunner index events =
-  criteria $ criterion crit1 :| -- Note use of NonEmpty constructor
-                                [criterion crit2]
+makeCriteriaRunner index events = criteria [criterion crit1, criterion crit2]
  where
   crit1   = eval critEnrolled featInd featEvs
   crit2   = eval critEnrolled455 featInd featEvs crit1

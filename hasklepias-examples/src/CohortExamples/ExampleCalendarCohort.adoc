@@ -1,4 +1,4 @@
-= Build a calendar cohort
+= Create a cohort with calendar-based indices
 
 This examples demonstrates:
 
@@ -18,12 +18,9 @@ Review the cohort building checklist
 == Decide on the data model
 
 In this example,
-we use the following data model in our events:
+we use the following data model in our events: #TODO#
 
-[source,haskell]
-----
-include::../ExampleEvents.hs[tag=exampleModel]
-----
+
 
 Here we create a type synonym for the the event type in this example
 [source,haskell]

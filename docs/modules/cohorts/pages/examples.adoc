@@ -12,6 +12,8 @@ see xref:cohorts:page$theory.adoc[].
 
 #TODO#
 
+include::cohorts:example$src/ExampleCalendarCohort.adoc[leveloffset=+1]
+
 == Create a cohort with multiple indices
 
 #TODO#

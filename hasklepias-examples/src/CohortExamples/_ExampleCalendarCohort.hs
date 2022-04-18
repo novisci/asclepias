@@ -293,9 +293,8 @@ makeIndexRunner i _ = makeIndexSet [i]
 makeCriteriaRunner :: Interval Day -> [Evnt Day] -> Criteria
 makeCriteriaRunner index events =
   criteria
-    $  criterion crit1
-    :| -- Note use of NonEmpty constructor
-       [criterion crit2, criterion crit3, criterion crit4, criterion crit5]
+    $ criterion crit1
+    : [criterion crit2, criterion crit3, criterion crit4, criterion crit5]
  where
   crit1   = eval critFemale featEvs
   crit2   = eval critOver50 agefeat

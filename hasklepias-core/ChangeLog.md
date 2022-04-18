@@ -1,5 +1,17 @@
 # Changelog for hasklepias-core
 
+## 0.24.0
+
+* Changes underlying type of `Criteria` to a list instead of a NonEmpty list.
+Use of NonEmpty is an artifact of an older way of evaluating criteria
+that's no longer necessary.
+The old way processing cohorts didn't have the SubjectHasNoIndex status,
+so a user always need to provide at least one criterion
+which would handle the case of not having an index,
+or else all the subjects we could included.
+Now if no criteria are provided,
+all units will either have a `SubjectHasNoIndex` or `Included` status.
+
 ## 0.23.0
 
 * Moves specification of test suite into `src` directly.

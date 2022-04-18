@@ -13,6 +13,10 @@ Maintainer  : bsaul@novisci.com
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE AllowAmbiguousTypes #-}
+{-# LANGUAGE FunctionalDependencies #-}
+
 
 module Features.Attributes
   ( Attributes(..)
@@ -84,8 +88,10 @@ basicAttributes
 basicAttributes sl ll rls tgs =
   MkAttributes sl ll "" (MkPurpose (fromList rls) (fromList tgs))
 
-{-| A typeclass providing a single method for defining @Attributes@ for a
-@Feature@. -}
-class (KnownSymbol name) => HasAttributes name d where
-  getAttributes :: f name d -> Attributes
-  getAttributes _ = emptyAttributes
+{-|
+A typeclass providing a single method for defining @Attributes@
+for a @Feature@. 
+-}
+class (KnownSymbol name) => HasAttributes name d | name -> d where
+  getAttributes :: forall name . Attributes
+  getAttributes = emptyAttributes

@@ -1,0 +1,81 @@
+= Build a calendar cohort
+
+This examples demonstrates:
+
+* [x] specifying cohorts from calendar-based indices
+* [x] using hasklepias templates to define a feature
+* [x] using `Data.Void` as the return type for the cohort
+to use the cohort for just for computing attrition information
+
+[TIP]
+Review the cohort building checklist 
+#TODO: create such a document#
+
+== Goals
+
+1. 
+
+== Decide on the data model
+
+In this example,
+we use the following data model in our events:
+
+[source,haskell]
+----
+include::../ExampleEvents.hs[tag=exampleModel]
+----
+
+Here we create a type synonym for the the event type in this example
+[source,haskell]
+----
+include::ExampleCalendarCohort.hs[tag=projectEvent]
+----
+
+
+== Create intervals for dates used for indices
+
+[source,haskell]
+----
+include::ExampleCalendarCohort.hs[tag=indices]
+----
+
+== Define Features used as criteria
+
+[source,haskell]
+----
+include::ExampleCalendarCohort.hs[tag=enrollPredicate]
+----
+
+Include the subject if she has an enrollment interval concurring with index.
+
+[source,haskell]
+----
+include::ExampleCalendarCohort.hs[tag=enrolled]
+----
+
+Include the subject if both:
+
+* enrolled on index ('critEnrolled')
+* all the gaps between the (combined) enrolled intervals within baseline 
+are less than 30 days
+
+[source,haskell]
+----
+include::ExampleCalendarCohort.hs[tag=contenrolled]
+----
+
+== Write Cohort Spefication
+
+A cohort is #TODO: link to cohort definition#
+
+[source,haskell]
+----
+include::ExampleCalendarCohort.hs[tag=indexrunner]
+----
+
+
+
+[source,haskell]
+----
+include::ExampleCalendarCohort.hs[tag=criteriarunner]
+----

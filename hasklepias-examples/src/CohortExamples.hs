@@ -1,6 +1,7 @@
 module CohortExamples where
 
-import           CohortExamples.Example1       as C1
+import           CohortExamples.ExampleCalendarCohort
+                                               as C1
 import           Hasklepias
 
 examples :: TestTree

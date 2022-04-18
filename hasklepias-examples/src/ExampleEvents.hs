@@ -22,15 +22,18 @@ module ExampleEvents
 import           Data.Aeson
 import           Hasklepias
 
+{- tag::exampleModel[] -}
 data Demographic =
     BirthYear Integer
   | Gender Text
   deriving (Eq, Show, Ord, Generic)
+
 data ExampleModel =
     Enrollment
   | Medical
   | Demographics Demographic
   deriving (Eq, Show, Ord, Generic)
+{- end::exampleModel[] -}
 
 -- instance FromJSON ExampleModel
 instance FromJSON Demographic

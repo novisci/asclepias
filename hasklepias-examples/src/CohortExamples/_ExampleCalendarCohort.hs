@@ -1,9 +1,9 @@
 {-|
-Description : Demostrates how to define a cohort using Hasklepias
+Description : Demostrates how to define a calendar cohort using Hasklepias
 -}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
-module CohortExamples.Example1
+module CohortExamples.ExampleCalendarCohort
   ( example
   ) where
 
@@ -11,6 +11,15 @@ import           ExampleEvents                  ( Demographic(..)
                                                 , ExampleModel(..)
                                                 )
 import           Hasklepias
+
+
+{-------------------------------------------------------------------------------
+Define input data type
+-------------------------------------------------------------------------------}
+{- tag::projectEvent[] -}
+type Evnt a = Event Text ExampleModel a
+{- end::projectEvent[] -}
+
 {-------------------------------------------------------------------------------
   Constants
 -------------------------------------------------------------------------------}
@@ -29,7 +38,7 @@ indices = map (\(y, m) -> beginerval 0 (fromGregorian y m 1))
               (allPairs [2017] [1, 4, 7, 10])
 
 {-------------------------------------------------------------------------------
-  Utility functions 
+  Utilities 
 -------------------------------------------------------------------------------}
 
 -- | Creates a baseline interval from index
@@ -55,10 +64,7 @@ beforeIndex :: Intervallic i Day => Interval Day -> i Day -> Bool
 beforeIndex = before
 
 -- | Creates a filter for events to those that 'concur' with the baseline interval.
-getBaselineConcur
-  :: Interval Day
-  -> [Event Text ExampleModel Day]
-  -> [Event Text ExampleModel Day]
+getBaselineConcur :: Interval Day -> [Evnt Day] -> [Evnt Day]
 getBaselineConcur index = filterConcur (baselineInterval index)
 
 {-------------------------------------------------------------------------------
@@ -74,7 +80,7 @@ twoOutOneIn
   -> [Text] -- ^ cpts2
   -> Definition
        (  Feature "calendarIndex" (Interval Day)
-       -> Feature "allEvents" [Event Text ExampleModel Day]
+       -> Feature "allEvents" [Evnt Day]
        -> Feature name Bool
        )
 twoOutOneIn cpts1 cpts2 = buildNofXOrMofYWithGapBool 1
@@ -93,7 +99,7 @@ medHx
   :: [Text]
   -> Definition
        (  Feature "calendarIndex" (Interval Day)
-       -> Feature "allEvents" [Event Text ExampleModel Day]
+       -> Feature "allEvents" [Evnt Day]
        -> Feature name Bool
        )
 medHx cpt = define
@@ -120,9 +126,7 @@ medHx cpt = define
 -------------------------------------------------------------------------------}
 
 -- | Lift a subject's events in a feature
-featureEvents
-  :: [Event Text ExampleModel Day]
-  -> Feature "allEvents" [Event Text ExampleModel Day]
+featureEvents :: [Evnt Day] -> Feature "allEvents" [Evnt Day]
 featureEvents = pure
 
 -- | The subject's age at time of index. Returns an error if there no birth year
@@ -130,7 +134,7 @@ featureEvents = pure
 age
   :: Definition
        (  Feature "calendarIndex" (Interval Day)
-       -> Feature "allEvents" [Event Text ExampleModel Day]
+       -> Feature "allEvents" [Evnt Day]
        -> Feature "age" Integer
        )
 age = defineA
@@ -148,7 +152,7 @@ age = defineA
            Just age -> pure age
   )
  where
-  viewBirthYears :: Event Text ExampleModel Day -> Maybe Integer
+  viewBirthYears :: Evnt Day -> Maybe Integer
   viewBirthYears x = case getFacts (getContext x) of
     Demographics (BirthYear v) -> Just v
     _                          -> Nothing
@@ -158,7 +162,7 @@ age = defineA
 --   are no death records.
 deathDay
   :: Definition
-       (  Feature "allEvents" [Event Text ExampleModel Day]
+       (  Feature "allEvents" [Evnt Day]
        -> Feature "deathDay" (Maybe (Interval Day))
        )
 deathDay = define
@@ -176,10 +180,7 @@ deathDay = define
 
 -- | Include the subject if female; Exclude otherwise
 critFemale
-  :: Definition
-       (  Feature "allEvents" [Event Text ExampleModel Day]
-       -> Feature "isFemale" Status
-       )
+  :: Definition (Feature "allEvents" [Evnt Day] -> Feature "isFemale" Status)
 critFemale = define
   (\events ->
     events |> filterEvents (containsConcepts ["is_female"]) |> headMay |> \case
@@ -191,7 +192,7 @@ critFemale = define
 critOver50 :: Definition (Feature "age" Integer -> Feature "isOver50" Status)
 critOver50 = define (includeIf . (>= 50))
 
-isEnrollmentEvent :: Predicate (Event Text ExampleModel Day)
+isEnrollmentEvent :: Predicate (Evnt Day)
 isEnrollmentEvent = Predicate
   (\x -> case getFacts (getContext x) of
     Enrollment -> True
@@ -202,7 +203,7 @@ isEnrollmentEvent = Predicate
 critEnrolled
   :: Definition
        (  Feature "calendarIndex" (Interval Day)
-       -> Feature "allEvents" [Event Text ExampleModel Day]
+       -> Feature "allEvents" [Evnt Day]
        -> Feature "isEnrolled" Status
        )
 critEnrolled = buildIsEnrolled isEnrollmentEvent
@@ -214,7 +215,7 @@ critEnrolled = buildIsEnrolled isEnrollmentEvent
 critEnrolled455
   :: Definition
        (  Feature "calendarIndex" (Interval Day)
-       -> Feature "allEvents" [Event Text ExampleModel Day]
+       -> Feature "allEvents" [Evnt Day]
        -> Feature "isEnrolled" Status
        -> Feature "isContinuousEnrolled" Status
        )
@@ -242,7 +243,7 @@ critDead = define
 type BoolFeatDef n
   = Definition
       (  Feature "calendarIndex" (Interval Day)
-      -> Feature "allEvents" [Event Text ExampleModel Day]
+      -> Feature "allEvents" [Evnt Day]
       -> Feature n Bool
       )
 
@@ -285,12 +286,11 @@ instance HasAttributes  "glucocorticoids" Bool where
   Cohort Specifications and evaluation
 -------------------------------------------------------------------------------}
 
-makeIndexRunner
-  :: Interval Day -> [Event Text ExampleModel Day] -> IndexSet (Interval Day)
+makeIndexRunner :: Interval Day -> [Evnt Day] -> IndexSet (Interval Day)
 makeIndexRunner i _ = makeIndexSet [i]
 
 -- | Make a function that runs the criteria for a calendar index
-makeCriteriaRunner :: Interval Day -> [Event Text ExampleModel Day] -> Criteria
+makeCriteriaRunner :: Interval Day -> [Evnt Day] -> Criteria
 makeCriteriaRunner index events =
   criteria
     $  criterion crit1
@@ -310,8 +310,7 @@ makeCriteriaRunner index events =
 instance HasAttributes "calendarIndex" (Interval Day) where
 
 -- | Make a function that runs the features for a calendar index
-makeFeatureRunner
-  :: Interval Day -> [Event Text ExampleModel Day] -> Featureset
+makeFeatureRunner :: Interval Day -> [Evnt Day] -> Featureset
 makeFeatureRunner index events = featureset
   (  packFeature idx
   :| [ packFeature $ eval diabetes idx ef
@@ -325,8 +324,7 @@ makeFeatureRunner index events = featureset
   ef  = featureEvents events
 
 -- | Make a cohort specification for each calendar time
-cohortSpecs
-  :: CohortMapSpec [Event Text ExampleModel Day] Featureset (Interval Day)
+cohortSpecs :: CohortMapSpec [Evnt Day] Featureset (Interval Day)
 cohortSpecs = makeCohortSpecs $ map
   (\x ->
     (pack $ show x, makeIndexRunner x, makeCriteriaRunner, makeFeatureRunner)
@@ -335,9 +333,7 @@ cohortSpecs = makeCohortSpecs $ map
 
 -- | A function that evaluates all the calendar cohorts for a population
 evalCohorts
-  :: Monad m
-  => Population [Event Text ExampleModel Day]
-  -> m (CohortMap Featureset (Interval Day))
+  :: Monad m => Population [Evnt Day] -> m (CohortMap Featureset (Interval Day))
 evalCohorts = makeCohortSpecsEvaluator defaultCohortEvalOptions cohortSpecs
 
 {-------------------------------------------------------------------------------
@@ -345,18 +341,12 @@ evalCohorts = makeCohortSpecsEvaluator defaultCohortEvalOptions cohortSpecs
   This would generally be in a separate file
 -------------------------------------------------------------------------------}
 m
-  :: Year
-  -> MonthOfYear
-  -> Int
-  -> Integer
-  -> [Text]
-  -> ExampleModel
-  -> Event Text ExampleModel Day
+  :: Year -> MonthOfYear -> Int -> Integer -> [Text] -> ExampleModel -> Evnt Day
 m y m d dur c dmn = event itv ctx where
   ctx = context (packConcepts c) dmn Nothing
   itv = beginerval dur (fromGregorian y m d)
 
-testData1 :: [Event Text ExampleModel Day]
+testData1 :: [Evnt Day]
 testData1 = sort
   [ m 2010 1 1 1   ["is_female"]             (Demographics (Gender "Female"))
   , m 2010 1 1 1   ["is_birth_year"]         (Demographics (BirthYear 1960))
@@ -367,10 +357,10 @@ testData1 = sort
   , m 2017 8 1 91  ["is_ppi"]                Medical
   ]
 
-testSubject1 :: Subject [Event Text ExampleModel Day]
+testSubject1 :: Subject [Evnt Day]
 testSubject1 = into ("a" :: Text, testData1)
 
-testData2 :: [Event Text ExampleModel Day]
+testData2 :: [Evnt Day]
 testData2 = sort
   [ m 2010 1 1 1   ["is_female"]     (Demographics (Gender "Female"))
   , m 2010 1 1 1   ["is_birth_year"] (Demographics (BirthYear 1980))
@@ -379,10 +369,10 @@ testData2 = sort
   , m 2018 2 1 30  ["enrollment"]    Enrollment
   ]
 
-testSubject2 :: Subject [Event Text ExampleModel Day]
+testSubject2 :: Subject [Evnt Day]
 testSubject2 = into ("b" :: Text, testData2)
 
-testPop :: Population [Event Text ExampleModel Day]
+testPop :: Population [Evnt Day]
 testPop = into [testSubject1, testSubject2]
 
 makeExpectedFeatures

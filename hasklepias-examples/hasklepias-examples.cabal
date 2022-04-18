@@ -26,7 +26,7 @@ library
       AppExamples.CohortApp
       AppExamples.FilterApp
       CohortExamples
-      CohortExamples.Example1
+      CohortExamples.ExampleCalendarCohort
       FeatureExamples
       FeatureExamples.Example1
       FeatureExamples.Example2

@@ -34,11 +34,6 @@ import           Data.Aeson                     ( (.=)
                                                 )
 import           Data.Bifunctor                 ( Bifunctor(second) )
 import           Data.List                      ( find )
-import qualified Data.List.NonEmpty            as NE
-                                                ( NonEmpty
-                                                , fromList
-                                                , zip
-                                                )
 import           Data.Map.Strict               as Map
                                                 ( Map
                                                 , fromListWith
@@ -119,16 +114,16 @@ criterion :: (KnownSymbol n) => Feature n Status -> Criterion
 criterion x = MkCriterion (nameFeature x)
 
 -- | A nonempty collection of @'Criterion'@ paired with a @Natural@ number.
-newtype Criteria = MkCriteria ( NE.NonEmpty (Natural, Criterion) )
+newtype Criteria = MkCriteria [ (Natural, Criterion) ]
   deriving (Eq, Show)
 
 -- | Unpacks a 'Criteria'.
-getCriteria :: Criteria -> NE.NonEmpty (Natural, Criterion)
+getCriteria :: Criteria -> [(Natural, Criterion)]
 getCriteria (MkCriteria x) = x
 
 -- | Constructs a @'Criteria'@ from a @'NE.NonEmpty'@ collection of @'Criterion'@.
-criteria :: NE.NonEmpty Criterion -> Criteria
-criteria l = MkCriteria $ NE.zip (NE.fromList [1 ..]) l
+criteria :: [Criterion] -> Criteria
+criteria l = MkCriteria $ zip [1 ..] l
 
 -- | Unpacks a @'Criterion'@ into a (Text, Status) pair where the text is the
 -- name of the criterion and its @Status@ is the value of the status in the 
@@ -145,7 +140,7 @@ getStatus (MkCriterion x) =
 
 -- | Converts a subject's @'Criteria'@ into a @'NE.NonEmpty'@ triple of 
 -- (order of criterion, name of criterion, status)
-getStatuses :: Criteria -> NE.NonEmpty (Natural, Text, Status)
+getStatuses :: Criteria -> [(Natural, Text, Status)]
 getStatuses (MkCriteria x) =
   fmap (\c -> (fst c, (fst . getStatus . snd) c, (snd . getStatus . snd) c)) x
 
@@ -173,7 +168,7 @@ getCriterionName (MkCriterion x) = getNameN x
 Initializes a container of @'CohortStatus'@ from a @'Criteria'@. 
 This can be used to generate all the possible Exclusion/Inclusion reasons.
 -}
-initStatusInfo :: Criteria -> NE.NonEmpty CohortStatus
+initStatusInfo :: Criteria -> [CohortStatus]
 initStatusInfo (MkCriteria z) =
   fmap (ExcludedBy . Data.Bifunctor.second getCriterionName) z <> pure Included
 

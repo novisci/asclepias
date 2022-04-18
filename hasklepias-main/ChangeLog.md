@@ -1,5 +1,11 @@
 # Changelog for hasklepias-main
 
+## 0.25.0
+
+* Combines reexports modules into a single module.
+* Removes `setFromList`, `mapToList`, `mapFromList` functions.
+Use witch's `from` or `into` functions with type application instead.
+
 ## 0.24.0
 
 * This version includes many updates to associated packages including:

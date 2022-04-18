@@ -4,6 +4,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE TypeApplications #-}
 module AppExamples.CohortApp
   ( exampleAppRW
   , exampleAppCW
@@ -50,7 +51,7 @@ instance HasAttributes "myVar1" Count where
     { getShortLabel = "somelabel"
     , getLongLabel  = "another label"
     , getDerivation = ""
-    , getPurpose    = MkPurpose (setFromList [Outcome]) (setFromList [])
+    , getPurpose    = MkPurpose (into [Outcome]) (from @[Text] [])
     }
 
 instance HasAttributes "myVar2" Bool where

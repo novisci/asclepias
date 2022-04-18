@@ -479,7 +479,9 @@ expectedCohorts = zipWith
 
 expectedCohortSet :: CohortMap Featureset (Interval Day)
 expectedCohortSet =
-  into $ mapFromList $ zip (fmap (pack . show) indices) expectedCohorts
+  into $ into @(Map Text (Cohort Featureset (Interval Day))) $ zip
+    (fmap (pack . show) indices)
+    expectedCohorts
 
 example :: TestTree
 example = testGroup

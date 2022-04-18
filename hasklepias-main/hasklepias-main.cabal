@@ -1,7 +1,7 @@
 cabal-version:  2.2
 -- tag::devel-docs-package-properties[]
 name:           hasklepias-main
-version:        0.24.0
+version:        0.25.0
 description:    Please see the README on GitHub at <https://github.com/novisci/asclepias#readme>
 homepage:       https://github.com/novisci/asclepias/#readme
 bug-reports:    https://github.com/novisci/asclepias/issues
@@ -28,7 +28,6 @@ library
       Hasklepias
       Hasklepias.Misc
       Hasklepias.Reexports
-      Hasklepias.ReexportsUnsafe
   hs-source-dirs:
       src
   build-depends:

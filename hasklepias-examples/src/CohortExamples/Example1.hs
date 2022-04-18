@@ -253,9 +253,9 @@ diabetes = twoOutOneIn ["is_diabetes_inpatient"] ["is_diabetes_outpatient"]
 
 instance HasAttributes  "diabetes" Bool where
   getAttributes = basicAttributes "Has Diabetes"
-                                    "Has Diabetes within baseline"
-                                    [Covariate]
-                                    ["baseline"]
+                                  "Has Diabetes within baseline"
+                                  [Covariate]
+                                  ["baseline"]
 
 
 ckd :: BoolFeatDef "ckd"
@@ -277,9 +277,9 @@ glucocorticoids = medHx ["is_glucocorticoids"]
 
 instance HasAttributes  "glucocorticoids" Bool where
   getAttributes = basicAttributes "Has glucocorticoids"
-                                    "Has glucocorticoids within baseline"
-                                    [Covariate]
-                                    ["baseline"]
+                                  "Has glucocorticoids within baseline"
+                                  [Covariate]
+                                  ["baseline"]
 
 {-------------------------------------------------------------------------------
   Cohort Specifications and evaluation

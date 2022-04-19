@@ -4,8 +4,8 @@ This examples demonstrates:
 
 * [x] specifying cohorts from calendar-based indices
 * [x] using hasklepias templates to define a feature
-* [x] using `Data.Void` as the return type for the cohort
-to use the cohort for just for computing attrition information
+* [x] using an empty return type for the cohort data
+to just compute attrition information
 
 [TIP]
 Review the cohort building checklist 
@@ -69,8 +69,6 @@ A cohort is #TODO: link to cohort definition#
 ----
 include::ExampleCalendarCohort.hs[tag=indexrunner]
 ----
-
-
 
 [source,haskell]
 ----

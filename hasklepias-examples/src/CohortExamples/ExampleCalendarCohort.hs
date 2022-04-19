@@ -9,7 +9,6 @@ import           ExampleEvents                  ( Demographic(..)
                                                 , ExampleModel(..)
                                                 )
 import           Hasklepias
--- import Data.Void
 
 {-------------------------------------------------------------------------------
 Define input data type

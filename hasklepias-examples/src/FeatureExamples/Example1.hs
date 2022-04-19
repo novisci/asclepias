@@ -239,7 +239,8 @@ dummyIndex = beginerval 1 0
 
 includeAll :: Interval Int -> [Event Text ExampleModel Int] -> Criteria
 includeAll _ _ = criteria $ pure
-  (criterion (makeFeature (featureDataR Include) :: Feature "includeAll" Status)
+  (into @Criterion
+    (makeFeature (featureDataR Include) :: Feature "includeAll" Status)
   )
 
 

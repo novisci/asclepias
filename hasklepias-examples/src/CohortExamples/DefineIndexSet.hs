@@ -10,7 +10,7 @@ Index is defined as the first occurrence of an Orca bite.
 {- tag::defineindex[] -}
 defineIndexSet
   :: Ord a
-  =>   -- <1>
+  =>    -- <1>
      [Event Text ExampleModel a]
   -> -- <2>
      IndexSet (Interval a) -- <3>

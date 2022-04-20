@@ -10,16 +10,14 @@ Index is defined as the first occurrence of an Orca bite.
 {- tag::defineindex[] -}
 defineIndexSet
   :: Ord a
-  =>    -- <1>
-     [Event Text ExampleModel a]
-  -> -- <2>
-     IndexSet (Interval a) -- <3>
+  => [Event Text ExampleModel a] -- <1>
+  -> IndexSet (Interval a) -- <2>
 defineIndexSet events =
   events
-    |> filterEvents (containsConcepts ["wasBitByOrca"]) -- <4>
-    |> headMay -- <5>
-    |> fmap getInterval -- <6>
-    |> into -- <7>
+    |> filterEvents (containsConcepts ["wasBitByOrca"]) -- <3>
+    |> headMay -- <4>
+    |> fmap getInterval -- <5>
+    |> into -- <6>
 {- end::defineindex[] -}
 
 example :: TestTree

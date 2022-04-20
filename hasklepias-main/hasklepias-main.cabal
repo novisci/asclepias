@@ -53,3 +53,4 @@ library
     , witherable >= 0.4.1
     , witch >= 1.0
   default-language: Haskell2010
+-- end::devel-docs-components[]

@@ -27,4 +27,4 @@ twoOutOneIn cpts1 cpts2 = buildNofXOrMofYWithGapBool 1
                                                      bline
                                                      concur
                                                      (containsConcepts cpts2)
-{-  end::unction[] -}
+{-  end::function[] -}

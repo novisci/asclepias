@@ -23,7 +23,7 @@ needs to occur with a time window of other events.
 
 [source,haskell]
 ----
-include::Example3.hs[tag=function]
+include::DurationsWithMultipleConditions.hs[tag=function]
 ----
 
 Take the case that a subject has the following events,
@@ -105,6 +105,6 @@ the `define` function:
 
 [source,haskell]
 ----
-include::Example3.hs[tag=definition]
+include::DurationsWithMultipleConditions.hs[tag=definition]
 ----
 

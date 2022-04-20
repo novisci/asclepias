@@ -25,7 +25,7 @@ when a subject was both hospitalized and on some medication.
 
 [source,haskell]
 ----
-include::Example2.hs[tag=function]
+include::LastEventInWindow.hs[tag=function]
 ----
 
 Take the case that a subject has the following events,
@@ -92,7 +92,7 @@ using `defineA`:
 
 [source,haskell]
 ----
-include::Example2.hs[tag=definition]
+include::LastEventInWindow.hs[tag=definition]
 ----
 
 <1> Create a function which takes a list of concepts and

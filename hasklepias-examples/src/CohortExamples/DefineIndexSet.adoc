@@ -1,0 +1,21 @@
+= Defining an Index Set 
+
+This example demonstrates:
+
+* [x] how to create an index set
+
+In this example,
+#TODO#
+
+[source,haskell]
+----
+include::DefineIndexSet.hs[tag=defineindex]
+----
+
+<1> this
+<2> that
+<3> another
+<4> klj
+<5> ksdflja
+<6> jksdf
+<7> jkldsfa

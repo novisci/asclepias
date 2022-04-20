@@ -1,0 +1,12 @@
+= Count number of events
+
+This example demonstrates:
+
+* [x] #TODO#
+
+This example defines a feature that #TODO#
+
+[source,haskell]
+----
+include::CountOfHospitalEvents.hs[tag=function]
+----

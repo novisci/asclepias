@@ -1,0 +1,16 @@
+= Creating "Two outpatient or one inpatient" 
+
+This example demonstrates:
+
+* [x] #TODO#
+
+This example defines a feature that indicates either:
+
+* at least 1 event during the baseline interval has any of the `cpts1` concepts
+* there are at least 2 events that have `cpts2` concepts which have at least
+7 days between them during the baseline interval
+
+[source,haskell]
+----
+include::TwoOutOneIn.hs[tag=function]
+----

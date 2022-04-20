@@ -1,0 +1,9 @@
+= Create a function for identifying whether a unit has a history of some event 
+
+This example demonstrates:
+
+* [x] using the `+interval-algebra+`
+* [x] writing a function to use in multiple feature definitions
+
+In this example,
+#TODO#

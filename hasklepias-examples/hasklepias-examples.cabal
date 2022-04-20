@@ -26,12 +26,18 @@ library
       AppExamples.CohortApp
       AppExamples.FilterApp
       CohortExamples
+      CohortExamples.Minimal
       CohortExamples.ExampleCalendarCohort
+      CohortExamples.CreateAssessmentInterval
+      CohortExamples.DefineIndexSet
       FeatureExamples
-      FeatureExamples.Example1
-      FeatureExamples.Example2
-      FeatureExamples.Example3
-      FeatureExamples.Example4
+      FeatureExamples.CountOfHospitalEvents
+      FeatureExamples.DrugDiscontinuation
+      FeatureExamples.DurationsWithMultipleConditions
+      FeatureExamples.HistoryOfEvent
+      FeatureExamples.LastEventInWindow
+      FeatureExamples.TimeSinceLastAntibiotics
+      FeatureExamples.TwoOutOneIn
       ExampleEvents
   hs-source-dirs:
       src

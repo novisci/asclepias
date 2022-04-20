@@ -1,0 +1,12 @@
+= Discontinuation from a Drug
+
+This example demonstrates:
+
+* [x] #TODO#
+
+This example defines a feature that #TODO#
+
+[source,haskell]
+----
+include::DrugDiscontinuation.hs[tag=function]
+----

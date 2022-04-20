@@ -3,7 +3,9 @@
 This examples demonstrates:
 
 * [x] specifying cohorts from calendar-based indices
-* [x] using hasklepias templates to define a feature
+* [x] using asclepias'
+xref:page$theory.adoc[cohort module] without using its
+xref:features:page$theory.adoc[feature module] 
 * [x] using an empty return type for the cohort data
 to just compute attrition information
 
@@ -11,9 +13,13 @@ to just compute attrition information
 Review the cohort building checklist 
 #TODO: create such a document#
 
-== Goals
+== Goal
 
-1. 
+Tha goal in this example is to create a cohort for each quarter of 2017.
+The cohort should include subjects if
+they have an enrollment event concurring with the first day of a quarter.
+For this example, 
+
 
 == Decide on the data model
 
@@ -25,7 +31,7 @@ we use the following data model in our events: #TODO#
 Here we create a type synonym for the the event type in this example
 [source,haskell]
 ----
-include::ExampleCalendarCohort.hs[tag=projectEvent]
+include::ExampleCalendarCohort.hs[tag=input]
 ----
 
 
@@ -36,7 +42,7 @@ include::ExampleCalendarCohort.hs[tag=projectEvent]
 include::ExampleCalendarCohort.hs[tag=indices]
 ----
 
-== Define Features used as criteria
+== Define criteria
 
 [source,haskell]
 ----
@@ -50,20 +56,12 @@ Include the subject if she has an enrollment interval concurring with index.
 include::ExampleCalendarCohort.hs[tag=enrolled]
 ----
 
-Include the subject if both:
 
-* enrolled on index ('critEnrolled')
-* all the gaps between the (combined) enrolled intervals within baseline 
-are less than 30 days
-
-[source,haskell]
-----
-include::ExampleCalendarCohort.hs[tag=contenrolled]
-----
-
-== Write Cohort Spefication
+== Write Cohort Specification
 
 A cohort is #TODO: link to cohort definition#
+
+Since the 
 
 [source,haskell]
 ----
@@ -74,3 +72,6 @@ include::ExampleCalendarCohort.hs[tag=indexrunner]
 ----
 include::ExampleCalendarCohort.hs[tag=criteriarunner]
 ----
+
+[NOTE]
+#TODO: we could have done this a different way#

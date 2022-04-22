@@ -8,7 +8,6 @@ module Tests.Cohort.Core
   ) where
 
 import           Cohort
-import           Data.List.NonEmpty             ( NonEmpty(..) )
 import           Data.Set                       ( empty
                                                 , fromList
                                                 , singleton

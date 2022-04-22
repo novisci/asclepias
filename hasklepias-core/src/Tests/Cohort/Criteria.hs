@@ -5,7 +5,6 @@ module Tests.Cohort.Criteria
   ) where
 
 import           Cohort.Criteria
-import           Data.List.NonEmpty
 import           Features
 import           IntervalAlgebra
 import           Test.Tasty

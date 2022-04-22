@@ -19,14 +19,14 @@ dummy :: Feature "dummy" Bool
 dummy = pure True
 
 instance HasAttributes "dummy" Bool where
-  getAttributes x =
+  getAttributes =
     MkAttributes "some Label" "longer label..." "a description" emptyPurpose
 
 dummy2 :: Feature "dummy2" Bool
 dummy2 = pure True
 
 instance HasAttributes "dummy2" Bool where
-  getAttributes x = emptyAttributes
+  getAttributes = emptyAttributes
 
 {-
 NOTE:

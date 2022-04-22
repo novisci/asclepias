@@ -33,11 +33,14 @@ ui:
     snapshot: true
 EOM
 
-# If using antora install locally, use the line of code below.
-#cd $builddir && npx antora --fetch playbook.yml
-
-# If using antora installed globally, use the line below.
-cd $builddir && antora --fetch playbook.yml
+# If you have a local installation of antora then use that, otherwise use the
+# global version. See the following link for the distinction:
+# https://docs.antora.org/antora/latest/install/install-antora/
+if [[ -d $builddir/node_modules/@antora ]]; then
+  cd "$builddir" && npx antora --fetch playbook.yml
+else
+  cd "$builddir" && antora --fetch playbook.yml
+fi
 
 # TODO: add tear down option
 # cd .. && rm -rf $builddir

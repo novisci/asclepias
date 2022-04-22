@@ -1,12 +1,23 @@
-# M1 Mac Haskell Install
+# Special Instructions for M1 Mac
 
-If using an M1 Mac:
+While installing the Haskell suite, you may run in to an
+error message like this:
 
-. Install homebrew
-. Install llvm
-. Update $\{HOME}/.zshrc to add `export PATH="/opt/homebrew/opt/llvm/bin:$PATH"`
-[source,shell]
 ----
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-brew install llvm
+<no location info>: error:
+    Warning: Couldn't figure out LLVM version!
+             Make sure you have installed LLVM between [9 and 13)
 ----
+
+If you do, you'll need to install a second version of llvm.
+If using homebrew, run `brew install llvm`.
+
+(To install homebrew, `/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"`)
+
+After installing the second version of llvm, you'll need to 
+add the following line to the appropriate shell startup file
+(either $\{HOME}/.zshrc or $\{HOME}/.bashrc):
+
+`export PATH="/opt/homebrew/opt/llvm/bin:$PATH"`
+
+Click xref:compiling-asclepias.adoc#m1_mac[here] for more details.

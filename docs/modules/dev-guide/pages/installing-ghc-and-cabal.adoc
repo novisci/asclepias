@@ -108,7 +108,7 @@ since `ghcup` is smart enough to not download an existing application a second t
 
 [source,shell,subs="attributes"]
 ----
-ghcup install ghc {ghc}  # double-check to ensure this is the correct version
+ghcup install ghc {ghc}
 ghcup install cabal
 ----
 

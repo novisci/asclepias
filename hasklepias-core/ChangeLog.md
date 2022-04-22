@@ -1,5 +1,20 @@
 # Changelog for hasklepias-core
 
+## 0.24.0
+
+* Changes `HasAttributes` class in two ways:
+  * Adds a functional dependency so that `name -> d`; that is,
+  the name determines the data type.
+  In this way, there can only be one data type associated with a `name`.
+  For example,
+  `instance HasAttributes "foo" Bool` and
+  `instance HasAttributes "foo" Int`
+  would conflict.
+  * Uses existential quantification on the `getAttributes` function,
+    so that a value doesn't need to be provided.
+    Instead type application can be used,
+    as in `getAttributes @n`.
+
 ## 0.23.0
 
 * Moves specification of test suite into `src` directly.

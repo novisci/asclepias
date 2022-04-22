@@ -5,10 +5,11 @@ Copyright   : (c) NoviSci, Inc 2020
 License     : BSD3
 Maintainer  : bsaul@novisci.com
 -}
--- {-# OPTIONS_HADDOCK hide #-}
 {-# LANGUAGE ExistentialQuantification #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 module Features.Featureable
   ( Featureable(..)
@@ -37,10 +38,11 @@ data Featureable
 
 {- | Pack a feature into a @Featurable@. -}
 packFeature
-  :: (KnownSymbol n, Show d, ToJSON d, Typeable d, HasAttributes n d)
+  :: forall n d
+   . (KnownSymbol n, Show d, ToJSON d, Typeable d, HasAttributes n d)
   => Feature n d
   -> Featureable
-packFeature x = MkFeatureable x (getAttributes x)
+packFeature x = MkFeatureable x (getAttributes @n)
 
 instance Show Featureable where
   show (MkFeatureable x _) = show x

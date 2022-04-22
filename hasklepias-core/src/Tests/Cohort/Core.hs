@@ -8,7 +8,6 @@ module Tests.Cohort.Core
   ) where
 
 import           Cohort
-import           Data.List.NonEmpty             ( NonEmpty(..) )
 import           Data.Set                       ( empty
                                                 , fromList
                                                 , singleton
@@ -39,7 +38,7 @@ buildIndices (MkSillySubjData (i, _, _, _)) | i <= 0    = makeIndexSet [i]
 
 buildCriteria :: Int -> SillySubjData -> Criteria
 buildCriteria _ (MkSillySubjData (_, b1, b2, _)) =
-  criteria $ f c1 b1 :| [f c2 b2]
+  criteria $ f c1 b1 : [f c2 b2]
   where f c d = criterion $ eval c (pure d)
 
 buildFeatures :: Int -> SillySubjData -> Text

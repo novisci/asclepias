@@ -31,6 +31,8 @@ y = into @Criterion x -- MkCriterion ("foo", Include)
 
 * The `FeatureN` type has been removed from the `Feature` module,
 as they only place that type was used was in the `Cohort.Criteria` module.
+* Adds `From` instances to get to an `IndexSet i`
+from an `i`, `Maybe i`, and `[i]`.
 
 ## 0.23.0
 

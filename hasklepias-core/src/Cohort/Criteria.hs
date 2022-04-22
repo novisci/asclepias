@@ -121,7 +121,7 @@ newtype Criteria = MkCriteria [ (Natural, Criterion) ]
 getCriteria :: Criteria -> [(Natural, Criterion)]
 getCriteria (MkCriteria x) = x
 
--- | Constructs a @'Criteria'@ from a @'NE.NonEmpty'@ collection of @'Criterion'@.
+-- | Constructs a @'Criteria'@ from a list of of @'Criterion'@.
 criteria :: [Criterion] -> Criteria
 criteria l = MkCriteria $ zip [1 ..] l
 
@@ -138,7 +138,7 @@ getStatus (MkCriterion x) =
     ((getFeatureData . getDataN) x)
   where nm = getNameN x
 
--- | Converts a subject's @'Criteria'@ into a @'NE.NonEmpty'@ triple of 
+-- | Converts a subject's @'Criteria'@ into a list of triples of 
 -- (order of criterion, name of criterion, status)
 getStatuses :: Criteria -> [(Natural, Text, Status)]
 getStatuses (MkCriteria x) =

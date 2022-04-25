@@ -1,11 +1,15 @@
 :description: how to install toolchain needed for asclepias
-:ghc:
+:ghc: 8.10.7
 
 [TIP]
 For a more detailed installation instructions with detailed explanations,
 xref:dev-guide:page$installing-ghc-and-cabal.adoc[refer the toolchain section]
 in the 
 xref:dev-guide:page$index.adoc[developer guide].
+
+[NOTE]
+If using an M1 mac, 
+xref:dev-guide:m1-mac.adoc[see additional instructions].
 
 // install ghcup
 include::dev-guide:partial$install-ghcup.adoc[leveloffset=+1]
@@ -15,7 +19,7 @@ include::dev-guide:partial$install-ghcup.adoc[leveloffset=+1]
 Once `ghcup` is installed,
 run the following commands:
 
-[source,shell]
+[source,shell,subs="attributes"]
 ----
 ghcup install ghc {ghc}
 ghcup install cabal

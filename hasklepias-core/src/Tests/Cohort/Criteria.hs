@@ -5,23 +5,27 @@ module Tests.Cohort.Criteria
   ) where
 
 import           Cohort.Criteria
-import           Features
 import           IntervalAlgebra
 import           Test.Tasty
 import           Test.Tasty.HUnit
+import           Witch
 
 f1 :: Status -> Criterion
-f1 s = criterion (makeFeature (featureDataR s) :: Feature "f1" Status)
+f1 = criterion "f1"
+-- f1 s = int (makeFeature (featureDataR s) :: Feature "f1" Status)
 
 f2 :: Status -> Criterion
-f2 s = criterion (makeFeature (featureDataR s) :: Feature "f2" Status)
+f2 = criterion "f2"
+-- f2 s = into @Criterion (makeFeature (featureDataR s) :: Feature "f2" Status)
 
 f3 :: Status -> Criterion
-f3 s = criterion (makeFeature (featureDataR s) :: Feature "f3" Status)
+f3 = criterion "f3"
+-- f3 s = into @Criterion (makeFeature (featureDataR s) :: Feature "f3" Status)
 
 f4 :: Criterion
-f4 = criterion
-  (makeFeature (featureDataL $ Other "something") :: Feature "f4" Status)
+f4 = criterion "f4" Exclude
+-- f4 = into @Criterion 
+--   (makeFeature (featureDataL $ Other "something") :: Feature "f4" Status)
 
 index :: Maybe (Interval Int)
 index = Just (beginerval 1 1)

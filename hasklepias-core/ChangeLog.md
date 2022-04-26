@@ -11,6 +11,26 @@ which would handle the case of not having an index,
 or else all the subjects we could included.
 Now if no criteria are provided,
 all units will either have a `SubjectHasNoIndex` or `Included` status.
+* Changes the underlying type of a `Criterion` from a `Feature n Status` to
+simply `(Text, Status)`.
+In this way, the `Cohort` module no longer depends on the `Feature` module.
+One can now create `Criterion` without needing to define a `Feature`.
+This change better delineates the abstraction
+between the `Cohort` and `Feature` modules.
+For those cases where a `Feature` will be used from a `Criterion`,
+a `From` instance is provided that casts a `Feature n Status` to a `Criterion`.
+For example:
+
+```haskell
+x :: Feature "foo" Status
+x = pure Include
+
+y :: Criterion
+y = into @Criterion x -- MkCriterion ("foo", Include)
+```
+
+* The `FeatureN` type has been removed from the `Feature` module,
+as they only place that type was used was in the `Cohort.Criteria` module.
 * Changes `HasAttributes` class in two ways:
   * Adds a functional dependency so that `name -> d`; that is,
   the name determines the data type.

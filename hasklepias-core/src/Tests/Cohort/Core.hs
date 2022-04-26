@@ -2,6 +2,7 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE FlexibleContexts #-}
 
 module Tests.Cohort.Core
   ( tests
@@ -36,10 +37,11 @@ buildIndices :: SillySubjData -> IndexSet Int
 buildIndices (MkSillySubjData (i, _, _, _)) | i <= 0    = makeIndexSet [i]
                                             | otherwise = makeIndexSet []
 
+
 buildCriteria :: Int -> SillySubjData -> Criteria
 buildCriteria _ (MkSillySubjData (_, b1, b2, _)) =
   criteria $ f c1 b1 : [f c2 b2]
-  where f c d = criterion $ eval c (pure d)
+  where f c d = into @Criterion $ eval c (pure d)
 
 buildFeatures :: Int -> SillySubjData -> Text
 buildFeatures _ (MkSillySubjData (_, _, _, t)) = t

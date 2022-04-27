@@ -47,7 +47,7 @@ critTrue
 critTrue = define $ pure Include
 
 instance HasAttributes "myVar1" Count where
-  getAttributes _ = MkAttributes
+  getAttributes = MkAttributes
     { getShortLabel = "somelabel"
     , getLongLabel  = "another label"
     , getDerivation = ""
@@ -55,7 +55,7 @@ instance HasAttributes "myVar1" Count where
     }
 
 instance HasAttributes "myVar2" Bool where
-  getAttributes _ = emptyAttributes
+  getAttributes = emptyAttributes
 {-------------------------------------------------------------------------------
   Cohort Specifications and evaluation
 -------------------------------------------------------------------------------}

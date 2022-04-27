@@ -253,34 +253,34 @@ diabetes :: BoolFeatDef "diabetes"
 diabetes = twoOutOneIn ["is_diabetes_inpatient"] ["is_diabetes_outpatient"]
 
 instance HasAttributes  "diabetes" Bool where
-  getAttributes _ = basicAttributes "Has Diabetes"
-                                    "Has Diabetes within baseline"
-                                    [Covariate]
-                                    ["baseline"]
+  getAttributes = basicAttributes "Has Diabetes"
+                                  "Has Diabetes within baseline"
+                                  [Covariate]
+                                  ["baseline"]
 
 
 ckd :: BoolFeatDef "ckd"
 ckd = twoOutOneIn ["is_ckd_inpatient"] ["is_ckd_outpatient"]
 
 instance HasAttributes  "ckd" Bool where
-  getAttributes _ =
+  getAttributes =
     basicAttributes "Has ckd" "Has CKD within baseline" [Covariate] ["baseline"]
 
 ppi :: BoolFeatDef "ppi"
 ppi = medHx ["is_ppi"]
 
 instance HasAttributes  "ppi" Bool where
-  getAttributes _ =
+  getAttributes =
     basicAttributes "Has ppi" "Has PPI within baseline" [Covariate] ["baseline"]
 
 glucocorticoids :: BoolFeatDef "glucocorticoids"
 glucocorticoids = medHx ["is_glucocorticoids"]
 
 instance HasAttributes  "glucocorticoids" Bool where
-  getAttributes _ = basicAttributes "Has glucocorticoids"
-                                    "Has glucocorticoids within baseline"
-                                    [Covariate]
-                                    ["baseline"]
+  getAttributes = basicAttributes "Has glucocorticoids"
+                                  "Has glucocorticoids within baseline"
+                                  [Covariate]
+                                  ["baseline"]
 
 {-------------------------------------------------------------------------------
   Cohort Specifications and evaluation

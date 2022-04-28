@@ -17,6 +17,7 @@ module ExampleEvents
   , exampleSubject2
   , Demographic(..)
   , ExampleModel(..)
+  , ExampleEvent
   ) where
 
 import           Data.Aeson
@@ -45,6 +46,8 @@ instance FromJSON ExampleModel where
                                    }
       }
     )
+
+type ExampleEvent = Event Text ExampleModel Int
 
 exampleEvents1 :: [Event Text ExampleModel Int]
 exampleEvents1 = toEvents exampleEvents1Data

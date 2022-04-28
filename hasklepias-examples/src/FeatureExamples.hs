@@ -1,15 +1,19 @@
 module FeatureExamples where
 
 
+import           FeatureExamples.CountOfHospitalEvents
+                                               as CH
+import           FeatureExamples.DrugDiscontinuation
+                                               as DD
 import           FeatureExamples.DurationsWithMultipleConditions
-                                               as F1
+                                               as DC
 import           FeatureExamples.HistoryOfEvent
-                                               as F2
+                                               as HE
 import           FeatureExamples.LastEventInWindow
-                                               as F3
--- import           FeatureExamples.Example4      as F4
+                                               as LW
 import           Hasklepias
 
 examples :: TestTree
-examples =
-  testGroup "Feature example tests" [F1.example, F2.example, F3.example]
+examples = testGroup
+  "Feature example tests"
+  [DC.example, HE.example, LW.example, CH.example, DD.example]

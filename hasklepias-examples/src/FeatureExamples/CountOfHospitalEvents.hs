@@ -1,9 +1,9 @@
 {-# LANGUAGE DataKinds #-}
-module FeatureExamples.CountOfHospitalEvents where
+module FeatureExamples.CountOfHospitalEvents
+  ( example
+  ) where
 import           ExampleEvents
 import           Hasklepias
-
-
 
 -- | Count of hospital events in a interval and duration of the last one
 {- tag::function[] -}
@@ -13,10 +13,10 @@ countOfHospitalEvents
   -> [Event Text ExampleModel a]
   -> (Int, Maybe b)
 countOfHospitalEvents i =
-  (\x -> (length x, duration <$> lastMay x))
-    . filterNotDisjoint i                    -- filter to intervals not disjoint from interval
-    . combineIntervals                       -- combine overlapping intervals
-    . filterEvents (containsConcepts ["wasHospitalized"]) -- filter to only antibiotics events
+  filterEvents (containsConcepts ["wasHospitalized"]) -- <1>
+    .> combineIntervals -- <2>
+    .> filterConcur i -- <3>
+    .> (\x -> (length x, duration <$> lastMay x)) -- <4>
 {- end::function[] -}
 
 {- tag::definition[] -}
@@ -29,3 +29,28 @@ countOfHospitalEventsDef
        )
 countOfHospitalEventsDef = define countOfHospitalEvents
 {- end::definition[] -}
+
+ev i c = event i (context (packConcepts [c]) Medical Nothing) 
+
+exampleFollowup = makeFollowupFromIndex 10 (beginervalMoment 5) 
+
+case1 :: [ExampleEvent]
+case1 = [
+    ev (beginerval 1 5) "wasHospitalized"
+  , ev (beginerval 4 2) "wasHospitalized"
+  , ev (beginerval 2 8) "notHospitalized"
+  , ev (beginerval 5 10) "wasHospitalized"
+  ]
+
+
+example :: TestTree
+example = testGroup
+  "Tests of countOfHospitalEvents"
+  [ testCase "using exampleEvents1"
+    $   countOfHospitalEvents (makeFollowupFromIndex 20 (beginervalMoment 50))
+                              exampleEvents1
+    @?= (1, Just 8)
+  , testCase "Case 1"
+    $ countOfHospitalEvents exampleFollowup case1 
+    @?= (2, Just 5)
+  ]

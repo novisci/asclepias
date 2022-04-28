@@ -1,12 +1,237 @@
+:sourceFile: DrugDiscontinuation.hs
+
 = Discontinuation from a Drug
 
 This example demonstrates:
 
-* [x] #TODO#
+* [x] complex `interval-algebra` functionality
+* [x] use of the `bind` operator (`>>=`) 
 
-This example defines a feature that #TODO#
+In this example,
+the goal is to write a function that,
+given an assessment interval 
+and list of events:
+
+* filters to antibiotic events
+* allows for a gap of 5 days between antibiotic events
+* only allow for treatment sequences that are started or overlapped by
+the assessment interval
+* returns the time discontinuation begins
+and the time since the beginning of the assessment interval to discontinuation.
+
+For this example,
+we walkthrough three cases.
+
+////
+The examples are produced by the following commands.
+Note that they are included as separate comments individually
+beside each example as it seems to break the asciidoctor numbering.
+printerval << EOF
+0 20 =
+5 15 * assessment
+1 4 - tookAntibiotics
+4 6 - tookAntibiotics
+8 10 - wasHopitalized 
+10 15 - tookAntibiotics
+EOF
+printerval << EOF
+0 20 =
+5 15 * assessment
+1 9 - tookAntibiotics
+4 11 - tookAntibiotics
+10 20 - tookAntibiotics
+EOF
+////
+.Case 1
+[source]
+----
+     **********      <- [assessment]
+ ---                 <- [tookAntibiotics]
+    --               <- [tookAntibiotics]
+        --           <- [wasHopitalized]
+          -----      <- [tookAntibiotics]
+====================
+----
+
+////
+printerval << EOF
+0 20 =
+5 15 * assessment
+6 8 - tookAntibiotics
+10 15 - tookAntibiotics
+EOF
+////
+.Case 2
+[source]
+----
+     **********      <- [assessment]
+      --             <- [tookAntibiotics]
+          -----      <- [tookAntibiotics]
+====================
+----
+
+////
+printerval << EOF
+0 20 =
+5 15 * assessment
+5 8 - tookAntibiotics
+EOF
+printerval << EOF
+0 20 =
+5 15 * assessment
+5 13 - tookAntibiotics
+EOF
+printerval << EOF
+0 20 =
+5 15 * assessment
+13 15 - gap
+EOF
+////
+.Case 3
+[source]
+----
+     **********      <- [assessment]
+     ---             <- [tookAntibiotics]
+====================
+----
+
+The logic of the feature is defined in the `discontinuation` function:
 
 [source,haskell]
 ----
-include::DrugDiscontinuation.hs[tag=function]
+include::{sourceFile}[tag=function]
+----
+
+<1> First, we filter to events that have the concept `"tookAntibiotics"`.
+In Case 1, the third interval is filtered out:
++
+[source]
+----
+     **********      <- [assessment]
+ ---                 <- [tookAntibiotics]
+    --               <- [tookAntibiotics]
+          -----      <- [tookAntibiotics]
+====================
+----
+Cases 2 and 3 are unchanged.
+<2> To allow for a grace period of 5 days between antibiotic events,
+each antibiotic event is extended by 5 units using the `expandr` function:
+For Case 1, this results in:
++
+[source]
+----
+     **********      <- [assessment]
+ --------            <- [tookAntibiotics]
+    -------          <- [tookAntibiotics]
+          ---------- <- [tookAntibiotics]
+====================
+----
+And similarly for Cases 2 and 3.
+
+<3> Antibiotic intervals that concur are considered one treatment sequence, 
+so  `combineIntervals` is used to collapse these intervals.
+In all the example cases,
+this results in one interval;
+e.g. for Case 2:
++
+[source]
+----
+     **********      <- [assessment]
+      -------------- <- [tookAntibiotics]
+====================
+----
+
+<4>  With all the treatment intervals transformed
+to allow for a gap in treatment;
+now we handle the case where none of the intervals
+start or overlap the assessment interval. 
+The `nothingIfNone` function takes a predicate and a list
+and returns `Nothing` if none of the list elements satisfy the predicate;
+otherwise, it returns `Just` the list.
++
+In Cases 1 and 3, the assessment interval is 
+`overlappedBy` and `startedBy` (respectively) 
+the treatment interval.
+However in Case 2, 
+since antibiotic treatment starts after the assessment interval starts,
+`nothingIfNone` yields `Nothing`.
+This is final result for Case 2 
++
+[IMPORTANT]
+In `interval-algebra` terminology,
+the assessment interval in Case 2 `overlaps` the treatment interval;
+which is different than being `overlappedBy` the treatment interval.
+
+<5> So far, we have the treatment interval in hand.
+We're interested, though, in discovering gaps in treatment
+which is considered discontinuation.
+The `gapsWithin` function find gaps in the input intervals
+clipped to the assessment, 
+yielding `Nothing` if no such gaps exist and
+`Just` the gaps otherwise.
+(<<bind, See note about `+>>=+` below>>)
++
+Case 1 has no gaps, hence the final result is `Nothing`.
+For Case 3, however, there is a gap 
+between the treatment interval and the end of assessment:
++
+[source]
+----
+     **********      <- [assessment]
+             --      <- [gap]
+====================
+----
+<6> If there are multiple gaps in treatment, 
+the first one is the discontinuation of interest.
+<7> Finally, provided that a gap in treatment exists,
+the time of discontinuation is the `begin` of that gap.
+The time from the start of assessment to discontinutation is computed by
+`diff (begin x) (begin i)`.
++
+For Case 2, the final result is `Just (13, 8)`.
+
+[NOTE]
+As implemented, a `Nothing` result from `discontinuation` could either
+indicate that a subject did not discontinue
+or that they simply had no antibiotics records.
+If such a distinction is important,
+the function could be modified to disambiguate these case
+using a sum type for example.
+
+The `discontinuation` function can be lifted into a `Definition` 
+using `define`:
+
+[source,haskell]
+----
+include::{sourceFile}[tag=definition]
+----
+
+[[bind,label]]
+.Using the `>>=` operator 
+
+The `>>=` comes from Haskell's `Monad` typeclass.
+Sometimes called the bind operator, it has the following type signature:
+
+[source,haskell]
+----
+(>>=) :: m a -> (a -> m b) -> m b
+----
+
+Consider these lines of  `discontinuation` function:
+
+[source]
+----
+  |> nothingIfNone ( startedBy <|> overlappedBy $ i)
+  |> (>>= gapsWithin i)
+----
+
+* The type coming out of the `nothingIfNone` is `Maybe [Interval a]`.
+* The type for `gapsWithin i` is `[Interval a] -> Maybe [Interval a]`,
+and we want that to return a `Maybe [Interval a]`.
+
+If you put those pieces together, you have a concrete signature for `>>=`:
+
+[source,haskell]
+----
+Maybe [Interval a] -> ([Interval a] -> Maybe [Interval a]) -> Maybe [Interval a]
 ----

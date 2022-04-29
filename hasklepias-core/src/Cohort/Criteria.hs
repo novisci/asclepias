@@ -107,8 +107,11 @@ excludeIf :: Bool -> Status
 excludeIf True  = Exclude
 excludeIf False = Include
 
--- | A type that is simply a @'FeatureN Status'@, that is, a feature that 
--- identifies whether to @'Include'@ or @'Exclude'@ a subject.
+{-|
+A type that is simply a @(Text, Status)@,
+where the @Text@ is a label providing the reason for the @Status@.
+The @'Status'@ identifies whether to @'Include'@ or @'Exclude'@ a subject.
+-}
 newtype Criterion = MkCriterion ( Text, Status ) deriving (Eq, Show)
 
 -- | Converts a @'Feature'@ to a @'Criterion'@.
@@ -149,7 +152,7 @@ criteria :: [Criterion] -> Criteria
 criteria l = MkCriteria $ zip [1 ..] l
 
 -- | Converts a subject's @'Criteria'@ into a list of triples of 
--- (order of criterion, name of criterion, status)
+-- (order of criterion, label, status).
 getStatuses :: Criteria -> [(Natural, Text, Status)]
 getStatuses (MkCriteria x) =
   fmap (\c -> (fst c, (getReason . snd) c, (getStatus . snd) c)) x

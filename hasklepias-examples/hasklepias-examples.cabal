@@ -37,7 +37,6 @@ library
       FeatureExamples.DurationsWithMultipleConditions
       FeatureExamples.HistoryOfEvent
       FeatureExamples.LastEventInWindow
-      FeatureExamples.TimeSinceLastAntibiotics
       FeatureExamples.TwoOutOneIn
   other-modules:
       UndocumentedExamples

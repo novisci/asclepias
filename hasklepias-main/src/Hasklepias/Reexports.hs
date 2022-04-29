@@ -213,6 +213,11 @@ import           Lens.Micro                     ( (^?) )
 
 import           Data.Aeson                     ( ToJSON(..)
                                                 , encode
+                                                , FromJSON(..)
+                                                , Options(..)
+                                                , defaultOptions
+                                                , genericParseJSON
+                                                , SumEncoding(..)
                                                 )
 import           Data.Generics.Internal.VL.Lens
                                                as Lens

@@ -98,7 +98,7 @@ twoOutOneIn cpts1 cpts2 = buildNofXOrMofYWithGapBool 1
                                                      (containsConcepts cpts2)
                                                      concur
                                                      baselineInterval
-                                                     
+
 -- | Defines a feature that returns 'True' ('False' otherwise) if either:
 --   * any events concuring with baseline with concepts in 'cpts' have a 
 --     duration >= 90 days

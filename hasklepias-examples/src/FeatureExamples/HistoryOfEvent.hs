@@ -23,7 +23,7 @@ makeHx
 makeHx cpts i events =
   events
     |> filterEvents (containsConcepts cpts &&& Predicate (enclose i)) -- <3>
-    |> lastMay -- <4> 
+    |> lastMay -- <4>
     |> fmap getInterval -- <5>
 {- end::function[] -}
 

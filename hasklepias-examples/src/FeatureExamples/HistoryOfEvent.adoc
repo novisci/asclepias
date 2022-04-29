@@ -13,7 +13,7 @@ In general, the event logic can be quite complicated,
 but this example shows a function that 
 identifies the whether an event of some given concepts occurred,
 relative to a provided
-xref:cohort$example/CreateAssessmentInterval.adoc[assessment interval].
+xref:cohorts:page$examples.adoc[assessment interval].
 
 The function is given here:
 

@@ -61,8 +61,6 @@ include::CalendarCohort.hs[tag=enrolled]
 
 A cohort is #TODO: link to cohort definition#
 
-Since the 
-
 [source,haskell]
 ----
 include::CalendarCohort.hs[tag=indexrunner]

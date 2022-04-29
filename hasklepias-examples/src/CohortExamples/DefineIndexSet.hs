@@ -4,10 +4,11 @@ module CohortExamples.DefineIndexSet
 
 import           ExampleEvents
 import           Hasklepias
+
 {-
 Index is defined as the first occurrence of an Orca bite.
 -}
-{- tag::defineindex[] -}
+{- tag::function[] -}
 defineIndexSet
   :: Ord a
   => [Event Text ExampleModel a] -- <1>
@@ -18,7 +19,7 @@ defineIndexSet events =
     |> headMay -- <4>
     |> fmap getInterval -- <5>
     |> into -- <6>
-{- end::defineindex[] -}
+{- end::function[] -}
 
 example :: TestTree
 example = testGroup

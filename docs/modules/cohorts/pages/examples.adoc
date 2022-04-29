@@ -15,7 +15,7 @@ include::cohorts:example$src/CreateAssessmentInterval.adoc[leveloffset=+1]
 
 include::cohorts:example$src/Minimal.adoc[leveloffset=+1]
 
-include::cohorts:example$src/ExampleCalendarCohort.adoc[leveloffset=+1]
+include::cohorts:example$src/CalendarCohort.adoc[leveloffset=+1]
 
 == Create a cohort with multiple indices
 

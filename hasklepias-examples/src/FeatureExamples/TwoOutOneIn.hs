@@ -1,5 +1,6 @@
 {-# LANGUAGE DataKinds #-}
-module FeatureExamples.TwoOutOneIn where
+{-# LANGUAGE TypeApplications #-}
+module FeatureExamples.TwoOutOneIn (example) where
 
 import           CohortExamples.CreateAssessmentInterval
                                                 ( bline )
@@ -10,21 +11,62 @@ import           Hasklepias
 --   * at least 1 event during the baseline interval has any of the 'cpts1' concepts
 --   * there are at least 2 events that have 'cpts2' concepts which have at least
 --     7 days between them during the baseline interval
-{- tag::function[] -}
+
+{- tag::definition[] -}
 twoOutOneIn
   :: (IntervalSizeable a b)
-  => [Text] -- ^ cpts1
-  -> [Text] -- ^ cpts2
-  -> Definition
-       (  Feature "calendarIndex" (Interval a)
+  => [Text] -- ^ inpatientConcepts
+  -> [Text] -- ^ outpatientConcepts 
+  -> Definition -- <1>
+       (  Feature "index" (Interval a)
        -> Feature "allEvents" [Event Text ExampleModel a]
        -> Feature name Bool
        )
-twoOutOneIn cpts1 cpts2 = buildNofXOrMofYWithGapBool 1
-                                                     (containsConcepts cpts1)
-                                                     1
-                                                     7
-                                                     bline
-                                                     concur
-                                                     (containsConcepts cpts2)
-{-  end::function[] -}
+twoOutOneIn inpatientConcepts outpatientConcepts = 
+  buildNofXOrMofYWithGapBool -- <2>
+    1 (containsConcepts inpatientConcepts) -- <3>
+    1 7 (containsConcepts outpatientConcepts) -- <4>
+    concur (makeBaselineFromIndex 10) -- <5>
+{-  end::definition[] -}
+
+ev i c = event i (context (packConcepts [c]) Medical Nothing)
+
+case1 :: [ExampleEvent]
+case1 =
+  [ ev (beginerval 1 5)  "c1"
+  ]
+
+case2 :: [ExampleEvent]
+case2 =
+  [ ev (beginerval 1 1) "c2"
+  , ev (beginerval 1 9) "c2"
+  ]
+
+case3 :: [ExampleEvent]
+case3 =
+  [ ev (beginerval 1 1) "c2"
+  , ev (beginerval 1 8) "c2"
+  ]
+
+case4 :: [ExampleEvent]
+case4 =
+  [ ev (beginerval 1 11) "c1"
+  , ev (beginerval 1 8) "c2"
+  ]
+
+example :: TestTree
+example = testGroup
+  "TwoOutOneIn tests"
+  [ testCase "case 1"
+    $  eval (twoOutOneIn ["c1"] ["c2"]) (pure $ beginerval 10 10) (pure case1)
+    @?= makeFeature @"foo" (pure True)
+  , testCase "case 2"
+    $  eval (twoOutOneIn ["c1"] ["c2"]) (pure $ beginerval 10 10)  (pure case2)
+    @?= makeFeature @"foo" (pure True)
+  ,  testCase "case 3"
+    $  eval (twoOutOneIn ["c1"] ["c2"]) (pure $ beginerval 10 10)  (pure case3)
+    @?= makeFeature @"foo" (pure False)
+  ,  testCase "case 4"
+    $  eval (twoOutOneIn ["c1"] ["c2"]) (pure $ beginerval 10 10)  (pure case4)
+    @?= makeFeature @"foo" (pure False)
+  ]

@@ -1,8 +1,11 @@
+:sourceFile: TwoOutOneIn.hs
+
 = Creating "Two outpatient or one inpatient" 
 
 This example demonstrates:
 
-* [x] #TODO#
+* [x] a common feature used in studies of medical claims data
+* [x] using a template to define a feature building function
 
 This example defines a feature that indicates either:
 
@@ -12,5 +15,27 @@ This example defines a feature that indicates either:
 
 [source,haskell]
 ----
-include::TwoOutOneIn.hs[tag=function]
+include::{sourcefile}[tag=definition]
 ----
+
+<1> The `twoOutOneIn` function returns a 
+xref:features:page$theory.adoc[`Definition`].
+<2> We use the 
+xref:features:page$templates.adoc[`buildNofXOrMofYWithGapBool`]
+template function to build our definition. 
+This function takes seven arguments.
+<3> The first two are passed to the
+xref:features:page$templates.adoc[`buildNofX`]
+template.
+The given arguments say that we're looking for *at least* `1` event
+that contains one or more of the `inpatientConcepts`.
+<4> The next three arguments are passed to the 
+xref:features:page$templates.adoc[`buildNofXWithGap`]
+template.
+The given arguments say that we're looking for *at least* `1` gap 
+between any pair of events (and thus at least 2 events)
+that contains one or more of the `outpatientConcepts`.
+<5> The last two arguments determine when the events 
+must occur relative to the index event.
+Here, the events must `concur` with a baseline 
+xref:cohorts:page$examples.adoc[assessment interval].

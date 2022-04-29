@@ -8,27 +8,27 @@ import           CohortExamples.CreateAssessmentInterval
 import           ExampleEvents
 import           Hasklepias
 
-
 {-
 Define features that identify whether a subject was bit/struck by a duck and
 bit/struck by a macaw.
 -}
-{- tag::exampleFunction[] -}
+
+{- tag::function[] -}
 makeHx
   :: (Ord a)
-  => [Text]
+  => [Text] -- <1>
   -> AssessmentInterval a
   -> [Event Text ExampleModel a]
-  -> Maybe (Interval a)
+  -> Maybe (Interval a) -- <2>
 makeHx cpts i events =
   events
-    |> filterEvents (containsConcepts cpts &&& Predicate (enclose i))
-    |> lastMay
-    |> fmap getInterval
-{- end::exampleFunction[] -}
+    |> filterEvents (containsConcepts cpts &&& Predicate (enclose i)) -- <3>
+    |> lastMay -- <4> 
+    |> fmap getInterval -- <5>
+{- end::function[] -}
 
-{- tag::exampleDefinition1 -}
-duckHxDef
+{- tag::definition[] -}
+duckHxDef -- <1>
   :: (Ord a)
   => Definition
        (  Feature "index" (AssessmentInterval a)
@@ -36,10 +36,8 @@ duckHxDef
        -> Feature "duck history" (Maybe (Interval a))
        )
 duckHxDef = define (makeHx ["wasBitByDuck", "wasStruckByDuck"])
-{- end::exampleDefinition1 -}
 
-{- tag::exampleDefinition2-}
-macawHxDef
+macawHxDef -- <2>
   :: (Ord a)
   => Definition
        (  Feature "index" (AssessmentInterval a)
@@ -47,12 +45,12 @@ macawHxDef
        -> Feature "macaw history" (Maybe (Interval a))
        )
 macawHxDef = define (makeHx ["wasBitByMacaw", "wasStruckByMacaw"])
-{- end::exampleDefinition2 -}
+{- end::definition[] -}
 
 example :: TestTree
 example = testGroup
-  "makeHx on exampleEvents4"
-  [ testCase ""
+  "History of event tests"
+  [ testCase "exampleEvents4"
     $   makeHx ["c1"] (flwup (beginervalMoment 0)) exampleEvents4
     @?= Just (beginerval 9 16)
   ]

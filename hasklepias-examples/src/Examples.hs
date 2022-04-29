@@ -4,8 +4,8 @@ module Examples
 
 import qualified CohortExamples                as C
 import qualified FeatureExamples               as F
-import qualified UndocumentedExamples          as U
 import           Hasklepias
+import qualified UndocumentedExamples          as U
 
 examples :: IO ()
 examples = defaultMain . testGroup "Examples" =<< sequenceA

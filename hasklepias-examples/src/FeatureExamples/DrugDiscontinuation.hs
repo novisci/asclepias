@@ -4,10 +4,10 @@ module FeatureExamples.DrugDiscontinuation
   ) where
 
 
-import           ExampleEvents
-import           Hasklepias
 import           CohortExamples.CreateAssessmentInterval
                                                 ( flwup )
+import           ExampleEvents
+import           Hasklepias
 -- | time of distcontinuation of antibiotics
 --   and time from start of follow up
 
@@ -19,13 +19,13 @@ discontinuation
   -> Maybe (a, b)
 discontinuation i events =
   events
-  |> filterEvents (containsConcepts ["tookAntibiotics"]) -- <1>
-  |> fmap (expandr 5) -- <2>
-  |> combineIntervals -- <3>
-  |> nothingIfNone ( startedBy <|> overlappedBy $ i) -- <4>
-  |> (>>= gapsWithin i) -- <5>
-  |> (>>= headMay) -- <6>
-  |> fmap (\x -> (begin x, diff (begin x) (begin i))) -- <7>
+    |> filterEvents (containsConcepts ["tookAntibiotics"]) -- <1>
+    |> fmap (expandr 5) -- <2>
+    |> combineIntervals -- <3>
+    |> nothingIfNone (startedBy <|> overlappedBy $ i) -- <4>
+    |> (>>= gapsWithin i) -- <5>
+    |> (>>= headMay) -- <6>
+    |> fmap (\x -> (begin x, diff (begin x) (begin i))) -- <7>
 {- end::function[] -}
 
 {- tag::definition[] -}
@@ -39,43 +39,34 @@ discontinuationDef
 discontinuationDef = define discontinuation
 {- end::definition[] -}
 
-ev i c = event i (context (packConcepts [c]) Medical Nothing) 
+ev i c = event i (context (packConcepts [c]) Medical Nothing)
 
-exampleFollowup = makeFollowupFromIndex 10 (beginervalMoment 5) 
+exampleFollowup = makeFollowupFromIndex 10 (beginervalMoment 5)
 
 case1 :: [ExampleEvent]
-case1 = [
-    ev (beginerval 3 1) "tookAntibiotics"
-  , ev (beginerval 2 4) "tookAntibiotics"
-  , ev (beginerval 2 8) "wasHospitalized"
+case1 =
+  [ ev (beginerval 3 1)  "tookAntibiotics"
+  , ev (beginerval 2 4)  "tookAntibiotics"
+  , ev (beginerval 2 8)  "wasHospitalized"
   , ev (beginerval 5 10) "tookAntibiotics"
   ]
 
 case2 :: [ExampleEvent]
-case2 = [
-    ev (beginerval 2 6) "tookAntibiotics"
+case2 =
+  [ ev (beginerval 2 6)  "tookAntibiotics"
   , ev (beginerval 5 10) "tookAntibiotics"
   ]
 
 case3 :: [ExampleEvent]
-case3 = [
-    ev (beginerval 3 5) "tookAntibiotics"
-  ]
+case3 = [ev (beginerval 3 5) "tookAntibiotics"]
 
 example :: TestTree
 example = testGroup
   "Tests of discontinuation"
   [ testCase "using exampleEvents1"
-    $   discontinuation (flwup (beginervalMoment 60 ))
-                        exampleEvents1
-    @?= Just (78, 18)
-  , testCase "Case 1"
-   $ discontinuation exampleFollowup case1
-     @?= Nothing
-  , testCase "Case 2"
-   $ discontinuation exampleFollowup case2
-     @?= Nothing
-  , testCase "Case 3"
-   $ discontinuation exampleFollowup case3
-     @?= Just (13, 8)
+  $   discontinuation (flwup (beginervalMoment 60)) exampleEvents1
+  @?= Just (78, 18)
+  , testCase "Case 1" $ discontinuation exampleFollowup case1 @?= Nothing
+  , testCase "Case 2" $ discontinuation exampleFollowup case2 @?= Nothing
+  , testCase "Case 3" $ discontinuation exampleFollowup case3 @?= Just (13, 8)
   ]

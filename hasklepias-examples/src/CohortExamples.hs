@@ -1,8 +1,7 @@
 module CohortExamples where
 
+import           CohortExamples.CalendarCohort as C1
 import           CohortExamples.DefineIndexSet as DI
-import           CohortExamples.CalendarCohort
-                                               as C1
 -- import           CohortExamples.Minimal
 --                                                as C2
 import           Hasklepias

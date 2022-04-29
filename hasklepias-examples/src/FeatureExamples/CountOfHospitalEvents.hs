@@ -30,15 +30,15 @@ countOfHospitalEventsDef
 countOfHospitalEventsDef = define countOfHospitalEvents
 {- end::definition[] -}
 
-ev i c = event i (context (packConcepts [c]) Medical Nothing) 
+ev i c = event i (context (packConcepts [c]) Medical Nothing)
 
-exampleFollowup = makeFollowupFromIndex 10 (beginervalMoment 5) 
+exampleFollowup = makeFollowupFromIndex 10 (beginervalMoment 5)
 
 case1 :: [ExampleEvent]
-case1 = [
-    ev (beginerval 1 5) "wasHospitalized"
-  , ev (beginerval 4 2) "wasHospitalized"
-  , ev (beginerval 2 8) "notHospitalized"
+case1 =
+  [ ev (beginerval 1 5)  "wasHospitalized"
+  , ev (beginerval 4 2)  "wasHospitalized"
+  , ev (beginerval 2 8)  "notHospitalized"
   , ev (beginerval 5 10) "wasHospitalized"
   ]
 
@@ -47,10 +47,10 @@ example :: TestTree
 example = testGroup
   "Tests of countOfHospitalEvents"
   [ testCase "using exampleEvents1"
-    $   countOfHospitalEvents (makeFollowupFromIndex 20 (beginervalMoment 50))
-                              exampleEvents1
-    @?= (1, Just 8)
+  $   countOfHospitalEvents (makeFollowupFromIndex 20 (beginervalMoment 50))
+                            exampleEvents1
+  @?= (1, Just 8)
   , testCase "Case 1"
-    $ countOfHospitalEvents exampleFollowup case1 
-    @?= (2, Just 5)
+  $   countOfHospitalEvents exampleFollowup case1
+  @?= (2, Just 5)
   ]

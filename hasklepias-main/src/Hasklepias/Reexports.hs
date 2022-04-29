@@ -211,13 +211,13 @@ import           Witherable                     ( Filterable(filter)
 import           Lens.Micro                     ( (^?) )
 
 
-import           Data.Aeson                     ( ToJSON(..)
-                                                , encode
-                                                , FromJSON(..)
+import           Data.Aeson                     ( FromJSON(..)
                                                 , Options(..)
-                                                , defaultOptions
-                                                , genericParseJSON
                                                 , SumEncoding(..)
+                                                , ToJSON(..)
+                                                , defaultOptions
+                                                , encode
+                                                , genericParseJSON
                                                 )
 import           Data.Generics.Internal.VL.Lens
                                                as Lens

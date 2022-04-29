@@ -23,10 +23,10 @@ buildNofXOrMofYWithGap
   -> Natural -- ^ the minimum number of gaps passed to 'buildNofXWithGap'
   -> b -- ^ the minimum duration of a gap passed to 'buildNofXWithGap'
   -> Predicate (Event c m a) -- ^ predicate for 'buildNofXWithGap' 
-  -> (i a -> AssessmentInterval a)
   -> ComparativePredicateOf2
        (AssessmentInterval a)
        (Event c m a)
+  -> (i a -> AssessmentInterval a)
   -> Definition
        (  Feature indexName (i a)
        -> Feature
@@ -34,7 +34,7 @@ buildNofXOrMofYWithGap
             (container (Event c m a))
        -> Feature varName outputType
        )
-buildNofXOrMofYWithGap f cast xCount xPred gapCount gapDuration yPred assess intervalPred
+buildNofXOrMofYWithGap f cast xCount xPred gapCount gapDuration yPred intervalPred assess
   = D2C f
         (buildNofX cast xCount assess intervalPred xPred)
         (buildNofXWithGap cast gapCount gapDuration assess intervalPred yPred)
@@ -52,10 +52,10 @@ buildNofXOrMofYWithGapBool
   -> Natural -- ^ the minimum number of gaps passed to 'buildNofXWithGap'
   -> b -- ^ the minimum duration of a gap passed to 'buildNofXWithGap'
   -> Predicate (Event c m a)
-  -> (i a -> AssessmentInterval a)
   -> ComparativePredicateOf2
        (AssessmentInterval a)
        (Event c m a)
+  -> (i a -> AssessmentInterval a)
   -> Definition
        (  Feature indexName (i a)
        -> Feature eventsName (container (Event c m a))
@@ -76,10 +76,10 @@ buildNofXOrMofYWithGapBinary
   -> Natural -- ^ the minimum number of gaps passed to 'buildNofXWithGap'
   -> b -- ^ the minimum duration of a gap passed to 'buildNofXWithGap'
   -> Predicate (Event c m a)
-  -> (i a -> AssessmentInterval a)
   -> ComparativePredicateOf2
        (AssessmentInterval a)
        (Event c m a)
+  -> (i a -> AssessmentInterval a)
   -> Definition
        (  Feature indexName (i a)
        -> Feature eventsName (container (Event c m a))
@@ -97,10 +97,10 @@ type NofXOrMofYWithGapArgs
     , Natural
     , Int
     , Predicate (Event Text TestSchema Int)
-    , Interval Int -> AssessmentInterval Int
     , ComparativePredicateOf2
         (AssessmentInterval Int)
         (Event Text TestSchema Int)
+    , Interval Int -> AssessmentInterval Int
     )
 
 type NofXOrMofYWithGapTestCase
@@ -118,8 +118,8 @@ buildNofXOrMofYWithGapTestCases =
     , 0
     , 3
     , isEnrollmentEvent
-    , makeBaselineFromIndex 10
     , concur
+    , makeBaselineFromIndex 10
     )
     (10, 11)
     []
@@ -137,8 +137,8 @@ buildNofXOrMofYWithGapTestCases =
     , 0
     , 3
     , isEnrollmentEvent
-    , makeBaselineFromIndex 10
     , concur
+    , makeBaselineFromIndex 10
     )
     (10, 11)
     [g (1, 2), g (8, 9)]
@@ -156,8 +156,8 @@ buildNofXOrMofYWithGapTestCases =
     , 1
     , 3
     , isEnrollmentEvent
-    , makeBaselineFromIndex 10
     , concur
+    , makeBaselineFromIndex 10
     )
     (10, 11)
     []
@@ -175,8 +175,8 @@ buildNofXOrMofYWithGapTestCases =
     , 1
     , 3
     , isEnrollmentEvent
-    , makeBaselineFromIndex 10
     , concur
+    , makeBaselineFromIndex 10
     )
     (10, 11)
     [g (8, 9)]
@@ -194,8 +194,8 @@ buildNofXOrMofYWithGapTestCases =
     , 1
     , 3
     , isEnrollmentEvent
-    , makeBaselineFromIndex 10
     , concur
+    , makeBaselineFromIndex 10
     )
     (10, 11)
     [g (6, 7), g (8, 9)]
@@ -213,8 +213,8 @@ buildNofXOrMofYWithGapTestCases =
     , 1
     , 3
     , containsConcepts ["A"]
-    , makeBaselineFromIndex 10
     , concur
+    , makeBaselineFromIndex 10
     )
     (10, 11)
     [h ["C", "A"] (2, 3), h ["A", "B"] (8, 9)]
@@ -233,8 +233,8 @@ buildNofXOrMofYWithGapTestCases =
     , 1
     , 3
     , containsConcepts ["A"]
-    , makeBaselineFromIndex 10
     , concur
+    , makeBaselineFromIndex 10
     )
     (10, 11)
     [h ["C", "A"] (2, 3)]
@@ -252,8 +252,8 @@ buildNofXOrMofYWithGapTestCases =
     , 1
     , 3
     , containsConcepts ["A"]
-    , makeBaselineFromIndex 10
     , concur
+    , makeBaselineFromIndex 10
     )
     (10, 11)
     [h ["C", "A"] (2, 3), h ["D", "E"] (5, 6), h ["A", "B"] (8, 9)]
@@ -273,8 +273,8 @@ buildNofXOrMofYWithGapTestCases =
     , 1
     , 3
     , containsConcepts ["A"]
-    , makeBaselineFromIndex 10
     , concur
+    , makeBaselineFromIndex 10
     )
     (10, 11)
     [h ["C", "A"] (2, 3), h ["D", "A"] (4, 5)]
@@ -293,8 +293,8 @@ buildNofXOrMofYWithGapTestCases =
     , 1
     , 3
     , containsConcepts ["A"]
-    , makeBaselineFromIndex 10
     , concur
+    , makeBaselineFromIndex 10
     )
     (10, 11)
     [h ["D", "A"] (2, 3), h ["D", "A"] (4, 5)]

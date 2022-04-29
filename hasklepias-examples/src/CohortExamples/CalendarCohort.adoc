@@ -31,7 +31,7 @@ we use the following data model in our events: #TODO#
 Here we create a type synonym for the the event type in this example
 [source,haskell]
 ----
-include::ExampleCalendarCohort.hs[tag=input]
+include::CalendarCohort.hs[tag=input]
 ----
 
 
@@ -39,21 +39,21 @@ include::ExampleCalendarCohort.hs[tag=input]
 
 [source,haskell]
 ----
-include::ExampleCalendarCohort.hs[tag=indices]
+include::CalendarCohort.hs[tag=indices]
 ----
 
 == Define criteria
 
 [source,haskell]
 ----
-include::ExampleCalendarCohort.hs[tag=enrollPredicate]
+include::CalendarCohort.hs[tag=enrollPredicate]
 ----
 
 Include the subject if she has an enrollment interval concurring with index.
 
 [source,haskell]
 ----
-include::ExampleCalendarCohort.hs[tag=enrolled]
+include::CalendarCohort.hs[tag=enrolled]
 ----
 
 
@@ -65,12 +65,12 @@ Since the
 
 [source,haskell]
 ----
-include::ExampleCalendarCohort.hs[tag=indexrunner]
+include::CalendarCohort.hs[tag=indexrunner]
 ----
 
 [source,haskell]
 ----
-include::ExampleCalendarCohort.hs[tag=criteriarunner]
+include::CalendarCohort.hs[tag=criteriarunner]
 ----
 
 [NOTE]

@@ -3,7 +3,7 @@ Description : Demostrates how to define a calendar cohort using Hasklepias
 -}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
-module CohortExamples.ExampleCalendarCohort where
+module CohortExamples.CalendarCohort where
 
 import           ExampleEvents                  ( Demographic(..)
                                                 , ExampleModel(..)

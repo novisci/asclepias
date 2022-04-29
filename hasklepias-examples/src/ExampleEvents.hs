@@ -20,7 +20,7 @@ module ExampleEvents
   , ExampleEvent
   ) where
 
-import           Data.Aeson
+
 import           Hasklepias
 
 {- tag::exampleModel[] -}

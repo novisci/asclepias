@@ -1,9 +1,17 @@
 {-|
-Description : Demostrates how to define a calendar cohort using Hasklepias
+NOTE:
+This was one of the original examples in the asclepias project.
+A simplified version of this cohort is in
+CohortExamples.CalendarCohort.
+
+This file is left here for the time being,
+so that either this example can be reworked
+or parts can be recycled into other examples.
+
 -}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
-module CohortExamples.ExampleCalendarCohort
+module UndocumentedExamples.CalendarCohort
   ( example
   ) where
 

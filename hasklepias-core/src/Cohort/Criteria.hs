@@ -36,6 +36,7 @@ import           Data.Aeson                     ( (.=)
                                                 , object
                                                 )
 import           Data.Bifunctor                 ( Bifunctor(second) )
+import           Data.Binary
 import           Data.List                      ( find )
 import           Data.Map.Strict               as Map
                                                 ( Map
@@ -69,10 +70,11 @@ data CohortStatus =
   | Included
     deriving (Eq, Show, Generic)
 
-instance ToJSON CohortStatus where
-instance FromJSON CohortStatus where
+instance ToJSON CohortStatus
+instance FromJSON CohortStatus
 instance ToJSONKey CohortStatus
 instance FromJSONKey CohortStatus
+instance Binary CohortStatus
 
 -- Defines an ordering to put @SubjectHasNoIndex@ first and @Included@ last. 
 -- The @'ExcludedBy'@ are ordered by their number value.
@@ -192,9 +194,9 @@ data AttritionInfo = MkAttritionInfo
   }
   deriving (Eq, Show, Generic)
 
-
-instance ToJSON AttritionInfo where
-instance FromJSON AttritionInfo where
+instance ToJSON AttritionInfo
+instance FromJSON AttritionInfo
+instance Binary AttritionInfo
 
 {-
 Two @AttritionInfo@ values can be combined,

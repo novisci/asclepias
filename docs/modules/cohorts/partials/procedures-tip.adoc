@@ -1,4 +1,4 @@
 [TIP]
 Review the cohort building 
 xref:cohorts:procedures.adoc[procedures document]
-for complete details the steps to creating cohort applications.
+for complete details on the steps to creating cohort applications.

@@ -105,7 +105,7 @@ This step includes all hospitalization intervals in our running example.
 ====================
 ----
 
-<4> Lastly,the result is derived from remaining hospitalization intervals.
+<4> Lastly, the result is derived from remaining hospitalization intervals.
 The example result is `(2, Just 5)`
 since there are 2 intervals and the duration of the last one is 5.
 

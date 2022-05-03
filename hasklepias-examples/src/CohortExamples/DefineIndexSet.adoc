@@ -21,18 +21,13 @@ the data model is `ExampleModel`,
 and the interval time is a generic type `a`.
 <2> The return type is an `Indexset` of `Interval`.
 The `IndexSet` type is defined in `hasklepias-core`
-as `Maybe` a non-empty set of ordered values. 
-That is, an `IndexSet` is either `Nothing` or 
-a set of *unique* ordered values 
-(in this case `Interval` values).
-In practice, this means that a subject can have 0 or more indices.
+as either `Nothing` or a set of *unique* ordered values.
 <3> To determine whether a subject has an index,
-we first filter to the events tagged with the concept `"wasBitByOrca"`.
+we filter to the events tagged with the concept `"wasBitByOrca"`.
 <4> The `headMay` function gets the first event,
 if one exists.
-We're assuming the input list has already been sorted here.
+We're assuming the input list has already been sorted.
 <5> Then we get the interval, 
 if it exists.
-<6> The `into` function simply casts the `Maybe (Interval a)`
-that the last step returned into an `IndexSet (Interval a)`
+<6> The `into` function casts the output from <4> into a `IndexSet (Interval a)` type.
 

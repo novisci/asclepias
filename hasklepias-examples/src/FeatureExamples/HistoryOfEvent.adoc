@@ -7,11 +7,11 @@ This example demonstrates:
 * [x] a simple feature
 * [x] writing a function in order to create multiple `+Feature+` definitions
 
-A common question in epidemiologic studies is 
+Epidemiologic studies often seek to determine
 whether and when some event occurred.
 In general, the event logic can be quite complicated,
-but this example shows a function that 
-identifies the whether an event of some given concepts occurred,
+but this example demonstrates a simple feature.
+We wish to determine whether an event of some given concepts occurred,
 relative to a provided
 xref:cohorts:page$examples.adoc[assessment interval].
 

@@ -4,7 +4,7 @@ Description : Demostrates how to define an outcome monitoring treatment regimes
 -}
 
 {-# LANGUAGE DataKinds #-}
-module FeatureExamples.Example4
+module UndocumentedExamples.NegativeControl
   ( example
   ) where
 

@@ -8,9 +8,14 @@
 For more explanation on the theory behind cohorts,
 see xref:cohorts:page$theory.adoc[].
 
-== Specify a single, basic cohort
 
-#TODO#
+include::cohorts:example$src/DefineIndexSet.adoc[leveloffset=+1]
+
+include::cohorts:example$src/CreateAssessmentInterval.adoc[leveloffset=+1]
+
+include::cohorts:example$src/Minimal.adoc[leveloffset=+1]
+
+include::cohorts:example$src/CalendarCohort.adoc[leveloffset=+1]
 
 == Create a cohort with multiple indices
 

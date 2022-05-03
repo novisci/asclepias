@@ -1,0 +1,132 @@
+:sourceFile: CountOfHospitalEvents.hs 
+
+= Count number of events
+
+This example demonstrates:
+
+* [x] using the `AssessmentInterval` type
+* [x] using the `combineIntervals` function 
+// TODO link to combineIntervals
+* [x] counting the number of events satifying a condition
+
+This example defines a function that takes
+an `AssessmentInterval`
+and a list of `ExampleModel` events to return a pair:
+(count of hospitalization events,
+duration of the last hospitalization).
+
+[source,haskell]
+----
+include::{sourceFile}[tag=function]
+----
+
+Consider the follow events as a working example:
+////
+The examples are produced by the following commands.
+Note that they are included as separate comments individually
+beside each example as it seems to break the asciidoctor numbering.
+printerval << EOF
+0 20 =
+5 15 * assessment
+1 4 - wasHospitalized
+4 6 - wasHospitalized
+8 10 - notHospitalized
+10 15 - wasHospitalized
+EOF
+printerval << EOF
+0 20 =
+5 15 * assessment
+1 4 - wasHospitalized
+4 6 - wasHospitalized
+10 15 - wasHospitalized
+EOF
+printerval << EOF
+0 20 =
+5 15 * assessment
+1 6 - wasHospitalized
+10 15 - wasHospitalized
+EOF
+printerval << EOF
+0 20 =
+5 15 * assessment
+1 6 - wasHospitalized
+10 15 - wasHospitalized
+EOF
+////
+
+[source]
+----
+     **********      <- [assessment]
+ ---                 <- [wasHospitalized]
+    --               <- [wasHospitalized]
+        --           <- [notHospitalized]
+          -----      <- [wasHospitalized]
+====================
+----
+
+<1> As a first step,
+events are filtered to those satisfying the predicate of interest,
+In this example, events are filtered to those that contain the concept `wasHospitalized`:
++
+[source]
+----
+     **********      <- [assessment]
+ ---                 <- [wasHospitalized]
+    --               <- [wasHospitalized]
+          -----      <- [wasHospitalized]
+====================
+----
+
+<2> The `combineIntervals` function from the `interval-algebra` package
+combines intervals that are not `before` or `after`. 
+As in our example, this step can be important to combine intervals
+that we consider to be a single event.
+In the example, the first and second events
+would be joined into one event.
++
+[source]
+----
+     **********      <- [assessment]
+ -----               <- [wasHospitalized]
+          -----      <- [wasHospitalized]
+====================
+----
+
+<3> After combining the intervals,
+then the intervals are filtered to those not disjoint
+from the assessment interval.
+This step includes all hospitalization intervals in our running example.
++
+[source]
+----
+     **********      <- [assessment]
+ -----               <- [wasHospitalized]
+          -----      <- [wasHospitalized]
+====================
+----
+
+<4> Lastly, the result is derived from remaining hospitalization intervals.
+The example result is `(2, Just 5)`
+since there are 2 intervals and the duration of the last one is 5.
+
+[IMPORTANT]
+--
+The function presented here is one of many ways to filter and count intervals.
+For example, the current function
+includes hospitalizations that overlap the assessment interval.
+If one wanted to filter out such hospitalizations,
+the `filterConcur i` could be changed to `filter (not . (disjoint <|> overlaps) i)`.
+
+Another consideration is the duration measurement.
+The current function measurement the duration of the last hospitalization interval, 
+disregarding the assessment interval.
+One may instead want to measure the duration that concurs with the assessment.
+--
+
+The `countOfHospitalEvents` function can be lifted into a `Definition` 
+using `define`:
+
+[source,haskell]
+----
+include::{sourceFile}[tag=definition]
+----

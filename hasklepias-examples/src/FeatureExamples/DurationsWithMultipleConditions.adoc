@@ -1,3 +1,5 @@
+:sourceFile: DurationsWithMultipleConditions.hs 
+
 = Find durations of time that satisfy multiple conditions
 
 This example demonstrates
@@ -11,23 +13,24 @@ the goal is to write a function that,
 given a pair of lists of concepts and
 an interval of time: 
 
-* filters an input list of events to those that concur with the given interval
+* filters an input list of events to those that concur with the given interval.
+Note that concur, in this context, means that the intervals are not disjoint.
 * splits the events into those with the first concepts and those with the second
-* returns the start of the last event of the first setof concepts where
+* returns the start of the last event of the first set of concepts where
 it occurs within +/- 3 time units of an event of the second set of concepts.
 
 [TIP]
-A function like this could be useful
+A function like this is useful
 for defining an index event where the index 
-needs to occur with a time window of other events.
+needs to concur with a time window of other events.
 
 [source,haskell]
 ----
-include::Example3.hs[tag=function]
+include::{sourceFile}[tag=function]
 ----
 
 Take the case that a subject has the following events,
-and we want to know the first time when a diagnosis
+and we want to know the first time a diagnosis
 occurred within +/- 3 days of a procedure.
 Our given interval, called `Baseline` here,
 is (6, 15).
@@ -43,8 +46,7 @@ Below, we walk through the function step-by-by using this case.
 ------------------------------
 ----
 
-<1> Filter events to those concurring
-with the given interval.
+<1> Filter events to those concurring with the given interval.
 +
 ----
       ---------                <- Baseline
@@ -56,20 +58,20 @@ with the given interval.
 ----
 
 <2> Form a pair of lists where the first element
-has `c1` (dx in our example) events and
-the second has `c2` (pr in our example) events.
+has `c1` (dx in our example) event intervals and
+the second has `c2` (pr in our example) event intervals.
 Any events without `c1` or `c2` concepts are dropped.
 In the running example, 
 the intervals of the events would make the 
 following pair:
 +
 ----
-( [(10,11)] -- the dx event
-, [(6,7), (12,13)] -- the pr events
+( [(10,11)] -- the dx event interval
+, [(6,7), (12,13)] -- the pr event intervals
 )
 ----
 
-<3> Form a list of all pairs of events
+<3> Form a list of all (c1, c2) pairs of event intervals
 from the previous step.
 +
 ----
@@ -78,17 +80,15 @@ from the previous step.
 ]
 ----
 
-<4> Filter this list of pairs to cases where a `c1` event concurs
-with a `c2` event after
-`c2` event intervals have been expanded by +/- 3 units of time.
-The list from the last step gets converted to:
+<4> Expand the `c2` (pr) event intervals by +/- 3 units of time.
 +
 ----
 [ ( (10,11), (3,10) )
 , ( (10,11), (9,16) ) 
 ]
 ----
-And then filtered to:
+Then, filter this list to include only instances 
+where the `c1` (dx) interval concurs with a 'c2' interval.
 +
 ----
 [ ( (10,11), (9,16) ) ]
@@ -105,6 +105,6 @@ the `define` function:
 
 [source,haskell]
 ----
-include::Example3.hs[tag=definition]
+include::{sourceFile}[tag=definition]
 ----
 

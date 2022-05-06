@@ -45,6 +45,10 @@ from an `i`, `Maybe i`, and `[i]`.
     so that a value doesn't need to be provided.
     Instead type application can be used,
     as in `getAttributes @n`.
+* Adds `setAttributes` function which produces a `HasAttributes` instance
+via template Haskell.
+This function and the related `setAttributesEmpty` and `setManyAttributes`
+functions can reduce boilerplate code need to write `HasAttributes` instances.
 
 ## 0.23.0
 

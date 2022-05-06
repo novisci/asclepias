@@ -108,12 +108,12 @@ for decoding events from eventlines.
 The `parseEventLinesL` function, for example,
 converts a `ByteString` of new-line delimed JSON
 into a pair of `[String]` (containing any parse error messages)
-and `[(SubjectID, Event c m a)]`, 
+and `[(SubjectID, Event d c a)]`, 
 a list of Subject ID/event pairs. 
 
 == Defining new models
 
-New event models are defined by providing concrete types for `+Event c m a+`
+New event models are defined by providing concrete types for `+Event d c a+`
 (especially `d` and `c`), 
 as in this example from the package's test suite: 
 
@@ -155,7 +155,7 @@ which is not included in the main set of exported modules.
 The `eventDecodeTests` and `eventDecodeFailTests` functions, for example, test for
 successful parsing and successful failed parsing (respectively) 
 of `+EventLine d c a+`
-into the corresponding `+Event c m a+`.
+into the corresponding `+Event d c a+`.
 These functions take a directory path as an argument. 
 Each file ending `.jsonl` in that directory should contain
 a single `EventLine` as JSON 

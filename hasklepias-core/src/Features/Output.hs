@@ -58,7 +58,7 @@ instance (Typeable d, KnownSymbol n, ToJSON d, HasAttributes n d) =>
   ToJSON (Feature n d) where
   toJSON x = object
     [ "name" .= symbolVal (Proxy @n)
-    , "attrs" .= toJSON (getAttributes @n)
+    , "attrs" .= toJSON (getAttributes x)
     , "type" .= toJSON (show $ typeRep (Proxy @d))
     , "data" .= toJSON (getFData x)
     ]
@@ -95,12 +95,12 @@ instance (KnownSymbol n, Show d, ToJSON d, Typeable d, HasAttributes n d) =>
   ShapeOutput (Feature n d) where
   dataOnly x = DataOnly (getFData x)
   nameOnly x = NameOnly (symbolVal (Proxy @n))
-  attrOnly x = AttrOnly (getAttributes @n)
+  attrOnly x = AttrOnly (getAttributes x)
   nameData x = NameData (symbolVal (Proxy @n), getFData x)
   nameAttr x = NameAttr
     (NameTypeAttr (symbolVal (Proxy @n))
                   (show $ typeRep (Proxy @d))
-                  (getAttributes @n)
+                  (getAttributes x)
     )
 
 instance ToJSON (OutputShape a) where

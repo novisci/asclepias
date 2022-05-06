@@ -5,12 +5,38 @@ packages: hasklepias-core
         , hasklepias-templates
         , cohort-collector
         , event-data-theory
+        , event-data-model
         , stype
-        , maybe-toxic-tutorial
+        , hygiea
 
--- allow-newer:
---  amazonka:bytestring,
---  generic-lens-core:text,
---  generic-lens:text,
---  witch:text,
---  ListLike:text
+allow-newer:
+  generic-lens-core:text,
+  generic-lens:text,
+  witch:text,
+  ListLike:text,
+
+-- TODO this effectively undoes the text >= 2.0 contraints added in a recent commit
+-- dhall will not compile with text >= 2.0, and it is unclear as of yet (March
+-- 8, 2022) that text>=2.0 is actually necessary for any of the packages listed
+-- here. My hope is this issue will be resolved by the time the testing branch
+-- is merged in.
+allow-older:
+  event-data-model:text,
+  event-data-theory:text,
+  cohort-collector:text,
+  hasklepias-appBuilder:text,
+  hasklepias-core:text,
+  hasklepias-examples:text,
+  hasklepias-main:text,
+  hasklepias-templates:text,
+  stype:text
+
+-- For amazonka (temp until amazonka > 2.0 is released to hackage )
+-- Multiple subdirs in a single `source-repository-package` stanza are supported by cabal-install >= 3.2.0.0.
+-- sha256 is for haskell.nix: https://input-output-hk.github.io/haskell.nix/tutorials/source-repository-hashes.html
+source-repository-package
+    type: git
+    location: https://github.com/brendanhay/amazonka
+    tag: 19e6dca8485b7b8f74c564b7e38389b1d5b59e22
+    subdir: lib/amazonka lib/amazonka-core lib/services/amazonka-sts lib/services/amazonka-s3
+    --sha256: 08khbprvqi10by7hwy8vgvxzcj996n4izk7j7pjxq7mdpbp5vbf0

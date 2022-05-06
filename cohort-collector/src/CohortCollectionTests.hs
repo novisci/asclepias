@@ -1,6 +1,5 @@
 module CohortCollectionTests
-  ( tests
-  , testsMain
+  ( testsMain
   ) where
 
 import           CohortCollection               ( Location(..)

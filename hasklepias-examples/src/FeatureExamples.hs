@@ -1,21 +1,10 @@
 module FeatureExamples where
 
-
-import           FeatureExamples.CountOfHospitalEvents
-                                               as CH
-import           FeatureExamples.DrugDiscontinuation
-                                               as DD
-import           FeatureExamples.DurationsWithMultipleConditions
-                                               as DC
-import           FeatureExamples.HistoryOfEvent
-                                               as HE
-import           FeatureExamples.LastEventInWindow
-                                               as LW
-import           FeatureExamples.TwoOutOneIn   as TOI
-
+import           FeatureExamples.Example1      as F1
+import           FeatureExamples.Example2      as F2
+import           FeatureExamples.Example3      as F3
+import           FeatureExamples.Example4      as F4
 import           Hasklepias
 
 examples :: TestTree
-examples = testGroup
-  "Feature example tests"
-  [DC.example, HE.example, LW.example, CH.example, DD.example, TOI.example]
+examples = testGroup "blah" [F1.example, F2.example, F3.example, F4.example]

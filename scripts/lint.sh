@@ -4,7 +4,7 @@
 # .hlint.yaml.
 set -e
 
-hlint  .
+hlint . --ext=hs
 
 shellcheck scripts/*.sh
 shellcheck ci/*.sh

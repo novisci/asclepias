@@ -25,6 +25,7 @@ module Features.Core
   , MissingReason(..)
   , Feature
   , F
+  , FeatureN
   , featureDataL
   , featureDataR
   , missingBecause
@@ -32,6 +33,9 @@ module Features.Core
   , getFeatureData
   , getFData
   , getData
+  , getDataN
+  , getNameN
+  , nameFeature
 
   -- *** Feature Definitions
   , Definition(..)
@@ -240,6 +244,21 @@ instance Monad (Feature name) where
     MkFeatureData (Left  l) -> MkFeature $ MkFeatureData (Left l)
     MkFeatureData (Right r) -> r
 
+{- |
+The @'FeatureN'@ type is similar to @'Feature'@ where the @name@ is included
+as a @Text@ field. This type is mainly for internal purposes in order to collect
+@Feature@s of the same type @d@ into a homogeneous container like a @'Data.List'@.
+-}
+data FeatureN d = MkFeatureN
+  { getNameN :: Text  -- ^ Get the name of a @FeatureN@.
+  , getDataN :: FeatureData d -- ^ Get the data of a @FeatureN@
+  }
+  deriving (Eq, Show)
+
+-- | A utility for converting a @'Feature'@ to @'FeatureN'@.
+nameFeature
+  :: forall name d . (KnownSymbol name) => Feature name d -> FeatureN d
+nameFeature (MkFeature d) = MkFeatureN (pack $ symbolVal (Proxy @name)) d
 
 {- | A @Definition@ can be thought of as a lifted function. Specifically, the
 @'define'@ function takes an arbitrary function (currently up to three arguments)

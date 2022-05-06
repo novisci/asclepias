@@ -1,12 +1,7 @@
 :description: How to get starting developing on asclepias
 :source-highlighter: highlightjs
-:ghc: 8.10.7
 
 = Quick start
-
-[NOTE]
-If using an M1 mac, 
-xref:m1-mac.adoc[see additional instructions].
 
 In this section we provide a quick start guide
 for getting up and running with asclepias development.
@@ -15,9 +10,9 @@ In future sections we cover all of these steps in greater detail.
 . Clone the project: `git clone ++git@gitlab.novisci.com:nsStat/asclepias.git++`
 . Install the Haskell toolchain
 .. Install ghcup: `curl --proto '=https' --tlsv1.2 -sSf ++https://get-ghcup.haskell.org++ | sh`
-.. Install GHC: `ghcup install ghc {ghc}`
-.. Install Cabal: `ghcup install cabal` You may receive a message saying this is already installed.
-.. Install HLS: `ghcup install hls` You may receive a message saying this is already installed.
+.. Install GHC: `ghcup install ghc`
+.. Install Cabal: `ghcup install cabal`
+.. Install HLS: `ghcup install hls`
 . Compile all of the project components (this may take half an hour): `cabal build all`
 . Set up your editor for Haskell development using HLS.
   This is editor-specific.

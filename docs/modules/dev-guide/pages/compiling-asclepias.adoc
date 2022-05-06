@@ -158,7 +158,7 @@ See `cabal build --help` and
 https://cabal.readthedocs.io/en/3.6/cabal-commands.html#cabal-v2-build[cabal-build]
 in the Cabal documentation for full details.
 
-=== 'cabal build' troubleshooting: LLVM version on an M1 Mac [[m1_mac]]
+=== 'cabal build' troubleshooting: LLVM version on an M1 Mac
 
 [TIP]
 .Building on an M1 Mac

@@ -185,6 +185,9 @@ cat << EOF >> .gitignore
 .history
 .dhallb
 
+# nix artifacts
+*result
+
 # R stuff
 .Rproj.user
 .Rhistory

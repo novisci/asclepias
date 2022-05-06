@@ -25,8 +25,8 @@ dummy2 :: Feature "dummy2" Bool
 dummy2 = pure True
 
 setManyAttributes
-  [ ("dummy", ''Bool, emptyAttributes)
-  , ("dummy2", ''Bool, MkAttributes "some Label" "longer label..." "a description" emptyPurpose )]
+  [ ("dummy2", ''Bool, emptyAttributes)
+  , ("dummy", ''Bool, MkAttributes "some Label" "longer label..." "a description" emptyPurpose )]
 
 {-
 NOTE:

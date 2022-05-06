@@ -60,7 +60,7 @@ library
     , tasty  == 1.4.1
     , tasty-hunit == 0.10.0.3
     , tasty-quickcheck == 0.10.2
-    , template-haskell >=2.16.0 && <2.17
+    , template-haskell ^>= 2.16.0
     , text == 1.2.4.1
     , time >= 1.11
     , witch >= 1.0

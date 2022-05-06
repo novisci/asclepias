@@ -180,11 +180,15 @@ setAttributes
   :: Attributes
   -- ^ an @Attributes@ value
   -> String
-  -- ^ The name of the feature as a @String@. 
+  -- ^ The name the feature as a @String@.
+  -- This refers to the @KnownSymbol name@ 
+  -- in the @'HasAttributes'@ class declaration.
   -> Name
   -- ^ The type of data.
   -- Use double ticks as in @''Bool@.
   -- This is template haskell's quotation syntax.
+  -- See 'Language.Haskell.TH.Syntax.Name' in template haskell documentation 
+  -- for other ways to create a @Name@.
   -> Q [Dec]
 setAttributes attrs name ty = [d|
   instance HasAttributes $a $b where

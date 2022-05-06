@@ -107,14 +107,14 @@ to check that events you think should parse
 do in fact parse. 
 -}
 eventDecodeTests
-  :: forall m c a b
-   . (Eventable c m a, EventLineAble c m a b, FromJSONEvent c m a)
+  :: forall d c a b
+   . (Eventable c d a, EventLineAble c d a b, FromJSONEvent c d a)
   => FilePath
   -> IO TestTree
 eventDecodeTests dir = createDecodeSmokeTestGroup
   ("Checking that .jsonl files in " <> dir <> " can be decoded")
   (\x -> (fromLeft "" x, isRight x))
-  (eitherDecodeEvent @m @c @a defaultParseEventLineOption)
+  (eitherDecodeEvent @d @c @a defaultParseEventLineOption)
   [".jsonl"]
   dir
 
@@ -131,14 +131,14 @@ to check that events you think should _not_ parse
 do not in fact parse. 
 -}
 eventDecodeFailTests
-  :: forall m c a b
-   . (Eventable c m a, EventLineAble c m a b, FromJSONEvent c m a)
+  :: forall d c a b
+   . (Eventable c d a, EventLineAble c d a b, FromJSONEvent c d a)
   => FilePath
   -> IO TestTree
 eventDecodeFailTests dir = createDecodeSmokeTestGroup
   ("Checking that .jsonl files in " <> dir <> " fail to decode")
   (\x -> ("successly parsed; should fail", isLeft x))
-  (eitherDecodeEvent @m @c @a defaultParseEventLineOption)
+  (eitherDecodeEvent @d @c @a defaultParseEventLineOption)
   [".jsonl"]
   dir
 
@@ -195,16 +195,16 @@ to check that events you think should parse
 do in fact parse. 
 -}
 eventLineRoundTripTests
-  :: forall m c a b
-   . ( Eventable c m a
-     , FromJSONEvent c m a
-     , ToJSONEvent c m a
+  :: forall d c a b
+   . ( Eventable c d a
+     , FromJSONEvent c d a
+     , ToJSONEvent c d a
      , IntervalSizeable a b
      )
   => FilePath
   -> IO TestTree
 eventLineRoundTripTests dir =
-  createJSONRoundtripSmokeTestGroup @(EventLine c m a)
+  createJSONRoundtripSmokeTestGroup @(EventLine c d a)
     (  "Checking that .jsonl files in "
     <> dir
     <> " can be decoded then encoded as EventLines"
@@ -223,13 +223,13 @@ The test passes if:
     using the identity function without modifying the result.
 -}
 createModifyEventLineTest
-  :: forall m c a b
-   . (Eventable c m a, EventLineAble c m a b, FromJSONEvent c m a, Data m)
+  :: forall d c a b
+   . (Eventable c d a, EventLineAble c d a b, FromJSONEvent c d a, Data d)
   => FilePath -- ^ path to file to be decoded
   -> IO TestTree
 createModifyEventLineTest testFile = do
   x <- B.readFile testFile
-  let d1 = decode' @(EventLine c m a) x
+  let d1 = decode' @(EventLine c d a) x
 
   let
     res = case d1 of
@@ -237,7 +237,7 @@ createModifyEventLineTest testFile = do
         assertFailure ("failed to parse contents of " <> takeBaseName testFile)
       Just el -> do
         let
-          d2 = modifyEventLineWithContext @m @m @c @c @a
+          d2 = modifyEventLineWithContext @d @d @c @c @a
             defaultParseEventLineOption
             id
             x
@@ -255,15 +255,15 @@ in given directory
 with given file extensions.
 -}
 createModifyEventLineTestGroup
-  :: forall m c a b
-   . (Eventable c m a, EventLineAble c m a b, FromJSONEvent c m a, Data m)
+  :: forall d c a b
+   . (Eventable c d a, EventLineAble c d a b, FromJSONEvent c d a, Data d)
   => TestName
   -> [FilePath] -- ^ a list of file extensions to find in the provided directory
   -> FilePath -- ^ name of directory containing files to be parsed
   -> IO TestTree
 createModifyEventLineTestGroup n exts dir = do
   sources <- findByExtension exts dir
-  let tests = traverse (createModifyEventLineTest @m @c @a) sources
+  let tests = traverse (createModifyEventLineTest @d @c @a) sources
   testGroup n <$> tests
 
 {-|
@@ -285,11 +285,11 @@ thus elements will be ordered by their @Ord@ instance
 in the result.
 -}
 eventLineModifyTests
-  :: forall m c a b
-   . (Eventable c m a, EventLineAble c m a b, FromJSONEvent c m a, Data m)
+  :: forall d c a b
+   . (Eventable c d a, EventLineAble c d a b, FromJSONEvent c d a, Data d)
   => FilePath
   -> IO TestTree
-eventLineModifyTests dir = createModifyEventLineTestGroup @m @c @a
+eventLineModifyTests dir = createModifyEventLineTestGroup @d @c @a
   (  "Checking that .jsonl files in "
   <> dir
   <> " are not modified by modifyEventLine with the id function"

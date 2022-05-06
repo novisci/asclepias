@@ -16,11 +16,11 @@ buildNofX
   => (Bool -> outputType) -- ^ casting function
   -> Natural -- ^ minimum number of cases
   -> (i a -> AssessmentInterval a) -- ^ function to transform a 'Cohort.Index' to an 'Cohort.AssessmentInterval'
-  -> ComparativePredicateOf2 (AssessmentInterval a) (Event c m a) -- ^ interval predicate
-  -> Predicate (Event c m a) -- ^ a predicate on events
+  -> ComparativePredicateOf2 (AssessmentInterval a) (Event c d a) -- ^ interval predicate
+  -> Predicate (Event c d a) -- ^ a predicate on events
   -> Definition
        (  Feature indexName (i a)
-       -> Feature eventsName (container (Event c m a))
+       -> Feature eventsName (container (Event c d a))
        -> Feature varName outputType
        )
 buildNofX f n = buildNofXBase id (\x -> length x >= naturalToInt n) (const f)
@@ -31,11 +31,11 @@ buildNofXBinary
   :: (Intervallic i a, Witherable container)
   => Natural
   -> (i a -> AssessmentInterval a)
-  -> ComparativePredicateOf2 (AssessmentInterval a) (Event c m a)
-  -> Predicate (Event c m a)
+  -> ComparativePredicateOf2 (AssessmentInterval a) (Event c d a)
+  -> Predicate (Event c d a)
   -> Definition
        (  Feature indexName (i a)
-       -> Feature eventsName (container (Event c m a))
+       -> Feature eventsName (container (Event c d a))
        -> Feature varName Binary
        )
 buildNofXBinary = buildNofX fromBool
@@ -46,11 +46,11 @@ buildNofXBool
   :: (Intervallic i a, Witherable container)
   => Natural -- ^ minimum number of cases 
   -> (i a -> AssessmentInterval a) -- ^ function to transform a to an 'AssessmentInterval'
-  -> ComparativePredicateOf2 (AssessmentInterval a) (Event c m a) -- ^ interval predicate
-  -> Predicate (Event c m a) -- ^ a predicate on events
+  -> ComparativePredicateOf2 (AssessmentInterval a) (Event c d a) -- ^ interval predicate
+  -> Predicate (Event c d a) -- ^ a predicate on events
   -> Definition
        (  Feature indexName (i a)
-       -> Feature eventsName (container (Event c m a))
+       -> Feature eventsName (container (Event c d a))
        -> Feature varName Bool
        )
 buildNofXBool = buildNofX id
@@ -61,10 +61,10 @@ buildNofXBinaryConcurBaseline
   :: (Intervallic i0 a, Witherable t, IntervalSizeable a b, Baseline i0 a)
   => Natural -- ^ minimum number of events.
   -> b -- ^ duration of baseline (passed to 'makeBaselineFromIndex')
-  -> Predicate (Event c m a)
+  -> Predicate (Event c d a)
   -> Definition
        (  Feature indexName (i0 a)
-       -> Feature eventsName (t (Event c m a))
+       -> Feature eventsName (t (Event c d a))
        -> Feature varName Binary
        )
 buildNofXBinaryConcurBaseline n baselineDur =
@@ -84,7 +84,7 @@ buildNofConceptsBinaryConcurBaseline
   -> [c] -- ^ list of 'EventData.Concepts' passed to 'EventData.containsConcepts'
   -> Definition
        (  Feature indexName (i0 a)
-       -> Feature eventsName (t (Event c m a))
+       -> Feature eventsName (t (Event c d a))
        -> Feature varName Binary
        )
 buildNofConceptsBinaryConcurBaseline n baselineDur cpts = buildNofXBinary

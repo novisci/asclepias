@@ -45,9 +45,7 @@ Is easily extensible::
 Users can create multiple features and/or cohorts following a common pattern
 and share these across projects.
 +
-xref:features:page$examples.adoc[See examples of features].
-xref:cohorts:page$examples.adoc[See examples of cohorts].
-
+#TODO: link to example#
 
 Introduces the event data theory::
 The event data theory is a framework for defining data models

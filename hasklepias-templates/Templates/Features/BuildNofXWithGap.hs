@@ -19,11 +19,11 @@ buildNofXWithGap
   -> Natural -- ^ the minimum number of gaps
   -> b -- ^ the minimum duration of a gap
   -> (i a -> AssessmentInterval a)
-  -> ComparativePredicateOf2 (AssessmentInterval a) (Event c m a)
-  -> Predicate (Event c m a)
+  -> ComparativePredicateOf2 (AssessmentInterval a) (Event c d a)
+  -> Predicate (Event c d a)
   -> Definition
        (  Feature indexName (i a)
-       -> Feature eventsName (container (Event c m a))
+       -> Feature eventsName (container (Event c d a))
        -> Feature varName outputType
        )
 buildNofXWithGap cast nGaps allowableGap = buildNofXBase
@@ -53,11 +53,11 @@ buildNofXWithGapBool
   => Natural -- ^ the minimum number of gaps
   -> b -- ^ the minimum duration of a gap
   -> (i a -> AssessmentInterval a)
-  -> ComparativePredicateOf2 (AssessmentInterval a) (Event c m a)
-  -> Predicate (Event c m a)
+  -> ComparativePredicateOf2 (AssessmentInterval a) (Event c d a)
+  -> Predicate (Event c d a)
   -> Definition
        (  Feature indexName (i a)
-       -> Feature eventsName (container (Event c m a))
+       -> Feature eventsName (container (Event c d a))
        -> Feature varName Bool
        )
 buildNofXWithGapBool = buildNofXWithGap id
@@ -73,11 +73,11 @@ buildNofXWithGapBinary
   => Natural -- ^ the minimum number of gaps
   -> b -- ^ the minimum duration of a gap
   -> (i a -> AssessmentInterval a)
-  -> ComparativePredicateOf2 (AssessmentInterval a) (Event c m a)
-  -> Predicate (Event c m a)
+  -> ComparativePredicateOf2 (AssessmentInterval a) (Event c d a)
+  -> Predicate (Event c d a)
   -> Definition
        (  Feature indexName (i a)
-       -> Feature eventsName (container (Event c m a))
+       -> Feature eventsName (container (Event c d a))
        -> Feature varName Binary
        )
 buildNofXWithGapBinary = buildNofXWithGap fromBool

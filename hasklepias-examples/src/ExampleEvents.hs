@@ -6,7 +6,6 @@ License     : BSD3
 Maintainer  : bsaul@novisci.com
 -}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 module ExampleEvents
   ( exampleEvents1
@@ -15,56 +14,28 @@ module ExampleEvents
   , exampleEvents4
   , exampleSubject1
   , exampleSubject2
-  , Demographic(..)
-  , ExampleModel(..)
-  , ExampleEvent
   ) where
 
-
 import           Hasklepias
+-- import EventData (ClaimsSchema)
+import           Type.Reflection                ( Typeable )
 
-{- tag::exampleModel[] -}
-data Demographic =
-    BirthYear Integer
-  | Gender Text
-  deriving (Eq, Show, Ord, Generic)
-
-data ExampleModel =
-    Enrollment
-  | Medical
-  | Demographics Demographic
-  deriving (Eq, Show, Ord, Generic)
-{- end::exampleModel[] -}
-
--- instance FromJSON ExampleModel
-instance FromJSON Demographic
-instance FromJSON ExampleModel where
-  parseJSON = genericParseJSON
-    (defaultOptions
-      { sumEncoding = TaggedObject { tagFieldName      = "domain"
-                                   , contentsFieldName = "facts"
-                                   }
-      }
-    )
-
-type ExampleEvent = Event Text ExampleModel Int
-
-exampleEvents1 :: [Event Text ExampleModel Int]
+exampleEvents1 :: [Event Text ClaimsSchema Int]
 exampleEvents1 = toEvents exampleEvents1Data
 
-exampleEvents2 :: [Event Text ExampleModel Int]
+exampleEvents2 :: [Event Text ClaimsSchema Int]
 exampleEvents2 = toEvents exampleEvents2Data
 
-exampleEvents3 :: [Event Text ExampleModel Int]
+exampleEvents3 :: [Event Text ClaimsSchema Int]
 exampleEvents3 = toEvents exampleEvents3Data
 
-exampleEvents4 :: [Event Text ExampleModel Int]
+exampleEvents4 :: [Event Text ClaimsSchema Int]
 exampleEvents4 = toEvents exampleEvents4Data
 
-exampleSubject1 :: Subject [Event Text ExampleModel Int]
+exampleSubject1 :: Subject [Event Text ClaimsSchema Int]
 exampleSubject1 = from ("a" :: Text, exampleEvents1)
 
-exampleSubject2 :: Subject [Event Text ExampleModel Int]
+exampleSubject2 :: Subject [Event Text ClaimsSchema Int]
 exampleSubject2 = from ("b" :: Text, exampleEvents2)
 
 type EventData a = (a, a, Text)
@@ -72,14 +43,15 @@ type EventData a = (a, a, Text)
 toEvent
   :: (IntervalSizeable a a, Typeable a, Show a)
   => EventData a
-  -> Event Text ExampleModel a
-toEvent x = event (beginerval (t1 x) (t2 x))
-                  (context (packConcepts [t3 x]) Enrollment Nothing)
+  -> Event Text ClaimsSchema a
+toEvent x = event
+  (beginerval (t1 x) (t2 x))
+  (context (packConcepts [t3 x]) (Enrollment emptyEnrollmentFact) Nothing)  -- TODO: this used to be `UnimplementedDomain ()`, what should it be now?
 
 toEvents
   :: (Ord a, Show a, IntervalSizeable a a, Typeable a)
   => [EventData a]
-  -> [Event Text ExampleModel a]
+  -> [Event Text ClaimsSchema a]  -- TODO: change this back once the signature for `toEvent` is fixed
 toEvents = sort . map toEvent
 
 t1 :: (a, b, c) -> a

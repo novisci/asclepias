@@ -7,14 +7,6 @@
 For more explanation on the theory behind features,
 see xref:theory.adoc[].
 
-include::features:example$src/LastEventInWindow.adoc[leveloffset=+1]
+include::features:example$src/Example2.adoc[leveloffset=+1]
 
-include::features:example$src/DurationsWithMultipleConditions.adoc[leveloffset=+1]
-
-include::features:example$src/HistoryOfEvent.adoc[leveloffset=+1]
-
-include::features:example$src/TwoOutOneIn.adoc[leveloffset=+1]
-
-include::features:example$src/CountOfHospitalEvents.adoc[leveloffset=+1]
-
-include::features:example$src/DrugDiscontinuation.adoc[leveloffset=+1]
+include::features:example$src/Example3.adoc[leveloffset=+1]

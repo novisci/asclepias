@@ -1,0 +1,468 @@
+= Planning and prototyping for a testing framework in `asclepias`
+See the subdirectory README files for information on work to achieve the goals identified here.
+
+== Goals for planning phase
+The primary goal of the planning phase is to
+
+. Define which types exported from `asclepias` packages are allowed to be tested. This must be done in a way so as to:
+  .. shield the end-user from complexity as much as practicable
+  .. be flexible enough to test most if not all meaningful cases
+  .. be robust to internal changes in `asclepias`, so that end-users do not need to re-learn the tools whenever `asclepias` itself changes
+. Sketch how these types can be mapped
+  .. from some structured text input file, the user interface of `hygiea` for non-programmers
+  .. from user-defined, project-specific types that either alias or extend `asclepias` types
+. Prototype a barebones internal type system (including type classes) in `hygiea` that provides the 'glue' between the user interface, the test interface and the `asclepias` types 
+. Write a simple working example of mapping user text and project code into this type system, perhaps with text input being in dhall format for convenience
+
+Note the goals for this phase do *not* include actually running the tests. Dhall is also probably not the desired format for user input. I expect it to allow me to avoid some annoying parsing issues, since Dhall already provides an API for mapping user-defined types in `.dhall` files to Haskell types. See the example below for a taste of what an actual tabular user interface might look like.
+
+These goals are addressed in the sub-directories of this `planning` directory.
+
+=== What is not
+The goal is not to replace the internal testing routines for `asclepias` packages, which require more nuance and more features than this project intends to provide.
+
+=== Motivation
+Broadly speaking, we are motivated to
+
+==== Make cohort validation directly available to subject-matter experts
+Epidemiologists can contribute to the soundness of cohort-building software by specifying tests directly through the UI `hygiea` provides.
+
+==== Make testing easier for programmers
+In addition to providing a text-based UI, programmers should have tools making it relatively simple to create common tests and eventually to incorporate property testing, additional unit testing, and edge-case analyses.
+
+== Example
+At its core, the testing tool needs to create a logic for parsing:
+
+* a `Hasklepias` type, and possibly project-specific types,
+* a `Hasklepias` function taking that type as input,
+* a specified input to that function of the stated type,
+* a specified output of that function, of some possibly different `Hasklepias` or project-specific type.
+
+Consider the following case pulled from project `P0059/plans/CohortTests.hs`:
+
+[source,haskell]
+----
+enrlCtxt :: Context
+enrlCtxt = context (Enrollment emptyEnrollmentFact) (packConcepts ["is_enrollment"]) Nothing
+
+inputExample1 :: Events Day
+inputExample1 =
+  [ event (readInterval (date 2017 1 1) (date 2017 1 3)) (makeSimpleContext ["is_mi_discharge"] confinementSource)
+  , event (readInterval (date 2017 1 1) (date 2017 1 31)) enrlCtxt
+  , event (readInterval (date 2017 2 1) (date 2017 2 28)) enrlCtxt
+  , event (readInterval (date 2017 2 15) (date 2017 2 16)) (makeSimpleContext ["is_pcsk9"] Nothing)
+  ]
+
+expectedExample1 :: P0059Outcome
+expectedExample1 =  MkP0059Outcome
+  { noInit       = MkCensoredOccurrence (C Noncompliance) (RightCensored (mkEventTime (Just 43)))
+  , init0to30    = MkCensoredOccurrence (C Noncompliance) (RightCensored (mkEventTime (Just 30)))
+  , init31to90   = MkCensoredOccurrence (C Disenrollment) (RightCensored (mkEventTime (Just 87)))
+  , init91to180  = MkCensoredOccurrence (C Noncompliance) (RightCensored (mkEventTime (Just 43)))
+  , init181to365 = MkCensoredOccurrence (C Noncompliance) (RightCensored (mkEventTime (Just 43)))
+  , init366to540 = MkCensoredOccurrence (C Noncompliance) (RightCensored (mkEventTime (Just 43)))
+  }
+----
+
+The `P0059Outcome` type contains six censoring times (wrapped in the hasklepias type `CensoredOccurrence` and aliased in the project at `OType`) for each of six comparison groups in the study.
+
+Now `Just expectedExample1` is the [expected output](https://gitlab.novisci.com/nsResearch/P0059/-/blob/master/plans/CohortsTests.hs#L695) of [`evalSubjectOutcome inputExample1`](https://gitlab.novisci.com/nsResearch/P0059/-/blob/master/plans/CohortsTests.hs#L56), a project-specific testing utility that wraps the function
+
+[source,haskell]
+----
+makeOutcomeDefinition ["is_wellness_visit"] WellnessVisit :: DefOutcome "wellness"
+----
+
+See the 'Complexity of the type system' section for an annotation of this function's definition.
+
+In this proposed addition to the `asclepias` collection of packages, with working name of `hygiea`, the goal is to write tools allowing the test above to be specified by parsing a text file with a relatively simple structure. For example, such input might be in table form, and might look something like this:
+
+[cols="1,1,1,1"]
+.Inputs
+|===
+|testid |event start |event end |context
+|1 | 01012017 | 01032017 | is_mi_discharge
+|1 | 01012017 | 01312017 | is_enrollment 
+|1 | 02012017 | 02282017 | is_enrollment 
+|1 | 02152017 | 02162017 | is_psck9
+|===
+
+
+[cols="1,1,1,1,1"]
+.Outputs
+|===
+|testid |group |censor reason|outcome reason|value
+|1 | no init | noncompliance | rightcensored | 43
+|1 | init 0-30 | noncompliance | rightcensored | 30
+|1 | init 31-90 | disenrollment | rightcensored | 87
+|1 | init 91-180 | noncompliance | rightcensored | 43
+|1 | init 181-365 | noncompliance | rightcensored | 43
+|1 | init 366-540 | noncompliance | rightcensored | 43
+|===
+
+The particular syntax here is just an example and there are many alternatives to consider: Events are specified in different lines of the first table, outcomes specified in a separate table, and testid identifies which events are associated with which outcomes.
+
+== Challenges
+Challenges to achieving the planning phase goals fall into a few categories, with roots in the complexity of `asclepias` package's type systems:
+
+. `asclepias` types of interest can be relatively heavily parameterized, deeply nested or inter-dependent, all of which should be hidden from the end-user yet must be accounted for somehow in the testing specification. See for example the `CensoredOccurrence` type in `Hasklepias.Misc`, a fundamental type for the outcome to be tested
+. Much of the relevant type-ing for items we wish to test happens outside of `asclepias`:
+  .. project-specific types or type aliases, based on the code for P0059
+  .. text metadata, e.g. "is_enrollment", that comes from the data pipeline
+. Type naming is sometimes opaque, (e.g. `CensoringReason` variant names), and there is more opportunity for that to be the case in project-specific types and aliases.
+. `asclepias` is under active development, which might require substantial changes to `hygiea` internals and perhaps to the tools and user-interface.
+
+Some of those dynamics are not simply downsides but also provide structure that a testing type system can use.
+
+Additional challenges relate to providing a smooth user experience both for programmers and subject-matter experts. These include:
+
+. making relevant project-specific types and labels discoverable to subject-matter experts, for the purpose of properly specifying tests
+. creating a clean interface for programmers, with as little back-end work as possible needed to stand up a test suite that can consume the text-based test configuration
+
+=== Complexity of the type system
+Writing the test in the example above, without the tools to be developed for `hygiea`, requires the developer to understand the following code, and in the case of the code from `P0059/plans/Cohort.hs` to be able to write it. This block is not even complete, since for example it does not include the definition of various functions used in `makeOutcomeDefinition`, such as `firstConceptOccurrence` from `Hasklepias.FeatureEvents`.
+
+[source,haskell]
+----
+-- P0059/plans/Cohort.hs
+readInterval :: (Integral b, IntervalSizeable a b) => a -> a -> Interval a
+readInterval b e = beginerval (diff e b) b
+
+date :: Year -> MonthOfYear -> DayOfMonth -> Day
+date = fromGregorian
+
+{- | The reasons that an observational unit may be censored. The order matters here
+ in that if two censoring events occur on the same day then the reason for 
+ censoring will be chosen based on the following  ordering.
+-}
+data CensorReason =
+    Disenrollment
+  | Discontinuation
+  | Noncompliance
+  | EndOfData
+  deriving (Eq, Show, Ord, Generic)
+
+{- | all the study outcomes
+-}
+data Outcome =
+    WellnessVisit
+  | Accident
+  | DecubitusUlcer
+  | Fracture
+  | VisualTest
+  | FluVaccine
+  | ZosterVaccine
+  | PneumoVaccine
+  | ZosterPneumoVaccine
+  | ColonCancer
+  | NonMelanomaMohs
+  | Cancer
+  deriving (Eq, Show, Ord, Generic)
+
+{- | For each @Outcome@, either the outcome can occur or the competing risk of
+death may occur 
+-}
+data OutcomeReason =
+    PrimaryOutcome Outcome
+  | DeathOutcome -- disambiguate from Hasklepias.Death
+  deriving (Eq, Show, Ord, Generic)
+
+{- | Type synoynm for definition of an outcome. Note that the return type is a
+   pair containing the occurrence time of the outcome (or death) and the value
+   for the @P0059@ data.
+-}
+type DefOutcome name
+  =  Def (
+     F "index" (Index Interval Day)
+  -> F "allFollowupEvents" (Events Integer)
+  -> F "death" (Maybe MomentOfOccurrence)
+  -> F "firstpcsk9followup" (Maybe (Interval Integer))
+  -> F "censortime" (Maybe MomentOfOccurrence)
+  -> F name (Maybe (P0059Reasons, Integer), P0059Outcome)
+  )
+
+-- | Constructor for a 'MomentOfOccurrence'
+makeMomentOfOccurrence :: P0059Reasons -> Interval Integer -> MomentOfOccurrence
+makeMomentOfOccurrence = makePairedInterval
+
+-- | Synonym for an intermediary type used to create outcomes
+type MomentOfOccurrence = PairedInterval P0059Reasons Integer
+
+-- | Syonym for 'CensoringReason' for this study
+type P0059Reasons = CensoringReason CensorReason OutcomeReason
+
+-- | A type synonym for the return type for outcomes
+type OType = CensoredOccurrence CensorReason OutcomeReason Integer
+
+-- | Data structure containing the censored times for each of the 6 comparison groups.
+data P0059Outcome = MkP0059Outcome
+  { noInit       :: OType
+  , init0to30    :: OType
+  , init31to90   :: OType
+  , init91to180  :: OType
+  , init181to365 :: OType
+  , init366to540 :: OType
+  }
+  deriving (Eq, Generic)
+
+-- Hasklepias.Misc
+-- | Sum type for possible censoring and outcome reasons, including administrative
+--   censoring.
+data CensoringReason cr or = AdminCensor | C cr | O or
+  deriving (Eq, Show, Generic)
+
+-- | A type to represent censored 'Occurrence'.
+data CensoredOccurrence censors outcomes b = MkCensoredOccurrence
+  { reason :: CensoringReason censors outcomes
+  , time   :: MaybeCensored (EventTime b)
+  }
+  deriving (Eq, Generic)
+
+
+-- Stype.Numeric
+-- this is a GADT: note  the different constructor signatures
+data MaybeCensored a where
+   IntervalCensored :: a -> a -> MaybeCensored a
+   RightCensored :: a -> MaybeCensored a
+   LeftCensored :: a -> MaybeCensored a
+   Uncensored :: a -> MaybeCensored a
+   deriving( Eq, Show, Ord, Generic )
+
+mkEventTime :: Maybe a -> EventTime a
+mkEventTime (Just x) = EventTime $ NonNegCont x
+mkEventTime Nothing  = EventTime NonNegContInf
+
+newtype EventTime a = EventTime { getEventTime :: NonnegContinuous a }
+  deriving (Eq, Show, Ord, Generic)
+
+data NonnegContinuous a = NonNegCont a | NonNegContInf
+  deriving (Eq, Show, Ord, Generic)
+
+
+-- EventData.Core
+event :: Interval a -> Context -> Event a
+event i c = makePairedInterval c i
+
+-- EventData.Context
+context :: Domain -> Concepts -> Maybe Source -> Context
+context d x  = Context x d
+
+-- Enrollment variant
+-- EventData.Context.Domain
+data Domain =
+      Death DeathFacts
+    | Demographics DemographicsFacts
+    | Diagnosis DiagnosisFacts
+    | Eligibility EligibilityFacts
+    | Enrollment EnrollmentFacts
+    | Labs LabsFacts
+    | Medication MedicationFacts
+    | Procedure ProcedureFacts
+    | UnimplementedDomain ()
+    deriving ( Eq, Show, Generic )
+
+newtype EnrollmentFacts = EnrollmentFacts {
+     plan :: Maybe Plan
+  }
+  deriving( Eq, Show, Generic )
+
+-- EventData.Facts
+data Plan = Plan {
+    exchange :: Exchange
+  , plan_id  :: Maybe Text
+  , group_id :: Maybe Text
+  , subscriber_id :: Maybe Text
+  , subscriber_relationship :: Maybe Text
+  , benefit :: Maybe Text
+  }
+   deriving (Eq, Show, Generic)
+
+data Exchange = 
+      UnknownExchange
+    | None
+    | Group
+    | IndFederal           
+    | IndState             
+    | Medicaid
+    | Medicare             
+    | ThirdParty           
+   deriving (Eq, Show, Generic)
+----
+
+It is instructive also to annotate the `makeOutcomeDefinition` function that we are testing,
+defined locally in the P0059 project.
+
+[source,haskell]
+----
+-- | Creates an definition for single outcome.
+makeOutcomeDefinition :: (KnownSymbol name) =>
+     [Text]
+  -> Outcome
+  -> DefOutcome name
+makeOutcomeDefinition cpt outcome = define
+  (\index events death pcsk censor ->
+    events
+    -- get the first event with concept in cpt (a list of Text), returning Maybe
+    |> firstConceptOccurrence cpt 
+    -- if filtered event gave Nothing, leave it, else return a single-unit
+    -- length interval from the starting point of the event 
+    |> fmap (getInterval . momentize) 
+    -- alias for makePairedInterval with associated data of type P0059Reasons,
+    -- which is a type alias for CensoringReasons CensorReason OutcomeReason (O is
+    -- a variant of CensoringReaons), where the latter two *Reason types are local
+    -- to this project. PrimaryOutcome is a constructor for OutcomeReason with
+    -- argument outcome passed to makeOutcomeDefinition, which in the example
+    -- above is WellnessVisit. makeMomentOfOccurrence when partially
+    -- evaluated with those two arguments is then a function pairing O
+    -- (PrimaryOutcome WellnessVisit) with the event passed from the previous
+    -- step.
+    |> fmap (makeMomentOfOccurrence (O (PrimaryOutcome outcome))) 
+    -- extract the first Just value from the list [x, death], where x is the event from the previous step. 
+    -- If x is Nothing, death is returned. If both are Just, the earlier of x and death is returned.
+    -- event death is an argument of this Feature.  asum is a generalized
+    -- concatenation, a Hasklepias re-export of Data.Foldable.asum from the base
+    -- package. 
+    |> \x -> asum (sort [x, death])
+    -- builds a P0059Outcome type (locally defined in the project) with the
+    -- interval given by the result of the previous step.
+    |> \x -> (fmap (\i -> (getPairData i, begin i)) x, makeP0059Outcome pcsk censor x)
+  )
+----
+
+Clearly familiarity with `asclepias` is necessary and expected of any project developer, but this level of complexity is in my opinion a substantial impediment to the writing of comprehensive, correct testing procedures for project cohorts. 
+
+==== Following the trail of `expectedExample1`
+Consider only the first element in this record of type `P0059Outcome`, `noInit`, snipped here from the definition of `expectedExample1`:
+
+[source,haskell]
+----
+noInit = MkCensoredOccurrence (C Noncompliance) (RightCensored (mkEventTime (Just 43)))
+----
+
+It has type `OType`, which is an alias defined as
+[source,haskell]
+----
+type OType = CensoredOccurrence CensorReason OutcomeReason Integer
+----
+
+`CensoredOccurence`, from `Hasklepias.Misc`, is defined with constructor `MkCensoredOccurrence` as
+[source,haskell]
+----
+data CensoredOccurrence censors outcomes b = MkCensoredOccurrence
+  { reason :: CensoringReason censors outcomes
+  , time   :: MaybeCensored (EventTime b)
+  }
+  deriving (Eq, Generic)
+----
+
+Consider only the `time` field for `noInit`. It uses the `RightCensored` constructor  of the type `MaybeCensored` from `Hasklepias.Misc`, in the expression `RightCensored (mkEventTime (Just 43))`. 
+
+The `reason` field of `noInit` uses the `CensoringReason` type's `C` constructor, defined in `Hasklepias.Misc`, with inner type `Noncompliance`, a variant of the project-specific type `CensorReason`.
+
+Note that constructing `expectedExample1` directly does not use most of the pass-through types in the chunk above, which instead are used just for the transformation `makeOutcomeDefinition`.  The only project-specific type used in its creation is `CensorReason`.
+
+=== Inhomogeneity across projects
+In the example of P0059 above, the project itself defined the key types of `CensorReason` and `Outcome`, which we can only assume will be essential in specifying tests, as they were in the associated rudimentary tabular user interface. The end-user likely will need some access to these types to specify tests appropriately, and to metadata provided by the data pipeline, such as "is_enrollment". 
+
+It's not clear what the best way is to facilitate or eliminate that need.
+
+== Benefits of the `asclepias` type system
+The upside here is easier to summarize but not meant to seem less important.
+
+=== Facilitates generic programming
+We can, for example, write a typeclass for conversions of `CensoredOccurence` to an internal `hygiea` test type. This would place some burden on programmers to do the actual mapping of project-specific outcome types to testable types, in a structured way. We could provide some generic implementations or at a minimum some helper functions to facilitate that.
+
+== Overview of the approach
+
+=== Test data not types
+Consider the testable output given in the example above
+
+[source,haskell]
+----
+noInit = MkCensoredOccurrence (C Noncompliance) (RightCensored (mkEventTime (Just 43)))
+----
+
+The subject-matter expert should care only about the information `Noncompliance`, `RightCensored` and the `EventTime` value `43`. They do not care about the types those values are wrapped in, and it would be a substantial burden to require the user to specify those types in the test specification.
+
+=== Golden testing
+Tests will be implemented as golden tests, in which the test routine produces a file to be compared to the 'golden' reference file. The test passes if and only if the two files are identical.
+
+That provides some structure in which to think about the underlying type system of `hygeia`.
+
+== Finding the right level of abstraction
+A test has three components:
+. input type
+. output type
+. transformation from input to output
+
+Though input types are more homogeneous, tending to be `Events`, the only type a golden test cares about is the output.
+
+An input type need not be a concrete type and can be any type that is converted to the output type. 
+
+To clarify: We do need some internal representation of the input, for subject-matter-experts to specify. The generalized `Event` type from the `event-data-theory` work is a good starting point for that representation.
+
+
+=== Core type system
+The type system is split into three chunks: One that 'users' will interact with via text-based files, one that project programmers will see, and one that is internal to `hygiea.`
+
+==== Internal types
+Input and output types each are a list of `Map`s: This is a generic structure for rectangular data shapes, with broad support across various packages. `hygiea` will parse text-base input into this type, using Dhall. Most likely, it will use dhall-csv to parse rectangular csv data. `hygiea` also will implement conversions from this internal type to standard shapes likely to be used in projects, e.g. `Event`, and will do so leveraging the upcoming `event-data-theory` module.
+
+==== Programmer-facing types
+If using one of those standard types, project programmers need only declare `ToOutput` instances for the project-specific input and output types to be tested. This instance provides `toOutput`, which is the transformation to be tested. If needed, project programmers can implement their own conversions from the flat `hygiea` `Map` type to their project-specific types.
+
+The programmer's primary task is to define the transformation from inputs to outputs that is to be tested. `hygiea` will ask programmers to define conversions to and from the flattened record format and the input and output types associated with testable transformations.
+
+`hygiea` will handle marshaling the input data into the project's input type, running the conversion and performing the test.
+
+=== Sharing data shape between programmers and users
+Users will specify tests with rectangular text configuration files, but they will not interact with Haskell code. There needs to be some mechanism by which programmers can define what kinds of information columns and rows can hold.
+
+The shape of text input could be set with a simple Dhall record specification. We lean on the `dhall-csv` package, and on the `dhall` package generally, for all of the architecture needed to interpret such input and incorporate it into a Haskell program.
+
+An example of a dhall shape specification is in the `Planning/Examples` source directory:
+[source,dhall]
+----
+{ concepts : Text, facts : Text, begin : Integer, end : Integer }
+----
+
+Even something as basic as allowing a sum type probably has great benefit: The user can only specify `Subject` or `Observation` values for the `observationType` field, and other values will create parsing errors before the tests are actually run.
+
+=== Costs and benefits of using Dhall
+Most of the issues and solutions described here are shared with and inspired by `dhall-csv`. The latter attempts to marshall dhall to record-like text and back. Here I try to marshall dhall to an inhomogeneous Haskell map.  The key difference between `hygiea` 's problems and `dhall-csv` 's is the latter works with a fixed target: the `NamedRecord` type from the csv reader/writer is a `HashMap` with `ByteString` keys and values. Inhomogeneity in the data is resolved by writing a parser from `ByteString` to dhall expressions. 
+
+`hygiea` emulates that solution. See 'Inhomogeneous containers'.
+
+
+==== Decoding Maps
+Dhall does not by default decode `Record` types into haskell `Map` s, with good reason: The field names of the latter are not part of the type, and therefore a decoder needs to build those. See `dhallFromCsv` for a related example of how that is done.
+
+==== Inhomogeneous containers
+It's difficult to marshal into inhomogeneous lists or other containers. Again, dhall I think intentionally doesn't want to provide too much flexibility there. `ToDhall` and `FromDhall` methods operate on the type level, rather than by consuming values, so you cannot do something like the following
+
+[source,haskell]
+----
+type MyList = forall v. (FromDhall v) => [v]
+
+instance FromDhall MyList
+----
+
+Deriving `Generic` is a no-go there, so you would need to define the `autoWith` method of `FromDhall`. But you cannot do so because it does not take any arguments of type `MyList`. You might be able to write a custom decoder, but if I recall I ran into type ambiguity issues there that could not be resolved with haskell extensions.
+
+My solution in `hygiea` marshals dhall into `Map Text TestAtomic` (and soon `TestVal` for the value type) where `TestAtomic` is an enum with variants for the particular types `v` I wanted to support. It is easy enough then to write a `FromDhall` instance for `TestAtomic`. That approach takes from dhall's `Expr` enum representing all possible dhall expressions.
+
+I could have also simply written a parser directly from Csv into some container like `Map Text TestAtomic`, but that would amount to re-doing the work of `dhall-csv` rather than using it. Using dhall directly also leaves open the possibility of extending `hygiea` to accept more complex dhall input in the future.
+
+=== Discussion
+From the stat-dev meeting on Feb. 7. Text above includes some reactions to these comments.
+
+. add an `Input` type to `Hygiea.Planning`, which is the mechanism by which users of the text interface can supply input data to the tests
+. `OutputData` should be more general than a simple concrete type
+.. should allow only a rectangular text input to be parsed
+.. API for programmers to define what the rows and columns mean
+.. e.g. a tabular text file (or a dhall file if using that) to specify the project-specific shape of outcomes to be tested, which can then serve as a skeleton for text-based user input
+.. the internal representation should then become a concrete type once the table schema is read
+.. look to support both 'interim' types, e.g. predicate results or covariates, as well as outcomes
+.. P0059 outcomes are more complex than is typical
+. Interest in adding unit tests. Though part of the plan to add these eventually, we should look to provide in the next phase a consistent API for users to write *unit* tests using the same internal representations as for golden tests
+. Look to support heterogeneity not only in what variables (columns) are provided as test inputs/outputs but also differing notions of what rows represent: subjects, vs. observational units.

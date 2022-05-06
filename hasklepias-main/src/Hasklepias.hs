@@ -19,7 +19,8 @@ module Hasklepias
     See that pacakge's documentation for information about the types and functions 
     for working with intervals.
     -}
-    module EventDataTheory
+    module EventData
+  , module EventDataTheory
 
     -- * Working with Features
     -- $features
@@ -59,10 +60,12 @@ module Hasklepias
 
     -- * Rexported Functions and modules
   , module Hasklepias.Reexports
+  , module Hasklepias.ReexportsUnsafe
   ) where
 
 import           AssessmentIntervals
 
+import           EventData
 import           EventDataTheory
 
 import           Features
@@ -74,6 +77,7 @@ import           Hasklepias.MakeCohortApp
 import           Hasklepias.MakeFilterApp
 import           Hasklepias.Misc
 import           Hasklepias.Reexports
+import           Hasklepias.ReexportsUnsafe
 import           Templates.Features
 
 import           Stype

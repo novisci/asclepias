@@ -27,9 +27,9 @@ include::quick-start.adoc[leveloffset=+1]
 
 include::installing-ghc-and-cabal.adoc[leveloffset=+1]
 
-include::setting-up-a-development-environment.adoc[leveloffset=+1]
-
 include::compiling-asclepias.adoc[leveloffset=+1]
+
+include::setting-up-a-development-environment.adoc[leveloffset=+1]
 
 include::haskell-module-system.adoc[leveloffset=+1]
 

@@ -37,7 +37,7 @@ into the session
 
 [source,shell]
 ----
-cabal repl hasklepias-examples:CohortExamples
+cabal repl hasklepias-main:examples
 ----
 
 == Loading modules into GHCi
@@ -69,16 +69,16 @@ to view and change what modules are currently loaded.
 
 [source,shell]
 ----
-cabal repl hasklepias-examples:CohortExamples
+cabal repl hasklepias-main:examples
 ----
 [source]
 ----
 :show modules
 
-:load FeatureExamples
+:load ExampleCohort1
 :show modules
 
-:load CohortExamples FeatureExamples
+:load ExampleCohort1 ExampleEvents
 :show modules
 ----
 

@@ -52,9 +52,10 @@ import           Data.Aeson                     ( ToJSON(..)
 import qualified Data.ByteString               as BS
 import qualified Data.ByteString.Lazy          as B
 import qualified Data.Text                     as T
-import           Data.Text.Encoding             ( decodeUtf8
+import           Data.Text.Encoding             ( decodeUtf8'
                                                 , encodeUtf8
                                                 )
+import           Data.Text.Encoding.Error       ( UnicodeException )
 import qualified Data.Text.IO
 import           System.FilePath                ( replaceExtension )
 import           Test.Tasty.Silver.Advanced     ( goldenTest1 )
@@ -161,8 +162,9 @@ runGoldenExpected
 runGoldenExpected procData = do
   let txt = encodeText $ getOutput procData
   -- NOTE converting to text before writing
-  writeGoldenFile (outputCsv procData) txt
-  return txt
+  case txt of
+    Right txt' -> txt' <$ writeGoldenFile (outputCsv procData) txt'
+    Left err -> fail $ show err
 
 -- | Convert processed @input@ to @output@ via @toOutput@ and encode as JSON. Note the actual @getOutput@ data field from the @ProcessedElems@ is not used here: Only the type @output@ matters, used in the conversion. See @runGoldenExpected@.
 runGoldenActual
@@ -170,9 +172,11 @@ runGoldenActual
    . (RoutineContext input output)
   => ProcessedElems input output
   -> IO T.Text
-runGoldenActual procData = do
+runGoldenActual procData =
   let oActual = (toOutput @input @output) $ getInput procData
-  return $ encodeText oActual
+  in  case encodeText oActual of
+        Right txt -> pure txt
+        Left err -> fail $ show err
 
 -- | Read csv and schema, parse schema into [TestMap] and attempt conversion to
 -- input and output types. Fails if any step of the process returns an
@@ -202,7 +206,7 @@ processElems i o = do
     (Right ii, Right oo) ->
       case (tryFrom @[TestMap] ii, tryFrom @[TestMap] oo) of
         (Right iOut, Right oOut) ->
-          return $ MkProcessedElems iOut (csvFile i) oOut (csvFile o)
+          pure $ MkProcessedElems iOut (csvFile i) oOut (csvFile o)
         (Right _  , Left err) -> fail $ show $ ConversionException err
         (Left  err, _       ) -> fail $ show $ ConversionException err
     (Right _  , Left err) -> fail $ show err
@@ -212,9 +216,10 @@ processElems i o = do
   {- Utilities -}
 
 -- Write JSON files, or encode as text
-encodeText :: (ToJSON a) => a -> T.Text
-encodeText = decodeUtf8 . B.toStrict . encode
+encodeText :: (ToJSON a) => a -> Either UnicodeException T.Text
+encodeText = decodeUtf8' . B.toStrict . encode
 
+-- returns file path, for convenience
 writeJSONWithExt :: (ToJSON a) => String -> String -> a -> IO ()
 writeJSONWithExt ext path d = do
   let file = replaceExtension path ext

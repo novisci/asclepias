@@ -1,0 +1,5 @@
+concepts,facts,begin,end
+"home","is_funny",0,4
+"not home","is_sad",1,10
+"home","is_weird",0,20
+"home","is_more_weird",-5,0

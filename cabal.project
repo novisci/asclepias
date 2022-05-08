@@ -7,6 +7,7 @@ packages: hasklepias-core
         , event-data-theory
         , stype
         , maybe-toxic-tutorial
+        , hygiea
 
 -- allow-newer:
 --  amazonka:bytestring,

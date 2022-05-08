@@ -18,3 +18,5 @@ cradle:
       component: "stype"
     - path: "./maybe-toxic-tutorial/"
       component: "maybe-toxic-tutorial"
+    - path: "./hygiea/"
+      component: "hygiea"

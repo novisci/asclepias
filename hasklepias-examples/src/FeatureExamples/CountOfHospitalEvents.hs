@@ -47,8 +47,9 @@ example :: TestTree
 example = testGroup
   "Tests of countOfHospitalEvents"
   [ testCase "using exampleEvents1"
-  $   countOfHospitalEvents (makeFollowupStartedByIndex 20 (beginervalMoment 50))
-                            exampleEvents1
+  $   countOfHospitalEvents
+        (makeFollowupStartedByIndex 20 (beginervalMoment 50))
+        exampleEvents1
   @?= (1, Just 8)
   , testCase "Case 1"
   $   countOfHospitalEvents exampleFollowup case1

@@ -15,5 +15,5 @@ bline = makeBaselineFromIndex 60
 
 {- tag::followup[] -}
 flwup :: (IntervalSizeable a b) => Interval a -> AssessmentInterval a
-flwup = makeFollowupFromIndex 30
+flwup = makeFollowupStartedByIndex 30
 {- end::followup[] -}

@@ -76,8 +76,8 @@ and instead perhaps use 'IntervalAlgebra.enclosedBy'.
   , makeBaselineFromIndex
   , makeBaselineBeforeIndex
   , makeBaselineFinishedByIndex
-  , makeFollowupFromIndex
-  , makeFollowupMeetingIndex
+  , makeFollowupStartedByIndex
+  , makeFollowupMetByIndex
   , makeFollowupAfterIndex
   ) where
 
@@ -352,23 +352,23 @@ makeBaselineFinishedByIndex dur index = Bl (baselineFinishedBy dur index)
 -- 
 -- >>> import Cohort.Index
 -- >>> x = $ beginerval 1 10
--- >>> makeFollowupFromIndex 10 x
+-- >>> makeFollowupStartedByIndex 10 x
 -- Fl (MkFollowupInterval (10, 20))
 --
-makeFollowupFromIndex
+makeFollowupStartedByIndex
   :: (Followup i a, IntervalSizeable a b) => b -> i a -> AssessmentInterval a
-makeFollowupFromIndex dur index = Fl (followup dur index)
+makeFollowupStartedByIndex dur index = Fl (followup dur index)
 
 -- | Creates an 'AssessmentInterval' using the 'followupMetBy' function. 
 -- 
 -- >>> import Cohort.Index
 -- >>> x = $ beginerval 1 10
--- >>> makeFollowupMeetingIndex 10 x
+-- >>> makeFollowupMetByIndex 10 x
 -- Fl (MkFollowupInterval (11, 21))
 --
-makeFollowupMeetingIndex
+makeFollowupMetByIndex
   :: (Followup i a, IntervalSizeable a b) => b -> i a -> AssessmentInterval a
-makeFollowupMeetingIndex dur index = Fl (followupMetBy dur index)
+makeFollowupMetByIndex dur index = Fl (followupMetBy dur index)
 
 -- | Creates an 'AssessmentInterval' using the 'followupAfter' function. 
 -- 

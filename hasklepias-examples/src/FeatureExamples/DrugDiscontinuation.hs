@@ -41,7 +41,7 @@ discontinuationDef = define discontinuation
 
 ev i c = event i (context (packConcepts [c]) Medical Nothing)
 
-exampleFollowup = makeFollowupFromIndex 10 (beginervalMoment 5)
+exampleFollowup = makeFollowupStartedByIndex 10 (beginervalMoment 5)
 
 case1 :: [ExampleEvent]
 case1 =

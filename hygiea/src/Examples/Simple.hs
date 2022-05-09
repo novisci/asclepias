@@ -2,11 +2,20 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE DeriveGeneric #-}
 module Examples.Simple where
 
+import           Data.Aeson                     ( FromJSON
+                                                , ToJSON
+                                                )
+import           Data.Bifunctor                 ( first )
 -- NOTE dhall imports are just for this example and not needed for a typical
 -- project
-import           Data.Text                      ( Text )
+import           Data.Text                      ( Text, pack )
+import           Dhall                          ( FromDhall
+                                                , ToDhall
+                                                )
+import           GHC.Generics
 import           IntervalAlgebra
 import           System.FilePath
 -- placeholder for actual EDM-theory
@@ -14,6 +23,8 @@ import           Test.Hygiea.EventData
 import           Test.Hygiea.Map
 import           Test.Hygiea.ToOutput
 import           Test.Tasty.Hygiea
+import           Witch.TryFrom
+import           Witch.From
 
   {- Project-specific code
 
@@ -49,12 +60,14 @@ badInputCsv = replaceFileName outputCsv "input_bad.csv"
 badOutputCsv = replaceFileName outputCsv "output_bad.csv"
 
 myBadRoutine :: Routine
-myBadRoutine = Golden (MkRoutineElem @[ProjEvent] inputCsv inputDhall)
-                   (MkRoutineElem @[ProjOccurrence] badOutputCsv outputDhall)
+myBadRoutine = Golden
+  (MkRoutineElem @[ProjEvent] inputCsv inputDhall)
+  (MkRoutineElem @[ProjOccurrence] badOutputCsv outputDhall)
 
 myMisspecRoutine :: Routine
-myMisspecRoutine = Golden (MkRoutineElem @[ProjEvent] badInputCsv inputDhall)
-                   (MkRoutineElem @[ProjOccurrence] outputCsv outputDhall)
+myMisspecRoutine = Golden
+  (MkRoutineElem @[ProjEvent] badInputCsv inputDhall)
+  (MkRoutineElem @[ProjOccurrence] outputCsv outputDhall)
 
   {- Other project code -}
 
@@ -76,10 +89,42 @@ cohortBuilder ix = foldr op []
 -- there is nothing to do for hygeia to implement the TryFrom instances, since
 -- these alias the generic event, for which constraints are already
 -- implemented, and Integer, Text already implement the necessary conversions
-type ProjEvent = Event Text Text Integer
-type ProjInterval = PairedInterval (Context Text Text) Integer
+data TrueFacts = Awesome | NotAwesome Text deriving (Show, Eq, Generic)
+type ProjEvent = Event Text TrueFacts Integer
+type ProjInterval = PairedInterval (Context Text TrueFacts) Integer
 type Index = Interval Integer
-type ProjOccurrence = CensoredOccurrence Text (Context Text Text) Integer
+type ProjOccurrence = CensoredOccurrence Text (Context Text TrueFacts) Integer
+
+-- bootstrap conversion via dhall
+instance FromDhall TrueFacts
+instance ToDhall TrueFacts
+
+-- json instances required for Golden
+instance ToJSON TrueFacts
+instance FromJSON TrueFacts
 
 index :: Index
 index = beginervalMoment 0
+
+-- Some data to play with in the repl
+
+f1, f2 :: TrueFacts
+f1 = Awesome
+f2 = NotAwesome "ugh"
+
+e1, e2 :: ProjEvent
+e1 = MkEvent $ makePairedInterval (MkContext "yay" f1) (beginerval 0 1)
+e2 = MkEvent $ makePairedInterval (MkContext "notyay" f2)
+                                  (beginerval 0 10)
+
+-- note these conversions are never ones the programmer need to do, and the
+-- exception handling uses HygieaException not Text
+
+-- simple type conversion
+v1, v2 :: Either Text TestVal
+v1 = case tryFrom f1 of
+       Right v -> pure v
+       Left err -> Left $ pack $ show err
+v2 = case tryFrom f2 of
+       Right v -> pure v
+       Left err -> Left $ pack $ show err

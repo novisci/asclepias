@@ -28,7 +28,7 @@ main = do
   input <- parseDhallFile "./hygiea/src/Examples/input.dhall"
   print input
 
-  let inputDecode = decodeMapSchemaAuto @TestAtomic input
+  let inputDecode = decodeMapSchemaAuto @TestVal input
 
   putStrLn "\nTestMap parsed from Csv with schema\n"
   recs <- tryParseRecordsCsv inputDecode "./hygiea/src/Examples/input.csv"

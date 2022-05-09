@@ -1,9 +1,11 @@
 {-# LANGUAGE TupleSections #-}
-{-# LANGUAGE OverloadedStrings #-}
+
 module Test.Hygiea.Internal.Dhall where
 
+import qualified Data.ByteString               as BS
 import           Data.Csv                       ( NamedRecord )
-import qualified Data.Text as T
+import qualified Data.Text                     as T
+import           Data.Text.Encoding             ( decodeUtf8' )
 import qualified Data.Text.IO                   ( readFile )
 import           Data.Void                      ( Void )
 import qualified Dhall
@@ -24,8 +26,10 @@ import           Test.Hygiea.Internal.Map
    {- UTILS -}
 type DhallExpr = Dhall.Core.Expr Src Void
 
--- TODO useful for creating a custom type injected into the dhall language
--- parser. see the Dhall tutorial section on substitutions.
+  {-
+-- TODO these are not needed but useful for creating a custom type injected
+-- into the dhall language parser. see the Dhall tutorial section on
+-- substitutions.
 -- https://hackage.haskell.org/package/dhall-1.40.2/docs/Dhall-Tutorial.html#g:24
 encoderText :: Dhall.Encoder a -> a -> T.Text
 encoderText x = T.pack . show . pretty . Dhall.embed x
@@ -36,7 +40,23 @@ encoderTypeText = T.pack . show . pretty . Dhall.declared
 decoderTypeText :: Dhall.Decoder a -> T.Text
 decoderTypeText = T.pack . show . pretty . maximum . Dhall.expected
 
--- TODO clean up these parsers a bit depending on need
+-- inject type a into a dhall program string and return decoded Haskell type
+-- TODO name handling is ham-handed. grab name from the object itself?
+parseDecodeWithType :: T.Text -> Dhall.Decoder a -> T.Text -> IO a
+parseDecodeWithType name d program = Dhall.input
+  d
+  (typedef <> " in " <> program)
+  where typedef = "let " <> name <> " = " <> decoderTypeText d
+        -}
+
+-- fail if file can't be read
+readFileViaBytes :: FilePath -> IO T.Text
+readFileViaBytes path = do
+  b <- BS.readFile path
+  case decodeUtf8' b of
+    Right txt -> pure txt
+    Left  err -> fail $ show err
+
 
 -- | Parse a .dhall file using a provided parser. This is useful if extending
 -- the Dhall language by first injecting a custom type definition, for example.
@@ -44,7 +64,7 @@ decoderTypeText = T.pack . show . pretty . maximum . Dhall.expected
 -- substitutions](https://hackage.haskell.org/package/dhall-1.40.2/docs/Dhall-Tutorial.html#g:24).
 parseDhallFileWith
   :: (T.Text -> IO (Expr Src Void)) -> FilePath -> IO (Expr Src Void)
-parseDhallFileWith parser file = parser =<< Data.Text.IO.readFile file
+parseDhallFileWith parser file = parser =<< readFileViaBytes file
 
 -- | Parse a .dhall file into an @Expr@ using the Dhall package's @"Dhall".inputExpr@
 parseDhallFile :: FilePath -> IO (Expr Src Void)
@@ -55,13 +75,6 @@ parseDhallFile = parseDhallFileWith Dhall.inputExpr
 tryParseRawInput :: Dhall.Decoder a -> Expr Src Void -> Maybe a
 tryParseRawInput = Dhall.rawInput
 
--- inject type a into a dhall program string and return decoded Haskell type
--- TODO name handling is ham-handed. grab name from the object itself?
-parseDecodeWithType :: T.Text -> Dhall.Decoder a -> T.Text -> IO a
-parseDecodeWithType name d program = Dhall.input
-  d
-  (typedef <> " in " <> program)
-  where typedef = "let " <> name <> " = " <> decoderTypeText d
 
   {- MAP -}
 
@@ -136,7 +149,8 @@ decodeMapSchema decodeVal schema = Dhall.Decoder extractOut expectedOut
 
 -- | Build a @Decoder (Map v)@ using the generically derived decoder for @v@,
 -- provided a Dhall Record schema.
-decodeMapSchemaAuto :: (Dhall.FromDhall v) => DhallExpr -> Dhall.Decoder (Map v)
+decodeMapSchemaAuto
+  :: (Dhall.FromDhall v) => DhallExpr -> Dhall.Decoder (Map v)
 decodeMapSchemaAuto = decodeMapSchema Dhall.auto
 
 -- | Decode a @Map v@ from Dhall program text and a Dhall Record schema.

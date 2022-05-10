@@ -119,7 +119,7 @@ buildNofXOrMofYWithGapTestCases =
     , 3
     , isEnrollmentEvent
     , concur
-    , makeBaselineFromIndex 10
+    , makeBaselineMeetsIndex 10
     )
     (10, 11)
     []
@@ -138,7 +138,7 @@ buildNofXOrMofYWithGapTestCases =
     , 3
     , isEnrollmentEvent
     , concur
-    , makeBaselineFromIndex 10
+    , makeBaselineMeetsIndex 10
     )
     (10, 11)
     [g (1, 2), g (8, 9)]
@@ -157,7 +157,7 @@ buildNofXOrMofYWithGapTestCases =
     , 3
     , isEnrollmentEvent
     , concur
-    , makeBaselineFromIndex 10
+    , makeBaselineMeetsIndex 10
     )
     (10, 11)
     []
@@ -176,7 +176,7 @@ buildNofXOrMofYWithGapTestCases =
     , 3
     , isEnrollmentEvent
     , concur
-    , makeBaselineFromIndex 10
+    , makeBaselineMeetsIndex 10
     )
     (10, 11)
     [g (8, 9)]
@@ -195,7 +195,7 @@ buildNofXOrMofYWithGapTestCases =
     , 3
     , isEnrollmentEvent
     , concur
-    , makeBaselineFromIndex 10
+    , makeBaselineMeetsIndex 10
     )
     (10, 11)
     [g (6, 7), g (8, 9)]
@@ -214,7 +214,7 @@ buildNofXOrMofYWithGapTestCases =
     , 3
     , containsConcepts ["A"]
     , concur
-    , makeBaselineFromIndex 10
+    , makeBaselineMeetsIndex 10
     )
     (10, 11)
     [h ["C", "A"] (2, 3), h ["A", "B"] (8, 9)]
@@ -234,7 +234,7 @@ buildNofXOrMofYWithGapTestCases =
     , 3
     , containsConcepts ["A"]
     , concur
-    , makeBaselineFromIndex 10
+    , makeBaselineMeetsIndex 10
     )
     (10, 11)
     [h ["C", "A"] (2, 3)]
@@ -253,7 +253,7 @@ buildNofXOrMofYWithGapTestCases =
     , 3
     , containsConcepts ["A"]
     , concur
-    , makeBaselineFromIndex 10
+    , makeBaselineMeetsIndex 10
     )
     (10, 11)
     [h ["C", "A"] (2, 3), h ["D", "E"] (5, 6), h ["A", "B"] (8, 9)]
@@ -274,7 +274,7 @@ buildNofXOrMofYWithGapTestCases =
     , 3
     , containsConcepts ["A"]
     , concur
-    , makeBaselineFromIndex 10
+    , makeBaselineMeetsIndex 10
     )
     (10, 11)
     [h ["C", "A"] (2, 3), h ["D", "A"] (4, 5)]
@@ -294,7 +294,7 @@ buildNofXOrMofYWithGapTestCases =
     , 3
     , containsConcepts ["A"]
     , concur
-    , makeBaselineFromIndex 10
+    , makeBaselineMeetsIndex 10
     )
     (10, 11)
     [h ["D", "A"] (2, 3), h ["D", "A"] (4, 5)]

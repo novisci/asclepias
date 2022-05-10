@@ -1,5 +1,12 @@
 # Changelog for hasklepias-core
 
+## 0.25.0
+* Changes names of "make" intervals
+  * makeFollowupFromIndex -> makeFollowupStartedByIndex
+  * makeFollowUpMeetingIndex -> makeFollowupMetByIndex
+  * baseline -> baselineMeets
+  * makeBaselineFromIndex -> makeBaselineMeetsIndex
+
 ## 0.24.0
 
 * Changes underlying type of `Criteria` to a list instead of a NonEmpty list.

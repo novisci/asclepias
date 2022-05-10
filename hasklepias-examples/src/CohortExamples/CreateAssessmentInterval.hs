@@ -10,10 +10,10 @@ based on different predicate functions.
 -}
 {- tag::baseline[] -}
 bline :: (IntervalSizeable a b) => Interval a -> AssessmentInterval a
-bline = makeBaselineFromIndex 60
+bline = makeBaselineMeetsIndex 60
 {- end::baseline[] -}
 
 {- tag::followup[] -}
 flwup :: (IntervalSizeable a b) => Interval a -> AssessmentInterval a
-flwup = makeFollowupFromIndex 30
+flwup = makeFollowupStartedByIndex 30
 {- end::followup[] -}

@@ -51,7 +51,7 @@ indices = map (\(y, m) -> beginerval 0 (fromGregorian y m 1))
 
 -- | Creates a baseline interval from index
 baselineInterval :: Interval Day -> AssessmentInterval Day
-baselineInterval = makeBaselineFromIndex lookback455
+baselineInterval = makeBaselineMeetsIndex lookback455
 
 -- | Shifts an interval by a calendar amount
 shiftIntervalDay

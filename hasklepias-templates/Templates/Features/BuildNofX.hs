@@ -60,7 +60,7 @@ buildNofXBool = buildNofX id
 buildNofXBinaryConcurBaseline
   :: (Intervallic i0 a, Witherable t, IntervalSizeable a b, Baseline i0 a)
   => Natural -- ^ minimum number of events.
-  -> b -- ^ duration of baseline (passed to 'makeBaselineFromIndex')
+  -> b -- ^ duration of baseline (passed to 'makeBaselineMeetsIndex')
   -> Predicate (Event c m a)
   -> Definition
        (  Feature indexName (i0 a)
@@ -68,7 +68,7 @@ buildNofXBinaryConcurBaseline
        -> Feature varName Binary
        )
 buildNofXBinaryConcurBaseline n baselineDur =
-  buildNofXBinary n (makeBaselineFromIndex baselineDur) concur
+  buildNofXBinary n (makeBaselineMeetsIndex baselineDur) concur
 {- end::template3[] -}
 
 {- tag::template4[] -}
@@ -80,7 +80,7 @@ buildNofConceptsBinaryConcurBaseline
      , Ord c
      )
   => Natural -- ^ minimum number of events. 
-  -> b  -- ^ duration of baseline (passed to 'Cohort.makeBaselineFromIndex')
+  -> b  -- ^ duration of baseline (passed to 'Cohort.makeBaselineMeetsIndex')
   -> [c] -- ^ list of 'EventData.Concepts' passed to 'EventData.containsConcepts'
   -> Definition
        (  Feature indexName (i0 a)
@@ -89,7 +89,7 @@ buildNofConceptsBinaryConcurBaseline
        )
 buildNofConceptsBinaryConcurBaseline n baselineDur cpts = buildNofXBinary
   n
-  (makeBaselineFromIndex baselineDur)
+  (makeBaselineMeetsIndex baselineDur)
   concur
   (containsConcepts cpts)
 {- tag::template4[] -}
@@ -112,43 +112,43 @@ type NofXTestCase
 buildNofXTestCases :: [NofXTestCase]
 buildNofXTestCases =
   [ f "False if no events"
-      (1, makeBaselineFromIndex 10, concur, isEnrollmentEvent)
+      (1, makeBaselineMeetsIndex 10, concur, isEnrollmentEvent)
       (0, 1)
       []
       False
   , f
     "False if 1 event after index but looking for single event concurring with baseline"
-    (1, makeBaselineFromIndex 10, concur, isEnrollmentEvent)
+    (1, makeBaselineMeetsIndex 10, concur, isEnrollmentEvent)
     (0, 1)
     [g (2, 7)]
     False
   , f
     "True if 1 event before index and looking for single event concurring with baseline"
-    (1, makeBaselineFromIndex 10, concur, containsConcepts ["A"])
+    (1, makeBaselineMeetsIndex 10, concur, containsConcepts ["A"])
     (0, 1)
     [h ["A", "B"] (-5, -4)]
     True
   , f
     "True if 2 events before index and looking for at least 2 events concurring with baseline"
-    (2, makeBaselineFromIndex 10, concur, containsConcepts ["A"])
+    (2, makeBaselineMeetsIndex 10, concur, containsConcepts ["A"])
     (0, 1)
     [h ["A", "B"] (-5, -4), h ["A", "C"] (-3, -2)]
     True
   , f
     "True if 3 events before index and looking for at least 2 events concurring with baseline"
-    (2, makeBaselineFromIndex 10, concur, containsConcepts ["A"])
+    (2, makeBaselineMeetsIndex 10, concur, containsConcepts ["A"])
     (0, 1)
     [h ["A", "B"] (-7, -6), h ["A", "B"] (-5, -4), h ["A", "C"] (-3, -2)]
     True
   , f
     "True if 2 events of same interval before index and looking for at least 2 events concurring with baseline"
-    (2, makeBaselineFromIndex 10, concur, containsConcepts ["A"])
+    (2, makeBaselineMeetsIndex 10, concur, containsConcepts ["A"])
     (0, 1)
     [h ["A"] (-5, -4), h ["A", "B"] (-5, -4)]
     True
   , f
     "False if 1 event before index and looking for at least 2 events concurring with baseline"
-    (2, makeBaselineFromIndex 10, concur, containsConcepts ["A"])
+    (2, makeBaselineMeetsIndex 10, concur, containsConcepts ["A"])
     (0, 1)
     [h ["A", "C"] (-3, -2)]
     False

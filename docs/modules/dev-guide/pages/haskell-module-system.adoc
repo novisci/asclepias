@@ -90,7 +90,7 @@ Loosely speaking this means the following.
 1. The `Status` entity is exported.
    The `(..)` syntax can be thought of as meaning 
    "all of the components of the entity."
-2. The `makeBaselineFromIndex` entity is exported.
+2. The `makeBaselineMeetsIndex` entity is exported.
    Many types of entities are just a singular thing 
    and thus the `(..)` syntax is not applicable.
 3. The `Cohort.Attrition` module is reexported 
@@ -99,7 +99,7 @@ Loosely speaking this means the following.
 [source,haskell]
 ----
   ( Status(..)
-  , makeBaselineFromIndex
+  , makeBaselineMeetsIndex
   , module Cohort.Attrition
   )
 ----

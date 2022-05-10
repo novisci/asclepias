@@ -32,7 +32,7 @@ countOfHospitalEventsDef = define countOfHospitalEvents
 
 ev i c = event i (context (packConcepts [c]) Medical Nothing)
 
-exampleFollowup = makeFollowupFromIndex 10 (beginervalMoment 5)
+exampleFollowup = makeFollowupStartedByIndex 10 (beginervalMoment 5)
 
 case1 :: [ExampleEvent]
 case1 =
@@ -47,8 +47,9 @@ example :: TestTree
 example = testGroup
   "Tests of countOfHospitalEvents"
   [ testCase "using exampleEvents1"
-  $   countOfHospitalEvents (makeFollowupFromIndex 20 (beginervalMoment 50))
-                            exampleEvents1
+  $   countOfHospitalEvents
+        (makeFollowupStartedByIndex 20 (beginervalMoment 50))
+        exampleEvents1
   @?= (1, Just 8)
   , testCase "Case 1"
   $   countOfHospitalEvents exampleFollowup case1

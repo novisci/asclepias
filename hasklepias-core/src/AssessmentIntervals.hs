@@ -73,11 +73,11 @@ and instead perhaps use 'IntervalAlgebra.enclosedBy'.
   , FollowupInterval
   , Followup(..)
   , AssessmentInterval
-  , makeBaselineFromIndex
+  , makeBaselineMeetsIndex
   , makeBaselineBeforeIndex
   , makeBaselineFinishedByIndex
-  , makeFollowupFromIndex
-  , makeFollowupMeetingIndex
+  , makeFollowupStartedByIndex
+  , makeFollowupMetByIndex
   , makeFollowupAfterIndex
   ) where
 
@@ -117,11 +117,11 @@ instance (Ord a) => Intervallic BaselineInterval a where
 
 {-| 
 Provides functions for creating a 'BaselineInterval' from an index. The 
-'baseline' function should satify:
+'baselineMeets' function should satify:
 
 [Meets]
 
-  @'IntervalAlgebra.relate' ('baseline' d i) i = 'IntervalAlgebra.Meets'@
+  @'IntervalAlgebra.relate' ('baselineMeets' d i) i = 'IntervalAlgebra.Meets'@
 
 The 'baselineBefore' function should satisfy:
 
@@ -138,7 +138,7 @@ The 'baselineFinishedBy' function should satisfy:
 >>> import Cohort.Index
 >>> import IntervalAlgebra
 >>> x = (beginerval 1 10)
->>> b =baseline 10 x
+>>> b =baselineMeets 10 x
 >>> b
 >>> relate b x
 MkBaselineInterval (0, 10)
@@ -156,12 +156,12 @@ Before
 class Intervallic i a => Baseline i a where
   -- | Creates a 'BaselineInterval' of the given duration that 'IntervalAlgebra.Meets'
   -- the index interval.
-  baseline ::
+  baselineMeets ::
     ( IntervalSizeable a b) =>
       b -- ^ duration of baseline
     -> i a -- ^ the index event
     -> BaselineInterval a
-  baseline dur index = MkBaselineInterval (enderval dur (begin index))
+  baselineMeets dur index = MkBaselineInterval (enderval dur (begin index))
 
   -- | Creates a 'BaselineInterval' of the given duration that 'IntervalAlgebra.precedes'
   -- the index interval. 
@@ -314,12 +314,12 @@ instance Functor AssessmentInterval where
 -- 
 -- >>> import Cohort.Index
 -- >>> x = $ beginerval 1 10
--- >>> makeBaselineFromIndex 10 x
+-- >>> makeBaselineMeetsIndex 10 x
 -- Bl (MkBaselineInterval (0, 10))
 --
-makeBaselineFromIndex
+makeBaselineMeetsIndex
   :: (Baseline i a, IntervalSizeable a b) => b -> i a -> AssessmentInterval a
-makeBaselineFromIndex dur index = Bl (baseline dur index)
+makeBaselineMeetsIndex dur index = Bl (baselineMeets dur index)
 
 -- | Creates an 'AssessmentInterval' using the 'baselineBefore' function. 
 -- 
@@ -352,23 +352,23 @@ makeBaselineFinishedByIndex dur index = Bl (baselineFinishedBy dur index)
 -- 
 -- >>> import Cohort.Index
 -- >>> x = $ beginerval 1 10
--- >>> makeFollowupFromIndex 10 x
+-- >>> makeFollowupStartedByIndex 10 x
 -- Fl (MkFollowupInterval (10, 20))
 --
-makeFollowupFromIndex
+makeFollowupStartedByIndex
   :: (Followup i a, IntervalSizeable a b) => b -> i a -> AssessmentInterval a
-makeFollowupFromIndex dur index = Fl (followup dur index)
+makeFollowupStartedByIndex dur index = Fl (followup dur index)
 
 -- | Creates an 'AssessmentInterval' using the 'followupMetBy' function. 
 -- 
 -- >>> import Cohort.Index
 -- >>> x = $ beginerval 1 10
--- >>> makeFollowupMeetingIndex 10 x
+-- >>> makeFollowupMetByIndex 10 x
 -- Fl (MkFollowupInterval (11, 21))
 --
-makeFollowupMeetingIndex
+makeFollowupMetByIndex
   :: (Followup i a, IntervalSizeable a b) => b -> i a -> AssessmentInterval a
-makeFollowupMeetingIndex dur index = Fl (followupMetBy dur index)
+makeFollowupMetByIndex dur index = Fl (followupMetBy dur index)
 
 -- | Creates an 'AssessmentInterval' using the 'followupAfter' function. 
 -- 

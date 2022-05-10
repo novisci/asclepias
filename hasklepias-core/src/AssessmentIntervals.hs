@@ -73,7 +73,7 @@ and instead perhaps use 'IntervalAlgebra.enclosedBy'.
   , FollowupInterval
   , Followup(..)
   , AssessmentInterval
-  , makeBaselineFromIndex
+  , makeBaselineMeetsIndex
   , makeBaselineBeforeIndex
   , makeBaselineFinishedByIndex
   , makeFollowupStartedByIndex
@@ -117,11 +117,11 @@ instance (Ord a) => Intervallic BaselineInterval a where
 
 {-| 
 Provides functions for creating a 'BaselineInterval' from an index. The 
-'baseline' function should satify:
+'baselineMeets' function should satify:
 
 [Meets]
 
-  @'IntervalAlgebra.relate' ('baseline' d i) i = 'IntervalAlgebra.Meets'@
+  @'IntervalAlgebra.relate' ('baselineMeets' d i) i = 'IntervalAlgebra.Meets'@
 
 The 'baselineBefore' function should satisfy:
 
@@ -138,7 +138,7 @@ The 'baselineFinishedBy' function should satisfy:
 >>> import Cohort.Index
 >>> import IntervalAlgebra
 >>> x = (beginerval 1 10)
->>> b =baseline 10 x
+>>> b =baselineMeets 10 x
 >>> b
 >>> relate b x
 MkBaselineInterval (0, 10)
@@ -156,12 +156,12 @@ Before
 class Intervallic i a => Baseline i a where
   -- | Creates a 'BaselineInterval' of the given duration that 'IntervalAlgebra.Meets'
   -- the index interval.
-  baseline ::
+  baselineMeets ::
     ( IntervalSizeable a b) =>
       b -- ^ duration of baseline
     -> i a -- ^ the index event
     -> BaselineInterval a
-  baseline dur index = MkBaselineInterval (enderval dur (begin index))
+  baselineMeets dur index = MkBaselineInterval (enderval dur (begin index))
 
   -- | Creates a 'BaselineInterval' of the given duration that 'IntervalAlgebra.precedes'
   -- the index interval. 
@@ -314,12 +314,12 @@ instance Functor AssessmentInterval where
 -- 
 -- >>> import Cohort.Index
 -- >>> x = $ beginerval 1 10
--- >>> makeBaselineFromIndex 10 x
+-- >>> makeBaselineMeetsIndex 10 x
 -- Bl (MkBaselineInterval (0, 10))
 --
-makeBaselineFromIndex
+makeBaselineMeetsIndex
   :: (Baseline i a, IntervalSizeable a b) => b -> i a -> AssessmentInterval a
-makeBaselineFromIndex dur index = Bl (baseline dur index)
+makeBaselineMeetsIndex dur index = Bl (baselineMeets dur index)
 
 -- | Creates an 'AssessmentInterval' using the 'baselineBefore' function. 
 -- 

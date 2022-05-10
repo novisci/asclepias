@@ -31,7 +31,7 @@ twoOutOneIn inpatientConcepts outpatientConcepts = buildNofXOrMofYWithGapBool --
   7
   (containsConcepts outpatientConcepts) -- <4>
   concur
-  (makeBaselineFromIndex 10) -- <5>
+  (makeBaselineMeetsIndex 10) -- <5>
 {-  end::definition[] -}
 
 ev i c = event i (context (packConcepts [c]) Medical Nothing)

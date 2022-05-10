@@ -24,7 +24,12 @@ import           Dhall                          ( auto
                                                 )
 import qualified Dhall.Core                    as DC
 import qualified Dhall.Map                     as DM
+import qualified Dhall.Marshal.Decode          as DD
+import qualified Dhall.Marshal.Encode          as DE
 import           Dhall.Src                      ( Src )
+import           GHC.Exts                       ( fromList
+                                                , toList
+                                                )
 import           GHC.Generics                   ( Generic )
 import           GHC.Natural                    ( Natural )
 import           Witch.From
@@ -69,7 +74,10 @@ data TestAtomic = TInteger Integer
 -- Generic and use the generic ToDhall instance. Though awkward, it leverages
 -- Dhall's Generics machinery.
 
-data TestVal = Atomic TestAtomic | Union (DM.Map Text (Maybe (DC.Expr Src Void))) (Text, Maybe TestAtomic) deriving (Show, Eq, Generic)
+data TestVal = Atomic TestAtomic
+             | Union (DM.Map Text (Maybe (DC.Expr Src Void))) (Text, Maybe TestAtomic)
+             | List [TestAtomic]
+             deriving (Show, Eq, Generic)
 
 
   {- CONVERSIONS -}
@@ -152,7 +160,6 @@ instance Dhall.FromDhall TestAtomic where
     extractOut (DC.NaturalLit x) = pure $ TNatural x
     extractOut (DC.DoubleLit x) = pure $ TDouble $ DC.getDhallDouble x
     extractOut (DC.BoolLit x) = pure $ TBool x
-    -- TODO Chunks? might need to concat
     extractOut (DC.TextLit (DC.Chunks _ x)) = pure $ TText x
     extractOut expr = Dhall.typeError expectedOut expr
     -- TODO following from the Result instance of Dhall, but this seems a nasty hack
@@ -169,9 +176,9 @@ instance Dhall.FromDhall TestVal where
     -- There is not a value
     extractOut (DC.Field (DC.Union dx) fs) =
       pure $ toU dx (DC.fieldSelectionLabel fs)
-    -- TODO: Evaluate this choice.
-    -- If union type fails, try FromDhall for Atomic
-    extractOut expr = Atomic <$> Dhall.extract auto expr
+    extractOut (DC.ListLit _ es) =
+      List . toList <$> traverse (DD.extract auto) es
+    extractOut expr = DD.typeError expectedOut expr
     -- utilities
     toUVal dx' f' x = Union dx' (f', rawInput auto x)
     toU dx' f' = Union dx' (f', Nothing)
@@ -198,6 +205,7 @@ instance From TestVal (DC.Expr Src Void) where
   from (Union t (nm, Just v)) = DC.App
     (DC.Field (DC.Union t) (DC.FieldSelection Nothing nm Nothing))
     (from v)
+  from (List xs) = DC.ListLit Nothing (fromList $ map from xs)
 
 -- See note below about tryVia not working
 --instance TryFrom TestAtomic (DC.Expr Src Void) where
@@ -208,11 +216,11 @@ instance From TestVal (DC.Expr Src Void) where
 
 instance (Dhall.FromDhall a) => TryFrom (DC.Expr Src Void) a where
   tryFrom x = case rawInput auto x of
-                Just x -> Right x
-                Nothing -> Left $ TryFromException x Nothing
+    Just x  -> Right x
+    Nothing -> Left $ TryFromException x Nothing
 
 -- NOTE: tryVia doesn't work because Expr Src Void is FromDhall
 instance (Dhall.FromDhall a) => TryFrom TestVal a where
   tryFrom x = case tryFrom @(DC.Expr Src Void) $ (from @TestVal) x of
-                Right out -> Right out
-                Left _ -> Left $ TryFromException x Nothing
+    Right out -> Right out
+    Left  _   -> Left $ TryFromException x Nothing

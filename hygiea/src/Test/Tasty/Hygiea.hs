@@ -26,7 +26,7 @@ module Test.Tasty.Hygiea
 
 import           Data.Typeable                  ( Typeable )
 import           Test.Hygiea.HygieaException
-import           Test.Hygiea.Map
+import           Test.Hygiea.TestMap
 import           Test.Hygiea.Parse
 import           Test.Hygiea.ToOutput
 import           Test.Tasty.Options             ( IsOption(..)

@@ -1,5 +1,5 @@
 {-# LANGUAGE NoImplicitPrelude #-}
-module Test.Hygiea.Map
+module Test.Hygiea.TestMap
   ( Map(..)
   , TestMap(..)
   , TestVal(..)
@@ -8,6 +8,7 @@ module Test.Hygiea.Map
   , toList
   -- Atomic items, in support of the Map
   , TestAtomic
+  , Atomizable
   ) where
 
 import           Test.Hygiea.Internal.Map       ( Map(..)
@@ -17,4 +18,9 @@ import           Test.Hygiea.Internal.Map       ( Map(..)
                                                 , toList
                                                 )
 
-import           Test.Hygiea.Internal.Atomic    ( TestAtomic, TestVal )
+import           Test.Hygiea.Internal.Atomic    ( Atomizable
+                                                , TestAtomic
+                                                , TestVal
+                                                )
+
+import Test.Hygiea.Internal.EventDataTheory

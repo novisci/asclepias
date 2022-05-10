@@ -20,7 +20,7 @@ module Test.Hygiea.ToOutput
   , ToOutput(..)
   ) where
 
-import           Test.Hygiea.Map
+import           Test.Hygiea.TestMap
 import           Witch.From
 import           Witch.TryFrom
 

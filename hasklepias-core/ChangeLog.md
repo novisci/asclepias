@@ -1,11 +1,11 @@
 # Changelog for hasklepias-core
 
 ## 0.25.0
-* Changes names of "meet" intervals
-** makeFollowupFromIndex -> makeFollowupStartedByIndex
-** makeFollowUpMeetingIndex -> makeFollowupMetByIndex
-** baseline -> baselineMeets
-** makeBaselineFromIndex -> makeBaselineMeetsIndex
+* Changes names of "make" intervals
+  * makeFollowupFromIndex -> makeFollowupStartedByIndex
+  * makeFollowUpMeetingIndex -> makeFollowupMetByIndex
+  * baseline -> baselineMeets
+  * makeBaselineFromIndex -> makeBaselineMeetsIndex
 
 ## 0.24.0
 

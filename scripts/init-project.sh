@@ -91,7 +91,7 @@ test-suite ${PROJID}-test
     type:             exitcode-stdio-1.0
     hs-source-dirs:   tests
     main-is:          Main.hs
-    build-depends:    hasklepias
+    build-depends:    base, hasklepias-main, ${PROJID}
 EOF
 
 cat << EOF > cabal.project
@@ -171,10 +171,10 @@ cat << EOF > tests/Main.hs
 A simple script for running tests
 -}
 import Hasklepias
-import PlanTests 
+import Tests 
 
 main :: IO ()
-main = defaultMain (testGroup "$PROJID Tests" planTests)
+main = defaultMain (testGroup "$PROJID Tests" [ planTests ])
 EOF
 
 cat << EOF >> .gitignore

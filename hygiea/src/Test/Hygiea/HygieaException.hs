@@ -17,6 +17,7 @@ import           Witch.TryFromException
 data HygieaException where
   ConversionException ::TryFromException source target -> HygieaException
   DecodeException ::Text -> HygieaException
+  UnhandledException ::Exception t => t -> HygieaException
 
 -- NOTE we don't want the show instance of TryFromException, which would
 -- require us to carry around a Typeable constraint on 'source'. Just show the
@@ -27,6 +28,7 @@ instance Show HygieaException where
       Just ee -> show e
       Nothing -> "ConversionException"
     DecodeException t -> unpack t
+    UnhandledException t -> show t
 
 instance Exception HygieaException
 

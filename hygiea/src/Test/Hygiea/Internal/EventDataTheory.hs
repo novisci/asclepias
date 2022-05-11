@@ -73,12 +73,12 @@ instance (Ord c, TryFrom TestVal (Concepts c)) => TryFrom TestMap (Concepts c) w
 
 instance (Ord c, Atomizable (Concepts c), Atomizable m) => TryFrom TestMap (Context c m) where
   tryFrom input = liftA3 context
-                         (joinMaybeEither err concepts)
+                         (first (const err) concepts)
                          (joinMaybeEither err facts)
                          -- NOTE: ignoring Source in all cases
                          (pure Nothing)
    where
-    concepts = tryFrom @TestVal @(Concepts c) <$> lookup "concepts" input
+    concepts = tryFrom input
     facts    = tryFrom @TestVal <$> lookup "facts" input
     err      = TryFromException input Nothing
 

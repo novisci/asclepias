@@ -8,7 +8,7 @@ module Main where
 
 import           Examples.Simple
 --import Examples.Simple
-import           Test.Hygiea.Map
+import           Test.Hygiea.TestMap
 import           Test.Hygiea.Parse
 import qualified Test.Hygiea.ToOutput          as TO
 import           Test.Tasty

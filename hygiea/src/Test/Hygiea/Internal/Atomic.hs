@@ -37,11 +37,12 @@ import           Witch.TryFrom
 import           Witch.TryFromException
 
 
+-- TODO alias should now be renamed
 -- | Constraint synonym for types that can be converted to and from TestVal.
 -- Since intentionally TestVal supports only a handful of types, conversions
 -- from TestVal are fallible. Includes a ToDhall constraint since that is the
 -- intended way to achieve TryFrom v TestVal.
-type Atomizable v = (Dhall.ToDhall v, TryFrom TestVal v, TryFrom v TestVal)
+type Atomizable v = (TryFrom TestVal v, TryFrom v TestVal)
 
 -- | Internal type giving supported @Atomic@ values.
 data TestAtomic = TInteger Integer

@@ -10,6 +10,7 @@
 
 module Test.Hygiea.Internal.EventDataTheory where
 
+import Dhall ( ToDhall, FromDhall )
 import           Control.Applicative
 import           Data.Bifunctor                 ( first )
 import           Data.Text                      ( Text
@@ -17,7 +18,6 @@ import           Data.Text                      ( Text
                                                 , strip
                                                 , unpack
                                                 )
-import           Dhall                          ( FromDhall )
 import           EventDataTheory.Core
 import           IntervalAlgebra                ( Interval(..)
                                                 , PairedInterval(..)
@@ -42,12 +42,33 @@ import           Witch.Utility                  ( tryVia )
      -}
 
 -- TODO check whether this shows up as orphan
-instance (Ord c, TryFrom TestAtomic c) => TryFrom TestVal (Concepts c) where
-  tryFrom (List xs) = fmap packConcepts $ first (const err) $ traverse
-    (tryFrom @TestAtomic @c)
-    xs
-    where err = TryFromException (List xs) Nothing
-  tryFrom input = Left $ TryFromException input Nothing
+-- TODO these probably should be done automatically with ToDhall
+--instance (Ord c, TryFrom TestAtomic c) => TryFrom TestVal (Concepts c) where
+--  tryFrom (List xs) = fmap packConcepts $ first (const err) $ traverse
+--    (tryFrom @TestAtomic @c)
+--    xs
+--    where err = TryFromException (List xs) Nothing
+--  tryFrom input = Left $ TryFromException input Nothing
+--
+--instance (Ord c, TryFrom c TestAtomic) => TryFrom (Concepts c) TestVal where
+--  tryFrom input = first (const err) $ List <$> traverse
+--    tryFrom
+--    (from @(Concepts c) @[c] input)
+--    where err = TryFromException input Nothing
+
+-- TODO revisit these. this is really the way to do it and avoids some overlapping instances.
+instance (ToDhall c) => ToDhall (Concept c)
+instance (FromDhall c) => FromDhall (Concept c)
+instance (ToDhall c) => ToDhall (Concepts c)
+instance (FromDhall c, Ord c, Show c) => FromDhall (Concepts c)
+
+-- without constraint, resolver looks for a FromDhall instance for some reason
+-- and cannot find one.
+instance (Ord c, TryFrom TestVal (Concepts c)) => TryFrom TestMap (Concepts c) where
+  tryFrom input = joinMaybeEither err concepts
+   where
+    concepts = tryFrom @TestVal @(Concepts c) <$> lookup "concepts" input
+    err      = TryFromException input Nothing
 
 instance (Ord c, Atomizable (Concepts c), Atomizable m) => TryFrom TestMap (Context c m) where
   tryFrom input = liftA3 context

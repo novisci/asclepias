@@ -11,20 +11,21 @@ import           Data.Aeson                     ( FromJSON
 import           Data.Bifunctor                 ( first )
 -- NOTE dhall imports are just for this example and not needed for a typical
 -- project
-import           Data.Text                      ( Text, pack )
+import           Data.Text                      ( Text
+                                                , pack
+                                                )
 import           Dhall                          ( FromDhall
                                                 , ToDhall
                                                 )
+import           EventDataTheory
 import           GHC.Generics
 import           IntervalAlgebra
 import           System.FilePath
--- placeholder for actual EDM-theory
-import           Test.Hygiea.EventData
-import           Test.Hygiea.Map
+import           Test.Hygiea.TestMap
 import           Test.Hygiea.ToOutput
 import           Test.Tasty.Hygiea
-import           Witch.TryFrom
 import           Witch.From
+import           Witch.TryFrom
 
   {- Project-specific code
 
@@ -32,6 +33,7 @@ import           Witch.From
 
       See Main.hs for how it might be used in a test.
       -}
+
 
   {- Code required for Hygiea testing -}
 
@@ -71,9 +73,18 @@ myMisspecRoutine = Golden
 
   {- Other project code -}
 
--- cohort builder: just some nonsense
-cohortBuilderSingle :: ProjInterval -> ProjOccurrence
-cohortBuilderSingle = MkCensoredOccurrence "after"
+-- Cohort builder
+-- Change Facts field
+cohortBuilderSingle :: Index -> ProjEvent -> ProjOccurrence
+cohortBuilderSingle index e = event i (whatIsIt c)
+  where i = getInterval $ getEvent e
+        c = getContext e
+        whatIsIt c'
+          | end i >= end index = c{getFacts = WasAfter}
+          | otherwise = c{getFacts = WasBefore}
+
+wasAfter :: Event a SumminElse b -> Bool
+wasAfter = (== WasAfter) . getFacts . getContext
 
 -- placeholder for some filterMap operation building outcomes
 -- make a ProjOccurrence with reason "after", keeping other data, if the index
@@ -81,11 +92,13 @@ cohortBuilderSingle = MkCensoredOccurrence "after"
 cohortBuilder :: Index -> [ProjEvent] -> [ProjOccurrence]
 cohortBuilder ix = foldr op []
  where
-  e = end ix
-  op (MkEvent x) xs =
-    if end (getInterval x) >= e then cohortBuilderSingle x : xs else xs
+  op x xs = 
+    let x' = cohortBuilderSingle ix x
+     in if wasAfter x' then x' : xs else xs
 
 -- Project-specific types
+
+-- Inputs
 -- there is nothing to do for hygeia to implement the TryFrom instances, since
 -- these alias the generic event, for which constraints are already
 -- implemented, and Integer, Text already implement the necessary conversions
@@ -93,18 +106,27 @@ data TrueFacts = Awesome | NotAwesome Text deriving (Show, Eq, Generic)
 type ProjEvent = Event Text TrueFacts Integer
 type ProjInterval = PairedInterval (Context Text TrueFacts) Integer
 type Index = Interval Integer
-type ProjOccurrence = CensoredOccurrence Text (Context Text TrueFacts) Integer
+
+index :: Index
+index = beginervalMoment 0
 
 -- bootstrap conversion via dhall
 instance FromDhall TrueFacts
 instance ToDhall TrueFacts
-
 -- json instances required for Golden
 instance ToJSON TrueFacts
 instance FromJSON TrueFacts
 
-index :: Index
-index = beginervalMoment 0
+-- Outputs
+data SumminElse = WasBefore | WasAfter deriving (Show, Eq, Generic)
+type ProjOccurrence = Event Text SumminElse Integer
+
+instance FromDhall SumminElse
+instance ToDhall SumminElse
+-- json instances required for Golden
+instance ToJSON SumminElse
+instance FromJSON SumminElse
+
 
 -- Some data to play with in the repl
 
@@ -113,9 +135,8 @@ f1 = Awesome
 f2 = NotAwesome "ugh"
 
 e1, e2 :: ProjEvent
-e1 = MkEvent $ makePairedInterval (MkContext "yay" f1) (beginerval 0 1)
-e2 = MkEvent $ makePairedInterval (MkContext "notyay" f2)
-                                  (beginerval 0 10)
+e1 = event (beginerval 0 1) (context (packConcepts ["yay"]) f1 Nothing)
+e2 = event (beginerval 0 1) (context (packConcepts ["not yay"]) f1 Nothing)
 
 -- note these conversions are never ones the programmer need to do, and the
 -- exception handling uses HygieaException not Text
@@ -123,8 +144,8 @@ e2 = MkEvent $ makePairedInterval (MkContext "notyay" f2)
 -- simple type conversion
 v1, v2 :: Either Text TestVal
 v1 = case tryFrom f1 of
-       Right v -> pure v
-       Left err -> Left $ pack $ show err
+  Right v   -> pure v
+  Left  err -> Left $ pack $ show err
 v2 = case tryFrom f2 of
-       Right v -> pure v
-       Left err -> Left $ pack $ show err
+  Right v   -> pure v
+  Left  err -> Left $ pack $ show err

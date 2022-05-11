@@ -33,16 +33,6 @@ import           Witch.From
 import           Witch.TryFrom
 import           Witch.TryFromException
 import           Witch.Utility                  ( tryVia )
-  {-
-
-data Context d c = MkContext
-  -- note the switched order
-  { getConcepts :: d
-  , getFacts    :: c
-  }
-  deriving (Eq, Show, Generic)
-
--}
 
   {- Pre-built conversions.
 

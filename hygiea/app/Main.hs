@@ -7,12 +7,13 @@
 module Main where
 
 import           Examples.Simple
+import           Test.Hygiea.Parse
 --import Examples.Simple
 import           Test.Hygiea.TestMap
-import           Test.Hygiea.Parse
 import qualified Test.Hygiea.ToOutput          as TO
 import           Test.Tasty
 import           Test.Tasty.Hygiea
+import           Witch.TryFrom
 
 tests :: TestTree
 tests = testGroup
@@ -33,6 +34,9 @@ main = do
   putStrLn "\nTestMap parsed from Csv with schema\n"
   recs <- tryParseRecordsCsv inputDecode "./hygiea/src/Examples/input.csv"
   print recs
+
+  putStrLn "\ntryFrom @[TestMap] @[ProjEvent]\n"
+  print $ fmap (tryFrom @[TestMap] @[ProjEvent]) recs
 
   putStrLn "\nOops. User supplied Text in Integer type column\n"
   recs <- tryParseRecordsCsv inputDecode "./hygiea/src/Examples/input_bad.csv"

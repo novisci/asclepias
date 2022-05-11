@@ -1,4 +1,4 @@
-reason,concepts,facts,begin,end
-"after","home","is_funny",0,4
-"after","not home",Awesome,1,10
-"after","home",Awesome,0,20
+concepts,facts,begin,end
+"home",WasAfter,0,4
+"not home",WasAfter,1,10
+"home",WasAfter,0,20

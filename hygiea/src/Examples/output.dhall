@@ -1,1 +1,1 @@
-List { reason : Text, concepts : Text, facts : < Awesome | NotAwesome : Text >, begin : Integer, end : Integer}
+List { concepts : Text, facts : < WasBefore | WasAfter >, begin : Integer, end : Integer}

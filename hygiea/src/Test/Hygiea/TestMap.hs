@@ -7,7 +7,7 @@ module Test.Hygiea.TestMap
   , fromList
   , toList
   -- Atomic items, in support of the Map
-  , TestAtomic
+  , TestAtomic(..)
   , Atomizable
   ) where
 
@@ -19,8 +19,8 @@ import           Test.Hygiea.Internal.Map       ( Map(..)
                                                 )
 
 import           Test.Hygiea.Internal.Atomic    ( Atomizable
-                                                , TestAtomic
-                                                , TestVal
+                                                , TestAtomic(..)
+                                                , TestVal(..)
                                                 )
 
 import Test.Hygiea.Internal.EventDataTheory

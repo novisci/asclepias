@@ -16,7 +16,10 @@ Maintainer  : bbrown@targetrwe.com
 
 module Test.Hygiea.Internal.Atomic where
 
-import           Data.Text                      ( Text )
+import           Data.Text                      ( Text
+                                                , stripPrefix
+                                                , stripSuffix
+                                                )
 import           Data.Void
 import qualified Dhall
 import           Dhall                          ( auto
@@ -42,7 +45,8 @@ import           Witch.TryFromException
 -- Since intentionally TestVal supports only a handful of types, conversions
 -- from TestVal are fallible. Includes a ToDhall constraint since that is the
 -- intended way to achieve TryFrom v TestVal.
-type Atomizable v = (TryFrom TestVal v, TryFrom v TestVal)
+--type Atomizable v = (TryFrom TestVal v, TryFrom v TestVal)
+type Atomizable v = (TryFrom TestVal v)
 
 -- | Internal type giving supported @Atomic@ values.
 data TestAtomic = TInteger Integer
@@ -77,6 +81,8 @@ data TestAtomic = TInteger Integer
 
 data TestVal = Atomic TestAtomic
              | Union (DM.Map Text (Maybe (DC.Expr Src Void))) (Text, Maybe TestAtomic)
+             -- NOTE: Not currently supported in dhallFromCsv. This is why we
+             -- should write our own parser.
              | List [TestAtomic]
              deriving (Show, Eq, Generic)
 
@@ -154,6 +160,10 @@ instance TryFrom TestAtomic Text where
   tryFrom (TText x) = Right x
   tryFrom t         = Left (TryFromException t Nothing)
 
+instance From TestAtomic TestVal where
+  from = Atomic
+
+-- FromDhall
 instance Dhall.FromDhall TestAtomic where
   autoWith _ = Dhall.Decoder extractOut expectedOut
    where
@@ -177,9 +187,12 @@ instance Dhall.FromDhall TestVal where
     -- There is not a value
     extractOut (DC.Field (DC.Union dx) fs) =
       pure $ toU dx (DC.fieldSelectionLabel fs)
+    -- NOTE this is not currently supported in dhallFromCsv
     extractOut (DC.ListLit _ es) =
       List . toList <$> traverse (DD.extract auto) es
-    extractOut expr = DD.typeError expectedOut expr
+    -- Else try for TestAtomic.
+    -- TODO issue with typeError mismatch
+    extractOut expr = Atomic <$> Dhall.extract auto expr
     -- utilities
     toUVal dx' f' x = Union dx' (f', rawInput auto x)
     toU dx' f' = Union dx' (f', Nothing)

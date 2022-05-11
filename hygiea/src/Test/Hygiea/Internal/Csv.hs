@@ -62,7 +62,7 @@ tryParseRecords d rs = joinFold (tryParseRawInput d) $ tryListLitToList es
     op _ (Left  err) = Left err
     -- TODO tryParseRawInput should return Either HygieaException a rather
     -- than Maybe a
-    op z (Right zs ) = case f z of
+    op z (Right zs) = case f z of
       Just zz -> Right (zz : zs)
       Nothing -> Left $ DecodeException "Could not parse all records"
 

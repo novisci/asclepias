@@ -10,13 +10,15 @@
 
 module Test.Hygiea.Internal.EventDataTheory where
 
-import Dhall ( ToDhall, FromDhall )
 import           Control.Applicative
 import           Data.Bifunctor                 ( first )
 import           Data.Text                      ( Text
                                                 , splitOn
                                                 , strip
                                                 , unpack
+                                                )
+import           Dhall                          ( FromDhall
+                                                , ToDhall
                                                 )
 import           EventDataTheory.Core
 import           IntervalAlgebra                ( Interval(..)
@@ -41,15 +43,10 @@ import           Witch.Utility                  ( tryVia )
 
      -}
 
--- TODO check whether this shows up as orphan
--- TODO these probably should be done automatically with ToDhall
---instance (Ord c, TryFrom TestAtomic c) => TryFrom TestVal (Concepts c) where
---  tryFrom (List xs) = fmap packConcepts $ first (const err) $ traverse
---    (tryFrom @TestAtomic @c)
---    xs
---    where err = TryFromException (List xs) Nothing
---  tryFrom input = Left $ TryFromException input Nothing
---
+--instance (Ord c, FromDhall c) => TryFrom TestVal (Concepts c) where
+--  tryFrom input = packConcepts <$> traverse (first (const err)) [tryFrom @TestVal input]
+--    where err = TryFromException input Nothing
+
 --instance (Ord c, TryFrom c TestAtomic) => TryFrom (Concepts c) TestVal where
 --  tryFrom input = first (const err) $ List <$> traverse
 --    tryFrom
@@ -62,12 +59,16 @@ instance (FromDhall c) => FromDhall (Concept c)
 instance (ToDhall c) => ToDhall (Concepts c)
 instance (FromDhall c, Ord c, Show c) => FromDhall (Concepts c)
 
--- without constraint, resolver looks for a FromDhall instance for some reason
--- and cannot find one.
 instance (Ord c, TryFrom TestVal (Concepts c)) => TryFrom TestMap (Concepts c) where
-  tryFrom input = joinMaybeEither err concepts
+  tryFrom input = concepts
    where
-    concepts = tryFrom @TestVal @(Concepts c) <$> lookup "concepts" input
+    -- TODO: This awful hack is because lists are not supported by dhallFromCsv.
+    -- It means we only support Concepts with one element.
+    concepts = case singleValToList <$> lookup "concepts" input of
+                 Nothing -> Left $ TryFromException input Nothing
+                 Just (Left _) -> Left $ TryFromException input Nothing
+                 Just (Right v) -> first (const err) $ tryFrom @TestVal @(Concepts c) v 
+    singleValToList x = List . (: []) <$> tryFrom @TestVal x
     err      = TryFromException input Nothing
 
 instance (Ord c, Atomizable (Concepts c), Atomizable m) => TryFrom TestMap (Context c m) where

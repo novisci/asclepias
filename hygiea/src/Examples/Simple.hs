@@ -23,6 +23,7 @@ import           IntervalAlgebra
 import           System.FilePath
 import           Test.Hygiea.TestMap
 import           Test.Hygiea.ToOutput
+import           Test.Hygiea.HygieaException
 import           Test.Tasty.Hygiea
 import           Witch.From
 import           Witch.TryFrom
@@ -92,7 +93,7 @@ wasAfter = (== WasAfter) . getFacts . getContext
 cohortBuilder :: Index -> [ProjEvent] -> [ProjOccurrence]
 cohortBuilder ix = foldr op []
  where
-  op x xs = 
+  op x xs =
     let x' = cohortBuilderSingle ix x
      in if wasAfter x' then x' : xs else xs
 
@@ -134,18 +135,18 @@ f1, f2 :: TrueFacts
 f1 = Awesome
 f2 = NotAwesome "ugh"
 
+c1, c2 :: Concepts Text
+c1 = packConcepts ["yay"]
+c2 = packConcepts ["not yay"]
+
 e1, e2 :: ProjEvent
-e1 = event (beginerval 0 1) (context (packConcepts ["yay"]) f1 Nothing)
-e2 = event (beginerval 0 1) (context (packConcepts ["not yay"]) f1 Nothing)
+e1 = event (beginerval 0 1) (context c1 f1 Nothing)
+e2 = event (beginerval 0 1) (context c2 f1 Nothing)
+
+c1' :: TestVal
+c1' = List [TText "yay"]
 
 -- note these conversions are never ones the programmer need to do, and the
 -- exception handling uses HygieaException not Text
-
--- simple type conversion
-v1, v2 :: Either Text TestVal
-v1 = case tryFrom f1 of
-  Right v   -> pure v
-  Left  err -> Left $ pack $ show err
-v2 = case tryFrom f2 of
-  Right v   -> pure v
-  Left  err -> Left $ pack $ show err
+c1'' :: Either Text (Concepts Text)
+c1'' = first (const "bad") $ tryFrom @TestVal @(Concepts Text) c1'

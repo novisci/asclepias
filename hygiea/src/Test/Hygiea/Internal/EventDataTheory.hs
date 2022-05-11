@@ -17,6 +17,7 @@ import           Data.Text                      ( Text
                                                 , strip
                                                 , unpack
                                                 )
+import           Dhall                          ( FromDhall )
 import           EventDataTheory.Core
 import           IntervalAlgebra                ( Interval(..)
                                                 , PairedInterval(..)
@@ -43,50 +44,29 @@ data Context d c = MkContext
 
 -}
 
-  {- TODO comments on Concepts parsing 
-      * This is awful.
-      * Dhall schema for csv input should declare 'concepts' field as Text
-      * The internal concept type must have a FromDhall instance, and the Text
-      will be converted via dhall's interpreter
-      -}
-
-
   {- Pre-built conversions.
 
      So long as inner types are TryFrom TestAtomic, this flattens Event to TestMap.
      In most cases, all a project has to do is to convert their types to Event.
 
      -}
--- TODO If this list-like interface is kept, the constraint probably should be
--- Binary
 
--- | This tries to convert a @Text@ of format "x,y,z" with possible whitespace
--- before/after the commas into a @c@ via @Read@, with failure type given by
--- the caller. Solely to be used in @TryFrom TestVal (Concepts c)@. The
--- functionality is far from ideal and is purely a means to handle the fact
--- that a set of concepts will be entered in flattened form in the text input
--- csv that gets converted to @TestVal@. Empty string input returns @Left@,
--- since presumably you cannot @Read@ something from nothing.
-tryReadTextList :: (Read c) => e -> Text -> Either e [c]
-tryReadTextList err ""  = Left err
-tryReadTextList err txt = traverse (tryR err) $ splitOn "," txt
- where
-  tryR err' "" = Left err
-  tryR err' t  = Right $ read $ unpack t
+-- TODO check whether this shows up as orphan
+instance (Ord c, TryFrom TestAtomic c) => TryFrom TestVal (Concepts c) where
+  tryFrom (List xs) = fmap packConcepts $ first (const err) $ traverse
+    (tryFrom @TestAtomic @c)
+    xs
+    where err = TryFromException (List xs) Nothing
+  tryFrom input = Left $ TryFromException input Nothing
 
-instance (Read c, Ord c) => TryFrom TestVal (Concepts c) where
-  tryFrom (Atomic (TText v)) = packConcepts <$> tryReadTextList err v
-    where err = TryFromException (Atomic (TText v)) Nothing
-  tryFrom x = Left $ TryFromException x Nothing
-
-instance (Read c, Ord c, Atomizable c, Atomizable m) => TryFrom TestMap (Context c m) where
+instance (Ord c, Atomizable (Concepts c), Atomizable m) => TryFrom TestMap (Context c m) where
   tryFrom input = liftA3 context
                          (joinMaybeEither err concepts)
                          (joinMaybeEither err facts)
                          -- NOTE: ignoring Source in all cases
                          (pure Nothing)
    where
-    concepts = tryFrom @TestVal <$> lookup "concepts" input
+    concepts = tryFrom @TestVal @(Concepts c) <$> lookup "concepts" input
     facts    = tryFrom @TestVal <$> lookup "facts" input
     err      = TryFromException input Nothing
 

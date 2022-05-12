@@ -94,6 +94,7 @@ instance (Show a, Ord a, Atomizable a, TryFrom TestMap c) => TryFrom TestMap (Pa
                          (first (const err) context)
                          (first (const err) interval)
    where
+     -- Note this need not actually be Context here.
     context  = tryFrom input
     interval = tryFrom input
     err      = TryFromException input Nothing

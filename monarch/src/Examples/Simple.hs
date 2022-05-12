@@ -152,3 +152,13 @@ e1Out = cohortBuilder index [e1]
 -- exception handling uses MonarchException not Text
 c1'' :: Either Text (Concepts Text)
 c1'' = first (const "bad") $ tryFrom @TestVal @(Concepts Text) c1'
+
+
+  {- ------
+    KICK THE TIRES EXERCISES 
+
+    Write monarch test Routines for the following input/output types.
+    
+    Some are chosen specifically because BB thinks they will cause problems.
+    ------ -}
+

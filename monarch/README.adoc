@@ -274,6 +274,7 @@ main = defaultMain tests
 * Empty values: Empty csv cells will be interpreted as empty `Text` strings. If `Text` is not the specified value type, the interpreter will throw an exception. Otherwise, the empty string will typecheck. That is true also for custom sum-type variants that hold `Text`. 
 * Csv as list input: In most cases, your `input` type should be a list `[a]` for some type `a` and similarly for `output`. That is because all of the pre-built conversions for `event-data-theory` types marshall csv to lists, e.g. `[Event c m a]`. In addition, `monarch` processes *all* csv input as a list of an internal `Map` type. However, you could write a custom conversion that performs some grouping operation, say, such that one or both of the `input` and `output` types is not a list.
 * Singleton `Concepts`: The `event-data-theory` type is a wrapped `Set`, but `monarch` only supports a singleton. This is a limitation of `dhall-csv`, which does not support list-like values in csv cells. However, one could augment the `Concepts c` and related schema to include a grouping column, specifying which cells should be collected into a set. Internally, `monarch` is prepared for such an implementation or similar.
+* Custom `Concepts` value types must implement `Ord`. This is a requirement of `event-data-theory` which in turn is required by `Set`.
 
 == Pre-built schema reference
 Schema shapes for the supported `event-data-theory` types.

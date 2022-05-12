@@ -19,11 +19,12 @@ import           Dhall                          ( FromDhall
                                                 )
 import           EventDataTheory
 import           GHC.Generics
+import           GHC.Natural
 import           IntervalAlgebra
 import           System.FilePath
+import           Test.Monarch.MonarchException
 import           Test.Monarch.TestMap
 import           Test.Monarch.ToOutput
-import           Test.Monarch.MonarchException
 import           Test.Tasty.Monarch
 import           Witch.From
 import           Witch.TryFrom
@@ -78,11 +79,11 @@ myMisspecRoutine = Golden
 -- Change Facts field
 cohortBuilderSingle :: Index -> ProjEvent -> ProjOccurrence
 cohortBuilderSingle index e = event i (whatIsIt c)
-  where i = getInterval $ getEvent e
-        c = getContext e
-        whatIsIt c'
-          | end i >= end index = c{getFacts = WasAfter}
-          | otherwise = c{getFacts = WasBefore}
+ where
+  i = getInterval $ getEvent e
+  c = getContext e
+  whatIsIt c' | end i >= end index = c { getFacts = WasAfter }
+              | otherwise          = c { getFacts = WasBefore }
 
 wasAfter :: Event a SumminElse b -> Bool
 wasAfter = (== WasAfter) . getFacts . getContext
@@ -94,8 +95,7 @@ cohortBuilder :: Index -> [ProjEvent] -> [ProjOccurrence]
 cohortBuilder ix = foldr op []
  where
   op x xs =
-    let x' = cohortBuilderSingle ix x
-     in if wasAfter x' then x' : xs else xs
+    let x' = cohortBuilderSingle ix x in if wasAfter x' then x' : xs else xs
 
 -- Project-specific types
 
@@ -157,8 +157,55 @@ c1'' = first (const "bad") $ tryFrom @TestVal @(Concepts Text) c1'
   {- ------
     KICK THE TIRES EXERCISES 
 
-    Write monarch test Routines for the following input/output types.
+    Write monarch test Routines for the following input/output types. Some
+    exercises have defined functions to test, some leave that to you.
+
+    To run the tests, you'll at a minimum need to:
+
+    * define the `ToOutput` instance
+    * define the appropriate `Routine`
+    * create the schema dhall files
+    * create the input/output csv files
+    * add the tests to the TestTree runner in Main.hs
     
     Some are chosen specifically because BB thinks they will cause problems.
     ------ -}
 
+-- Ex. 1
+-- You shouldn't need to define any new conversion instances for these types
+
+type ExOneInput = Event Text Text Natural
+type ExOneOutput = Concepts Text
+
+exOneFun :: [ExOneInput] -> [ExOneOutput]
+exOneFun = map (getConcepts . getContext)
+
+
+-- Ex. 2
+-- Yes > No?
+
+data BeBest = Yes | No deriving (Show, Generic)
+
+type ExTwoInput = Event BeBest Text Integer
+type ExTwoOutput = Event BeBest Text Integer
+
+exTwoFun :: [ExTwoInput] -> [ExTwoOutput]
+exTwoFun = id
+
+-- Ex. 3
+
+data WhatISay = This Text | That Text deriving (Show, Generic)
+
+type ExThreeInput = Event Text WhatISay Integer
+type ExThreeInteger = Event BeBest Text Integer
+
+-- Ex. 4
+-- Don't attempt this one. It's for me (BB).
+-- Not among the default schema. Need to write a instance TryFrom TestMap ExFourOutput.
+
+type ExFourInput = Interval Double
+type ExFourIndex = Interval Double
+data ExFourOutput = MkExFourOutput { nAfterIx :: Natural, nBeforeIx :: Natural }
+
+--exFourFun :: [ExFourInput] -> ExFourOutput
+--exFourFun = undefined

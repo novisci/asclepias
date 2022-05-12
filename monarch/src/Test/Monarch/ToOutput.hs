@@ -1,9 +1,9 @@
 {-|
-   At a minimum, project programmers will need to specify @ToOutput@ instances for their Hygiea testing routines. This class provides a single method, for transforming project-relevant @input@ to @output@.
+   At a minimum, project programmers will need to specify @ToOutput@ instances for their Monarch testing routines. This class provides a single method, for transforming project-relevant @input@ to @output@.
 
    The class also enforces the notion that test routines should be defined by their types: There can be only one @ToOutput@ instance for a given pair of @input@ and @output@. Doing so was a choice to have the type system determine the test as much as possible.
 
-   The rationale is as follows: Hygiea aims to allow non-programmers to provide a direct line to test specification via csv file inputs and ouputs. Project programmers need only specify the schema for the internal inputs and outputs, and a @toOutput@ transformation for getting from one to the other. If Hygiea were to allow more than one transformation per pair of types, there would need to be some additional configuration to allow non-programmers to specify the transformation. Such a configuration could have details that are difficult to resolve and difficult for those who did not write the code to reason about. 
+   The rationale is as follows: Monarch aims to allow non-programmers to provide a direct line to test specification via csv file inputs and ouputs. Project programmers need only specify the schema for the internal inputs and outputs, and a @toOutput@ transformation for getting from one to the other. If Monarch were to allow more than one transformation per pair of types, there would need to be some additional configuration to allow non-programmers to specify the transformation. Such a configuration could have details that are difficult to resolve and difficult for those who did not write the code to reason about. 
 
    Of course, if needed programmers could circumvent this intentional limitation by defining newtype wrappers around existing types.
 
@@ -15,12 +15,12 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE AllowAmbiguousTypes #-}
 
-module Test.Hygiea.ToOutput
+module Test.Monarch.ToOutput
   ( Testable(..)
   , ToOutput(..)
   ) where
 
-import           Test.Hygiea.TestMap
+import           Test.Monarch.TestMap
 import           Witch.From
 import           Witch.TryFrom
 
@@ -43,7 +43,4 @@ class ToOutput input output where
 -- Note one need only implement @TryFrom TestMap a@ for some @a@, and @TryFrom
 -- [TestMap] [a]@ is provided automatically.
 type Testable input output
-  = ( TryFrom [TestMap] input
-    , TryFrom [TestMap] output
-    , ToOutput input output
-    )
+  = (TryFrom [TestMap] input, TryFrom [TestMap] output, ToOutput input output)

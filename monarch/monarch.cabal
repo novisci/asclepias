@@ -1,5 +1,5 @@
 cabal-version:      2.4
-name:               hygiea
+name:               monarch
 version:            0.1.0.0
 
 -- A short (one-line) description of the package.
@@ -25,22 +25,22 @@ extra-source-files:
 
 library
     exposed-modules:  
-        Test.Hygiea.TestMap
-        , Test.Hygiea.ToOutput
-        , Test.Hygiea.HygieaException
-        , Test.Hygiea.Parse
-        , Test.Tasty.Hygiea
+        Test.Monarch.TestMap
+        , Test.Monarch.ToOutput
+        , Test.Monarch.MonarchException
+        , Test.Monarch.Parse
+        , Test.Tasty.Monarch
         -- TODO remove or relocate
         , Examples.Simple
 
     -- Modules included in this library but not exported.
     other-modules: 
-        Test.Hygiea.Internal.Map
-        , Test.Hygiea.Internal.Dhall
-        , Test.Hygiea.Internal.EventDataTheory
-        , Test.Hygiea.Internal.Csv
-        , Test.Hygiea.Internal.Atomic
-        , Test.Hygiea.Internal.Utilities
+        Test.Monarch.Internal.Map
+        , Test.Monarch.Internal.Dhall
+        , Test.Monarch.Internal.EventDataTheory
+        , Test.Monarch.Internal.Csv
+        , Test.Monarch.Internal.Atomic
+        , Test.Monarch.Internal.Utilities
 
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:
@@ -49,7 +49,7 @@ library
         base ^>=4.14.1.0
         , witch
         -- NOTE: edm module fixes interval-algebra version
-        -- though hygiea does not depend on edm at all, cabal seems to think
+        -- though monarch does not depend on edm at all, cabal seems to think
         -- its dependencies must be consistent.  
         , interval-algebra
         , containers
@@ -76,7 +76,7 @@ executable demo
     -- other-extensions:
     build-depends:
         base ^>=4.14.1.0
-        , hygiea == 0.1.0.0
+        , monarch == 0.1.0.0
         , tasty
         , witch
 

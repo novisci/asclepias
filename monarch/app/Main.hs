@@ -7,12 +7,12 @@
 module Main where
 
 import           Examples.Simple
-import           Test.Hygiea.Parse
+import           Test.Monarch.Parse
 --import Examples.Simple
-import           Test.Hygiea.TestMap
-import qualified Test.Hygiea.ToOutput          as TO
+import           Test.Monarch.TestMap
+import qualified Test.Monarch.ToOutput          as TO
 import           Test.Tasty
-import           Test.Tasty.Hygiea
+import           Test.Tasty.Monarch
 import           Witch.TryFrom
 
 tests :: TestTree
@@ -26,24 +26,24 @@ tests = testGroup
 main :: IO ()
 main = do
   putStrLn "\nDhall shape from input.dhall for Csv\n"
-  input <- parseDhallFile "./hygiea/src/Examples/input.dhall"
+  input <- parseDhallFile "./monarch/src/Examples/input.dhall"
   print input
 
   let inputDecode = decodeMapSchemaAuto @TestVal input
 
   putStrLn "\nTestMap parsed from Csv with schema\n"
-  recs <- tryParseRecordsCsv inputDecode "./hygiea/src/Examples/input.csv"
+  recs <- tryParseRecordsCsv inputDecode "./monarch/src/Examples/input.csv"
   print recs
 
   putStrLn "\ntryFrom @[TestMap] @[ProjEvent]\n"
   print $ fmap (tryFrom @[TestMap] @[ProjEvent]) recs
 
   putStrLn "\nOops. User supplied Text in Integer type column\n"
-  recs <- tryParseRecordsCsv inputDecode "./hygiea/src/Examples/input_bad.csv"
+  recs <- tryParseRecordsCsv inputDecode "./monarch/src/Examples/input_bad.csv"
   print recs
 
   putStrLn
-    "\n-------\n-------\nRunning tests in Example using Test.Tasty.Hygiea\n-------\n-------\n"
+    "\n-------\n-------\nRunning tests in Example using Test.Tasty.Monarch\n-------\n-------\n"
 
   putStrLn "\nFirst test should pass: We filter out only the last event.\n"
   putStrLn "\nSecond test should fail: Output includes only first event.\n"

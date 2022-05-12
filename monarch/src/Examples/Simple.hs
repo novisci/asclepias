@@ -21,22 +21,22 @@ import           EventDataTheory
 import           GHC.Generics
 import           IntervalAlgebra
 import           System.FilePath
-import           Test.Hygiea.TestMap
-import           Test.Hygiea.ToOutput
-import           Test.Hygiea.HygieaException
-import           Test.Tasty.Hygiea
+import           Test.Monarch.TestMap
+import           Test.Monarch.ToOutput
+import           Test.Monarch.MonarchException
+import           Test.Tasty.Monarch
 import           Witch.From
 import           Witch.TryFrom
 
   {- Project-specific code
 
-      This section gives a sense of how much project-specific code needs to be written to interact with hygiea's testing structure. In this case, since outputs and inputs are aliases for CensoredOccurence and Event, the only hygiea-specific code is the ToOutput instance.
+      This section gives a sense of how much project-specific code needs to be written to interact with monarch's testing structure. In this case, since outputs and inputs are aliases for CensoredOccurence and Event, the only monarch-specific code is the ToOutput instance.
 
       See Main.hs for how it might be used in a test.
       -}
 
 
-  {- Code required for Hygiea testing -}
+  {- Code required for Monarch testing -}
 
 -- defining the conversion
 instance ToOutput [ProjEvent] [ProjOccurrence] where
@@ -44,7 +44,7 @@ instance ToOutput [ProjEvent] [ProjOccurrence] where
 
 -- specifying the files
 projPath :: String
-projPath = "hygiea/src/Examples"
+projPath = "monarch/src/Examples"
 
 inputCsv, outputCsv :: String
 inputCsv = projPath </> "input.csv"
@@ -147,6 +147,6 @@ c1' :: TestVal
 c1' = List [TText "yay"]
 
 -- note these conversions are never ones the programmer need to do, and the
--- exception handling uses HygieaException not Text
+-- exception handling uses MonarchException not Text
 c1'' :: Either Text (Concepts Text)
 c1'' = first (const "bad") $ tryFrom @TestVal @(Concepts Text) c1'

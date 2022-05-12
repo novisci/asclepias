@@ -1,6 +1,6 @@
 {-# LANGUAGE TupleSections #-}
 
-module Test.Hygiea.Internal.Dhall where
+module Test.Monarch.Internal.Dhall where
 
 import qualified Data.ByteString               as BS
 import           Data.Csv                       ( NamedRecord )
@@ -20,8 +20,8 @@ import qualified Dhall.Map
 import qualified Dhall.Marshal.Decode          as Decode
 import           Dhall.Src
 import qualified GHC.Exts                       ( IsList(..) )
-import           Test.Hygiea.Internal.Atomic
-import           Test.Hygiea.Internal.Map
+import           Test.Monarch.Internal.Atomic
+import           Test.Monarch.Internal.Map
 
    {- UTILS -}
 type DhallExpr = Dhall.Core.Expr Src Void
@@ -71,7 +71,7 @@ parseDhallFile :: FilePath -> IO (Expr Src Void)
 parseDhallFile = parseDhallFileWith Dhall.inputExpr
 
 -- alias, fixing Alternative f as Maybe a
--- TODO Alternative f should be Either HygieaException
+-- TODO Alternative f should be Either MonarchException
 tryParseRawInput :: Dhall.Decoder a -> Expr Src Void -> Maybe a
 tryParseRawInput = Dhall.rawInput
 

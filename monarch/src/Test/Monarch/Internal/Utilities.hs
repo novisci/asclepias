@@ -1,5 +1,5 @@
 -- | Internal utilities. TODO: Some of these can be replaced with functionality from other packages.
-module Test.Hygiea.Internal.Utilities where
+module Test.Monarch.Internal.Utilities where
 
 import Data.Bifunctor
 

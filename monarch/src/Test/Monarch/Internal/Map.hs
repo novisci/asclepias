@@ -1,5 +1,5 @@
 {-| 
-Module      : Hygiea.Internal.Map
+Module      : Monarch.Internal.Map
 Description : Flat structure for decoding csv to Dhall to Haskell
 Copyright   : (c) NoviSci, Inc 2022
 License     : BSD3
@@ -15,7 +15,7 @@ Maintainer  : bbrown@targetrwe.com
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE TypeApplications #-}
 
-module Test.Hygiea.Internal.Map where
+module Test.Monarch.Internal.Map where
 
 import           Data.Bifunctor                 ( first )
 import           Data.Coerce                    ( coerce )
@@ -39,7 +39,7 @@ import           Dhall.Marshal.Encode           ( Encoder(..)
                                                 )
 import           Dhall.Src                      ( Src )
 import           GHC.Natural                    ( Natural )
-import           Test.Hygiea.Internal.Atomic
+import           Test.Monarch.Internal.Atomic
 import           Witch.From
 import           Witch.TryFrom
 import           Witch.TryFromException

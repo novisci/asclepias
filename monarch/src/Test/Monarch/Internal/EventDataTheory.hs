@@ -8,7 +8,7 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE MonoLocalBinds #-}
 
-module Test.Hygiea.Internal.EventDataTheory where
+module Test.Monarch.Internal.EventDataTheory where
 
 import           Control.Applicative
 import           Data.Bifunctor                 ( first )
@@ -27,10 +27,10 @@ import           IntervalAlgebra                ( Interval(..)
                                                 , parseInterval
                                                 )
 import           Prelude                 hiding ( lookup )
-import           Test.Hygiea.HygieaException
-import           Test.Hygiea.Internal.Atomic
-import           Test.Hygiea.Internal.Map
-import           Test.Hygiea.Internal.Utilities
+import           Test.Monarch.MonarchException
+import           Test.Monarch.Internal.Atomic
+import           Test.Monarch.Internal.Map
+import           Test.Monarch.Internal.Utilities
 import           Witch.From
 import           Witch.TryFrom
 import           Witch.TryFromException

@@ -1,5 +1,5 @@
 {-| 
-Module      : Test.Hygiea.Internal.Atomic
+Module      : Test.Monarch.Internal.Atomic
 Description : Internal representation of a testable value type to be used in Map. 
 Copyright   : (c) NoviSci, Inc 2022
 License     : BSD3
@@ -14,7 +14,7 @@ Maintainer  : bbrown@targetrwe.com
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE TypeApplications #-}
 
-module Test.Hygiea.Internal.Atomic where
+module Test.Monarch.Internal.Atomic where
 
 import           Data.Text                      ( Text
                                                 , stripPrefix

@@ -1,5 +1,5 @@
 {-# LANGUAGE NoImplicitPrelude #-}
-module Test.Hygiea.TestMap
+module Test.Monarch.TestMap
   ( Map(..)
   , TestMap(..)
   , TestVal(..)
@@ -11,16 +11,16 @@ module Test.Hygiea.TestMap
   , Atomizable
   ) where
 
-import           Test.Hygiea.Internal.Map       ( Map(..)
+import           Test.Monarch.Internal.Map      ( Map(..)
                                                 , TestMap(..)
                                                 , fromList
                                                 , lookup
                                                 , toList
                                                 )
 
-import           Test.Hygiea.Internal.Atomic    ( Atomizable
+import           Test.Monarch.Internal.Atomic   ( Atomizable
                                                 , TestAtomic(..)
                                                 , TestVal(..)
                                                 )
 
-import Test.Hygiea.Internal.EventDataTheory
+import           Test.Monarch.Internal.EventDataTheory

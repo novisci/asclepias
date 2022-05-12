@@ -1,5 +1,5 @@
 = Planning and prototyping for a testing framework in `asclepias`
-See the subdirectory README files for information on work to achieve the goals identified here.
+**NOTE** This document is outdated and kept only for reference as the testing tool prototype reaches a more stable form. See xref:README.adoc[README] for instructions on using the prototype.
 
 == Goals for planning phase
 The primary goal of the planning phase is to
@@ -9,9 +9,9 @@ The primary goal of the planning phase is to
   .. be flexible enough to test most if not all meaningful cases
   .. be robust to internal changes in `asclepias`, so that end-users do not need to re-learn the tools whenever `asclepias` itself changes
 . Sketch how these types can be mapped
-  .. from some structured text input file, the user interface of `hygiea` for non-programmers
+  .. from some structured text input file, the user interface of `monarch` for non-programmers
   .. from user-defined, project-specific types that either alias or extend `asclepias` types
-. Prototype a barebones internal type system (including type classes) in `hygiea` that provides the 'glue' between the user interface, the test interface and the `asclepias` types 
+. Prototype a barebones internal type system (including type classes) in `monarch` that provides the 'glue' between the user interface, the test interface and the `asclepias` types 
 . Write a simple working example of mapping user text and project code into this type system, perhaps with text input being in dhall format for convenience
 
 Note the goals for this phase do *not* include actually running the tests. Dhall is also probably not the desired format for user input. I expect it to allow me to avoid some annoying parsing issues, since Dhall already provides an API for mapping user-defined types in `.dhall` files to Haskell types. See the example below for a taste of what an actual tabular user interface might look like.
@@ -25,7 +25,7 @@ The goal is not to replace the internal testing routines for `asclepias` package
 Broadly speaking, we are motivated to
 
 ==== Make cohort validation directly available to subject-matter experts
-Epidemiologists can contribute to the soundness of cohort-building software by specifying tests directly through the UI `hygiea` provides.
+Epidemiologists can contribute to the soundness of cohort-building software by specifying tests directly through the UI `monarch` provides.
 
 ==== Make testing easier for programmers
 In addition to providing a text-based UI, programmers should have tools making it relatively simple to create common tests and eventually to incorporate property testing, additional unit testing, and edge-case analyses.
@@ -75,7 +75,7 @@ makeOutcomeDefinition ["is_wellness_visit"] WellnessVisit :: DefOutcome "wellnes
 
 See the 'Complexity of the type system' section for an annotation of this function's definition.
 
-In this proposed addition to the `asclepias` collection of packages, with working name of `hygiea`, the goal is to write tools allowing the test above to be specified by parsing a text file with a relatively simple structure. For example, such input might be in table form, and might look something like this:
+In this proposed addition to the `asclepias` collection of packages, with working name of `monarch`, the goal is to write tools allowing the test above to be specified by parsing a text file with a relatively simple structure. For example, such input might be in table form, and might look something like this:
 
 [cols="1,1,1,1"]
 .Inputs
@@ -110,7 +110,7 @@ Challenges to achieving the planning phase goals fall into a few categories, wit
   .. project-specific types or type aliases, based on the code for P0059
   .. text metadata, e.g. "is_enrollment", that comes from the data pipeline
 . Type naming is sometimes opaque, (e.g. `CensoringReason` variant names), and there is more opportunity for that to be the case in project-specific types and aliases.
-. `asclepias` is under active development, which might require substantial changes to `hygiea` internals and perhaps to the tools and user-interface.
+. `asclepias` is under active development, which might require substantial changes to `monarch` internals and perhaps to the tools and user-interface.
 
 Some of those dynamics are not simply downsides but also provide structure that a testing type system can use.
 
@@ -120,7 +120,7 @@ Additional challenges relate to providing a smooth user experience both for prog
 . creating a clean interface for programmers, with as little back-end work as possible needed to stand up a test suite that can consume the text-based test configuration
 
 === Complexity of the type system
-Writing the test in the example above, without the tools to be developed for `hygiea`, requires the developer to understand the following code, and in the case of the code from `P0059/plans/Cohort.hs` to be able to write it. This block is not even complete, since for example it does not include the definition of various functions used in `makeOutcomeDefinition`, such as `firstConceptOccurrence` from `Hasklepias.FeatureEvents`.
+Writing the test in the example above, without the tools to be developed for `monarch`, requires the developer to understand the following code, and in the case of the code from `P0059/plans/Cohort.hs` to be able to write it. This block is not even complete, since for example it does not include the definition of various functions used in `makeOutcomeDefinition`, such as `firstConceptOccurrence` from `Hasklepias.FeatureEvents`.
 
 [source,haskell]
 ----
@@ -370,7 +370,7 @@ It's not clear what the best way is to facilitate or eliminate that need.
 The upside here is easier to summarize but not meant to seem less important.
 
 === Facilitates generic programming
-We can, for example, write a typeclass for conversions of `CensoredOccurence` to an internal `hygiea` test type. This would place some burden on programmers to do the actual mapping of project-specific outcome types to testable types, in a structured way. We could provide some generic implementations or at a minimum some helper functions to facilitate that.
+We can, for example, write a typeclass for conversions of `CensoredOccurence` to an internal `monarch` test type. This would place some burden on programmers to do the actual mapping of project-specific outcome types to testable types, in a structured way. We could provide some generic implementations or at a minimum some helper functions to facilitate that.
 
 == Overview of the approach
 
@@ -403,17 +403,17 @@ To clarify: We do need some internal representation of the input, for subject-ma
 
 
 === Core type system
-The type system is split into three chunks: One that 'users' will interact with via text-based files, one that project programmers will see, and one that is internal to `hygiea.`
+The type system is split into three chunks: One that 'users' will interact with via text-based files, one that project programmers will see, and one that is internal to `monarch.`
 
 ==== Internal types
-Input and output types each are a list of `Map`s: This is a generic structure for rectangular data shapes, with broad support across various packages. `hygiea` will parse text-base input into this type, using Dhall. Most likely, it will use dhall-csv to parse rectangular csv data. `hygiea` also will implement conversions from this internal type to standard shapes likely to be used in projects, e.g. `Event`, and will do so leveraging the upcoming `event-data-theory` module.
+Input and output types each are a list of `Map`s: This is a generic structure for rectangular data shapes, with broad support across various packages. `monarch` will parse text-base input into this type, using Dhall. Most likely, it will use dhall-csv to parse rectangular csv data. `monarch` also will implement conversions from this internal type to standard shapes likely to be used in projects, e.g. `Event`, and will do so leveraging the upcoming `event-data-theory` module.
 
 ==== Programmer-facing types
-If using one of those standard types, project programmers need only declare `ToOutput` instances for the project-specific input and output types to be tested. This instance provides `toOutput`, which is the transformation to be tested. If needed, project programmers can implement their own conversions from the flat `hygiea` `Map` type to their project-specific types.
+If using one of those standard types, project programmers need only declare `ToOutput` instances for the project-specific input and output types to be tested. This instance provides `toOutput`, which is the transformation to be tested. If needed, project programmers can implement their own conversions from the flat `monarch` `Map` type to their project-specific types.
 
-The programmer's primary task is to define the transformation from inputs to outputs that is to be tested. `hygiea` will ask programmers to define conversions to and from the flattened record format and the input and output types associated with testable transformations.
+The programmer's primary task is to define the transformation from inputs to outputs that is to be tested. `monarch` will ask programmers to define conversions to and from the flattened record format and the input and output types associated with testable transformations.
 
-`hygiea` will handle marshaling the input data into the project's input type, running the conversion and performing the test.
+`monarch` will handle marshaling the input data into the project's input type, running the conversion and performing the test.
 
 === Sharing data shape between programmers and users
 Users will specify tests with rectangular text configuration files, but they will not interact with Haskell code. There needs to be some mechanism by which programmers can define what kinds of information columns and rows can hold.
@@ -429,9 +429,9 @@ An example of a dhall shape specification is in the `Planning/Examples` source d
 Even something as basic as allowing a sum type probably has great benefit: The user can only specify `Subject` or `Observation` values for the `observationType` field, and other values will create parsing errors before the tests are actually run.
 
 === Costs and benefits of using Dhall
-Most of the issues and solutions described here are shared with and inspired by `dhall-csv`. The latter attempts to marshall dhall to record-like text and back. Here I try to marshall dhall to an inhomogeneous Haskell map.  The key difference between `hygiea` 's problems and `dhall-csv` 's is the latter works with a fixed target: the `NamedRecord` type from the csv reader/writer is a `HashMap` with `ByteString` keys and values. Inhomogeneity in the data is resolved by writing a parser from `ByteString` to dhall expressions. 
+Most of the issues and solutions described here are shared with and inspired by `dhall-csv`. The latter attempts to marshall dhall to record-like text and back. Here I try to marshall dhall to an inhomogeneous Haskell map.  The key difference between `monarch` 's problems and `dhall-csv` 's is the latter works with a fixed target: the `NamedRecord` type from the csv reader/writer is a `HashMap` with `ByteString` keys and values. Inhomogeneity in the data is resolved by writing a parser from `ByteString` to dhall expressions. 
 
-`hygiea` emulates that solution. See 'Inhomogeneous containers'.
+`monarch` emulates that solution. See 'Inhomogeneous containers'.
 
 
 ==== Decoding Maps
@@ -449,9 +449,9 @@ instance FromDhall MyList
 
 Deriving `Generic` is a no-go there, so you would need to define the `autoWith` method of `FromDhall`. But you cannot do so because it does not take any arguments of type `MyList`. You might be able to write a custom decoder, but if I recall I ran into type ambiguity issues there that could not be resolved with haskell extensions.
 
-My solution in `hygiea` marshals dhall into `Map Text TestAtomic` (and soon `TestVal` for the value type) where `TestAtomic` is an enum with variants for the particular types `v` I wanted to support. It is easy enough then to write a `FromDhall` instance for `TestAtomic`. That approach takes from dhall's `Expr` enum representing all possible dhall expressions.
+My solution in `monarch` marshals dhall into `Map Text TestAtomic` (and soon `TestVal` for the value type) where `TestAtomic` is an enum with variants for the particular types `v` I wanted to support. It is easy enough then to write a `FromDhall` instance for `TestAtomic`. That approach takes from dhall's `Expr` enum representing all possible dhall expressions.
 
-I could have also simply written a parser directly from Csv into some container like `Map Text TestAtomic`, but that would amount to re-doing the work of `dhall-csv` rather than using it. Using dhall directly also leaves open the possibility of extending `hygiea` to accept more complex dhall input in the future.
+I could have also simply written a parser directly from Csv into some container like `Map Text TestAtomic`, but that would amount to re-doing the work of `dhall-csv` rather than using it. Using dhall directly also leaves open the possibility of extending `monarch` to accept more complex dhall input in the future.
 
 === Discussion
 From the stat-dev meeting on Feb. 7. Text above includes some reactions to these comments.

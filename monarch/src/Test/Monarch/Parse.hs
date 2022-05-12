@@ -1,4 +1,4 @@
-module Test.Hygiea.Parse
+module Test.Monarch.Parse
   ( tryParseRecordsCsv
   , decodeMapSchema
   , decodeMapSchemaAuto
@@ -7,8 +7,8 @@ module Test.Hygiea.Parse
   ) where
 
 -- TODO remove the first csv import
-import           Test.Hygiea.Internal.Csv       ( tryParseRecordsCsv )
-import           Test.Hygiea.Internal.Dhall     ( decodeMapSchema
+import           Test.Monarch.Internal.Csv       ( tryParseRecordsCsv )
+import           Test.Monarch.Internal.Dhall     ( decodeMapSchema
                                                 , decodeMapSchemaAuto
                                                 , parseDhallFile
                                                 , parseDhallFileWith

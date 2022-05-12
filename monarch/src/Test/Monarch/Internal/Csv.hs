@@ -5,7 +5,7 @@
     function for this purpose, rather than using it and modifying the output.
       -}
 {-# LANGUAGE OverloadedStrings #-}
-module Test.Hygiea.Internal.Csv where
+module Test.Monarch.Internal.Csv where
 
 import           Data.Csv                       ( NamedRecord )
 import qualified Data.Text as T
@@ -23,10 +23,10 @@ import qualified Dhall.Map
 import qualified Dhall.Marshal.Decode          as Decode
 import           Dhall.Src
 import qualified GHC.Exts                       ( IsList(..) )
-import           Test.Hygiea.Internal.Atomic
-import           Test.Hygiea.Internal.Map
-import           Test.Hygiea.Internal.Dhall
-import           Test.Hygiea.HygieaException
+import           Test.Monarch.Internal.Atomic
+import           Test.Monarch.Internal.Map
+import           Test.Monarch.Internal.Dhall
+import           Test.Monarch.MonarchException
 
 -- dhallFromCsv converts the list of NamedRecord to a ListLit Nothing (Seq (Expr ...))
 -- Convert ListLit Nothing (Seq a) to [a] by converting Seq to list
@@ -34,7 +34,7 @@ import           Test.Hygiea.HygieaException
 tryListLitToList
   :: (Show b)
   => Either b (Dhall.Core.Expr s a)
-  -> Either HygieaException [Dhall.Core.Expr s a]
+  -> Either MonarchException [Dhall.Core.Expr s a]
 tryListLitToList (Right (ListLit _ s)) = Right $ GHC.Exts.toList s
 tryListLitToList (Right _            ) = Left $ DecodeException "Not a ListLit"
 tryListLitToList (Left  err          ) = Left $ DecodeException $ T.pack $ show err
@@ -51,7 +51,7 @@ tryListLitToList (Left  err          ) = Left $ DecodeException $ T.pack $ show 
 -- provided decoder. Note @d@ should be from dhall specifying a list of
 -- records, ie `List { ... }`, with field names corresponding to the column
 -- names of the csv.
-tryParseRecords :: Dhall.Decoder a -> [NamedRecord] -> Either HygieaException [a]
+tryParseRecords :: Dhall.Decoder a -> [NamedRecord] -> Either MonarchException [a]
 tryParseRecords d rs = joinFold (tryParseRawInput d) $ tryListLitToList es
  where
   es = Dhall.CsvToDhall.dhallFromCsv Dhall.CsvToDhall.defaultConversion expr rs
@@ -60,7 +60,7 @@ tryParseRecords d rs = joinFold (tryParseRawInput d) $ tryListLitToList es
   joinFold f (Right xs ) = foldr op (Right []) xs
    where
     op _ (Left  err) = Left err
-    -- TODO tryParseRawInput should return Either HygieaException a rather
+    -- TODO tryParseRawInput should return Either MonarchException a rather
     -- than Maybe a
     op z (Right zs) = case f z of
       Just zz -> Right (zz : zs)
@@ -80,5 +80,5 @@ toCsv hasHeader file = do
 -- names of the csv. The decoder usually would be parsed with
 -- @parseDhallFile@ or
 -- @parseDhallFileWith@. 
-tryParseRecordsCsv :: Dhall.Decoder a -> FilePath -> IO (Either HygieaException [a])
+tryParseRecordsCsv :: Dhall.Decoder a -> FilePath -> IO (Either MonarchException [a])
 tryParseRecordsCsv d = fmap (tryParseRecords d) . toCsv True

@@ -1,6 +1,6 @@
 {-| 
    ## @Routine@ and @hTest@
-   Test.Tasty tree-builders for @Hygiea@. The main exported type is a
+   Test.Tasty tree-builders for @Monarch@. The main exported type is a
    @Routine@, an existential type that holds a test configuration with a variant for each test framework within which the test should be run. At the moment, only golden tests via `tasty-silver` are supported. 
 
    @hTest@ is the primary exported tree-builder, which takes a @Routine@ and builds the a @TestTree@ using the appropriate framework.
@@ -17,7 +17,7 @@
 {-# LANGUAGE ConstraintKinds #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
-module Test.Tasty.Hygiea
+module Test.Tasty.Monarch
   ( RoutineContext
   , Routine(..)
   , RoutineElem(..)
@@ -25,10 +25,10 @@ module Test.Tasty.Hygiea
   ) where
 
 import           Data.Typeable                  ( Typeable )
-import           Test.Hygiea.HygieaException
-import           Test.Hygiea.TestMap
-import           Test.Hygiea.Parse
-import           Test.Hygiea.ToOutput
+import           Test.Monarch.MonarchException
+import           Test.Monarch.TestMap
+import           Test.Monarch.Parse
+import           Test.Monarch.ToOutput
 import           Test.Tasty.Options             ( IsOption(..)
                                                 , OptionDescription(..)
                                                 , lookupOption
@@ -93,7 +93,7 @@ data RoutineElem a = MkRoutineElem
 
 -- TODO lazy and bad function naming
 
--- | Main point of entry to for tools from @Test.Hygiea@. Converts a @Routine@
+-- | Main point of entry to for tools from @Test.Monarch@. Converts a @Routine@
 -- specifying a test framework and text configuration file paths to a
 -- @TestTree@, for inclusion in some @Test.Tasty@ runner.
 hTest :: TestName -> Routine -> TestTree
@@ -180,7 +180,7 @@ runGoldenActual procData =
 
 -- | Read csv and schema, parse schema into [TestMap] and attempt conversion to
 -- input and output types. Fails if any step of the process returns an
--- exception. This is the first step of running Hygiea tests using any
+-- exception. This is the first step of running Monarch tests using any
 -- framework option.
 processElems
   :: (Testable input output)

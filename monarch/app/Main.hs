@@ -18,13 +18,15 @@ import           Witch.TryFrom
 tests :: TestTree
 tests = testGroup
   "Examples.Simple"
-  [ hTest "good" myRoutine
-  , hTest "bad"  myBadRoutine
-  , hTest "ugly" myMisspecRoutine
+  [ monarchTest "good" myRoutine
+  , monarchTest "bad"  myBadRoutine
+  , monarchTest "ugly" myMisspecRoutine
   ]
 
 main :: IO ()
 main = do
+  {- UNCOMMENT TO INSPECT INTERNAL BEHAVIOR -}
+    {-
   putStrLn "\nDhall shape from input.dhall for Csv\n"
   input <- parseDhallFile "./monarch/src/Examples/input.dhall"
   print input
@@ -41,6 +43,7 @@ main = do
   putStrLn "\nOops. User supplied Text in Integer type column\n"
   recs <- tryParseRecordsCsv inputDecode "./monarch/src/Examples/input_bad.csv"
   print recs
+-}
 
   putStrLn
     "\n-------\n-------\nRunning tests in Example using Test.Tasty.Monarch\n-------\n-------\n"

@@ -21,7 +21,7 @@ module Test.Tasty.Monarch
   ( RoutineContext
   , Routine(..)
   , RoutineElem(..)
-  , hTest
+  , monarchTest
   ) where
 
 import           Data.Typeable                  ( Typeable )
@@ -91,13 +91,11 @@ data RoutineElem a = MkRoutineElem
   }
   deriving (Show, Eq)
 
--- TODO lazy and bad function naming
-
 -- | Main point of entry to for tools from @Test.Monarch@. Converts a @Routine@
 -- specifying a test framework and text configuration file paths to a
 -- @TestTree@, for inclusion in some @Test.Tasty@ runner.
-hTest :: TestName -> Routine -> TestTree
-hTest name (Golden rin rout) = runGolden name rin rout
+monarchTest :: TestName -> Routine -> TestTree
+monarchTest name (Golden rin rout) = runGolden name rin rout
 
   {- Internals -}
 

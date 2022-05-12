@@ -1,0 +1,26 @@
+:navtitle: User Guide
+:description: Guide to using asclepias in projects
+:toc: auto
+
+
+= The asclepias User Guide 
+
+== Prerequisites
+asclepias requires specially formatted data.
+It is expected that the data is in the event model format.
+See below for an example:
+
+*TODO* include example event
+
+Normally, this is done through the event-data-model package.
+See xref:event-data:ROOT:index.html[Event Data] in the noviverse for more details.
+
+== Initializing an aclepias project
+
+include::initialize-new-project.adoc[leveloffset=+1]
+
+== Using asclepias
+
+== Cohort building examples
+
+== Resources

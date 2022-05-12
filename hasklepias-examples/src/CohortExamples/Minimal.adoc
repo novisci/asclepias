@@ -3,9 +3,9 @@
 This examples demonstrates:
 
 * [x] a bare bones cohort, created without using
-xref:features:theory.adoc[features]
+xref:theory:feature-theory.adoc[features]
 or
-xref:ROOT:theory-of-events.adoc[events].
+xref:theory::event-theory.adoc[events].
 * [x] reading csv formatted data
 
 include::cohorts:partial$procedures-tip.adoc[]

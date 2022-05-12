@@ -19,7 +19,7 @@ include::{sourcefile}[tag=definition]
 ----
 
 <1> The `twoOutOneIn` function returns a 
-xref:features:page$theory.adoc[`Definition`].
+xref:theory$event-theory.adoc[`Definition`].
 <2> We use the 
 xref:features:page$templates.adoc[`buildNofXOrMofYWithGapBool`]
 template function to build our definition. 

@@ -1,19 +1,35 @@
 :navtitle: Introduction
 :haddock-site: #TODO#
+:ghc: 8.10.7
+:cabal: 3.6.2.0
 
-= Introduction to Asclepias
+= Introduction to asclepias
 
-This site is the documentation hub for Asclepias,
+This site is the documentation hub for asclepias,
 a domain specific language for building and analyzing cohorts.
-
-== Where to start
+asclepias is written in the Haskell language. 
 
 If you're unfamiliar with asclepias and what it can do,
 start by reading the <<motivation>> and <<benefits>> sections below.
-If this is your first time using asclepias,
-read xref:getting-started.adoc[getting started].
-If you're already an asclepias user,
-check out our available tutorials and how-to guides.
+For a deeper dive into the theory, see xref:theory:index.adoc[Theory and Design].
+
+If this is your first foray into asclepias,
+you will need to install the Haskell tool chain.
+To install, 
+follow the directions in the xref:nsBuild:ROOT:haskell-setup.adoc[setup guide],
+with these special instructions:
+
+* Use ghc version {ghc}.
+* Use cabal version {cabal}.
+
+After installing Haskell, 
+review the xref:nsBuild:usage-guides:index.adoc[Haskell usage guide] for best practices.
+
+If you are contributing to the development of asclepias,
+see the xref:dev-guide:index.adoc[developer guide] for more details.
+
+If you are using asclepias for your project, 
+see the xref:user-guide:index.adoc[user guide] for more details.
 
 [NOTE]
 Reference information for `+hasklepias+` functions is located 

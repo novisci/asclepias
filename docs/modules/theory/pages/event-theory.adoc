@@ -20,45 +20,27 @@ We have not checked that the event data theory
 actually is a universal algebra.
 ]
 
-[TIP]
-Having a basic understanding how to read Haskell's types
-will be useful in reading this document.
-Online resources such as
-http://book.realworldhaskell.org/read/types-and-functions.html[Real World Haskell]
-are excellent for learning. 
 
-== What is an event
 
-Abstractly, we define an event as an object which contains information about
-when something happened and
-what something happened.
-Concretely, an `+Event+` is a wrapper around the `+interval-algebra+` package's
-https://hackage.haskell.org/package/interval-algebra-{interval-algebra-v}/docs/IntervalAlgebra-PairedInterval.html[`PairedInterval` type]:
+== Definition of Event
+An event is a `Context` with an associated time interval.
 
-[source,haskell]
-----
-include::example$EventDataTheory/Core.hs[tag=eventType]
-----
+A `Context` contains up to three types of information: 
+1) A set of concepts (required)
+2) Facts about the event (required)
+3) Metadata on the source of the event (optional)
 
-The __what__ part of the pair is a `+Context d c+`, 
-which is described further below.
-The __when__ part is an `+Interval a+`.
-The `Interval` type is described further in 
-https://hackage.haskell.org/package/interval-algebra-{interval-algebra-v}/docs/IntervalAlgebra-Core.html[the `+interval-algebra+` documentation].
-You can find more information about intervals
-and how to use them there.
-Since an `+Event+` is an instance of the 
-https://hackage.haskell.org/package/interval-algebra-{interval-algebra-v}/docs/IntervalAlgebra-Core.html#t:Intervallic[`+Intervallic+` typeclass],
-almost anything you can do with `+Interval+` types
-you can also do with `+Event+` types.
+A concept is a set of tags that give meaning to the events of interest.
+For example, diabetes diagnosis, birth day, in hospital are all possible tags,
+that together might define a the study concept.
 
-=== Event Contexts
+Facts
 
-An event's `+Context+` contains three types of information: 
+
 
 [source,haskell]
 ----
-include::example$EventDataTheory/Core.hs[tag=contextType]
+include::ROOT/examples/EventDataTheory/Core.hs[tag=contextType]
 ----
 <1> a set of `+Concepts+`, or tags, 
 which can be used to identify events in a collection;
@@ -87,6 +69,30 @@ where each domain is a group of facts relevant to a given domain.
 The schema of NoviSci's standard 
 {edm-path}/index.html[EDM]
 is organized around this idea.
+
+Abstractly, we define an event as an object which contains information about
+when a particular thing happened.
+Concretely, an `+Event+` is a wrapper around the `+interval-algebra+` package's
+https://hackage.haskell.org/package/interval-algebra-{interval-algebra-v}/docs/IntervalAlgebra-PairedInterval.html[`PairedInterval` type]:
+
+[source,haskell]
+----
+include::example$EventDataTheory/Core.hs[tag=eventType]
+----
+
+The __what__ part of the pair is a `+Context d c+`, 
+which is described further below.
+The __when__ part is an `+Interval a+`.
+The `Interval` type is described further in 
+https://hackage.haskell.org/package/interval-algebra-{interval-algebra-v}/docs/IntervalAlgebra-Core.html[the `+interval-algebra+` documentation].
+You can find more information about intervals
+and how to use them there.
+Since an `+Event+` is an instance of the 
+https://hackage.haskell.org/package/interval-algebra-{interval-algebra-v}/docs/IntervalAlgebra-Core.html#t:Intervallic[`+Intervallic+` typeclass],
+almost anything you can do with `+Interval+` types
+you can also do with `+Event+` types.
+
+
 
 == Marshalling event data
 

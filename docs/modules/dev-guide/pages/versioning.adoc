@@ -1,12 +1,12 @@
 :description: This file details how asclepias is versioned 
 :toc: right 
-:source-highlighter: highlightjs:
+:source-highlighter: highlightjs
 :navtitle: Versioning
 :antora-site: https://docs.antora.org/antora/latest
 
 = Versioning asclepias
 
-Asclepias tries to follow
+asclepias tries to follow
 https://semver.org/[semantic versioning 2.0.0].
 
 [NOTE]

@@ -3,7 +3,7 @@
 :source-highlighter: highlightjs
 :navtitle: Developer Guide
 
-= The Asclepias Developer Guide 
+= The asclepias Developer Guide 
 
 [NOTE]
 This guide is designed for asclepias *developers*,

@@ -1,31 +1,31 @@
 :description: Lists the features and benefits of asclepias
 
-Asclepias is a domain specific language and a collection of tools
+asclepias is a domain specific language and a collection of tools
 for defining cohorts.
 Benefits of asclepias include:
 
 Formally defines a cohort::
-Asclepias provides a formal definition of a cohort specification,
+asclepias provides a formal definition of a cohort specification,
 which includes defining one or more **index** events,
 a set criteria that determine how subjects will be included or excluded,
 and the set of features (i.e. variables) the cohort contains.
 +
-xref:cohorts:page$theory.adoc[Read about the theory of cohorts].
+xref:theory:page$cohort-theory.adoc[Read about the theory of cohorts].
 
 Provides tools for defining and testing features::
 A `+Feature+` in asclepias can be thought of
 like covariates, outcomes, or other variables.
-Asclepias includes a language for defining features
+asclepias includes a language for defining features
 of nearly arbitrary shape.
 The language elegantly handles failures and
 prevents certain programming bugs.
 +
-xref:features:page$theory.adoc[Read about the theory of features]. 
+xref:theory:page$feature-theory.adoc[Read about the theory of features]. 
 
 Includes a well-tested library of common features::
 Cohorts often include many simple features such as 
 indicators that a subject has some condition during a baseline period.
-Asclepias includes templates for many common features.
+asclepias includes templates for many common features.
 +
 xref:features:page$templates.adoc[See all available templates].
 
@@ -55,14 +55,14 @@ where the concept of time, as in epidemiology, is critical.
 Having data models of sequences of time-ordered events
 often make reasoning about cohorts and features easier.
 +
-xref:theory-of-events.adoc[Learn about the event data theory].
+xref:theory:index.adoc[Learn about the event data theory].
 
 Is data model agnostic::
 While the using a event-based data model is encouraged,
 the theory of
-xref:cohorts:page$theory.adoc[cohorts]
+xref:theory:pages$cohort-theory.adoc[cohorts]
 and
-xref:features:page$theory.adoc[features]
+xref:theory:pages$feature-theory.adoc[features]
 both work under a "bring your data model" assumption
 that does not require an event-based model.
 +

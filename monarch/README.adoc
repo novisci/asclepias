@@ -5,7 +5,7 @@
 
 == Features
 
-. Given a function mapping some user-defined Haskell types `input` to `output`, the user specifies in `csv` format data to provide as input and the expected output. `monarch`: 
+. Given a function mapping some user-defined Haskell types `input` to `output`, allows the user to specify in `csv` format some data to provide as input and the expected output. `monarch`: 
   .. converts the `csv` data to the appropriate types, 
   .. runs the function on the inputs, 
   .. compares the function result to the outputs via a testing framework,
@@ -17,7 +17,22 @@
   .. `Double`
   .. `Bool` 
   .. a user-defined sum type with at most one value of the types listed above in each variant, e.g. `This | That Integer` in Haskell or Dhall syntax.
+  .. a user-defined type that simply wraps one of the types above, e.g. `newtype Thing = MkThing Integer`.
 . Provides ready-to-use conversions from the flat `csv` format for the core `asclepias` types defined in `event-data-theory`, such as `Event`:
   .. project-specific types that are special cases of the `event-data-theory` types need only specify the function from `input` to `output`,
   .. along with a schema dictating the concrete types used for values, e.g. `Text` for the `Context` values of an `Event`.
 . For non-standard types, allows users to define how the flat `csv` data must be marshalled into the `input` and `output` types to be tested.
+. Conversions to the appropriate internal types for supported custom types, such as newtype wrappers or sum types, can be provided automatically by `deriving Generic` and specifying `instance FromDhall` in the project's Haskell code.
+
+
+== Non-features
+
+. Users currently must specify input and output csv files associated with each test routine, with no helpers or naming conventions to read those files automatically from the filesystem.
+. Does not allow the user to derive the flat-format-to-Haskell conversion generically for arbitrary Haskell types. These must be implemented by hand for any type not among those `monarch` implements itself, and only those that can be flattened and marshalled via `dhall-csv` are supported.
+. Does not support csv cell-value types that are recursive or containers, e.g. lists.
+. Is not a programming language and for example does not support functions as text input.
+. Only supports single-element `Concepts` sets within the `Context` and `Event` types of `event-data-theory` because of a limitation in `dhall-csv`.
+. Golden tests, in which expected and actual outputs are compared as text files, are the only ones implemented. It would be simple to extend support to unit tests, and possible with some work to extend support for property-based tests.
+
+
+= How-to

@@ -27,10 +27,10 @@ import           IntervalAlgebra                ( Interval(..)
                                                 , parseInterval
                                                 )
 import           Prelude                 hiding ( lookup )
-import           Test.Monarch.MonarchException
 import           Test.Monarch.Internal.Atomic
 import           Test.Monarch.Internal.Map
 import           Test.Monarch.Internal.Utilities
+import           Test.Monarch.MonarchException
 import           Witch.From
 import           Witch.TryFrom
 import           Witch.TryFromException
@@ -65,11 +65,11 @@ instance (Ord c, TryFrom TestVal (Concepts c)) => TryFrom TestMap (Concepts c) w
     -- TODO: This awful hack is because lists are not supported by dhallFromCsv.
     -- It means we only support Concepts with one element.
     concepts = case singleValToList <$> lookup "concepts" input of
-                 Nothing -> Left $ TryFromException input Nothing
-                 Just (Left _) -> Left $ TryFromException input Nothing
-                 Just (Right v) -> first (const err) $ tryFrom @TestVal @(Concepts c) v 
+      Nothing        -> Left $ TryFromException input Nothing
+      Just (Left  _) -> Left $ TryFromException input Nothing
+      Just (Right v) -> first (const err) $ tryFrom @TestVal @(Concepts c) v
     singleValToList x = List . (: []) <$> tryFrom @TestVal x
-    err      = TryFromException input Nothing
+    err = TryFromException input Nothing
 
 instance (Ord c, Atomizable (Concepts c), Atomizable m) => TryFrom TestMap (Context c m) where
   tryFrom input = liftA3 context

@@ -205,7 +205,10 @@ type ExThreeInteger = Event BeBest Text Integer
 
 type ExFourInput = Interval Double
 type ExFourIndex = Interval Double
-data ExFourOutput = MkExFourOutput { nAfterIx :: Natural, nBeforeIx :: Natural }
+data ExFourOutput = MkExFourOutput
+  { nAfterIx  :: Natural
+  , nBeforeIx :: Natural
+  }
 
 --exFourFun :: [ExFourInput] -> ExFourOutput
 --exFourFun = undefined

@@ -27,7 +27,7 @@ instance Show MonarchException where
     ConversionException (TryFromException _ e) -> case e of
       Just ee -> show e
       Nothing -> "ConversionException"
-    DecodeException t -> unpack t
+    DecodeException    t -> unpack t
     UnhandledException t -> show t
 
 instance Exception MonarchException

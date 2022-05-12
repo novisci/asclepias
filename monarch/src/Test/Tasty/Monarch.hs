@@ -1,5 +1,5 @@
 {-| 
-   ## @Routine@ and @hTest@
+   ## @Routine@ and @monarchTest@
    Test.Tasty tree-builders for @Monarch@. The main exported type is a
    @Routine@, an existential type that holds a test configuration with a variant for each test framework within which the test should be run. At the moment, only golden tests via `tasty-silver` are supported. 
 
@@ -26,8 +26,8 @@ module Test.Tasty.Monarch
 
 import           Data.Typeable                  ( Typeable )
 import           Test.Monarch.MonarchException
-import           Test.Monarch.TestMap
 import           Test.Monarch.Parse
+import           Test.Monarch.TestMap
 import           Test.Monarch.ToOutput
 import           Test.Tasty.Options             ( IsOption(..)
                                                 , OptionDescription(..)
@@ -162,7 +162,7 @@ runGoldenExpected procData = do
   -- NOTE converting to text before writing
   case txt of
     Right txt' -> txt' <$ writeGoldenFile (outputCsv procData) txt'
-    Left err -> fail $ show err
+    Left  err  -> fail $ show err
 
 -- | Convert processed @input@ to @output@ via @toOutput@ and encode as JSON. Note the actual @getOutput@ data field from the @ProcessedElems@ is not used here: Only the type @output@ matters, used in the conversion. See @runGoldenExpected@.
 runGoldenActual
@@ -174,7 +174,7 @@ runGoldenActual procData =
   let oActual = (toOutput @input @output) $ getInput procData
   in  case encodeText oActual of
         Right txt -> pure txt
-        Left err -> fail $ show err
+        Left  err -> fail $ show err
 
 -- | Read csv and schema, parse schema into [TestMap] and attempt conversion to
 -- input and output types. Fails if any step of the process returns an

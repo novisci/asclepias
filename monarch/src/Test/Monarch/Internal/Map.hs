@@ -77,7 +77,8 @@ instance From (Map v) [(Text, v)] where
 -- traversables for free.
 instance (Traversable t, TryFrom (Map v) a) => TryFrom (t (Map v)) (t a) where
   tryFrom x =
-    first (\(TryFromException _ e) -> TryFromException x e) $ traverse (tryFrom @(Map v) @a) x
+    first (\(TryFromException _ e) -> TryFromException x e)
+      $ traverse (tryFrom @(Map v) @a) x
 
   {- UTILS and SYNONYMS -}
 -- | The primary flat structure housing values to be tested and providing the

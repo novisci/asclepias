@@ -7,8 +7,8 @@ module Test.Monarch.Parse
   ) where
 
 -- TODO remove the first csv import
-import           Test.Monarch.Internal.Csv       ( tryParseRecordsCsv )
-import           Test.Monarch.Internal.Dhall     ( decodeMapSchema
+import           Test.Monarch.Internal.Csv      ( tryParseRecordsCsv )
+import           Test.Monarch.Internal.Dhall    ( decodeMapSchema
                                                 , decodeMapSchemaAuto
                                                 , parseDhallFile
                                                 , parseDhallFileWith

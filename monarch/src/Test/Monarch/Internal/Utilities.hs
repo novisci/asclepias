@@ -1,7 +1,7 @@
 -- | Internal utilities. TODO: Some of these can be replaced with functionality from other packages.
 module Test.Monarch.Internal.Utilities where
 
-import Data.Bifunctor
+import           Data.Bifunctor
 
 {- UTILITIES -}
 maybeRight :: e -> Maybe a -> Either e a

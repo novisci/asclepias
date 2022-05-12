@@ -10,7 +10,7 @@ import           Examples.Simple
 import           Test.Monarch.Parse
 --import Examples.Simple
 import           Test.Monarch.TestMap
-import qualified Test.Monarch.ToOutput          as TO
+import qualified Test.Monarch.ToOutput         as TO
 import           Test.Tasty
 import           Test.Tasty.Monarch
 import           Witch.TryFrom

@@ -35,4 +35,62 @@
 . Golden tests, in which expected and actual outputs are compared as text files, are the only ones implemented. It would be simple to extend support to unit tests, and possible with some work to extend support for property-based tests.
 
 
-= How-to
+== How-to, with pre-defined types
+This walks through how to run a test with `monarch` when the project types are special cases of those in `event-data-theory`. The full code is in the `Examples.Simple` module, which can be run from the `asclepias` repo with `cabal run monarch`.
+
+=== Set-up
+This section is a dummy setup for a project using `asclepias`. The code is not `monarch`-specific.
+
+Suppose you have the following input types
+[source,haskell]
+----
+data TrueFacts = Awesome | NotAwesome Text deriving (Show, Eq, Generic)
+type ProjEvent = Event Text TrueFacts Integer
+type Index = Interval Integer
+----
+
+where `Event c m a` is defined in `EventDataTheory.Core`. An `Event` is an `Interval` (from `interval-algebra`) with some `Context` type meta-data. For example, 
+
+[source,haskell]
+----
+f1 :: TrueFacts
+f1 = Awesome
+
+c1 :: Concepts Text
+c1 = packConcepts ["yay"]
+
+e1 :: ProjEvent
+e1 = event (beginerval 0 1) (context c1 f1 Nothing)
+----
+
+prints as an `Event` with interval `(1, 2)` and a `Context` with contained `Contepts` of type `Text` with value `"yay"`, a facts field of type `TrueFacts` and value `Awesome`, and `Nothing` in the source field.
+
+----
+MkEvent {(1, 2), MkContext {getConcepts = MkConcepts (fromList [MkConcept "yay"]), getFacts = Awesome, getSource = Nothing}}
+----
+
+Our output type is defined as 
+
+[source,haskell]
+----
+data SumminElse = WasBefore | WasAfter deriving (Show, Eq, Generic)
+type ProjOccurrence = Event Text SumminElse Integer
+----
+
+Our 'cohort-building' routine that we want to test, call it `cohortBuilder`, will take a list of `ProjEvent` and check whether the endpoints of the contained intervals are after the endpoint of the `index` interval, `(0, 1)`. `cohortBuilder` will return the input intervals with their facts field changed to type `SumminElse`, with value `WasAfter` if so and `WasBefore` otherwise.
+
+For example, 
+[source,haskell]
+----
+index :: Index
+index = beginervalMoment 0
+
+e1Out :: [ProjOccurrence]
+e1Out = cohortBuilder index [e1]
+----
+
+gives 
+
+----
+[MkEvent {(1, 2), MkContext {getConcepts = MkConcepts (fromList [MkConcept "yay"]), getFacts = WasAfter, getSource = Nothing}}]
+----

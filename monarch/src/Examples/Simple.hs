@@ -105,7 +105,6 @@ cohortBuilder ix = foldr op []
 -- implemented, and Integer, Text already implement the necessary conversions
 data TrueFacts = Awesome | NotAwesome Text deriving (Show, Eq, Generic)
 type ProjEvent = Event Text TrueFacts Integer
-type ProjInterval = PairedInterval (Context Text TrueFacts) Integer
 type Index = Interval Integer
 
 index :: Index
@@ -145,6 +144,9 @@ e2 = event (beginerval 0 1) (context c2 f1 Nothing)
 
 c1' :: TestVal
 c1' = List [TText "yay"]
+
+e1Out :: [ProjOccurrence]
+e1Out = cohortBuilder index [e1]
 
 -- note these conversions are never ones the programmer need to do, and the
 -- exception handling uses MonarchException not Text

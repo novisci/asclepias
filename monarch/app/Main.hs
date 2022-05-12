@@ -2,7 +2,7 @@
     library is used in, say, hasklepias-examples. -}
 
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TypeApplications #-}
+--{-# LANGUAGE TypeApplications #-}
 
 module Main where
 

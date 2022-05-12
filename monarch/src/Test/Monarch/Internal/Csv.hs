@@ -55,6 +55,8 @@ tryParseRecords :: Dhall.Decoder a -> [NamedRecord] -> Either MonarchException [
 tryParseRecords d rs = joinFold (tryParseRawInput d) $ tryListLitToList es
  where
   es = Dhall.CsvToDhall.dhallFromCsv Dhall.CsvToDhall.defaultConversion expr rs
+  -- TODO replace maximum by handling Validation Failure variant. requires
+  -- several additional imports.
   expr = maximum $ Dhall.expected d
   joinFold f (Left  err) = Left err
   joinFold f (Right xs ) = foldr op (Right []) xs
@@ -66,6 +68,7 @@ tryParseRecords d rs = joinFold (tryParseRawInput d) $ tryListLitToList es
       Just zz -> Right (zz : zs)
       Nothing -> Left $ DecodeException "Could not parse all records"
 
+-- TODO replace readFile
 -- copy-paste from csv-to-dhall Main
 toCsv :: Bool -> FilePath -> IO [NamedRecord]
 toCsv hasHeader file = do
@@ -82,3 +85,4 @@ toCsv hasHeader file = do
 -- @parseDhallFileWith@. 
 tryParseRecordsCsv :: Dhall.Decoder a -> FilePath -> IO (Either MonarchException [a])
 tryParseRecordsCsv d = fmap (tryParseRecords d) . toCsv True
+

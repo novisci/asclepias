@@ -1,5 +1,12 @@
 # Changelog for hasklepias-core
 
+## 0.25.0
+* Changes names of "make" intervals
+  * makeFollowupFromIndex -> makeFollowupStartedByIndex
+  * makeFollowUpMeetingIndex -> makeFollowupMetByIndex
+  * baseline -> baselineMeets
+  * makeBaselineFromIndex -> makeBaselineMeetsIndex
+
 ## 0.24.0
 
 * Changes underlying type of `Criteria` to a list instead of a NonEmpty list.
@@ -31,6 +38,8 @@ y = into @Criterion x -- MkCriterion ("foo", Include)
 
 * The `FeatureN` type has been removed from the `Feature` module,
 as they only place that type was used was in the `Cohort.Criteria` module.
+* Adds `From` instances to get to an `IndexSet i`
+from an `i`, `Maybe i`, and `[i]`.
 * Changes `HasAttributes` class in two ways:
   * Adds a functional dependency so that `name -> d`; that is,
   the name determines the data type.
@@ -43,6 +52,10 @@ as they only place that type was used was in the `Cohort.Criteria` module.
     so that a value doesn't need to be provided.
     Instead type application can be used,
     as in `getAttributes @n`.
+* Adds `setAttributes` function which produces a `HasAttributes` instance
+via template Haskell.
+This function and the related `setAttributesEmpty` and `setManyAttributes`
+functions can reduce boilerplate code need to write `HasAttributes` instances.
 
 ## 0.23.0
 

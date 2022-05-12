@@ -53,6 +53,7 @@ import           Data.Aeson                     ( FromJSON
                                                 , ToJSON(..)
                                                 )
 import           Data.Bifunctor
+import           Data.Binary
 import qualified Data.List.NonEmpty            as NE
 import           Data.Map.Strict               as Map
                                                 ( Map
@@ -86,6 +87,7 @@ newtype SubjID = MkSubjID Text
 instance FromJSON SubjID
 instance From Text SubjID
 instance From SubjID Text
+instance Binary SubjID
 -- | Arbitrary @SubjID@ are simply random strings of 10 characters.
 instance Arbitrary SubjID where
   arbitrary = into . pack <$> replicateM 10 arbitraryASCIIChar
@@ -113,6 +115,7 @@ instance Functor Subject where
 
 instance (FromJSON d) => FromJSON (Subject d)
 instance From (Text, d) (Subject d)
+instance Binary d => Binary (Subject d)
 instance (Arbitrary d) => Arbitrary (Subject d) where
   arbitrary = do
     subjid <- arbitrary
@@ -149,6 +152,7 @@ instance From (Text, i) (ObsID i)  where
 instance From (ObsID i) (Text, i) where
 instance From (ObsID i) i where
   from (MkObsID (x, y)) = y
+instance Binary i => Binary (ObsID i)
 
 -- | Smart constructor for @'ObsID'@.
 makeObsID :: (From t Text) => i -> t -> ObsID i
@@ -165,6 +169,7 @@ data ObsUnit d i = MkObsUnit
 
 instance From (ObsID i, d) (ObsUnit d i) where
   from (x, y) = MkObsUnit x y
+instance (Binary d, Binary i) => Binary (ObsUnit d i)
 
 {-| 
 A container for CohortData
@@ -173,6 +178,7 @@ newtype CohortData d i = MkCohortData [ObsUnit d i]
     deriving (Eq, Show, Generic)
 
 instance From [ObsUnit d i] (CohortData d i) where
+instance (Binary d, Binary i) => Binary (CohortData d i)
 
 {-| 
 A cohort is a list of observational units along with @'AttritionInfo'@ 
@@ -182,6 +188,7 @@ newtype Cohort d i = MkCohort (AttritionInfo, CohortData d i)
     deriving (Eq, Show, Generic)
 
 instance From (Cohort d i) (AttritionInfo, CohortData d i) where
+instance (Binary d, Binary i) => Binary (Cohort d i)
 
 -- | Gets the attrition info from a cohort
 getAttritionInfo :: Cohort d i -> AttritionInfo

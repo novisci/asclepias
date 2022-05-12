@@ -1,4 +1,16 @@
 = Changelog for hasklepias-examples
+## 0.25.0
+* Changes names of "make" intervals
+  * makeFollowupFromIndex -> makeFollowupStartedByIndex
+  * makeFollowUpMeetingIndex -> makeFollowupMetByIndex
+  * baseline -> baselineMeets
+  * makeBaselineFromIndex -> makeBaselineMeetsIndex
+
+== 0.2.0
+
+* Cleans up and adds documentatation for existing cohort and feature examples,
+or moves them to the `UndocumentedExamples` purgatory.
+* Removes `aeson` dependency
 
 == 0.1.0
 

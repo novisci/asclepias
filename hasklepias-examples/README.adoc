@@ -1,3 +1,24 @@
 = hasklepias examples
 
 Provides examples to serve as documentation for the asclepias project.
+
+== Organization notes
+
+Any examples in the `CohortExamples` or `FeatureExamples`
+directory should be documented and presented on the asclepias site.
+This requires writing an `.adoc` file alongside the source code file,
+and adding an extry for the example in either:
+`docs/modules/cohorts/pages/examples.adoc` or
+`docs/modules/features/pages/examples.adoc`.
+
+Some examples are as yet undocumented on the asclepias docs site,
+due to lack of time,
+need for further development,
+questioning its utility, 
+and so on.
+Such examples are in the `UndocumentedExamples` module,
+so that the code is compiled and tests are run.
+From time to time, examples in this directory should be vetted and
+either documented or removed.
+
+

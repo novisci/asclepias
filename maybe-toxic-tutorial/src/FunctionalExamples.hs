@@ -51,26 +51,25 @@ import           Data.List                      ( intersect
 -- For example, in C++ you could write
 
    {-
-#include <iostream>
+-- #include <iostream>
 
-using namespace std;
+-- using namespace std;
 
-int counter = 0;
+-- int counter = 0;
 
-void do_thing(string x) {
-    counter += 1;
-
-    cout<<"I just did a thing called "<< x << ", " << counter << " times!\n";
-}
-
-int main()
-{
-    do_thing("THING");
-    do_thing("THING");
-
-    return 0;
-}
-       -}
+--void do_thing(string x) {
+--    counter += 1;
+--
+--    cout<<"I just did a thing called "<< x << ", " << counter << " times!\n";
+--}
+--
+--int main()
+--{
+--    do_thing("THING");
+--    do_thing("THING");
+--
+--    return 0;
+--}
 
 -- which produces
 

@@ -1,9 +1,9 @@
 cabal-version:      2.4
 name:               monarch
-version:            0.1.0.0
+version:            0.0.0.0
 
 -- A short (one-line) description of the package.
-synopsis: Cohort test-building interface for asclepias.
+synopsis: Cohort test-building interface for asclepias, currently a prototype.
 
 -- A longer description of the package.
 -- description: 
@@ -21,6 +21,7 @@ maintainer:         bbrown@targetrwe.com
 -- category:
 extra-source-files:
     CHANGELOG.md
+    README.adoc
     planning.adoc
 
 library

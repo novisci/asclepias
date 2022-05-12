@@ -1,0 +1,23 @@
+:toc: left
+
+= `monarch`, a prototype
+`monarch` is a tool for specifying test routines via csv, geared toward `asclepias` users. Currently it is a prototype, a starting point for discussion about what functionality `asclepias` users would like from such a tool and about how best to design a text-based user interface.
+
+== Features
+
+. Given a function mapping some user-defined Haskell types `input` to `output`, the user specifies in `csv` format data to provide as input and the expected output. `monarch`: 
+  .. converts the `csv` data to the appropriate types, 
+  .. runs the function on the inputs, 
+  .. compares the function result to the outputs via a testing framework,
+  .. reports results.
+.  Uses a subset of the Dhall configuration language and its `dhall-csv` interpreter. Each cell value must be parseable as one of the following types:
+  .. `Text`
+  .. `Integer`
+  .. `Natural`
+  .. `Double`
+  .. `Bool` 
+  .. a user-defined sum type with at most one value of the types listed above in each variant, e.g. `This | That Integer` in Haskell or Dhall syntax.
+. Provides ready-to-use conversions from the flat `csv` format for the core `asclepias` types defined in `event-data-theory`, such as `Event`:
+  .. project-specific types that are special cases of the `event-data-theory` types need only specify the function from `input` to `output`,
+  .. along with a schema dictating the concrete types used for values, e.g. `Text` for the `Context` values of an `Event`.
+. For non-standard types, allows users to define how the flat `csv` data must be marshalled into the `input` and `output` types to be tested.

@@ -21,7 +21,6 @@ actually is a universal algebra.
 ]
 
 
-
 == Definition of Event
 An event is a `Context` with an associated time interval.
 
@@ -36,11 +35,9 @@ that together might define a the study concept.
 
 Facts
 
-
-
 [source,haskell]
 ----
-include::ROOT/examples/EventDataTheory/Core.hs[tag=contextType]
+include::example$Core.hs[tag=contextType]
 ----
 <1> a set of `+Concepts+`, or tags, 
 which can be used to identify events in a collection;
@@ -77,7 +74,7 @@ https://hackage.haskell.org/package/interval-algebra-{interval-algebra-v}/docs/I
 
 [source,haskell]
 ----
-include::example$EventDataTheory/Core.hs[tag=eventType]
+include::example$Core.hs[tag=eventType]
 ----
 
 The __what__ part of the pair is a `+Context d c+`, 

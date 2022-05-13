@@ -161,7 +161,7 @@ where `col1, col2` are the column names and `T`, `S` are one of the supported ty
 
 A schema is needed for each `input` and `output` type. The column names are defined by how the Haskell `input` and `output` are flattened to the record shape above. Types are determined by the particular concrete types used in the function to be tested.
 
-Continuing with `Examples.Simple`, any schema for an `Event c m a` must have the shape
+Continuing with `Examples.Simple`, any schema for an `input` or `output` type of `[Event c m a]` must have the shape
 [source,dhall]
 ----
 List { concepts : C, facts : M, begin : A, end : A }
@@ -179,7 +179,7 @@ data TrueFacts = Awesome | NotAwesome Text deriving (Show, Eq, Generic)
 type ProjEvent = Event Text TrueFacts Integer
 ----
 
-Its schema is
+The schema for `[ProjEvent]` is
 [source,dhall]
 ----
 List { concepts : Text, facts : < Awesome | NotAwesome : Text >, begin : Integer, end : Integer }
@@ -283,31 +283,31 @@ Lower-case Haskell type parameters should correspond to the upper-case Dhall typ
 
 Invalid types or field names should result in a type-check or parse error.
 
-==== `Concepts c`
+==== `[Concepts c]`
 [source,dhall]
 ----
 List { concepts : C }
 ----
 
-==== `Context c m`
+==== `[Context c m]`
 [source,dhall]
 ----
 List { concepts : C, facts : M }
 ----
 
-==== `Interval a`
+==== `[Interval a]`
 [source,dhall]
 ----
 List { begin : A, end : A }
 ----
 
-==== `PairedInterval (Concepts c) a`
+==== `[PairedInterval (Concepts c) a]`
 [source,dhall]
 ----
 List { concepts : C, begin : A, end : A }
 ----
 
-==== `Event c m a`
+==== `[Event c m a]`
 Note the `Source` field of `Event` is for the moment ignored. Support for it could be added easily.
 [source,dhall]
 ----

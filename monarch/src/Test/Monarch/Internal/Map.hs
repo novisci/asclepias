@@ -46,6 +46,10 @@ import           Witch.TryFromException
 
   {- Map v -}
 
+-- | The primary flat structure housing values to be tested and providing the
+-- glue between text input and internal types to be tested. A wrapper for
+-- @Data.Map.Strict.Map@ with @Text@ keys. Here it is used exclusively via
+-- @TestMap@.
 newtype Map v = Map (SMap.Map Text v) deriving (Show, Eq)
 
 instance Functor Map where
@@ -73,8 +77,6 @@ instance From [(Text, v)] (Map v) where
 instance From (Map v) [(Text, v)] where
   from = toList
 
--- | You need only implement TryFrom (Map v) a to get TryFrom instances for
--- traversables for free.
 instance (Traversable t, TryFrom (Map v) a) => TryFrom (t (Map v)) (t a) where
   tryFrom x =
     first (\(TryFromException _ e) -> TryFromException x e)
@@ -82,11 +84,7 @@ instance (Traversable t, TryFrom (Map v) a) => TryFrom (t (Map v)) (t a) where
 
   {- UTILS and SYNONYMS -}
 -- | The primary flat structure housing values to be tested and providing the
--- glue between text input and internal types to be tested. A wrapper for
--- Data.Map.Strict.Map with Text keys and TestAtomic values.
-
--- TODO once the second one is fully supported, delete the first and all
--- related
+-- glue between text input and internal types to be tested. 
 type TestMap = Map TestVal
 
 fromList :: [(Text, v)] -> Map v

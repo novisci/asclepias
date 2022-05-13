@@ -41,16 +41,14 @@ import           Witch.TryFromException
 
 
 -- TODO alias should now be renamed
--- | Constraint synonym for types that can be converted to and from TestVal.
--- Since intentionally TestVal supports only a handful of types, conversions
--- from TestVal are fallible. Includes a ToDhall constraint since that is the
--- intended way to achieve TryFrom v TestVal.
---type Atomizable v = (TryFrom TestVal v, TryFrom v TestVal)
+
+-- | Constraint synonym for types that can be converted to and from @TestVal@.
+-- Since intentionally @TestVal@ supports only a handful of types, conversions
+-- from @TestVal@ are fallible. 
 type Atomizable v = (TryFrom TestVal v)
 
 -- | Internal type giving supported @Atomic@ values.
 data TestAtomic = TInteger Integer
-    -- TODO add Date, requiring to augment Dhall parser but present in Expr
     | TNatural Natural
     | TBool Bool
     | TDouble Double
@@ -63,11 +61,9 @@ data TestAtomic = TInteger Integer
 --
 -- In addition, @TestVal@ provides a means to decode from Dhall an
 -- inhomogeneous container of values. @TestVal@ is not the only reasonable
--- means to do so, and in future versions of this package we might replace it
--- with an existential type with proper handlers for selecting Dhall decoders
--- from the schema directly, or to a representation using witnesses as in the
--- `singletons` package. The current approach has several limitations and leads
--- to some fraught choices. See notes in the source code.
+-- means to do so, and in future versions of this package we might replace it,
+-- for example with a more direct from Dhall representation using witnesses as
+-- in the `singletons` package.
 --
 -- The @Map@ in @Union@ records the type information of a sum type: its
 -- constructors and contained values if any. Since it is used solely for
@@ -75,22 +71,82 @@ data TestAtomic = TInteger Integer
 -- convenience.
 --
 -- For simple types, such as user-defined sum types whose values are supported
--- by TestAtomic, the easiest way to implement TryFrom a TestVal is to derive
--- Generic and use the generic ToDhall instance. Though awkward, it leverages
+-- by @TestAtomic@, the easiest way to implement @TryFrom@ a @TestVal@ is to derive
+-- @Generic@ and use the generic @ToDhall@ instance. Though awkward, it leverages
 -- Dhall's Generics machinery.
 
 data TestVal = Atomic TestAtomic
              | Union (DM.Map Text (Maybe (DC.Expr Src Void))) (Text, Maybe TestAtomic)
-             -- NOTE: Not currently supported in dhallFromCsv. This is why we
-             -- should write our own parser.
+             -- | This variant is included for future use but is not currently
+             -- fully supported, as @dhall-csv@ does not recognize lists for
+             -- cell values.
              | List [TestAtomic]
              deriving (Show, Eq, Generic)
 
+  {- To/FromDhall Conversions -}
+instance Dhall.FromDhall TestAtomic where
+  autoWith _ = Dhall.Decoder extractOut expectedOut
+   where
+    extractOut (DC.IntegerLit x) = pure $ TInteger x
+    extractOut (DC.NaturalLit x) = pure $ TNatural x
+    extractOut (DC.DoubleLit x) = pure $ TDouble $ DC.getDhallDouble x
+    extractOut (DC.BoolLit x) = pure $ TBool x
+    extractOut (DC.TextLit (DC.Chunks _ x)) = pure $ TText x
+    extractOut expr = Dhall.typeError expectedOut expr
+    -- TODO following from the Result instance of Dhall, but this seems bad
+    -- https://hackage.haskell.org/package/dhall-1.40.2/docs/src/Dhall.Marshal.Decode.html#line-366
+    expectedOut = pure "TestAtomic"
 
-  {- CONVERSIONS -}
--- Hack to leverage Dhall's type-safe conversions and Generics
--- An awkward round-trip that highlights the fact that what we really need here
--- is to write our own generically derived conversions along with a parser
+instance Dhall.FromDhall TestVal where
+  autoWith _ = Dhall.Decoder extractOut expectedOut
+   where
+      -- Sum type variant with value
+    extractOut (DC.App (DC.Field (DC.Union dx) fs) x) =
+      pure $ toUVal dx (DC.fieldSelectionLabel fs) x
+    -- There is not a value
+    extractOut (DC.Field (DC.Union dx) fs) =
+      pure $ toU dx (DC.fieldSelectionLabel fs)
+    -- NOTE this is not currently supported in dhallFromCsv
+    extractOut (DC.ListLit _ es) =
+      List . toList <$> traverse (DD.extract auto) es
+    -- Else try for TestAtomic.
+    extractOut expr = Atomic <$> Dhall.extract auto expr
+    -- utilities
+    toUVal dx' f' x = Union dx' (f', rawInput auto x)
+    toU dx' f' = Union dx' (f', Nothing)
+    -- see TODO in TestAtomic instance
+    expectedOut = pure "TestVal"
+
+instance From TestAtomic (DC.Expr Src Void) where
+  from (TInteger x) = DC.IntegerLit x
+  from (TNatural x) = DC.NaturalLit x
+  from (TBool    x) = DC.BoolLit x
+  from (TDouble  x) = DC.DoubleLit (DC.DhallDouble x)
+  -- NOTE there appears to be no issue in simply plopping all text in the value
+  -- field and ignoring the list argument.
+  from (TText    x) = DC.TextLit (DC.Chunks [] x)
+
+instance From TestVal (DC.Expr Src Void) where
+  from (Atomic x) = from x
+  from (Union t (nm, Nothing)) =
+    DC.Field (DC.Union t) (DC.FieldSelection Nothing nm Nothing)
+  from (Union t (nm, Just v)) = DC.App
+    (DC.Field (DC.Union t) (DC.FieldSelection Nothing nm Nothing))
+    (from v)
+  from (List xs) = DC.ListLit Nothing (fromList $ map from xs)
+
+instance (Dhall.FromDhall a) => TryFrom (DC.Expr Src Void) a where
+  tryFrom x = case rawInput auto x of
+    Just x  -> Right x
+    Nothing -> Left $ TryFromException x Nothing
+
+
+-- NOTE: tryVia doesn't work because Expr Src Void is FromDhall
+instance (Dhall.FromDhall a) => TryFrom TestVal a where
+  tryFrom x = case tryFrom @(DC.Expr Src Void) $ (from @TestVal) x of
+    Right out -> Right out
+    Left  _   -> Left $ TryFromException x Nothing
+
 instance (Dhall.ToDhall a) => TryFrom a TestVal where
   tryFrom = tryViaDhall
 
@@ -99,6 +155,8 @@ tryViaDhall
 tryViaDhall x = case rawInput auto $ Dhall.embed Dhall.inject x of
   Just xx -> Right xx
   Nothing -> Left $ TryFromException x Nothing
+
+  {- Other conversions -}
 
 instance From Integer TestAtomic where
   from = TInteger
@@ -111,10 +169,6 @@ instance From Double TestAtomic where
 instance From Text TestAtomic where
   from = TText
 
--- TODO why undecideable?
---instance (From a TestAtomic) => From a TestVal where
---  from = Atomic . from
-
 instance From Integer TestVal where
   from = Atomic . TInteger
 instance From Natural TestVal where
@@ -126,8 +180,6 @@ instance From Double TestVal where
 instance From Text TestVal where
   from = Atomic . TText
 
--- NOTE instance (From a b) => TryFrom a b 
--- is undecideable. why?
 instance TryFrom Integer TestAtomic where
   tryFrom = Right . from
 instance TryFrom Natural TestAtomic where
@@ -139,7 +191,6 @@ instance TryFrom Double TestAtomic where
 instance TryFrom Text TestAtomic where
   tryFrom = Right . from
 
--- TODO These should be deleted in favor of tryViaDhall
 instance TryFrom TestAtomic Integer where
   tryFrom (TInteger x) = Right x
   tryFrom t            = Left (TryFromException t Nothing)
@@ -162,79 +213,3 @@ instance TryFrom TestAtomic Text where
 
 instance From TestAtomic TestVal where
   from = Atomic
-
--- FromDhall
-instance Dhall.FromDhall TestAtomic where
-  autoWith _ = Dhall.Decoder extractOut expectedOut
-   where
-    extractOut (DC.IntegerLit x) = pure $ TInteger x
-    extractOut (DC.NaturalLit x) = pure $ TNatural x
-    extractOut (DC.DoubleLit x) = pure $ TDouble $ DC.getDhallDouble x
-    extractOut (DC.BoolLit x) = pure $ TBool x
-    extractOut (DC.TextLit (DC.Chunks _ x)) = pure $ TText x
-    extractOut expr = Dhall.typeError expectedOut expr
-    -- TODO following from the Result instance of Dhall, but this seems a nasty hack
-    -- https://hackage.haskell.org/package/dhall-1.40.2/docs/src/Dhall.Marshal.Decode.html#line-366
-    expectedOut = pure "TestAtomic"
-
-
-instance Dhall.FromDhall TestVal where
-  autoWith _ = Dhall.Decoder extractOut expectedOut
-   where
-      -- Sum type variant with value
-    extractOut (DC.App (DC.Field (DC.Union dx) fs) x) =
-      pure $ toUVal dx (DC.fieldSelectionLabel fs) x
-    -- There is not a value
-    extractOut (DC.Field (DC.Union dx) fs) =
-      pure $ toU dx (DC.fieldSelectionLabel fs)
-    -- NOTE this is not currently supported in dhallFromCsv
-    extractOut (DC.ListLit _ es) =
-      List . toList <$> traverse (DD.extract auto) es
-    -- Else try for TestAtomic.
-    -- TODO issue with typeError mismatch
-    extractOut expr = Atomic <$> Dhall.extract auto expr
-    -- utilities
-    toUVal dx' f' x = Union dx' (f', rawInput auto x)
-    toU dx' f' = Union dx' (f', Nothing)
-    -- see TODO in TestAtomic instance
-    expectedOut = pure "TestVal"
-
--- ToDhall instance for TestAtomic/TestVal is awkward because Encoder field
--- 'declared' does not operate on values, and the shape of the dhall Expr
--- depends on the variant of TestAtomic/TestVal.
-
-instance From TestAtomic (DC.Expr Src Void) where
-  from (TInteger x) = DC.IntegerLit x
-  from (TNatural x) = DC.NaturalLit x
-  from (TBool    x) = DC.BoolLit x
-  from (TDouble  x) = DC.DoubleLit (DC.DhallDouble x)
-  -- NOTE there appears to be no issue in simply plopping all text in the value
-  -- field and ignoring the list argument.
-  from (TText    x) = DC.TextLit (DC.Chunks [] x)
-
-instance From TestVal (DC.Expr Src Void) where
-  from (Atomic x) = from x
-  from (Union t (nm, Nothing)) =
-    DC.Field (DC.Union t) (DC.FieldSelection Nothing nm Nothing)
-  from (Union t (nm, Just v)) = DC.App
-    (DC.Field (DC.Union t) (DC.FieldSelection Nothing nm Nothing))
-    (from v)
-  from (List xs) = DC.ListLit Nothing (fromList $ map from xs)
-
--- See note below about tryVia not working
---instance TryFrom TestAtomic (DC.Expr Src Void) where
---  tryFrom = Right . from
---
---instance TryFrom TestVal (DC.Expr Src Void) where
---  tryFrom = Right . from
-
-instance (Dhall.FromDhall a) => TryFrom (DC.Expr Src Void) a where
-  tryFrom x = case rawInput auto x of
-    Just x  -> Right x
-    Nothing -> Left $ TryFromException x Nothing
-
--- NOTE: tryVia doesn't work because Expr Src Void is FromDhall
-instance (Dhall.FromDhall a) => TryFrom TestVal a where
-  tryFrom x = case tryFrom @(DC.Expr Src Void) $ (from @TestVal) x of
-    Right out -> Right out
-    Left  _   -> Left $ TryFromException x Nothing

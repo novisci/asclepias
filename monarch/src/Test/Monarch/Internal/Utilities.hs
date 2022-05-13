@@ -1,4 +1,6 @@
--- | Internal utilities. TODO: Some of these can be replaced with functionality from other packages.
+-- TODO: Some of these can be replaced with functionality from other packages.
+
+-- | Internal utilities. i
 module Test.Monarch.Internal.Utilities where
 
 import           Data.Bifunctor

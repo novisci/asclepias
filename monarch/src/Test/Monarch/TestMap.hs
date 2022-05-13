@@ -3,12 +3,11 @@ module Test.Monarch.TestMap
   ( Map(..)
   , TestMap(..)
   , TestVal(..)
+  , TestAtomic(..)
+  , Atomizable
   , lookup
   , fromList
   , toList
-  -- Atomic items, in support of the Map
-  , TestAtomic(..)
-  , Atomizable
   ) where
 
 import           Test.Monarch.Internal.Map      ( Map(..)

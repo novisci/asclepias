@@ -1,14 +1,17 @@
 {-| 
-   ## @Routine@ and @monarchTest@
-   Test.Tasty tree-builders for @Monarch@. The main exported type is a
-   @Routine@, an existential type that holds a test configuration with a variant for each test framework within which the test should be run. At the moment, only golden tests via `tasty-silver` are supported. 
+   @Test.Tasty@ tree-builders for @Monarch@. The main exported type is a
+   @Routine@, an existential type that holds a test configuration with a
+   variant for each test framework within which the test should be run. At the
+   moment, only golden tests via `tasty-silver` are supported. 
 
-   @hTest@ is the primary exported tree-builder, which takes a @Routine@ and builds the a @TestTree@ using the appropriate framework.
+   @monarchTest@ is the primary exported tree-builder, which takes a @Routine@
+   and builds the a @TestTree@ using the appropriate framework.
 
-   This module is not solely a switch between testing frameworks: Tests are built from user-defined csv input and associated dhall schema. The unexported function @processElems@ transforms these to the appropriate Haskell types. Csv-provided inputs are transformed to outputs via @ToOutput@, against which the csv-provided output is compared.
-
-   Initially the thought was to make a `Test.Tasty` provider, but that to be unnecessary and undesireable. See a large comment with example code in that direction at the bottom of this module's source code.
-   
+   This module is not solely a switch between testing frameworks: Tests are
+   built from user-defined csv input and associated dhall schema. The
+   unexported function @processElems@ transforms these to the appropriate
+   Haskell types. Csv-provided inputs are transformed to outputs via
+   @ToOutput@, against which the csv-provided output is compared.
   -}
 
 {-# LANGUAGE FlexibleContexts #-}

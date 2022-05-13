@@ -29,8 +29,6 @@ import           Witch.TryFrom
 class ToOutput input output where
   toOutput :: input -> output
 
--- TODO: consider generalizing Testable to be generic over Traversable f. 
-
 -- | Context synonym for an @input@ and @output@ pair that can be constructed
 -- from the general flat TestMap and run through @toOutput@. @input@ is a Haskell
 -- representation of a type serving as input to a function to be tested, given

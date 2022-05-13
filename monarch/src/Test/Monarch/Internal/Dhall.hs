@@ -1,3 +1,11 @@
+{-| 
+Module      : Test.Monarch.Internal.Dhall
+Description : Internal module providing parsers and Dhall decoders needed to
+marshall csv input to a `TestMap`.
+Copyright   : (c) NoviSci, Inc 2022
+License     : BSD3
+Maintainer  : bbrown@targetrwe.com
+  -}
 {-# LANGUAGE TupleSections #-}
 
 module Test.Monarch.Internal.Dhall where
@@ -26,7 +34,8 @@ import           Test.Monarch.Internal.Map
    {- UTILS -}
 type DhallExpr = Dhall.Core.Expr Src Void
 
-  {-
+  {- Kept for future reference but not needed.
+
 -- TODO these are not needed but useful for creating a custom type injected
 -- into the dhall language parser. see the Dhall tutorial section on
 -- substitutions.
@@ -41,7 +50,6 @@ decoderTypeText :: Dhall.Decoder a -> T.Text
 decoderTypeText = T.pack . show . pretty . maximum . Dhall.expected
 
 -- inject type a into a dhall program string and return decoded Haskell type
--- TODO name handling is ham-handed. grab name from the object itself?
 parseDecodeWithType :: T.Text -> Dhall.Decoder a -> T.Text -> IO a
 parseDecodeWithType name d program = Dhall.input
   d
@@ -49,7 +57,6 @@ parseDecodeWithType name d program = Dhall.input
   where typedef = "let " <> name <> " = " <> decoderTypeText d
         -}
 
--- fail if file can't be read
 readFileViaBytes :: FilePath -> IO T.Text
 readFileViaBytes path = do
   b <- BS.readFile path
@@ -66,11 +73,10 @@ parseDhallFileWith
   :: (T.Text -> IO (Expr Src Void)) -> FilePath -> IO (Expr Src Void)
 parseDhallFileWith parser file = parser =<< readFileViaBytes file
 
--- | Parse a .dhall file into an @Expr@ using the Dhall package's @"Dhall".inputExpr@
+-- | Parse a .dhall file into an @Expr@ using the Dhall package's @inputExpr@.
 parseDhallFile :: FilePath -> IO (Expr Src Void)
 parseDhallFile = parseDhallFileWith Dhall.inputExpr
 
--- alias, fixing Alternative f as Maybe a
 -- TODO Alternative f should be Either MonarchException
 tryParseRawInput :: Dhall.Decoder a -> Expr Src Void -> Maybe a
 tryParseRawInput = Dhall.rawInput
@@ -91,10 +97,12 @@ tryParseRawInput = Dhall.rawInput
       -}
 
 -- NOTE: Here you must specify the record names, since 'expected' determines the
--- shape of the decoded object. failures happen at runtime, as usual for dhall
+-- shape of the decoded object.
 
 -- | Build a @Decoder (Map v)@ provided a decoder for @v@ and a list of key
--- names for @Map@. You should probably use @decodeMapSchema@ instead.
+-- names for @Map@. You must specify keys as text, so as to determine the
+-- expected Dhall type to decode. You should probably use @decodeMapSchema@
+-- instead.
 decodeMapWith :: Dhall.Decoder v -> [T.Text] -> Dhall.Decoder (Map v)
 decodeMapWith decodeVal names = Dhall.Decoder extractOut expectedOut
  where
@@ -115,28 +123,24 @@ decodeMapWith decodeVal names = Dhall.Decoder extractOut expectedOut
 decodeMap :: (Dhall.FromDhall v) => [T.Text] -> Dhall.Decoder (Map v)
 decodeMap = decodeMapWith Dhall.auto
 
--- | Decode a @(Map v) from Dhall program text and a list of expected keys. You
+-- | Build a @(Map v) from Dhall program text and a list of expected keys. You
 -- should probably use @mapInputSchema instead.
 mapInput :: (Dhall.FromDhall v) => [T.Text] -> T.Text -> IO (Map v)
 mapInput names = Dhall.input (decodeMap names)
 
--- TODO fail with something other than text
--- TODO failure if schema is not record. right now this is basically OK because
--- extractOut implicitly requires this, but the dhall error will be confusing.
--- NOTE: this is awkward because we'd like to grab decodeVal from the schema.
--- See notes in the Atomic module on alternate representations, which would
--- provide that ability.
-
 -- |  Build a @Decoder (Map v)@ using a provided decoder for @v@. Unlike 
 -- @decodeMapWith@, the map key names are provided in a Dhall record schema.
 -- This custom decoder is necessary because Dhall by default decodes to @Map@
--- for Dhall lists of records with `mapKey` and `mapValue` fields. Here, we use
--- @Map@ as a container for a more general flat structure with named fields, as
--- one might find in tabular format. As in the
+-- for Dhall lists of records with `mapKey` and `mapValue` fields, which is
+-- inconvenient for our purposes. Here, we use @Map@ as a container for a more
+-- general flat structure with named fields, as one might find in tabular
+-- format. As in the
 -- [dhall-csv](https://hackage.haskell.org/package/dhall-csv) package, the most
 -- natural way to specify such a structure in Dhall is via the @Record@ variant
 -- of an @Expr@. Therefore we write a custom Decoder to a @Map@ from a Dhall
 -- @Record@.
+--
+-- This is intended to be used with @v@ as @TestVal@. In that case, the types of the fields provided in the schema should be the Dhall types corresponding to the @TestVal@ variants. For example, @Atomic (TText)@ should be specified in the schema as @Text@, and @Union@ types should be specified using the Dhall sum-type syntax. 
 decodeMapSchema :: Dhall.Decoder v -> DhallExpr -> Dhall.Decoder (Map v)
 decodeMapSchema decodeVal schema = Dhall.Decoder extractOut expectedOut
  where

@@ -1,4 +1,10 @@
--- | Pre-made conversions for EventDataTheory types, to simplify testing implementation for routines using these types. You should prefer to use the pre-built conversions needed for Atomizable defined here.
+{-| 
+Module      : Test.Monarch.Internal.EventDataTheory
+Description : Pre-made conversions for @EventDataTheory.Core@ types, to simplify testing implementation for routines using these types. You should prefer to use the pre-built conversions needed for Atomizable defined here.
+Copyright   : (c) NoviSci, Inc 2022
+License     : BSD3
+Maintainer  : bbrown@targetrwe.com
+  -}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -43,27 +49,24 @@ import           Witch.Utility                  ( tryVia )
 
      -}
 
---instance (Ord c, FromDhall c) => TryFrom TestVal (Concepts c) where
---  tryFrom input = packConcepts <$> traverse (first (const err)) [tryFrom @TestVal input]
---    where err = TryFromException input Nothing
-
---instance (Ord c, TryFrom c TestAtomic) => TryFrom (Concepts c) TestVal where
---  tryFrom input = first (const err) $ List <$> traverse
---    tryFrom
---    (from @(Concepts c) @[c] input)
---    where err = TryFromException input Nothing
-
--- TODO revisit these. this is really the way to do it and avoids some overlapping instances.
+-- TODO these should be provided in EventDataTheory.Core
 instance (ToDhall c) => ToDhall (Concept c)
 instance (FromDhall c) => FromDhall (Concept c)
 instance (ToDhall c) => ToDhall (Concepts c)
 instance (FromDhall c, Ord c, Show c) => FromDhall (Concepts c)
 
-instance (Ord c, TryFrom TestVal (Concepts c)) => TryFrom TestMap (Concepts c) where
+instance (Ord c, Atomizable (Concepts c)) => TryFrom TestMap (Concepts c) where
   tryFrom input = concepts
    where
     -- TODO: This awful hack is because lists are not supported by dhallFromCsv.
-    -- It means we only support Concepts with one element.
+    -- It means we only support Concepts with one element. You could add
+    -- support for multi-element sets by adding a grouping variable to the
+    -- schema and collecting "concepts" values on that variable. Since that
+    -- adds some cognitive complexity to the csv input and since most cases
+    -- involve just one concept, that method is not used here. You could also
+    -- consider rewriting `dhallFromCsv`, largely copying and pasting from the
+    -- dhall-csv source. However, the function uses multiple internal types,
+    -- which left me stumped as to what to do.
     concepts = case singleValToList <$> lookup "concepts" input of
       Nothing        -> Left $ TryFromException input Nothing
       Just (Left  _) -> Left $ TryFromException input Nothing
@@ -105,21 +108,3 @@ instance (Show a, Ord a, Show c, Ord c, Eq m, Show m, Atomizable a, TryFrom Test
     i   = tryFrom @TestMap input
     c   = tryFrom @TestMap input
     err = TryFromException input Nothing
-
-  {- An outcome type from Hasklepias Misc -}
-    {-
--- TODO placeholder for a 'common' outcome
-data CensoredOccurrence d c a = MkCensoredOccurrence
-  { reason :: d
-  , time   :: PairedInterval c a
-  }
-  deriving (Eq, Show, Generic)
-instance (Show a, Ord a, Atomizable d, Atomizable a, TryFrom TestMap c) => TryFrom TestMap (CensoredOccurrence d c a) where
-  tryFrom input = liftA2 MkCensoredOccurrence
-                         (joinMaybeEither err reason)
-                         (mapLeft err time)
-   where
-    reason = tryFrom @TestVal <$> lookup "reason" input
-    time   = tryFrom input
-    err    = TryFromException input Nothing
--}

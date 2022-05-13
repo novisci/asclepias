@@ -25,6 +25,9 @@ extra-source-files:
     planning.adoc
 
 library
+    ghc-options:
+      -Wno-unused-imports
+
     exposed-modules:  
         Test.Monarch.TestMap
         , Test.Monarch.ToOutput
@@ -77,7 +80,7 @@ executable demo
     -- other-extensions:
     build-depends:
         base ^>=4.14.1.0
-        , monarch == 0.0.0.0
+        , monarch
         , tasty
         , witch
 

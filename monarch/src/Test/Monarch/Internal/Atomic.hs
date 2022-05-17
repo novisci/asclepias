@@ -36,12 +36,6 @@ import           Witch.TryFrom
 import           Witch.TryFromException
 
 
--- TODO alias should now be renamed
-
--- | Constraint synonym for types that can be converted to and from @TestVal@.
--- Since intentionally @TestVal@ supports only a handful of types, conversions
--- from @TestVal@ are fallible. 
-type Atomizable v = (TryFrom TestVal v)
 
 -- | Internal type giving supported @Atomic@ values.
 data TestAtomic = TInteger Integer
@@ -78,6 +72,13 @@ data TestVal = Atomic TestAtomic
              -- cell values.
              | List [TestAtomic]
              deriving (Show, Eq, Generic)
+
+-- TODO alias should now be renamed
+
+-- | Constraint synonym for types that can be converted to and from @TestVal@.
+-- Since intentionally @TestVal@ supports only a handful of types, conversions
+-- from @TestVal@ are fallible. 
+type Atomizable v = (TryFrom TestVal v)
 
   {- To/FromDhall Conversions -}
 instance Dhall.FromDhall TestAtomic where

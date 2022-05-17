@@ -31,7 +31,58 @@ import           Witch.TryFrom
       See Main.hs for how it might be used in a test.
       -}
 
+  {- Project code, nothing to do with Monarch -}
 
+-- Inputs
+-- there is nothing to do for hygeia to implement the TryFrom instances, since
+-- these alias the generic event, for which constraints are already
+-- implemented, and Integer, Text already implement the necessary conversions
+data TrueFacts = Awesome | NotAwesome Text deriving (Show, Eq, Generic)
+type ProjEvent = Event Text TrueFacts Integer
+type Index = Interval Integer
+
+index :: Index
+index = beginervalMoment 0
+
+-- bootstrap conversion via dhall
+instance FromDhall TrueFacts
+instance ToDhall TrueFacts
+-- json instances required for Golden
+instance ToJSON TrueFacts
+instance FromJSON TrueFacts
+
+-- Outputs
+data SumminElse = WasBefore | WasAfter deriving (Show, Eq, Generic)
+type ProjOccurrence = Event Text SumminElse Integer
+
+instance FromDhall SumminElse
+instance ToDhall SumminElse
+-- json instances required for Golden
+instance ToJSON SumminElse
+instance FromJSON SumminElse
+
+-- 'cohort-building' routines
+wasAfter :: Event a SumminElse b -> Bool
+wasAfter = (== WasAfter) . getFacts . getContext
+
+-- Cohort builder
+-- Change Facts field
+cohortBuilderSingle :: Index -> ProjEvent -> ProjOccurrence
+cohortBuilderSingle idx e = event i (whatIsIt c)
+ where
+  i = getInterval $ getEvent e
+  c = getContext e
+  whatIsIt c' | end i >= end idx = c' { getFacts = WasAfter }
+              | otherwise        = c' { getFacts = WasBefore }
+
+-- placeholder for some filterMap operation building outcomes make a
+-- ProjOccurrence with reason "after", keeping other data, if the index
+-- end is <= the event end. index is (0, 1)
+cohortBuilder :: Index -> [ProjEvent] -> [ProjOccurrence]
+cohortBuilder ix = foldr op []
+ where
+  op x xs =
+    let x' = cohortBuilderSingle ix x in if wasAfter x' then x' : xs else xs
   {- Code required for Monarch testing -}
 
 -- defining the conversion
@@ -67,60 +118,6 @@ myMisspecRoutine :: TestRoutine
 myMisspecRoutine = Golden
   (MkRoutineElem @[ProjEvent] badInputCsv inputDhall)
   (MkRoutineElem @[ProjOccurrence] outputCsv outputDhall)
-
-  {- Other project code -}
-
--- Cohort builder
--- Change Facts field
-cohortBuilderSingle :: Index -> ProjEvent -> ProjOccurrence
-cohortBuilderSingle idx e = event i (whatIsIt c)
- where
-  i = getInterval $ getEvent e
-  c = getContext e
-  whatIsIt c' | end i >= end idx = c' { getFacts = WasAfter }
-              | otherwise        = c' { getFacts = WasBefore }
-
-wasAfter :: Event a SumminElse b -> Bool
-wasAfter = (== WasAfter) . getFacts . getContext
-
--- placeholder for some filterMap operation building outcomes
--- make a ProjOccurrence with reason "after", keeping other data, if the index
--- end is <= the event end. index is (0, 1)
-cohortBuilder :: Index -> [ProjEvent] -> [ProjOccurrence]
-cohortBuilder ix = foldr op []
- where
-  op x xs =
-    let x' = cohortBuilderSingle ix x in if wasAfter x' then x' : xs else xs
-
--- Project-specific types
-
--- Inputs
--- there is nothing to do for hygeia to implement the TryFrom instances, since
--- these alias the generic event, for which constraints are already
--- implemented, and Integer, Text already implement the necessary conversions
-data TrueFacts = Awesome | NotAwesome Text deriving (Show, Eq, Generic)
-type ProjEvent = Event Text TrueFacts Integer
-type Index = Interval Integer
-
-index :: Index
-index = beginervalMoment 0
-
--- bootstrap conversion via dhall
-instance FromDhall TrueFacts
-instance ToDhall TrueFacts
--- json instances required for Golden
-instance ToJSON TrueFacts
-instance FromJSON TrueFacts
-
--- Outputs
-data SumminElse = WasBefore | WasAfter deriving (Show, Eq, Generic)
-type ProjOccurrence = Event Text SumminElse Integer
-
-instance FromDhall SumminElse
-instance ToDhall SumminElse
--- json instances required for Golden
-instance ToJSON SumminElse
-instance FromJSON SumminElse
 
 
 -- Some data to play with in the repl

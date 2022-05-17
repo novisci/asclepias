@@ -11,7 +11,6 @@ Maintainer  : bbrown@targetrwe.com
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE TypeApplications #-}
 
 module Test.Monarch.Internal.Atomic where

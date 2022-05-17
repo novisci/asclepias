@@ -22,4 +22,5 @@ import           Test.Monarch.Internal.Atomic   ( Atomizable
                                                 , TestVal(..)
                                                 )
 
+-- NOTE: This import is necessary for its TryFrom instances
 import           Test.Monarch.Internal.EventDataTheory

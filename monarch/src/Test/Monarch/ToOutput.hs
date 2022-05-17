@@ -21,7 +21,6 @@ module Test.Monarch.ToOutput
   ) where
 
 import           Test.Monarch.TestMap
-import           Witch.From
 import           Witch.TryFrom
 
 -- | Class defining the conversion from inputs to outputs to be tested. See

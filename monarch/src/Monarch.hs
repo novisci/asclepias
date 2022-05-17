@@ -19,7 +19,10 @@ module Monarch
   , parseDhallFile
   , parseDhallFileWith
   -- | Reexports
-  -- Conversion instances to derive via Generic if
+  , TestTree
+  , defaultMain
+  , testGroup
+  -- | Conversion instances to derive via Generic if
   -- needed for custom types
   , Generic
   , ToDhall
@@ -41,3 +44,7 @@ import           Dhall                          ( FromDhall
                                                 , ToDhall
                                                 )
 import           GHC.Generics                   ( Generic )
+import           Test.Tasty                     ( TestTree
+                                                , defaultMain
+                                                , testGroup
+                                                )

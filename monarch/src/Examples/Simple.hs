@@ -50,7 +50,7 @@ inputDhall, outputDhall :: String
 inputDhall = projPath </> "input.dhall"
 outputDhall = replaceFileName inputCsv "output.dhall"
 
-myRoutine :: Routine
+myRoutine :: TestRoutine
 myRoutine = Golden (MkRoutineElem @[ProjEvent] inputCsv inputDhall)
                    (MkRoutineElem @[ProjOccurrence] outputCsv outputDhall)
 
@@ -58,12 +58,12 @@ badInputCsv, badOutputCsv :: String
 badInputCsv = replaceFileName outputCsv "input_bad.csv"
 badOutputCsv = replaceFileName outputCsv "output_bad.csv"
 
-myBadRoutine :: Routine
+myBadRoutine :: TestRoutine
 myBadRoutine = Golden
   (MkRoutineElem @[ProjEvent] inputCsv inputDhall)
   (MkRoutineElem @[ProjOccurrence] badOutputCsv outputDhall)
 
-myMisspecRoutine :: Routine
+myMisspecRoutine :: TestRoutine
 myMisspecRoutine = Golden
   (MkRoutineElem @[ProjEvent] badInputCsv inputDhall)
   (MkRoutineElem @[ProjOccurrence] outputCsv outputDhall)
@@ -180,7 +180,7 @@ exOneFun = map (getConcepts . getContext)
 instance ToOutput [ExOneInput] [ExOneOutput] where
   toOutput = exOneFun
 
-myRoutine2 :: Routine
+myRoutine2 :: TestRoutine
 myRoutine2 = Golden
   (MkRoutineElem @[ExOneInput] (projPath </> "input2.csv")
                                (projPath </> "input2.dhall")

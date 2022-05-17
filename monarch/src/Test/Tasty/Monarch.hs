@@ -22,7 +22,7 @@
 
 module Test.Tasty.Monarch
   ( RoutineContext
-  , Routine(..)
+  , TestRoutine(..)
   , RoutineElem(..)
   , monarchTest
   ) where
@@ -66,7 +66,7 @@ type RoutineContext input output
 
 -- | A pair of @RoutineElem@ for text-based input and output, used to run
 -- tests. Variants specify in which framework tests should be run.
-data Routine
+data TestRoutine
   = forall input output
   . (RoutineContext input output) =>
     Golden (RoutineElem input) (RoutineElem output)
@@ -87,7 +87,7 @@ data RoutineElem a = MkRoutineElem
 -- | Main point of entry to for tools from @Test.Monarch@. Converts a @Routine@
 -- specifying a test framework and text configuration file paths to a
 -- @TestTree@, for inclusion in some @Test.Tasty@ runner.
-monarchTest :: TestName -> Routine -> TestTree
+monarchTest :: TestName -> TestRoutine -> TestTree
 monarchTest name (Golden rin rout) = runGolden name rin rout
 
   {- Internals -}

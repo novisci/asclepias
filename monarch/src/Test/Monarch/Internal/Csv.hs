@@ -11,7 +11,6 @@ module Test.Monarch.Internal.Csv where
 import           Data.Csv                       ( NamedRecord )
 import qualified Data.Text                     as T
 import qualified Data.Text.IO                   ( readFile )
-import           Data.Void                      ( Void )
 import qualified Dhall
 import qualified Dhall.Core
 import           Dhall.Core                     ( Expr(..)

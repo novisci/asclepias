@@ -78,12 +78,12 @@ myMisspecRoutine = Golden
 -- Cohort builder
 -- Change Facts field
 cohortBuilderSingle :: Index -> ProjEvent -> ProjOccurrence
-cohortBuilderSingle index e = event i (whatIsIt c)
+cohortBuilderSingle idx e = event i (whatIsIt c)
  where
   i = getInterval $ getEvent e
   c = getContext e
-  whatIsIt c' | end i >= end index = c { getFacts = WasAfter }
-              | otherwise          = c { getFacts = WasBefore }
+  whatIsIt c' | end i >= end idx = c' { getFacts = WasAfter }
+              | otherwise          = c' { getFacts = WasBefore }
 
 wasAfter :: Event a SumminElse b -> Bool
 wasAfter = (== WasAfter) . getFacts . getContext

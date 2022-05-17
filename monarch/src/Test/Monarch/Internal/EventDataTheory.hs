@@ -1,6 +1,8 @@
 {-| 
 Module      : Test.Monarch.Internal.EventDataTheory
-Description : Pre-made conversions for @EventDataTheory.Core@ types, to simplify testing implementation for routines using these types. You should prefer to use the pre-built conversions needed for Atomizable defined here.
+Description : Pre-made conversions for @EventDataTheory.Core@ types, to
+simplify testing implementation for routines using these types. You should
+prefer to use the pre-built conversions needed for Atomizable defined here.
 Copyright   : (c) NoviSci, Inc 2022
 License     : BSD3
 Maintainer  : bbrown@targetrwe.com
@@ -16,8 +18,7 @@ module Test.Monarch.Internal.EventDataTheory where
 
 import           Control.Applicative
 import           Data.Bifunctor                 ( first )
-import           Dhall                          ( FromDhall
-                                                )
+import           Dhall                          ( FromDhall )
 import           EventDataTheory.Core
 import           IntervalAlgebra                ( Interval
                                                 , PairedInterval
@@ -81,7 +82,7 @@ instance (Show a, Ord a, FromDhall a, TryFrom TestMap c) => TryFrom TestMap (Pai
                          (first (const err) interval)
    where
      -- Note this need not actually be Context here.
-    ctx  = tryFrom input
+    ctx      = tryFrom input
     interval = tryFrom input
     err      = TryFromException input Nothing
 

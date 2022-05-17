@@ -12,9 +12,9 @@ import           Test.Tasty.Monarch
 tests :: TestTree
 tests = testGroup
   "Examples.Simple"
-  [ monarchTest "good" myRoutine
-  , monarchTest "bad"  myBadRoutine
-  , monarchTest "ugly" myMisspecRoutine
+  [ monarchTest "good"            myRoutine
+  , monarchTest "bad"             myBadRoutine
+  , monarchTest "ugly"            myMisspecRoutine
   , monarchTest "conversion fail" myRoutine2
   ]
 

@@ -185,8 +185,8 @@ processElems i o = do
   -- build decoders
   let iDecoder = decodeMapSchemaAuto @TestVal iSchema
   let oDecoder = decodeMapSchemaAuto @TestVal oSchema
-  let iFile = csvFile i
-  let oFile = csvFile o
+  let iFile    = csvFile i
+  let oFile    = csvFile o
   -- parse Csv with decoder into [TestMap]
   iData <- tryParseRecordsCsv iDecoder iFile
   oData <- tryParseRecordsCsv oDecoder oFile
@@ -201,8 +201,9 @@ processElems i o = do
       case (tryFrom @[TestMap] ii, tryFrom @[TestMap] oo) of
         (Right iOut, Right oOut) ->
           pure $ MkProcessedElems iOut (csvFile i) oOut (csvFile o)
-        (Right _  , Left err) -> fail $ show $ OutputConversionException err oFile
-        (Left  err, _       ) -> fail $ show $ InputConversionException err iFile
+        (Right _, Left err) ->
+          fail $ show $ OutputConversionException err oFile
+        (Left err, _) -> fail $ show $ InputConversionException err iFile
     (Right _  , Left err) -> fail $ show err
     (Left  err, _       ) -> fail $ show err
 

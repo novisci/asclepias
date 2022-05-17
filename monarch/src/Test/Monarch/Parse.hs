@@ -1,6 +1,7 @@
 {-| 
 Module      : Test.Monarch.Parse
-Description : Helpers for marshalling csv text input to `TestMap` via `dhall-csv`.
+Description : Helpers for marshalling csv text input to `TestMap` via
+`dhall-csv`.
 Copyright   : (c) NoviSci, Inc 2022
 License     : BSD3
 Maintainer  : bbrown@targetrwe.com

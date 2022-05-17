@@ -33,4 +33,5 @@ instance Exception MonarchException
 -- utils
 
 conversionExString :: String -> String -> String
-conversionExString t s = "\n" ++ t ++ ":\n" ++ "Failed to convert from " ++ s ++ " with value\n\n"
+conversionExString t s =
+  "\n" ++ t ++ ":\n" ++ "Failed to convert from " ++ s ++ " with value\n\n"

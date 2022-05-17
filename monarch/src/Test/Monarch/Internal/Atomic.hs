@@ -1,6 +1,7 @@
 {-| 
 Module      : Test.Monarch.Internal.Atomic
-Description : Internal representation of a testable value type to be used in Map. 
+Description : Internal representation of a testable value type to be used in
+Map. 
 Copyright   : (c) NoviSci, Inc 2022
 License     : BSD3
 Maintainer  : bbrown@targetrwe.com

@@ -12,8 +12,7 @@ import           Data.Csv                       ( NamedRecord )
 import qualified Data.Text                     as T
 import qualified Data.Text.IO                   ( readFile )
 import qualified Dhall
-import           Dhall.Core                     ( Expr(..)
-                                                )
+import           Dhall.Core                     ( Expr(..) )
 import           Dhall.Csv.Util
 import           Dhall.CsvToDhall
 import qualified GHC.Exts                       ( IsList(..) )

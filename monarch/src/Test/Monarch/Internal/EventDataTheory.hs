@@ -6,13 +6,11 @@ License     : BSD3
 Maintainer  : bbrown@targetrwe.com
   -}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE MonoLocalBinds #-}
 
 module Test.Monarch.Internal.EventDataTheory where
 
@@ -36,8 +34,6 @@ import           Prelude                 hiding ( lookup )
 import           Test.Monarch.Internal.Atomic
 import           Test.Monarch.Internal.Map
 import           Test.Monarch.Internal.Utilities
-import           Test.Monarch.MonarchException
-import           Witch.From
 import           Witch.TryFrom
 import           Witch.TryFromException
 import           Witch.Utility                  ( tryVia )
@@ -49,13 +45,7 @@ import           Witch.Utility                  ( tryVia )
 
      -}
 
--- TODO these should be provided in EventDataTheory.Core
-instance (ToDhall c) => ToDhall (Concept c)
-instance (FromDhall c) => FromDhall (Concept c)
-instance (ToDhall c) => ToDhall (Concepts c)
-instance (FromDhall c, Ord c, Show c) => FromDhall (Concepts c)
-
-instance (Ord c, Atomizable (Concepts c)) => TryFrom TestMap (Concepts c) where
+instance (Ord c, Show c, FromDhall c) => TryFrom TestMap (Concepts c) where
   tryFrom input = concepts
    where
     -- TODO: This awful hack is because lists are not supported by dhallFromCsv.
@@ -74,7 +64,7 @@ instance (Ord c, Atomizable (Concepts c)) => TryFrom TestMap (Concepts c) where
     singleValToList x = List . (: []) <$> tryFrom @TestVal x
     err = TryFromException input Nothing
 
-instance (Ord c, Atomizable (Concepts c), Atomizable m) => TryFrom TestMap (Context c m) where
+instance (Ord c, FromDhall c, Show c, FromDhall m) => TryFrom TestMap (Context c m) where
   tryFrom input = liftA3 context
                          (first (const err) concepts)
                          (joinMaybeEither err facts)
@@ -85,14 +75,14 @@ instance (Ord c, Atomizable (Concepts c), Atomizable m) => TryFrom TestMap (Cont
     facts    = tryFrom @TestVal <$> lookup "facts" input
     err      = TryFromException input Nothing
 
-instance (Show a, Ord a, Atomizable a) => TryFrom TestMap (Interval a) where
+instance (Show a, Ord a, FromDhall a) => TryFrom TestMap (Interval a) where
   tryFrom input = joinEitherOuter err $ liftA2 parseInterval b e
    where
     b   = joinMaybeEither err $ tryFrom @TestVal @a <$> lookup "begin" input
     e   = joinMaybeEither err $ tryFrom @TestVal @a <$> lookup "end" input
     err = TryFromException input Nothing
 
-instance (Show a, Ord a, Atomizable a, TryFrom TestMap c) => TryFrom TestMap (PairedInterval c a) where
+instance (Show a, Ord a, FromDhall a, TryFrom TestMap c) => TryFrom TestMap (PairedInterval c a) where
   tryFrom input = liftA2 makePairedInterval
                          (first (const err) context)
                          (first (const err) interval)

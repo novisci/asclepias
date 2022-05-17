@@ -17,16 +17,12 @@ import qualified Dhall.Core
 import           Dhall.Core                     ( Expr(..)
                                                 , pretty
                                                 )
-import           Dhall.Csv
 import           Dhall.Csv.Util
 import           Dhall.CsvToDhall
 import qualified Dhall.Map
 import qualified Dhall.Marshal.Decode          as Decode
-import           Dhall.Src
 import qualified GHC.Exts                       ( IsList(..) )
-import           Test.Monarch.Internal.Atomic
 import           Test.Monarch.Internal.Dhall
-import           Test.Monarch.Internal.Map
 import           Test.Monarch.MonarchException
 
 -- dhallFromCsv converts the list of NamedRecord to a ListLit Nothing (Seq (Expr ...))

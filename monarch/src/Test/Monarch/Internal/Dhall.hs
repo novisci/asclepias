@@ -21,14 +21,10 @@ import qualified Dhall.Core
 import           Dhall.Core                     ( Expr(..)
                                                 , pretty
                                                 )
-import           Dhall.Csv
-import           Dhall.Csv.Util
-import           Dhall.CsvToDhall
 import qualified Dhall.Map
 import qualified Dhall.Marshal.Decode          as Decode
 import           Dhall.Src
 import qualified GHC.Exts                       ( IsList(..) )
-import           Test.Monarch.Internal.Atomic
 import           Test.Monarch.Internal.Map
 
    {- UTILS -}
@@ -140,7 +136,11 @@ mapInput names = Dhall.input (decodeMap names)
 -- of an @Expr@. Therefore we write a custom Decoder to a @Map@ from a Dhall
 -- @Record@.
 --
--- This is intended to be used with @v@ as @TestVal@. In that case, the types of the fields provided in the schema should be the Dhall types corresponding to the @TestVal@ variants. For example, @Atomic (TText)@ should be specified in the schema as @Text@, and @Union@ types should be specified using the Dhall sum-type syntax. 
+-- This is intended to be used with @v@ as @TestVal@. 
+-- In that case, the types of the fields provided in the schema 
+-- should be the Dhall types corresponding to the @TestVal@ variants.
+-- For example, @Atomic (TText)@ should be specified in the schema as @Text@,
+-- and @Union@ types should be specified using the Dhall sum-type syntax. 
 decodeMapSchema :: Dhall.Decoder v -> DhallExpr -> Dhall.Decoder (Map v)
 decodeMapSchema decodeVal schema = Dhall.Decoder extractOut expectedOut
  where

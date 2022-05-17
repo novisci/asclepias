@@ -21,6 +21,7 @@ tests = testGroup
   [ monarchTest "good" myRoutine
   , monarchTest "bad"  myBadRoutine
   , monarchTest "ugly" myMisspecRoutine
+  , monarchTest "bradley exe" myRoutine2
   ]
 
 main :: IO ()

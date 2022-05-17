@@ -180,6 +180,13 @@ type ExOneOutput = Concepts Text
 exOneFun :: [ExOneInput] -> [ExOneOutput]
 exOneFun = map (getConcepts . getContext)
 
+instance ToOutput [ExOneInput] [ExOneOutput] where
+  toOutput  = exOneFun
+
+myRoutine2 :: Routine
+myRoutine2 = Golden (MkRoutineElem @[ExOneInput] (projPath </> "input2.csv") (projPath </> "input2.dhall"))
+                   (MkRoutineElem @[ExOneOutput] (projPath </> "output2.csv") (projPath </> "output2.dhall"))
+
 
 -- Ex. 2
 -- Yes > No?

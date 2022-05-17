@@ -29,7 +29,8 @@ library
       -Wall
 
     exposed-modules:  
-        Test.Monarch.TestMap
+        Monarch
+        , Test.Monarch.TestMap
         , Test.Monarch.ToOutput
         , Test.Monarch.MonarchException
         , Test.Monarch.Parse

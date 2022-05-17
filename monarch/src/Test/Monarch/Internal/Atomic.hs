@@ -15,10 +15,7 @@ Maintainer  : bbrown@targetrwe.com
 
 module Test.Monarch.Internal.Atomic where
 
-import           Data.Text                      ( Text
-                                                , stripPrefix
-                                                , stripSuffix
-                                                )
+import           Data.Text                      ( Text )
 import           Data.Void
 import qualified Dhall
 import           Dhall                          ( auto
@@ -27,7 +24,6 @@ import           Dhall                          ( auto
 import qualified Dhall.Core                    as DC
 import qualified Dhall.Map                     as DM
 import qualified Dhall.Marshal.Decode          as DD
-import qualified Dhall.Marshal.Encode          as DE
 import           Dhall.Src                      ( Src )
 import           GHC.Exts                       ( fromList
                                                 , toList
@@ -136,7 +132,7 @@ instance From TestVal (DC.Expr Src Void) where
 
 instance (Dhall.FromDhall a) => TryFrom (DC.Expr Src Void) a where
   tryFrom x = case rawInput auto x of
-    Just x  -> Right x
+    Just v  -> Right v
     Nothing -> Left $ TryFromException x Nothing
 
 

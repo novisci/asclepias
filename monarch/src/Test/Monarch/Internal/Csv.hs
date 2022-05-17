@@ -12,14 +12,10 @@ import           Data.Csv                       ( NamedRecord )
 import qualified Data.Text                     as T
 import qualified Data.Text.IO                   ( readFile )
 import qualified Dhall
-import qualified Dhall.Core
 import           Dhall.Core                     ( Expr(..)
-                                                , pretty
                                                 )
 import           Dhall.Csv.Util
 import           Dhall.CsvToDhall
-import qualified Dhall.Map
-import qualified Dhall.Marshal.Decode          as Decode
 import qualified GHC.Exts                       ( IsList(..) )
 import           Test.Monarch.Internal.Dhall
 import           Test.Monarch.MonarchException
@@ -55,7 +51,7 @@ tryParseRecords d rs = joinFold (tryParseRawInput d) $ tryListLitToList es
   -- TODO replace maximum by handling Validation Failure variant. requires
   -- several additional imports.
   expr = maximum $ Dhall.expected d
-  joinFold f (Left  err) = Left err
+  joinFold _ (Left  err) = Left err
   joinFold f (Right xs ) = foldr op (Right []) xs
    where
     op _ (Left  err) = Left err

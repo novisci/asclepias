@@ -15,27 +15,9 @@ Maintainer  : bbrown@targetrwe.com
 module Test.Monarch.Internal.Map where
 
 import           Data.Bifunctor                 ( first )
-import           Data.Coerce                    ( coerce )
 import qualified Data.Map.Strict               as SMap
-import           Data.Text                      ( Text
-                                                , pack
-                                                , unpack
-                                                )
-import qualified Data.Text.IO
-import           Data.Void                      ( Void )
-import qualified Dhall
-import qualified Dhall.Core
-import           Dhall.Core                     ( Expr(..) )
+import           Data.Text                      ( Text )
 import qualified Dhall.Map
-import           Dhall.Marshal.Decode           ( Decoder(..)
-                                                , Expector(..)
-                                                )
-import           Dhall.Marshal.Encode           ( Encoder(..)
-                                                , RecordEncoder(..)
-                                                , recordEncoder
-                                                )
-import           Dhall.Src                      ( Src )
-import           GHC.Natural                    ( Natural )
 import           Test.Monarch.Internal.Atomic
 import           Witch.From
 import           Witch.TryFrom

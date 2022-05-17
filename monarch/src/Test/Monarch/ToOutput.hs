@@ -16,7 +16,7 @@
 {-# LANGUAGE AllowAmbiguousTypes #-}
 
 module Test.Monarch.ToOutput
-  ( Testable(..)
+  ( Testable
   , ToOutput(..)
   ) where
 

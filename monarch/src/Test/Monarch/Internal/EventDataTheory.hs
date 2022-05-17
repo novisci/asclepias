@@ -16,17 +16,11 @@ module Test.Monarch.Internal.EventDataTheory where
 
 import           Control.Applicative
 import           Data.Bifunctor                 ( first )
-import           Data.Text                      ( Text
-                                                , splitOn
-                                                , strip
-                                                , unpack
-                                                )
 import           Dhall                          ( FromDhall
-                                                , ToDhall
                                                 )
 import           EventDataTheory.Core
-import           IntervalAlgebra                ( Interval(..)
-                                                , PairedInterval(..)
+import           IntervalAlgebra                ( Interval
+                                                , PairedInterval
                                                 , makePairedInterval
                                                 , parseInterval
                                                 )
@@ -36,7 +30,6 @@ import           Test.Monarch.Internal.Map
 import           Test.Monarch.Internal.Utilities
 import           Witch.TryFrom
 import           Witch.TryFromException
-import           Witch.Utility                  ( tryVia )
 
   {- Pre-built conversions.
 
@@ -84,11 +77,11 @@ instance (Show a, Ord a, FromDhall a) => TryFrom TestMap (Interval a) where
 
 instance (Show a, Ord a, FromDhall a, TryFrom TestMap c) => TryFrom TestMap (PairedInterval c a) where
   tryFrom input = liftA2 makePairedInterval
-                         (first (const err) context)
+                         (first (const err) ctx)
                          (first (const err) interval)
    where
      -- Note this need not actually be Context here.
-    context  = tryFrom input
+    ctx  = tryFrom input
     interval = tryFrom input
     err      = TryFromException input Nothing
 

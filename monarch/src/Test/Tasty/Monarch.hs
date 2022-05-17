@@ -27,21 +27,12 @@ module Test.Tasty.Monarch
   , monarchTest
   ) where
 
-import           Data.Typeable                  ( Typeable )
 import           Test.Monarch.MonarchException
 import           Test.Monarch.Parse
 import           Test.Monarch.TestMap
 import           Test.Monarch.ToOutput
-import           Test.Tasty.Options             ( IsOption(..)
-                                                , OptionDescription(..)
-                                                , lookupOption
-                                                )
-import           Test.Tasty.Providers           ( IsTest(..)
-                                                , Result(..)
-                                                , TestName
+import           Test.Tasty.Providers           ( TestName
                                                 , TestTree
-                                                , testFailed
-                                                , testPassed
                                                 )
 
 import           Test.Tasty.Silver.Internal     ( GDiff(..)
@@ -59,7 +50,6 @@ import           Data.Text.Encoding             ( decodeUtf8'
                                                 , encodeUtf8
                                                 )
 import           Data.Text.Encoding.Error       ( UnicodeException )
-import qualified Data.Text.IO
 import           System.FilePath                ( replaceExtension )
 import           Test.Tasty.Silver.Advanced     ( goldenTest1 )
 import           Witch.TryFrom

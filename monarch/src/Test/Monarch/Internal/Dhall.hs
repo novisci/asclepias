@@ -11,20 +11,14 @@ Maintainer  : bbrown@targetrwe.com
 module Test.Monarch.Internal.Dhall where
 
 import qualified Data.ByteString               as BS
-import           Data.Csv                       ( NamedRecord )
 import qualified Data.Text                     as T
 import           Data.Text.Encoding             ( decodeUtf8' )
-import qualified Data.Text.IO                   ( readFile )
 import           Data.Void                      ( Void )
 import qualified Dhall
 import qualified Dhall.Core
-import           Dhall.Core                     ( Expr(..)
-                                                , pretty
-                                                )
+import           Dhall.Core                     ( Expr(..) )
 import qualified Dhall.Map
-import qualified Dhall.Marshal.Decode          as Decode
 import           Dhall.Src
-import qualified GHC.Exts                       ( IsList(..) )
 import           Test.Monarch.Internal.Map
 
    {- UTILS -}

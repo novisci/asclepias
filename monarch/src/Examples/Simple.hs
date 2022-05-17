@@ -11,9 +11,7 @@ import           Data.Aeson                     ( FromJSON
 import           Data.Bifunctor                 ( first )
 -- NOTE dhall imports are just for this example and not needed for a typical
 -- project
-import           Data.Text                      ( Text
-                                                , pack
-                                                )
+import           Data.Text                      ( Text )
 import           Dhall                          ( FromDhall
                                                 , ToDhall
                                                 )
@@ -21,7 +19,6 @@ import           EventDataTheory
 import           GHC.Generics
 import           GHC.Natural
 import           System.FilePath
-import           Test.Monarch.MonarchException
 import           Test.Monarch.TestMap
 import           Test.Monarch.ToOutput
 import           Test.Tasty.Monarch
@@ -81,7 +78,7 @@ cohortBuilderSingle idx e = event i (whatIsIt c)
   i = getInterval $ getEvent e
   c = getContext e
   whatIsIt c' | end i >= end idx = c' { getFacts = WasAfter }
-              | otherwise          = c' { getFacts = WasBefore }
+              | otherwise        = c' { getFacts = WasBefore }
 
 wasAfter :: Event a SumminElse b -> Bool
 wasAfter = (== WasAfter) . getFacts . getContext

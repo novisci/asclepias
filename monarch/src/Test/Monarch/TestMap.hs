@@ -1,7 +1,7 @@
 {-# LANGUAGE NoImplicitPrelude #-}
 module Test.Monarch.TestMap
   ( Map(..)
-  , TestMap(..)
+  , TestMap
   , TestVal(..)
   , TestAtomic(..)
   , Atomizable
@@ -11,7 +11,7 @@ module Test.Monarch.TestMap
   ) where
 
 import           Test.Monarch.Internal.Map      ( Map(..)
-                                                , TestMap(..)
+                                                , TestMap
                                                 , fromList
                                                 , lookup
                                                 , toList
@@ -23,4 +23,4 @@ import           Test.Monarch.Internal.Atomic   ( Atomizable
                                                 )
 
 -- NOTE: This import is necessary for its TryFrom instances
-import           Test.Monarch.Internal.EventDataTheory
+import           Test.Monarch.Internal.EventDataTheory()

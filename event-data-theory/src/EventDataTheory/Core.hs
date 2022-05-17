@@ -84,7 +84,8 @@ import           Data.Set                       ( Set
                                                 )
 import qualified Data.Text                     as T
 import           Dhall                          ( FromDhall
-                                                , ToDhall )
+                                                , ToDhall
+                                                )
 import           GHC.Generics                   ( Generic )
 import           IntervalAlgebra                ( Interval
                                                 , Intervallic(..)

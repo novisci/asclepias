@@ -172,19 +172,24 @@ c1'' = first (const "bad") $ tryFrom @TestVal @(Concepts Text) c1'
 -- Ex. 1
 -- You shouldn't need to define any new conversion instances for these types
 
-type ExOneInput = Event Text Text Natural 
+type ExOneInput = Event Text Text Natural
 type ExOneOutput = Concepts Text
 
 exOneFun :: [ExOneInput] -> [ExOneOutput]
 exOneFun = map (getConcepts . getContext)
 
 instance ToOutput [ExOneInput] [ExOneOutput] where
-  toOutput  = exOneFun
+  toOutput = exOneFun
 
 
 myRoutine2 :: Routine
-myRoutine2 = Golden (MkRoutineElem @[ExOneInput] (projPath </> "input2.csv") (projPath </> "input2.dhall"))
-                   (MkRoutineElem @[ExOneOutput] (projPath </> "output2.csv") (projPath </> "output2.dhall"))
+myRoutine2 = Golden
+  (MkRoutineElem @[ExOneInput] (projPath </> "input2.csv")
+                               (projPath </> "input2.dhall")
+  )
+  (MkRoutineElem @[ExOneOutput] (projPath </> "output2.csv")
+                                (projPath </> "output2.dhall")
+  )
 
 
 -- Ex. 2

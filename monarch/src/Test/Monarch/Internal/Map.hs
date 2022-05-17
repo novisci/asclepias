@@ -6,13 +6,10 @@ License     : BSD3
 Maintainer  : bbrown@targetrwe.com
   -}
 
-{-# LANGUAGE ConstraintKinds #-}
-{-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE GADTs #-}
 {-# LANGUAGE TypeApplications #-}
 
 module Test.Monarch.Internal.Map where

@@ -18,6 +18,7 @@ tests = testGroup
   [ monarchTest "good" myRoutine
   , monarchTest "bad"  myBadRoutine
   , monarchTest "ugly" myMisspecRoutine
+  , monarchTest "conversion fail" myRoutine2
   ]
 
 main :: IO ()

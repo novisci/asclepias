@@ -172,6 +172,8 @@ c1'' = first (const "bad") $ tryFrom @TestVal @(Concepts Text) c1'
 -- Ex. 1
 -- You shouldn't need to define any new conversion instances for these types
 
+-- Currently, the input2.dhall file is misspecified: begin and end are Integer,
+-- but they should be Natural. See the error.
 type ExOneInput = Event Text Text Natural
 type ExOneOutput = Concepts Text
 
@@ -180,7 +182,6 @@ exOneFun = map (getConcepts . getContext)
 
 instance ToOutput [ExOneInput] [ExOneOutput] where
   toOutput = exOneFun
-
 
 myRoutine2 :: Routine
 myRoutine2 = Golden

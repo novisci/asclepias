@@ -1,6 +1,7 @@
 :navtitle: User Guide
 :description: Guide to using asclepias in projects
 :toc: auto
+:toclevels: 3
 :lawvere-url: https://bartoszmilewski.com/2017/08/26/lawvere-theories/
 :ghc: 8.10.7
 :cabal: 3.6.2.0
@@ -96,28 +97,29 @@ This section provides detailed examples of asclepias usage.
 === Features
 
 This section provides examples of feature creation.
-include::features:example$src/LastEventInWindow.adoc[leveloffset=+1]
 
-include::features:example$src/DurationsWithMultipleConditions.adoc[leveloffset=+1]
+include::features:example$src/LastEventInWindow.adoc[leveloffset=+3]
 
-include::features:example$src/HistoryOfEvent.adoc[leveloffset=+1]
+include::features:example$src/DurationsWithMultipleConditions.adoc[leveloffset=+3]
 
-include::features:example$src/TwoOutOneIn.adoc[leveloffset=+1]
+include::features:example$src/HistoryOfEvent.adoc[leveloffset=+3]
 
-include::features:example$src/CountOfHospitalEvents.adoc[leveloffset=+1]
+include::features:example$src/TwoOutOneIn.adoc[leveloffset=+3]
 
-include::features:example$src/DrugDiscontinuation.adoc[leveloffset=+1]
+include::features:example$src/CountOfHospitalEvents.adoc[leveloffset=+3]
+
+include::features:example$src/DrugDiscontinuation.adoc[leveloffset=+3]
 
 === Cohorts
 This section provides examples for defining cohorts.
 
-include::cohorts:example$src/DefineIndexSet.adoc[leveloffset=+1]
+include::cohorts:example$src/DefineIndexSet.adoc[leveloffset=+3]
 
-include::cohorts:example$src/CreateAssessmentInterval.adoc[leveloffset=+1]
+include::cohorts:example$src/CreateAssessmentInterval.adoc[leveloffset=+3]
 
-include::cohorts:example$src/Minimal.adoc[leveloffset=+1]
+include::cohorts:example$src/Minimal.adoc[leveloffset=+3]
 
-include::cohorts:example$src/CalendarCohort.adoc[leveloffset=+1]
+include::cohorts:example$src/CalendarCohort.adoc[leveloffset=+3]
 
 ==== Create a cohort with multiple indices
 
@@ -139,25 +141,25 @@ This section includes description and usage guides for
 A `Definiton` is a function that returns a `Feature`.
 
 [#build-n-of-x-base]
-include::features:example$templatesSrc/BuildNofXBase.adoc[leveloffset=+1]
+include::features:example$templatesSrc/BuildNofXBase.adoc[leveloffset=+3]
 
 [#build-n-of-x]
-include::features:example$templatesSrc/BuildNofX.adoc[leveloffset=+1]
+include::features:example$templatesSrc/BuildNofX.adoc[leveloffset=+3]
 
 [#build-n-of-unique-begins]
-include::features:example$templatesSrc/BuildNofUniqueBegins.adoc[leveloffset=+1]
+include::features:example$templatesSrc/BuildNofUniqueBegins.adoc[leveloffset=+3]
 
 [#build-n-of-with-gap]
-include::features:example$templatesSrc/BuildNofXWithGap.adoc[leveloffset=+1]
+include::features:example$templatesSrc/BuildNofXWithGap.adoc[leveloffset=+3]
 
 [#build-n-of-x-or-m-of-y-with-gap]
-include::features:example$templatesSrc/BuildNofXOrMofYWithGap.adoc[leveloffset=+1]
+include::features:example$templatesSrc/BuildNofXOrMofYWithGap.adoc[leveloffset=+3]
 
 [#build-is-enrolled]
-include::features:example$templatesSrc/BuildIsEnrolled.adoc[leveloffset=+1]
+include::features:example$templatesSrc/BuildIsEnrolled.adoc[leveloffset=+3]
 
 [#build-continuous-enrollment]
-include::features:example$templatesSrc/BuildContinuousEnrollment.adoc[leveloffset=+1]
+include::features:example$templatesSrc/BuildContinuousEnrollment.adoc[leveloffset=+3]
 
 === Cohorts
 This section includes description and usage guides for cohort specification templates.

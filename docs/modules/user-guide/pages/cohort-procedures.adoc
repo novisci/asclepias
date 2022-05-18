@@ -1,7 +1,5 @@
 :description: The procedure for creating cohorts 
 
-= Cohort creation procedures
-
 #TODO#
 
 * decide input data shape

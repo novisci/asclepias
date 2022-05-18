@@ -1,29 +1,16 @@
 :navtitle: Introduction
-:haddock-site: #TODO#
+:haddock-site: https://docs.novisci.com/asclepias/latest/index.html
 :ghc: 8.10.7
 :cabal: 3.6.2.0
+:asclepias-url: https://gitlab.novisci.com/nsStat/asclepias
 
 = Introduction to asclepias
 
-This site is the documentation hub for asclepias,
-a domain specific language for building and analyzing cohorts.
-asclepias is written in the Haskell language. 
-
-If you're unfamiliar with asclepias and what it can do,
-start by reading the <<motivation>> and <<benefits>> sections below.
-For a deeper dive into the theory, see xref:theory:index.adoc[Theory and Design].
-
-If this is your first foray into asclepias,
-you will need to install the Haskell tool chain.
-To install, 
-follow the directions in the xref:nsBuild:ROOT:haskell-setup.adoc[setup guide],
-with these special instructions:
-
-* Use ghc version {ghc}.
-* Use cabal version {cabal}.
-
-After installing Haskell, 
-review the xref:nsBuild:usage-guides:index.adoc[Haskell usage guide] for best practices.
+This site is the documentation hub for asclepias.
+asclepias is a domain specific language written in Haskell to build and analyze cohorts.
+For a deeper dive into the theory underlying asclepias, 
+see xref:theory:index.adoc[Theory and Design].
+Information on the <<motivation>> to build asclepias and its <<benefits>> are included below.
 
 If you are contributing to the development of asclepias,
 see the xref:dev-guide:index.adoc[developer guide] for more details.
@@ -31,9 +18,10 @@ see the xref:dev-guide:index.adoc[developer guide] for more details.
 If you are using asclepias for your project, 
 see the xref:user-guide:index.adoc[user guide] for more details.
 
-[NOTE]
-Reference information for `+hasklepias+` functions is located 
-link:haddock-site:[here].
+See the {haddock-site}[asclepias API documentation]
+for detailed information on the types and functions exported from asclepias.
+
+asclepias code is hosted on {asclepias-url}[GitLab].
 
 [#motivation]
 == Motivation

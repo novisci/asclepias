@@ -12,8 +12,7 @@ whether and when some event occurred.
 In general, the event logic can be quite complicated,
 but this example demonstrates a simple feature.
 We wish to determine whether an event of some given concepts occurred,
-relative to a provided
-xref:cohorts:page$examples.adoc[assessment interval].
+relative to a provided assessment interval.
 
 The function is given here:
 

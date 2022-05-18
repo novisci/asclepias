@@ -1,0 +1,13 @@
+:description: List of References
+// TODO: update edm-path to non-sandbox URL
+:edm-path: https://docs.novisci.com/edm-sandbox/latest
+:lawvere-url: https://bartoszmilewski.com/2017/08/26/lawvere-theories/
+:asclepias-url: https://gitlab.novisci.com/nsStat/asclepias
+
+Lawvere Theory: {lawvere-url}
+
+asclepias GitLab: {asclepias-url}
+
+Haskell Setup: xref:nsBuild:ROOT:haskell-setup.adoc[nsBuild site]
+
+Event Data Model Documentation: {edm-path}

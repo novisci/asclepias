@@ -8,7 +8,7 @@ A `+Feature+` is a type parametrized by two types, `+name+` and `+d+`:
 
 [source,haskell]
 ----
-include::features:coreSrc$Core.hs[tag=feature]
+include::features:example$coreSrc/Core.hs[tag=feature]
 ----
 
 The type `d` here stands for "data", 
@@ -18,7 +18,7 @@ https://hackage.haskell.org/package/base-4.16.0.0/docs/Data-Either.html#t:Either
 
 [source,haskell]
 ----
-include::features:coreSrc$Core.hs[tag=featureData]
+include::features:example$coreSrc/Core.hs[tag=featureData]
 ----
 
 Type of `d`  can be almost anything

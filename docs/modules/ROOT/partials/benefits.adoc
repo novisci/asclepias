@@ -27,7 +27,7 @@ Cohorts often include many simple features such as
 indicators that a subject has some condition during a baseline period.
 asclepias includes templates for many common features.
 +
-xref:features:page$templates.adoc[See all available templates].
+xref:user-guide:page$index.adoc#templates[See all available templates].
 
 Uses type safety to create better programs::
 Programmming languages often used in research such as
@@ -45,8 +45,7 @@ Is easily extensible::
 Users can create multiple features and/or cohorts following a common pattern
 and share these across projects.
 +
-xref:features:page$examples.adoc[See examples of features].
-xref:cohorts:page$examples.adoc[See examples of cohorts].
+xref:user-guide:page$index.adoc#examples[See examples of features and cohorts].
 
 
 Introduces the event data theory::
@@ -60,9 +59,9 @@ xref:theory:index.adoc[Learn about the event data theory].
 Is data model agnostic::
 While the using a event-based data model is encouraged,
 the theory of
-xref:theory:pages$cohort-theory.adoc[cohorts]
+xref:theory:cohort-theory.adoc[cohorts]
 and
-xref:theory:pages$feature-theory.adoc[features]
+xref:theory:feature-theory.adoc[features]
 both work under a "bring your data model" assumption
 that does not require an event-based model.
 +

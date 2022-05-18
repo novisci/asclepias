@@ -23,6 +23,7 @@ COPY cohort-collector/cohort-collector.cabal cohort-collector/cohort-collector.c
 COPY event-data-theory/event-data-theory.cabal event-data-theory/event-data-theory.cabal
 COPY stype/stype.cabal stype/stype.cabal
 COPY maybe-toxic-tutorial/maybe-toxic-tutorial.cabal maybe-toxic-tutorial/maybe-toxic-tutorial.cabal
+COPY monarch/monarch.cabal monarch/monarch.cabal
 
 RUN cabal update
 

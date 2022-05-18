@@ -1,6 +1,6 @@
 cabal-version:  2.2
 name:           hasklepias-examples
-version:        0.1.0
+version:        0.2.0
 description:    Please see the README on GitHub at <https://github.com/novisci/asclepias#readme>
 homepage:       https://github.com/novisci/asclepias/#readme
 bug-reports:    https://github.com/novisci/asclepias/issues
@@ -23,21 +23,29 @@ source-repository head
 library
   exposed-modules:
       Examples
+      ExampleEvents
       AppExamples.CohortApp
       AppExamples.FilterApp
       CohortExamples
-      CohortExamples.Example1
+      CohortExamples.Minimal
+      CohortExamples.CalendarCohort
+      CohortExamples.CreateAssessmentInterval
+      CohortExamples.DefineIndexSet
       FeatureExamples
-      FeatureExamples.Example1
-      FeatureExamples.Example2
-      FeatureExamples.Example3
-      FeatureExamples.Example4
-      ExampleEvents
+      FeatureExamples.CountOfHospitalEvents
+      FeatureExamples.DrugDiscontinuation
+      FeatureExamples.DurationsWithMultipleConditions
+      FeatureExamples.HistoryOfEvent
+      FeatureExamples.LastEventInWindow
+      FeatureExamples.TwoOutOneIn
+  other-modules:
+      UndocumentedExamples
+      UndocumentedExamples.NegativeControl
+      UndocumentedExamples.CalendarCohort
   hs-source-dirs:
       src
   build-depends:
-      aeson == 1.5.6.0 
-    , base >=4.14 && <5
+      base >=4.14 && <5
     , hasklepias-main
   default-language: Haskell2010
   default-extensions:

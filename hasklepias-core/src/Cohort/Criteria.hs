@@ -7,8 +7,11 @@ Maintainer  : bsaul@novisci.com
 -}
 -- {-# OPTIONS_HADDOCK hide #-}
 {-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE TupleSections #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE FlexibleInstances #-}
 
 module Cohort.Criteria
   ( Criterion
@@ -33,24 +36,19 @@ import           Data.Aeson                     ( (.=)
                                                 , object
                                                 )
 import           Data.Bifunctor                 ( Bifunctor(second) )
+import           Data.Binary
 import           Data.List                      ( find )
-import qualified Data.List.NonEmpty            as NE
-                                                ( NonEmpty
-                                                , fromList
-                                                , zip
-                                                )
 import           Data.Map.Strict               as Map
                                                 ( Map
                                                 , fromListWith
                                                 , unionsWith
                                                 )
+import           Data.Proxy                     ( Proxy(..) )
 import           Data.Text                      ( Text
                                                 , pack
                                                 )
 import           Features.Core                  ( Feature
-                                                , FeatureN(..)
-                                                , getFeatureData
-                                                , nameFeature
+                                                , getData
                                                 )
 import           GHC.Exts                       ( IsList(..) )
 import           GHC.Generics                   ( Generic )
@@ -58,7 +56,7 @@ import           GHC.Num                        ( Natural )
 import           GHC.TypeLits                   ( KnownSymbol
                                                 , symbolVal
                                                 )
-
+import           Witch                          ( From(..) )
 -- | Defines the return type for @'Criterion'@ indicating whether to include or 
 -- exclude a subject.
 data Status = Include | Exclude deriving (Eq, Show, Generic)
@@ -72,10 +70,11 @@ data CohortStatus =
   | Included
     deriving (Eq, Show, Generic)
 
-instance ToJSON CohortStatus where
-instance FromJSON CohortStatus where
+instance ToJSON CohortStatus
+instance FromJSON CohortStatus
 instance ToJSONKey CohortStatus
 instance FromJSONKey CohortStatus
+instance Binary CohortStatus
 
 -- Defines an ordering to put @SubjectHasNoIndex@ first and @Included@ last. 
 -- The @'ExcludedBy'@ are ordered by their number value.
@@ -110,44 +109,55 @@ excludeIf :: Bool -> Status
 excludeIf True  = Exclude
 excludeIf False = Include
 
--- | A type that is simply a @'FeatureN Status'@, that is, a feature that 
--- identifies whether to @'Include'@ or @'Exclude'@ a subject.
-newtype Criterion = MkCriterion ( FeatureN Status ) deriving (Eq, Show)
+{-|
+A type that is simply a @(Text, Status)@,
+where the @Text@ is a label providing the reason for the @Status@.
+The @'Status'@ identifies whether to @'Include'@ or @'Exclude'@ a subject.
+-}
+newtype Criterion = MkCriterion ( Text, Status ) deriving (Eq, Show)
 
 -- | Converts a @'Feature'@ to a @'Criterion'@.
-criterion :: (KnownSymbol n) => Feature n Status -> Criterion
-criterion x = MkCriterion (nameFeature x)
+criterion :: Text -> Status -> Criterion
+criterion = curry MkCriterion
+
+getStatus :: Criterion -> Status
+getStatus (MkCriterion (_, s)) = s
+
+getReason :: Criterion -> Text
+getReason (MkCriterion (r, _)) = r
+
+{-|
+Converts a @Feature n Status@ to a @Criterion@.
+In the case that the value of the @'Features.Core.FeatureData'@ is @Left@,
+the status is set to @'Exclude'@. 
+-}
+instance KnownSymbol n => From (Feature n Status) Criterion where
+  from x = MkCriterion
+    ( pack $ symbolVal (Proxy @n)
+    , case s of
+      Left  mr  -> Exclude
+      Right sta -> sta
+    )
+    where s = getData x
+
 
 -- | A nonempty collection of @'Criterion'@ paired with a @Natural@ number.
-newtype Criteria = MkCriteria ( NE.NonEmpty (Natural, Criterion) )
+newtype Criteria = MkCriteria [ (Natural, Criterion) ]
   deriving (Eq, Show)
 
 -- | Unpacks a 'Criteria'.
-getCriteria :: Criteria -> NE.NonEmpty (Natural, Criterion)
+getCriteria :: Criteria -> [(Natural, Criterion)]
 getCriteria (MkCriteria x) = x
 
--- | Constructs a @'Criteria'@ from a @'NE.NonEmpty'@ collection of @'Criterion'@.
-criteria :: NE.NonEmpty Criterion -> Criteria
-criteria l = MkCriteria $ NE.zip (NE.fromList [1 ..]) l
+-- | Constructs a @'Criteria'@ from a list of @'Criterion'@.
+criteria :: [Criterion] -> Criteria
+criteria l = MkCriteria $ zip [1 ..] l
 
--- | Unpacks a @'Criterion'@ into a (Text, Status) pair where the text is the
--- name of the criterion and its @Status@ is the value of the status in the 
--- @'Criterion'@. In the case, that the value of the @'Features.Core.FeatureData'@ 
--- within the @'Criterion'@ is @Left@, the status is set to @'Exclude'@. 
-getStatus :: Criterion -> (Text, Status)
-getStatus (MkCriterion x) =
-  (\case
-      Left  _ -> (nm, Exclude)
-      Right v -> (nm, v)
-    )
-    ((getFeatureData . getDataN) x)
-  where nm = getNameN x
-
--- | Converts a subject's @'Criteria'@ into a @'NE.NonEmpty'@ triple of 
--- (order of criterion, name of criterion, status)
-getStatuses :: Criteria -> NE.NonEmpty (Natural, Text, Status)
+-- | Converts a subject's @'Criteria'@ into a list of triples of 
+-- (order of criterion, label, status).
+getStatuses :: Criteria -> [(Natural, Text, Status)]
 getStatuses (MkCriteria x) =
-  fmap (\c -> (fst c, (fst . getStatus . snd) c, (snd . getStatus . snd) c)) x
+  fmap (\c -> (fst c, (getReason . snd) c, (getStatus . snd) c)) x
 
 {-|
 An internal function used to @'Data.List.find'@ excluded statuses. 
@@ -165,17 +175,13 @@ checkCohortStatus :: i -> Criteria -> CohortStatus
 checkCohortStatus index x =
   maybe Included (\(i, n, _) -> ExcludedBy (i, n)) (findExclude x)
 
--- | Utility to get the @Text@ name of a @'Criterion'@.
-getCriterionName :: Criterion -> Text
-getCriterionName (MkCriterion x) = getNameN x
-
 {-|
 Initializes a container of @'CohortStatus'@ from a @'Criteria'@. 
 This can be used to generate all the possible Exclusion/Inclusion reasons.
 -}
-initStatusInfo :: Criteria -> NE.NonEmpty CohortStatus
+initStatusInfo :: Criteria -> [CohortStatus]
 initStatusInfo (MkCriteria z) =
-  fmap (ExcludedBy . Data.Bifunctor.second getCriterionName) z <> pure Included
+  fmap (ExcludedBy . Data.Bifunctor.second getReason) z <> pure Included
 
 
 {- |
@@ -188,9 +194,9 @@ data AttritionInfo = MkAttritionInfo
   }
   deriving (Eq, Show, Generic)
 
-
-instance ToJSON AttritionInfo where
-instance FromJSON AttritionInfo where
+instance ToJSON AttritionInfo
+instance FromJSON AttritionInfo
+instance Binary AttritionInfo
 
 {-
 Two @AttritionInfo@ values can be combined,

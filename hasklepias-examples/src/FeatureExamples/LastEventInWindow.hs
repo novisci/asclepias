@@ -6,7 +6,7 @@ Description : Demostrates how to define features using Hasklepias
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
-module FeatureExamples.Example2
+module FeatureExamples.LastEventInWindow
   ( example
   ) where
 

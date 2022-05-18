@@ -83,6 +83,9 @@ import           Data.Set                       ( Set
                                                 , toList
                                                 )
 import qualified Data.Text                     as T
+import           Dhall                          ( FromDhall
+                                                , ToDhall
+                                                )
 import           GHC.Generics                   ( Generic )
 import           IntervalAlgebra                ( Interval
                                                 , Intervallic(..)
@@ -358,6 +361,8 @@ instance NFData c => NFData (Concept c)
 instance Binary c => Binary (Concept c)
 instance FromJSON c => FromJSON (Concept c)
 instance ToJSON c => ToJSON (Concept c)
+instance (ToDhall c) => ToDhall (Concept c)
+instance (FromDhall c) => FromDhall (Concept c)
 
 instance From (Concept c) c where
 instance From c (Concept c) where
@@ -382,6 +387,8 @@ instance Binary c => Binary (Concepts c)
 -- See NOTE at top of module regarding To/FromJSON
 instance (Ord c, FromJSON c) => FromJSON (Concepts c)
 instance ToJSON c => ToJSON (Concepts c)
+instance (ToDhall c) => ToDhall (Concepts c)
+instance (FromDhall c, Ord c, Show c) => FromDhall (Concepts c)
 
 instance (Arbitrary c, Ord c) => Arbitrary (Concepts c) where
   arbitrary = fmap packConcepts arbitrary

@@ -2,7 +2,7 @@
 Description : Demostrates how to define features using Hasklepias
 -}
 
-module FeatureExamples.Example3
+module FeatureExamples.DurationsWithMultipleConditions
   ( example
   ) where
 

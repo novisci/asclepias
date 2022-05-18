@@ -1,5 +1,13 @@
 # Changelog for hasklepias-templates
 
+## 0.25.0
+* Changes names of "make" intervals
+  * makeFollowupFromIndex -> makeFollowupStartedByIndex
+  * makeFollowUpMeetingIndex -> makeFollowupMetByIndex
+  * baseline -> baselineMeets
+  * makeBaselineFromIndex -> makeBaselineMeetsIndex
+
+
 ## 0.2.0
 
 * Restructures templates source code to use `hs`/`adoc`

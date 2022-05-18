@@ -1,5 +1,62 @@
 # Changelog for hasklepias-core
 
+## 0.25.0
+* Changes names of "make" intervals
+  * makeFollowupFromIndex -> makeFollowupStartedByIndex
+  * makeFollowUpMeetingIndex -> makeFollowupMetByIndex
+  * baseline -> baselineMeets
+  * makeBaselineFromIndex -> makeBaselineMeetsIndex
+
+## 0.24.0
+
+* Changes underlying type of `Criteria` to a list instead of a NonEmpty list.
+Use of NonEmpty is an artifact of an older way of evaluating criteria
+that's no longer necessary.
+The old way processing cohorts didn't have the SubjectHasNoIndex status,
+so a user always need to provide at least one criterion
+which would handle the case of not having an index,
+or else all the subjects we could included.
+Now if no criteria are provided,
+all units will either have a `SubjectHasNoIndex` or `Included` status.
+* Changes the underlying type of a `Criterion` from a `Feature n Status` to
+simply `(Text, Status)`.
+In this way, the `Cohort` module no longer depends on the `Feature` module.
+One can now create `Criterion` without needing to define a `Feature`.
+This change better delineates the abstraction
+between the `Cohort` and `Feature` modules.
+For those cases where a `Feature` will be used from a `Criterion`,
+a `From` instance is provided that casts a `Feature n Status` to a `Criterion`.
+For example:
+
+```haskell
+x :: Feature "foo" Status
+x = pure Include
+
+y :: Criterion
+y = into @Criterion x -- MkCriterion ("foo", Include)
+```
+
+* The `FeatureN` type has been removed from the `Feature` module,
+as they only place that type was used was in the `Cohort.Criteria` module.
+* Adds `From` instances to get to an `IndexSet i`
+from an `i`, `Maybe i`, and `[i]`.
+* Changes `HasAttributes` class in two ways:
+  * Adds a functional dependency so that `name -> d`; that is,
+  the name determines the data type.
+  In this way, there can only be one data type associated with a `name`.
+  For example,
+  `instance HasAttributes "foo" Bool` and
+  `instance HasAttributes "foo" Int`
+  would conflict.
+  * Uses existential quantification on the `getAttributes` function,
+    so that a value doesn't need to be provided.
+    Instead type application can be used,
+    as in `getAttributes @n`.
+* Adds `setAttributes` function which produces a `HasAttributes` instance
+via template Haskell.
+This function and the related `setAttributesEmpty` and `setManyAttributes`
+functions can reduce boilerplate code need to write `HasAttributes` instances.
+
 ## 0.23.0
 
 * Moves specification of test suite into `src` directly.

@@ -59,7 +59,6 @@ module Hasklepias
 
     -- * Rexported Functions and modules
   , module Hasklepias.Reexports
-  , module Hasklepias.ReexportsUnsafe
   ) where
 
 import           AssessmentIntervals
@@ -75,7 +74,6 @@ import           Hasklepias.MakeCohortApp
 import           Hasklepias.MakeFilterApp
 import           Hasklepias.Misc
 import           Hasklepias.Reexports
-import           Hasklepias.ReexportsUnsafe
 import           Templates.Features
 
 import           Stype

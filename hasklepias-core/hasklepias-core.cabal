@@ -1,6 +1,6 @@
 cabal-version:  2.2
 name:           hasklepias-core
-version:        0.23.0
+version:        0.24.0
 description:    Please see the README on GitHub at <https://github.com/novisci/asclepias#readme>
 homepage:       https://github.com/novisci/asclepias/#readme
 bug-reports:    https://github.com/novisci/asclepias/issues
@@ -49,6 +49,7 @@ library
   build-depends:
       aeson == 1.5.6.0
     , base >=4.14 && <5
+    , binary == 0.8.8.0
     , bytestring == 0.10.12.0
     , containers == 0.6.5.1
     , ghc-prim == 0.6.1
@@ -60,6 +61,7 @@ library
     , tasty  == 1.4.1
     , tasty-hunit == 0.10.0.3
     , tasty-quickcheck == 0.10.2
+    , template-haskell ^>= 2.16.0
     , text == 1.2.4.1
     , time >= 1.11
     , witch >= 1.0

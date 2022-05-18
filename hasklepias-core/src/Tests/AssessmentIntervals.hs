@@ -12,7 +12,7 @@ import           Test.Tasty
 import           Test.Tasty.QuickCheck
 
 prop_baseline :: (IntervalSizeable a b) => b -> Interval a -> Property
-prop_baseline dur i = relate (baseline dur i) i === Meets
+prop_baseline dur i = relate (baselineMeets dur i) i === Meets
 
 prop_baselineFinishedBy
   :: (IntervalSizeable a b) => b -> Interval a -> Property

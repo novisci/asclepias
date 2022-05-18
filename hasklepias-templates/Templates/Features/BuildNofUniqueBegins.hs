@@ -47,7 +47,7 @@ type NofUniqueBeginsTestCase
 buildNofUniqueBeginsTestCases :: [NofUniqueBeginsTestCase]
 buildNofUniqueBeginsTestCases =
   [ f "empty input"
-      (makeFollowupFromIndex 10, concur, isEnrollmentEvent)
+      (makeFollowupStartedByIndex 10, concur, isEnrollmentEvent)
       (0, 1)
       []
       []
@@ -58,7 +58,7 @@ buildNofUniqueBeginsTestCases =
         |--------------|
       -}
   , f "2 results if 2 different begins"
-      (makeFollowupFromIndex 10, concur, containsConcepts ["A"])
+      (makeFollowupStartedByIndex 10, concur, containsConcepts ["A"])
       (0, 1)
       [h ["A"] (2, 5), h ["A"] (4, 5)]
       [(2, 1), (4, 2)]
@@ -70,7 +70,7 @@ buildNofUniqueBeginsTestCases =
         |--------------|
       -}
   , f "2 results when multiple begins at same time"
-      (makeFollowupFromIndex 10, concur, containsConcepts ["A"])
+      (makeFollowupStartedByIndex 10, concur, containsConcepts ["A"])
       (0, 1)
       [h ["A"] (2, 3), h ["A"] (2, 5), h ["A"] (4, 5)]
       [(2, 1), (4, 2)]
@@ -83,7 +83,7 @@ buildNofUniqueBeginsTestCases =
         |--------------|
       -}
   , f "1 result based on predicate filter"
-      (makeFollowupFromIndex 10, concur, containsConcepts ["A"])
+      (makeFollowupStartedByIndex 10, concur, containsConcepts ["A"])
       (0, 1)
       [h ["B"] (2, 3), h ["B"] (2, 5), h ["A"] (4, 5)]
       [(4, 1)]

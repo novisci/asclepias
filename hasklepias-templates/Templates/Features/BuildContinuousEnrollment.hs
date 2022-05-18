@@ -67,16 +67,16 @@ type ContEnrollTestCase
 buildContinuousEnrollmentTestCases :: [ContEnrollTestCase]
 buildContinuousEnrollmentTestCases =
   [ f "Exclude if previously excluded"
-      (makeBaselineFromIndex 10      , isEnrollmentEvent, 3)
+      (makeBaselineMeetsIndex 10     , isEnrollmentEvent, 3)
       (pure $ readIntervalSafe (0, 1), pure []          , pure Exclude)
       Exclude
   , f "Exclude if no events"
-      (makeBaselineFromIndex 10      , isEnrollmentEvent, 3)
+      (makeBaselineMeetsIndex 10     , isEnrollmentEvent, 3)
       (pure $ readIntervalSafe (0, 1), pure []          , pure Include)
       Exclude
   , f
     "Exclude if gap >= 3"
-    (makeBaselineFromIndex 10        , isEnrollmentEvent         , 3)
+    (makeBaselineMeetsIndex 10       , isEnrollmentEvent         , 3)
     (pure $ readIntervalSafe (10, 11), pure [g (1, 4), g (9, 12)], pure Include)
     Exclude
       {- 
@@ -86,7 +86,7 @@ buildContinuousEnrollmentTestCases =
         |--------------|
       -}
   , f "Exclude if gap >= 3"
-      (makeBaselineFromIndex 10        , isEnrollmentEvent, 3)
+      (makeBaselineMeetsIndex 10       , isEnrollmentEvent, 3)
       (pure $ readIntervalSafe (10, 11), pure [g (1, 7)]  , pure Include)
       Exclude
       {-
@@ -96,7 +96,7 @@ buildContinuousEnrollmentTestCases =
         |--------------|
       -}
   , f "Exclude if gap >= 3"
-      (makeBaselineFromIndex 10        , isEnrollmentEvent, 3)
+      (makeBaselineMeetsIndex 10       , isEnrollmentEvent, 3)
       (pure $ readIntervalSafe (10, 11), pure [g (6, 13)] , pure Include)
       Exclude
         {-
@@ -107,7 +107,7 @@ buildContinuousEnrollmentTestCases =
       -}
   , f
     "Include if gaps less than 3"
-    (makeBaselineFromIndex 10        , isEnrollmentEvent         , 3)
+    (makeBaselineMeetsIndex 10       , isEnrollmentEvent         , 3)
     (pure $ readIntervalSafe (10, 11), pure [g (1, 3), g (5, 12)], pure Include)
     Include
       {-
@@ -117,7 +117,7 @@ buildContinuousEnrollmentTestCases =
         |--------------|
       -}
   , f "Include if gaps less than 3"
-      (makeBaselineFromIndex 10        , isEnrollmentEvent, 3)
+      (makeBaselineMeetsIndex 10       , isEnrollmentEvent, 3)
       (pure $ readIntervalSafe (10, 11), pure [g (2, 9)]  , pure Include)
       Include
       {-
@@ -128,7 +128,7 @@ buildContinuousEnrollmentTestCases =
       -}
   , f
     "Include if gaps less than 3"
-    (makeBaselineFromIndex 10        , isEnrollmentEvent        , 3)
+    (makeBaselineMeetsIndex 10       , isEnrollmentEvent        , 3)
     (pure $ readIntervalSafe (10, 11), pure [g (1, 6), g (4, 8)], pure Include)
     Include
         {-

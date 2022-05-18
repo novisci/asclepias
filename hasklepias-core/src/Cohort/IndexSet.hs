@@ -22,10 +22,13 @@ import qualified Data.List.NonEmpty            as NEL
 import qualified Data.Set.NonEmpty             as Set
                                                 ( NESet
                                                 , fromList
+                                                , singleton
                                                 , toList
                                                 )
 import           GHC.Generics                   ( Generic )
-import           Witch                          ( From(..) )
+import           Witch                          ( From(..)
+                                                , into
+                                                )
 
 {-| 
 A type containing (maybe) a @Data.Set.NonEmpty.NESet@ (nonempty) of type @i@,
@@ -49,9 +52,18 @@ instance From (IndexSet i) (Maybe (Set.NESet i)) where
 instance From (IndexSet i) (Maybe [i]) where
   from (MkIndexSet x) = fmap (NEL.toList . Set.toList) x
 
+instance From (Maybe i) (IndexSet i) where
+  from x = case x of
+    Nothing -> MkIndexSet Nothing
+    Just i  -> MkIndexSet $ Just (Set.singleton i)
+instance From i (IndexSet i) where
+  from x = MkIndexSet $ Just (Set.singleton x)
+instance (Ord i) => From [i] (IndexSet i) where
+  from x = MkIndexSet $ fmap Set.fromList (NEL.nonEmpty x)
+
 {-|
 Smart Constructor for creating an `IndexSet` from a list of indices.
 -}
 makeIndexSet :: (Ord i) => [i] -> IndexSet i
-makeIndexSet x = MkIndexSet $ fmap Set.fromList (NEL.nonEmpty x)
+makeIndexSet = into
 

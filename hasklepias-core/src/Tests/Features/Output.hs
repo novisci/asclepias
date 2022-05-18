@@ -1,8 +1,11 @@
+{-# OPTIONS_HADDOCK hide #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE TemplateHaskell #-}
+
 module Tests.Features.Output
   ( tests
   ) where
@@ -18,15 +21,12 @@ import           Test.Tasty.HUnit
 dummy :: Feature "dummy" Bool
 dummy = pure True
 
-instance HasAttributes "dummy" Bool where
-  getAttributes x =
-    MkAttributes "some Label" "longer label..." "a description" emptyPurpose
-
 dummy2 :: Feature "dummy2" Bool
 dummy2 = pure True
 
-instance HasAttributes "dummy2" Bool where
-  getAttributes x = emptyAttributes
+setManyAttributes
+  [ ("dummy2", ''Bool, emptyAttributes)
+  , ("dummy", ''Bool, MkAttributes "some Label" "longer label..." "a description" emptyPurpose )]
 
 {-
 NOTE:

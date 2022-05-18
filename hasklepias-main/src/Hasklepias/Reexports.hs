@@ -8,7 +8,6 @@ Maintainer  : bsaul@novisci.com
 -}
 
 {-# OPTIONS_HADDOCK hide #-}
-{-# LANGUAGE Safe #-}
 
 module Hasklepias.Reexports
   (
@@ -49,16 +48,22 @@ module Hasklepias.Reexports
   , module Safe
   , module Flow
   , module Witherable
-  , setFromList
-  , mapFromList
-  , mapToList
-  , emptySet
+
+    -- ** Re-exports of (potentially) unsafe functions
+  , module Data.Aeson
+  , module GHC.Exts
+  , module GHC.IO
+  , module Lens
+  , module Test.Tasty
+  , module Test.Tasty.HUnit
+  , module Witch
+  , naturalToInt
   ) where
 
-import safe      Control.Applicative            ( (<$>)
+import           Control.Applicative            ( (<$>)
                                                 , Applicative(..)
                                                 )
-import safe      Control.Monad                  ( (=<<)
+import           Control.Monad                  ( (=<<)
                                                 , (>>=)
                                                 , Functor(..)
                                                 , Monad(..)
@@ -66,34 +71,34 @@ import safe      Control.Monad                  ( (=<<)
                                                 , join
                                                 , mfilter
                                                 )
-import safe      Data.Bifunctor                 ( Bifunctor(..) )
-import safe      Data.Bool                      ( (&&)
+import           Data.Bifunctor                 ( Bifunctor(..) )
+import           Data.Bool                      ( (&&)
                                                 , Bool(..)
                                                 , bool
                                                 , not
                                                 , otherwise
                                                 , (||)
                                                 )
-import safe      Data.Either                    ( Either(..) )
-import safe      Data.Eq                        ( (==)
+import           Data.Either                    ( Either(..) )
+import           Data.Eq                        ( (==)
                                                 , Eq
                                                 )
-import safe      Data.Foldable                  ( Foldable(..)
+import           Data.Foldable                  ( Foldable(..)
                                                 , and
                                                 , asum
                                                 , or
                                                 )
-import safe      Data.Function                  ( ($)
+import           Data.Function                  ( ($)
                                                 , (.)
                                                 , const
                                                 , flip
                                                 , id
                                                 )
-import safe      Data.Functor.Contravariant     ( Contravariant(contramap)
+import           Data.Functor.Contravariant     ( Contravariant(contramap)
                                                 , Predicate(..)
                                                 )
-import safe      Data.Int                       ( Int(..) )
-import safe      Data.List                      ( (++)
+import           Data.Int                       ( Int(..) )
+import           Data.List                      ( (++)
                                                 , all
                                                 , any
                                                 , length
@@ -109,14 +114,10 @@ import safe      Data.List                      ( (++)
                                                 , zip
                                                 , zipWith
                                                 )
-import safe      Data.List.NonEmpty             ( NonEmpty(..) )
-import safe qualified Data.Map.Strict          as M
-                                                ( Map(..)
-                                                , fromList
-                                                , fromListWith
-                                                , toList
-                                                )
-import safe      Data.Maybe                     ( Maybe(..)
+import           Data.List.NonEmpty             ( NonEmpty(..) )
+import           Data.Map.Strict               as M
+                                                ( Map(..) )
+import           Data.Maybe                     ( Maybe(..)
                                                 , catMaybes
                                                 , fromJust
                                                 , fromMaybe
@@ -127,27 +128,27 @@ import safe      Data.Maybe                     ( Maybe(..)
                                                 , maybe
                                                 , maybeToList
                                                 )
-import safe      Data.Monoid                    ( (<>)
+import           Data.Monoid                    ( (<>)
                                                 , Monoid(..)
                                                 , mconcat
                                                 )
-import safe      Data.Ord                       ( Ord(..)
+import           Data.Ord                       ( Ord(..)
                                                 , Ordering(..)
                                                 , max
                                                 , min
                                                 )
-import safe      Data.Proxy                     ( Proxy(..) )
-import safe      Data.Semigroup                 ( Semigroup(..) )
-import safe qualified Data.Set                 as Set
+import           Data.Proxy                     ( Proxy(..) )
+import           Data.Semigroup                 ( Semigroup(..) )
+import           Data.Set                      as Set
                                                 ( Set(..)
                                                 , empty
-                                                , fromList
+                                                -- , fromList
                                                 , member
                                                 )
-import safe      Data.Text                      ( Text
+import           Data.Text                      ( Text
                                                 , pack
                                                 )
-import safe      Data.Time.Calendar             ( CalendarDiffDays(..)
+import           Data.Time.Calendar             ( CalendarDiffDays(..)
                                                 , Day
                                                 , DayOfMonth
                                                 , DayOfWeek
@@ -159,39 +160,39 @@ import safe      Data.Time.Calendar             ( CalendarDiffDays(..)
                                                 , gregorianMonthLength
                                                 , toGregorian
                                                 )
-import safe      Data.Time.Calendar.Quarter     ( Quarter
+import           Data.Time.Calendar.Quarter     ( Quarter
                                                 , QuarterOfYear
                                                 , dayQuarter
                                                 )
-import safe      Data.Traversable               ( Traversable(..) )
-import safe      Data.Tuple                     ( curry
+import           Data.Traversable               ( Traversable(..) )
+import           Data.Tuple                     ( curry
                                                 , fst
                                                 , snd
                                                 , uncurry
                                                 )
-import safe      Data.Tuple.Curry               ( Curry(..)
+import           Data.Tuple.Curry               ( Curry(..)
                                                 , curryN
                                                 , uncurryN
                                                 )
-import safe      Flow                           ( (!>)
+import           Flow                           ( (!>)
                                                 , (.>)
                                                 , (<!)
                                                 , (<.)
                                                 , (<|)
                                                 , (|>)
                                                 )
-import safe      GHC.Enum                       ( Enum(fromEnum) )
-import safe      GHC.Generics                   ( Generic )
-import safe      GHC.Num                        ( Integer(..)
+import           GHC.Enum                       ( Enum(fromEnum) )
+import           GHC.Generics                   ( Generic )
+import           GHC.Num                        ( Integer(..)
                                                 , Natural(..)
                                                 , Num(..)
                                                 , fromInteger
                                                 )
-import safe      GHC.Real                       ( Integral(..)
+import           GHC.Real                       ( Integral(..)
                                                 , toInteger
                                                 )
-import safe      GHC.Show                       ( Show(..) )
-import safe      GHC.TypeLits                   ( KnownSymbol(..)
+import           GHC.Show                       ( Show(..) )
+import           GHC.TypeLits                   ( KnownSymbol(..)
                                                 , symbolVal
                                                 )
 import           Safe                           ( headMay
@@ -201,25 +202,48 @@ import           Safe                           ( headMay
                                                 , minimumMay
                                                 , tailMay
                                                 )
-import safe      Type.Reflection                ( Typeable )
-import safe      Witherable                     ( Filterable(filter)
+import           Type.Reflection                ( Typeable )
+import           Witherable                     ( Filterable(filter)
                                                 , Witherable(..)
                                                 )
 
 
-import safe      Lens.Micro                     ( (^?) )
+import           Lens.Micro                     ( (^?) )
 
 
-setFromList :: (Ord a) => [a] -> Set.Set a
-setFromList = Set.fromList
+import           Data.Aeson                     ( FromJSON(..)
+                                                , Options(..)
+                                                , SumEncoding(..)
+                                                , ToJSON(..)
+                                                , defaultOptions
+                                                , encode
+                                                , genericParseJSON
+                                                )
+import           Data.Generics.Internal.VL.Lens
+                                               as Lens
+                                                ( (^.) )
+import           Data.Generics.Product         as Lens
+                                                ( HasField(field) )
+import           Data.Generics.Sum             as Lens
+                                                ( AsAny(_As) )
+import           GHC.Exts                       ( IsList(fromList) )
+import           GHC.IO                         ( IO(..) )
+import           GHC.Natural                    ( Natural
+                                                , naturalToInteger
+                                                )
+import           Test.Tasty              hiding ( after )
+import           Test.Tasty.HUnit
 
-mapFromList :: (Ord k) => [(k, a)] -> M.Map k a
-mapFromList = M.fromList
+import           Witch
 
-mapToList :: (Ord k) => M.Map k a -> [(k, a)]
-mapToList = M.toList
-
-emptySet :: Set.Set a
-emptySet = Set.empty
+-- FIXME:
+-- There is not From Natural Int instance,
+-- nor From Integer Int instance.
+-- There are TryFrom instance, since the casts are unsafe.
+-- For now, providing this utility,
+-- even though it's not ideal.
+-- Currently used itn hasklepias-templates.
+naturalToInt :: Natural -> Int
+naturalToInt = fromInteger . naturalToInteger
 
 

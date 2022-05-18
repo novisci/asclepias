@@ -17,20 +17,24 @@ module ExampleEvents
   , exampleSubject2
   , Demographic(..)
   , ExampleModel(..)
+  , ExampleEvent
   ) where
 
-import           Data.Aeson
+
 import           Hasklepias
 
+{- tag::exampleModel[] -}
 data Demographic =
     BirthYear Integer
   | Gender Text
   deriving (Eq, Show, Ord, Generic)
+
 data ExampleModel =
     Enrollment
   | Medical
   | Demographics Demographic
   deriving (Eq, Show, Ord, Generic)
+{- end::exampleModel[] -}
 
 -- instance FromJSON ExampleModel
 instance FromJSON Demographic
@@ -42,6 +46,8 @@ instance FromJSON ExampleModel where
                                    }
       }
     )
+
+type ExampleEvent = Event Text ExampleModel Int
 
 exampleEvents1 :: [Event Text ExampleModel Int]
 exampleEvents1 = toEvents exampleEvents1Data

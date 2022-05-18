@@ -4,6 +4,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE TypeApplications #-}
 module AppExamples.CohortApp
   ( exampleAppRW
   , exampleAppCW
@@ -46,15 +47,15 @@ critTrue
 critTrue = define $ pure Include
 
 instance HasAttributes "myVar1" Count where
-  getAttributes _ = MkAttributes
+  getAttributes = MkAttributes
     { getShortLabel = "somelabel"
     , getLongLabel  = "another label"
     , getDerivation = ""
-    , getPurpose    = MkPurpose (setFromList [Outcome]) (setFromList [])
+    , getPurpose    = MkPurpose (into [Outcome]) (from @[Text] [])
     }
 
 instance HasAttributes "myVar2" Bool where
-  getAttributes _ = emptyAttributes
+  getAttributes = emptyAttributes
 {-------------------------------------------------------------------------------
   Cohort Specifications and evaluation
 -------------------------------------------------------------------------------}
@@ -65,7 +66,7 @@ makeIndexRunner _ = makeIndexSet [beginerval 1 (fromGregorian 2010 7 6)]
 
 -- | Make a function that runs the criteria
 makeCriteriaRunner :: Interval Day -> [Event Text ExampleModel Day] -> Criteria
-makeCriteriaRunner _ events = criteria $ pure (criterion crit1)
+makeCriteriaRunner _ events = criteria $ pure (into @Criterion crit1)
  where
   crit1   = eval critTrue featEvs
   featEvs = featureEvents events

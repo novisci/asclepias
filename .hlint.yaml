@@ -38,7 +38,8 @@
 
   - {name: minimum, within: []} # Partial
   - {name: minimumBy, within: []} # Partial
-  - {name: maximum, within: []} # Partial
+    # TODO temporary allowance for monarch Csv module. see todo there.
+  - {name: maximum, within: [Test.Monarch.Internal.Csv]} # Partial
   - {name: maximumBy, within: []} # Partial
 
   # Same, but for Data.Text
@@ -98,7 +99,8 @@
   # Can succeed in dev, but fail in prod, because of encoding guessing
   # It's also Lazy IO.
   # See https://www.snoyman.com/blog/2016/12/beware-of-readfile/ for more info.
-  - {name: Data.Text.IO.readFile, within: []}
+  # TODO temporary allowance for Csv module
+  - {name: Data.Text.IO.readFile, within: [Test.Monarch.Internal.Csv]}
   - {name: Data.Text.IO.Lazy.readFile, within: []}
 
   - {name: Data.Text.Encoding.decodeUtf8, within: []} # Throws on invalid UTF8

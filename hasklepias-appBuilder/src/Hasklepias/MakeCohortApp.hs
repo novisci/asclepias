@@ -103,7 +103,7 @@ makeCohortParser =
     <*> evaluateFeaturesParser
 
 ioDoc :: Doc
-ioDoc = dullblue (bold "== I/O options ==") <> linebreak <> [__i|
+ioDoc = dullblue (bold "== I/O options ==") <> linebreak <> [i|
   This application can get/put data from/to a file, an S3 location, or stdin/stdout.
   I/O locations can be mixed. For example, data can be read in from a local file
   and streamed out to S3. The defaults are stdin/stdout. See Available Options
@@ -122,15 +122,21 @@ makeCohortParserInfo name version = Options.Applicative.info
   (makeCohortParser <**> (helper <*> verisonOption))
   (  fullDesc
   <> header (name <> " " <> versionInfo)
-  <> progDesc [i| 
-  Build cohorts for #{ name }. Based on code from gitrev: #{ githash }.
-  |]
-  <> footerDoc (Just helpText)
+  <> progDescDoc (Just ([i| 
+  Create cohorts for #{ name } 
+  based on code from gitrev: #{ githash }.
+  
+  #{ gitdirty }.
+  |] <> helpText))
   )
  where
   gitinfo     = [i| (gitrev: #{githash})|]
   githash     = pack $(gitHash)
-  gitdirty    = $(gitDirty)
+  dirtygit    = $(gitDirty)
+  gitdirty    = 
+    if dirtygit then
+       yellow "**There were uncommitted files in the project repo when this application was built.**"
+       else ""
   versionInfo = version <> " " <> gitinfo
   verisonOption =
     infoOption versionInfo (long "version" <> help "Show version")
@@ -185,7 +191,7 @@ subjectSampleDoc =
     <> dullred (underline (bold "Do not use in production."))
     <> line
     <> line
-    <> [__i|
+    <> [i|
   By default, all subjects in the input population are evaluated for cohort
   inclusion. Several options are available to filter the population to 
   particular subjects. For example, the --first-n-subjects option processes
@@ -206,18 +212,12 @@ evaluateFeaturesParser =
 
 evaluateFeaturesDoc :: Doc
 evaluateFeaturesDoc =
-  dullblue (bold "== Feature Evalution Options ==") <> linebreak <> [__i|
+  dullblue (bold "== Feature Evalution Options ==") <> linebreak <> [i|
   By default, features defined in the cohort are only evaluated for 
   observational units included in the cohort. The application has two 
   option flags to change this behavior: skip-features and features-on-all-units.
   See Available options. 
   |]
-
-{-| INTERNAL
-TODO
--}
-collectBySubject :: [(SubjectID, d)] -> [(SubjectID, [d])]
-collectBySubject x = M.toList $ M.fromListWith (++) (fmap (fmap pure) x)
 
 {-| INTERNAL
 TODO
@@ -231,6 +231,7 @@ mapIntoPop l = into $ fmap
   -- TODO: is there a way to avoid the sort?
   (\(id, es) -> into @(Subject [Event c m a]) (into @Text id, sort es))
   (collectBySubject l)
+  where collectBySubject x = M.toList $ M.fromListWith (++) (fmap (fmap pure) x) 
 
 
 {-| INTERNAL
@@ -273,7 +274,11 @@ parseErrorL = logPrintStderr
 logParseErrors :: [LineParseError] -> IO ()
 logParseErrors x = mconcat $ fmap (parseErrorL <&) x
 
--- | Type containing the cohort app
+{-|
+Type containing a cohort app.
+The @Maybe Location@ argument can be used to set a location of input data
+for (e.g.) usage in tests.
+-}
 newtype CohortApp m = MkCohortApp { runCohortApp :: Maybe Location -> m B.ByteString }
 
 -- | Make a command line cohort building application.

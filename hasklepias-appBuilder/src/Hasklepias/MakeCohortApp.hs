@@ -73,6 +73,7 @@ import           Options.Applicative.Help
                                          hiding ( fullDesc )
 import           Type.Reflection                ( Typeable )
 import           Witch                          ( into )
+import Control.Monad
 
 {-| INTERNAL
 A type which contains the evaluation options of a cohort application.
@@ -278,8 +279,11 @@ logParseErrors x = mconcat $ fmap (parseErrorL <&) x
 Type containing a cohort app.
 The @Maybe Location@ argument can be used to set a location of input data
 for (e.g.) usage in tests.
+The return type contains the `Output` location so that the application 
+captures the output location from the cli arguments,
+but can also be overridden by (e.g.) `runAppWithLocation`.
 -}
-newtype CohortApp m = MkCohortApp { runCohortApp :: Maybe Location -> m B.ByteString }
+newtype CohortApp m = MkCohortApp { runCohortApp :: Maybe Location -> m (B.ByteString, Output) }
 
 -- | Make a command line cohort building application.
 makeCohortApp
@@ -320,14 +324,17 @@ makeCohortApp name version shape spec = MkCohortApp $ \l -> do
 
   errLog <& "Encoding cohort(s) output and writing to stdout..."
 
-  pure (encode (toJSON (snd res)))
+  pure (encode (toJSON (snd res)), output options)
 
 -- | Just run the thing.
 runApp :: CohortApp IO -> IO ()
 runApp x = do
-  runCohortApp x Nothing
-  pure ()
+  app <- runCohortApp x Nothing
+  writeData (outputToLocation $ snd app) (fst app)
+
 
 -- | Just run the thing with a set location (e.g for testing).
 runAppWithLocation :: Location -> CohortApp IO -> IO B.ByteString
-runAppWithLocation l x = runCohortApp x (Just l)
+runAppWithLocation l x = do
+  app <- runCohortApp x (Just l)
+  pure $ fst app

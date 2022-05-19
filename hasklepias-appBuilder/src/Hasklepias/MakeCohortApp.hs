@@ -65,7 +65,7 @@ import           Data.Semigroup                 ( Semigroup((<>)) )
 import           Data.String.Interpolate        ( __i
                                                 , i
                                                 )
-import           Development.GitRev             ( gitHash )
+import           Development.GitRev             ( gitHash, gitDirty )
 import           GHC.Generics                   ( Generic )
 import           Hasklepias.AppUtilities
 import           Options.Applicative
@@ -123,13 +123,14 @@ makeCohortParserInfo name version = Options.Applicative.info
   (  fullDesc
   <> header (name <> " " <> versionInfo)
   <> progDesc [i| 
-  Build cohorts for #{ name }. Based on code from #{ githash }
+  Build cohorts for #{ name }. Based on code from gitrev: #{ githash }.
   |]
   <> footerDoc (Just helpText)
   )
  where
   gitinfo     = [i| (gitrev: #{githash})|]
   githash     = pack $(gitHash)
+  gitdirty    = $(gitDirty)
   versionInfo = version <> " " <> gitinfo
   verisonOption =
     infoOption versionInfo (long "version" <> help "Show version")

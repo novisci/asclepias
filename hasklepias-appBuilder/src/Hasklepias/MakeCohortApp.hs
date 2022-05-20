@@ -65,7 +65,9 @@ import           Data.Semigroup                 ( Semigroup((<>)) )
 import           Data.String.Interpolate        ( __i
                                                 , i
                                                 )
-import           Development.GitRev             ( gitHash, gitDirty )
+import           Development.GitRev             ( gitDirty
+                                                , gitHash
+                                                )
 import           GHC.Generics                   ( Generic )
 import           Hasklepias.AppUtilities
 import           Options.Applicative
@@ -73,7 +75,6 @@ import           Options.Applicative.Help
                                          hiding ( fullDesc )
 import           Type.Reflection                ( Typeable )
 import           Witch                          ( into )
-import Control.Monad
 
 {-| INTERNAL
 A type which contains the evaluation options of a cohort application.
@@ -121,23 +122,27 @@ makeCohortParserInfo
   -> ParserInfo MakeCohort
 makeCohortParserInfo name version = Options.Applicative.info
   (makeCohortParser <**> (helper <*> verisonOption))
-  (  fullDesc
-  <> header (name <> " " <> versionInfo)
-  <> progDescDoc (Just ([i| 
+  (fullDesc <> header (name <> " " <> versionInfo) <> progDescDoc
+    (Just
+      ([i| 
   Create cohorts for #{ name } 
   based on code from gitrev: #{ githash }.
   
   #{ gitdirty }.
-  |] <> helpText))
+  |]
+      <> helpText
+      )
+    )
   )
  where
-  gitinfo     = [i| (gitrev: #{githash})|]
-  githash     = pack $(gitHash)
-  dirtygit    = $(gitDirty)
-  gitdirty    = 
-    if dirtygit then
-       yellow "**There were uncommitted files in the project repo when this application was built.**"
-       else ""
+  gitinfo  = [i| (gitrev: #{githash})|]
+  githash  = pack $(gitHash)
+  dirtygit = $(gitDirty)
+  gitdirty = if dirtygit
+    then
+      yellow
+        "**There were uncommitted files in the project repo when this application was built.**"
+    else ""
   versionInfo = version <> " " <> gitinfo
   verisonOption =
     infoOption versionInfo (long "version" <> help "Show version")
@@ -173,7 +178,8 @@ subjectSampleParser =
             )
           )
         )
-    <|> (FirstNSubjects . read <$> strOption
+    <|> (FirstNSubjects <$> option
+          auto
           (long "first-n-subjects" <> metavar "N" <> help
             (  "Process only the first N subjects in the population. "
             <> "This option should only be used for testing."
@@ -205,10 +211,18 @@ Defines the @Parser@ for @'EvaluateFeatures'@ command line options.
 -}
 evaluateFeaturesParser :: Parser EvaluateFeatures
 evaluateFeaturesParser =
-  flag' SkipFeatures (long "skip-features"
-  <> help "Skip evaluating any features. This can be used to evaluate a cohort just for attrition info).")
-    <|> flag' OnAll (long "features-on-all-units" 
-    <> help "Evaluate features on all observational units, regardless of their inclusion status.")
+  flag'
+      SkipFeatures
+      (  long "skip-features"
+      <> help
+           "Skip evaluating any features. This can be used to evaluate a cohort just for attrition info)."
+      )
+    <|> flag'
+          OnAll
+          (  long "features-on-all-units"
+          <> help
+               "Evaluate features on all observational units, regardless of their inclusion status."
+          )
     <|> pure OnlyOnIncluded
 
 evaluateFeaturesDoc :: Doc
@@ -232,7 +246,8 @@ mapIntoPop l = into $ fmap
   -- TODO: is there a way to avoid the sort?
   (\(id, es) -> into @(Subject [Event c m a]) (into @Text id, sort es))
   (collectBySubject l)
-  where collectBySubject x = M.toList $ M.fromListWith (++) (fmap (fmap pure) x) 
+ where
+  collectBySubject x = M.toList $ M.fromListWith (++) (fmap (fmap pure) x)
 
 
 {-| INTERNAL

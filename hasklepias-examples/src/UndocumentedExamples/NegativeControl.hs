@@ -262,7 +262,7 @@ compliantOutcome
 compliantOutcome adminTime (MkOccurrence (oreason, otime)) (MkOccurrence (creason, ctime))
   | all (adminTime <) [otime, ctime]
   = adminCensor adminTime
-  | all (otime <=) [ctime]
+  | otime <= ctime
   = MkCensoredOccurrence (O oreason) (Uncensored otime)
   | otherwise
   = MkCensoredOccurrence (C creason) (RightCensored ctime)

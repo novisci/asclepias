@@ -325,7 +325,7 @@ meetingRunsOver = expandr 1 shortestMeeting
 -- changing the moment definition to 2 from 1 in the IntervalSizeable Hour
 -- Integer instance
 meetingRunsOver' :: Meeting Hour
-meetingRunsOver' = expandr (moment' shortestMeeting) shortestMeeting
+meetingRunsOver' = expandr (moment shortestMeeting) shortestMeeting
 
 
 -- PREDICATES FOR SCHEDULING LOGIC

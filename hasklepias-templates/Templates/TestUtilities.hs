@@ -15,7 +15,6 @@ These functions may be moved to more appropriate modules in future versions.
 module Templates.TestUtilities
   ( TestCase(..)
   , TestSchema(..)
-  , readIntervalSafe
   , isEnrollmentEvent
   , makeEnrollmentEvent
   , makeEventWithConcepts
@@ -49,12 +48,6 @@ import           Test.Tasty
 import           Test.Tasty.HUnit
 import           Type.Reflection                ( Typeable )
 
-{-
-  a just few utilities for constructing intervals/events
--}
-readIntervalSafe :: (Integral b, IntervalSizeable a b) => (a, a) -> Interval a
-readIntervalSafe (b, e) = beginerval (diff e b) b
-
 data TestSchema = Enrollment | NotEnrollment deriving (Show, Eq, Generic)
 
 makeEnrollmentEvent
@@ -62,7 +55,7 @@ makeEnrollmentEvent
   => (a, a)
   -> Event Text TestSchema a
 makeEnrollmentEvent intrvl =
-  event (readIntervalSafe intrvl) (context mempty Enrollment Nothing)
+  event (safeInterval intrvl) (context mempty Enrollment Nothing)
 
 makeEventWithConcepts
   :: (Integral b, IntervalSizeable a b, Typeable a, Show a)
@@ -70,7 +63,7 @@ makeEventWithConcepts
   -> (a, a)
   -> Event Text TestSchema a
 makeEventWithConcepts cpts intrvl = event
-  (readIntervalSafe intrvl)
+  (safeInterval intrvl)
   (context (packConcepts cpts) Enrollment Nothing)
 
 isEnrollmentEvent :: Predicate (Event c TestSchema a)
@@ -125,8 +118,8 @@ makeTestCaseOfIndexAndEvents
 makeTestCaseOfIndexAndEvents name buildArgs intrvl e = makeTestCase
   name
   buildArgs
-  -- (pure (readIntervalSafe intrvl), pure e)
-  (pure (readIntervalSafe intrvl), pure e)
+  -- (pure (safeInterval intrvl), pure e)
+  (pure (safeInterval intrvl), pure e)
 
 
 makeBuilderAssertion

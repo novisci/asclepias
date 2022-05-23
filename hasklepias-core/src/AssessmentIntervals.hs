@@ -268,7 +268,7 @@ class Intervallic i a => Followup i a where
     -> FollowupInterval a
   followup dur index = MkFollowupInterval (beginerval d2 (begin  index))
     where d2 = if dur <= dindex
-                 then dindex + moment' (into @(i a) index)
+                 then dindex + moment @a 
                  else dur
           dindex = duration  index
 

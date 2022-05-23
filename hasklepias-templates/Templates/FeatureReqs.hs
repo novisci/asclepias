@@ -18,6 +18,7 @@ module Templates.FeatureReqs
   , module Templates.TestUtilities
   , module Test.Tasty
   , module W
+  , module Witch
   ) where
 
 import           AssessmentIntervals
@@ -30,7 +31,7 @@ import           EventDataTheory
 import           Features
 import           Flow                           ( (.>) )
 import           GHC.Natural                    ( Natural
-                                                , naturalToInt
+                                                -- , naturalToInt
                                                 )
 import           Stype
 import           Templates.TestUtilities
@@ -39,4 +40,4 @@ import           Witherable                    as W
                                                 ( Witherable
                                                 , filter
                                                 )
-
+import   Witch

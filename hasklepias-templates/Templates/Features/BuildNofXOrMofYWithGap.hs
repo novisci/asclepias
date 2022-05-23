@@ -18,9 +18,9 @@ buildNofXOrMofYWithGap
      )
   => (outputType -> outputType -> outputType)
   -> (Bool -> outputType)
-  -> Natural -- ^ count passed to 'buildNofX'
+  -> Int -- ^ count passed to 'buildNofX'
   -> Predicate (Event c m a) -- ^ predicate for 'buildNofX' 
-  -> Natural -- ^ the minimum number of gaps passed to 'buildNofXWithGap'
+  -> Int -- ^ the minimum number of gaps passed to 'buildNofXWithGap'
   -> b -- ^ the minimum duration of a gap passed to 'buildNofXWithGap'
   -> Predicate (Event c m a) -- ^ predicate for 'buildNofXWithGap' 
   -> ComparativePredicateOf2
@@ -47,9 +47,9 @@ buildNofXOrMofYWithGapBool
      , IntervalCombinable i a
      , Witherable container
      )
-  => Natural -- ^ count passed to 'buildNofX'
+  => Int -- ^ count passed to 'buildNofX'
   -> Predicate (Event c m a)
-  -> Natural -- ^ the minimum number of gaps passed to 'buildNofXWithGap'
+  -> Int -- ^ the minimum number of gaps passed to 'buildNofXWithGap'
   -> b -- ^ the minimum duration of a gap passed to 'buildNofXWithGap'
   -> Predicate (Event c m a)
   -> ComparativePredicateOf2
@@ -71,9 +71,9 @@ buildNofXOrMofYWithGapBinary
      , IntervalCombinable i a
      , Witherable container
      )
-  => Natural -- ^ count passed to 'buildNofX'
+  => Int -- ^ count passed to 'buildNofX'
   -> Predicate (Event c m a)
-  -> Natural -- ^ the minimum number of gaps passed to 'buildNofXWithGap'
+  -> Int -- ^ the minimum number of gaps passed to 'buildNofXWithGap'
   -> b -- ^ the minimum duration of a gap passed to 'buildNofXWithGap'
   -> Predicate (Event c m a)
   -> ComparativePredicateOf2
@@ -92,9 +92,9 @@ buildNofXOrMofYWithGapBinary = buildNofXOrMofYWithGap
 
 
 type NofXOrMofYWithGapArgs
-  = ( Natural
+  = ( Int
     , Predicate (Event Text TestSchema Int)
-    , Natural
+    , Int
     , Int
     , Predicate (Event Text TestSchema Int)
     , ComparativePredicateOf2

@@ -11,6 +11,7 @@
 {-# OPTIONS_GHC -Wno-type-defaults #-}
 {-# OPTIONS_GHC -Wno-unused-top-binds #-}
 {-# OPTIONS_GHC -Wno-unused-matches #-}
+{-# LANGUAGE TypeApplications #-}
 
 
 module IntervalExamples
@@ -325,7 +326,7 @@ meetingRunsOver = expandr 1 shortestMeeting
 -- changing the moment definition to 2 from 1 in the IntervalSizeable Hour
 -- Integer instance
 meetingRunsOver' :: Meeting Hour
-meetingRunsOver' = expandr (moment' shortestMeeting) shortestMeeting
+meetingRunsOver' = expandr (moment @Hour) shortestMeeting
 
 
 -- PREDICATES FOR SCHEDULING LOGIC

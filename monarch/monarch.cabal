@@ -4,21 +4,8 @@ version:            0.1.0.0
 
 -- A short (one-line) description of the package.
 synopsis: Cohort test-building interface for asclepias, currently a prototype.
-
--- A longer description of the package.
--- description: 
-
--- A URL where users can report bugs.
--- bug-reports:
-
--- The license under which the package is released.
--- license:
 author:             bbrown
 maintainer:         bbrown@targetrwe.com
-
--- A copyright notice.
--- copyright:
--- category:
 extra-source-files:
     CHANGELOG.md
     README.adoc
@@ -51,7 +38,7 @@ library
     -- other-extensions:
     build-depends:    
         -- upper bound from filepath package
-        base ^>=4.14.1.0
+      base >=4.14 && <5
         , witch
         -- NOTE: edm module fixes interval-algebra version
         -- though monarch does not depend on edm at all, cabal seems to think
@@ -80,7 +67,7 @@ executable demo
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:
     build-depends:
-        base ^>=4.14.1.0
+      base >=4.14 && <5
         , monarch
         , tasty
 

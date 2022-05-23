@@ -1,3 +1,5 @@
+{-# LANGUAGE TypeApplications #-}
+
 module Templates.Features.BuildNofXWithGap
   ( buildNofXWithGap
   , buildNofXWithGapBool
@@ -16,7 +18,7 @@ buildNofXWithGap
      , Witherable container
      )
   => (Bool -> outputType)
-  -> Natural -- ^ the minimum number of gaps
+  -> Int -- ^ the minimum number of gaps
   -> b -- ^ the minimum duration of a gap
   -> (i a -> AssessmentInterval a)
   -> ComparativePredicateOf2 (AssessmentInterval a) (Event c m a)
@@ -38,7 +40,7 @@ buildNofXWithGap cast nGaps allowableGap = buildNofXBase
    -- keep only those gap durations at least the allowableGap
   .> F.filter (>= allowableGap)
    -- are there at least as many events as desired?
-  .> \x -> length x >= naturalToInt nGaps
+  .> \x -> length x >= nGaps
   )
   (const cast)
 {- end::template0[] -}
@@ -50,7 +52,7 @@ buildNofXWithGapBool
      , IntervalCombinable i a
      , Witherable container
      )
-  => Natural -- ^ the minimum number of gaps
+  => Int -- ^ the minimum number of gaps
   -> b -- ^ the minimum duration of a gap
   -> (i a -> AssessmentInterval a)
   -> ComparativePredicateOf2 (AssessmentInterval a) (Event c m a)
@@ -70,7 +72,7 @@ buildNofXWithGapBinary
      , IntervalCombinable i a
      , Witherable container
      )
-  => Natural -- ^ the minimum number of gaps
+  => Int -- ^ the minimum number of gaps
   -> b -- ^ the minimum duration of a gap
   -> (i a -> AssessmentInterval a)
   -> ComparativePredicateOf2 (AssessmentInterval a) (Event c m a)
@@ -85,7 +87,7 @@ buildNofXWithGapBinary = buildNofXWithGap fromBool
 
 
 type NofXWithGapArgs
-  = ( Natural
+  = ( Int
     , Int
     , Interval Int -> AssessmentInterval Int
     , ComparativePredicateOf2

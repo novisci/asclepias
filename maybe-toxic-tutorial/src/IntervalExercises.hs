@@ -196,8 +196,10 @@ instance (Eq a, ChunkSize a) => Num (UTCChunked a) where
   fromInteger = undefined
 
 instance (Eq a, ChunkSize a) => IntervalSizeable (UTCChunked a) NominalDiffTime where
-  moment' x = chunksizeToNominalDiffTime c
-    where UTCChunked { chunkSize = c } = begin $ getInterval x
+  moment = undefined
+  -- TODO
+    -- chunksizeToNominalDiffTime c 
+    -- where UTCChunked { chunkSize = c } = begin $ getInterval 
 
   add x c = c { nChunks = dn + t }
    where

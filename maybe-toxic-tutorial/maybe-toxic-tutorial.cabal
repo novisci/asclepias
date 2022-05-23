@@ -39,7 +39,7 @@ library
     -- other-extensions:
     build-depends:    
         base >=4.14
-        , interval-algebra >=1.0.0
+        , interval-algebra >= 2.0.0
         -- following interval algebra
         , time (>=1.8 && <2)
         -- TODO is there a way to remove this and still get hls help on tests?

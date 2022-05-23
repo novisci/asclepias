@@ -7,6 +7,7 @@ module Templates.Features.BuildNofXWithGap
 
 import           Templates.FeatureReqs         as F
 import           Templates.Features.BuildNofXBase
+import           Hasklepias                    (pairGaps)
 
 {- tag::template0[] -}
 buildNofXWithGap

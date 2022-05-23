@@ -49,7 +49,7 @@ library
       , tasty  == 1.4.1
       , tasty-hunit == 0.10.0.3
       , text == 1.2.4.1
-      , time >= 1.11
+      , time >= 1.9.3
       , tuple >= 0.3
       , witherable >= 0.4.1
   default-language: Haskell2010

@@ -27,13 +27,6 @@ module Hasklepias.Misc
   , monthFromDay
   , dayOfMonthFromDay
 
-    -- ** Functions for manipulating intervals
-  , lookback
-  , lookahead
-
-    -- ** Container predicates
-  , isNotEmpty
-
   -- ** Reshaping containers
   , allPairs
   , pairs
@@ -120,34 +113,6 @@ monthFromDay = (\(y, m, d) -> m) . toGregorian
 dayOfMonthFromDay :: Day -> DayOfMonth
 dayOfMonthFromDay = (\(y, m, d) -> d) . toGregorian
 
--- | Creates a new @Interval@ of a provided lookback duration ending at the 
---   'begin' of the input interval.
---
--- >>> lookback 4 (beginerval 10 (1 :: Int))
--- (-3, 1)
-lookback
-  :: (Intervallic i a, IntervalSizeable a b)
-  => b   -- ^ lookback duration
-  -> i a
-  -> Interval a
-lookback d x = enderval d (begin x)
-
--- | Creates a new @Interval@ of a provided lookahead duration beginning at the 
---   'end' of the input interval.
---
--- >>> lookahead 4 (beginerval 1 (1 :: Int))
--- (2, 6)
-lookahead
-  :: (Intervallic i a, IntervalSizeable a b)
-  => b   -- ^ lookahead duration
-  -> i a
-  -> Interval a
-lookahead d x = beginerval d (end x)
-
--- | Is the input list empty? 
-isNotEmpty :: [a] -> Bool
-isNotEmpty = not . null
-
 -- | Generate all pair-wise combinations from two lists.
 allPairs :: Applicative f => f a -> f b -> f (a, b)
 allPairs = liftA2 (,)
@@ -161,40 +126,3 @@ pairs = go
  where
   go []       = []
   go (x : xs) = fmap (x, ) xs <> go xs
-
--- | Within a provided spanning interval, are there any gaps of at least the
---   specified duration among the input intervals?
-anyGapsWithinAtLeastDuration
-  :: ( IntervalSizeable a b
-     , Intervallic i0 a
-     , IntervalCombinable i1 a
-     , Monoid (t (Interval a))
-     , Monoid (t (Maybe (Interval a)))
-     , Applicative t
-     , W.Witherable t
-     )
-  => b       -- ^ duration of gap
-  -> i0 a  -- ^ within this interval
-  -> t (i1 a)
-  -> Bool
-anyGapsWithinAtLeastDuration = makeGapsWithinPredicate any (>=)
-
--- | Within a provided spanning interval, are all gaps less than the specified
---   duration among the input intervals?
---
--- >>> allGapsWithinLessThanDuration 30 (beginerval 100 (0::Int)) [beginerval 5 (-1), beginerval 99 10]
--- True
-allGapsWithinLessThanDuration
-  :: ( IntervalSizeable a b
-     , Intervallic i0 a
-     , IntervalCombinable i1 a
-     , Monoid (t (Interval a))
-     , Monoid (t (Maybe (Interval a)))
-     , Applicative t
-     , W.Witherable t
-     )
-  => b       -- ^ duration of gap
-  -> i0 a  -- ^ within this interval
-  -> t (i1 a)
-  -> Bool
-allGapsWithinLessThanDuration = makeGapsWithinPredicate all (<)

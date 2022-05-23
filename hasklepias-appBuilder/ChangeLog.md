@@ -1,4 +1,6 @@
 # Changelog for hasklepias-appBuilder
+## 0.26.0
+* Update to interval-algebra 2.0
 
 ## 0.1.0
 

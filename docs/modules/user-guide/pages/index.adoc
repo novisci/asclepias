@@ -30,16 +30,8 @@ section contains background information on the event-data-model design.
 === 1. Initialize a Project
 include::initialize-new-project.adoc[leveloffset=+1]
 
-=== 2. Read in Project Data
-#TODO write this up#
-
-The `EventDataTheory.EventLines` module provides several utilities
-for decoding events from eventlines.
-The `parseEventLinesL` function, for example,
-converts a `ByteString` of new-line delimed JSON
-into a pair of `[String]` (containing any parse error messages)
-and `[(SubjectID, Event c m a)]`, 
-a list of Subject ID/event pairs. 
+=== 2. Define Data Schema
+*TODO* placeholder really - need to update with exact steps
 
 === 3. Create Events
 #TODO write a procedures.adoc for creating an event.#
@@ -89,6 +81,16 @@ include::features-procedures.adoc[leveloffset=+1]
 === 5. Create Cohorts
 include::cohort-procedures.adoc[leveloffset=+1]
 
+=== 6. Read in Project Data
+#TODO write this up#
+
+The `EventDataTheory.EventLines` module provides several utilities
+for decoding events from eventlines.
+The `parseEventLinesL` function, for example,
+converts a `ByteString` of new-line delimed JSON
+into a pair of `[String]` (containing any parse error messages)
+and `[(SubjectID, Event c m a)]`, 
+a list of Subject ID/event pairs.  
 
 == Examples
 This section provides detailed examples of asclepias usage.

@@ -102,6 +102,7 @@ import           IntervalAlgebra                ( Interval
                                                 , moment
                                                 )
 import           Witch
+import Witherable (WitherableWithIndex)
 
 {-| A type to contain baseline intervals. See the 'Baseline' typeclass for methods
 to create values of this type.
@@ -267,11 +268,11 @@ class Intervallic i a => Followup i a where
       b -- ^ duration of followup
     -> i a -- ^ the index event
     -> FollowupInterval a
-  followup dur index = MkFollowupInterval (beginerval d2 (begin  index))
+  followup dur index = MkFollowupInterval (beginerval d2 (begin index))
     where d2 = if dur <= dindex
-                 then dindex + moment (into @(i a) index)
+                 then dindex + 1
                  else dur
-          dindex = duration  index
+          dindex = duration index
 
   followupMetBy ::
     ( IntervalSizeable a b

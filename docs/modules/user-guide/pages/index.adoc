@@ -7,14 +7,14 @@
 :cabal: 3.6.2.0
 :source-highlighter: highlightjs
 
-= The asclepias User Guide 
+= The `asclepias` User Guide 
 
-The purpose of the user guide is to provide guidance on using asclepias.
+The purpose of the user guide is to provide guidance on using `asclepias`.
 This guide covers:
 
-* How to get started using asclepias
-* Background theory on asclepias
-* Instructions for using asclepias
+* How to get started using `asclepias`
+* Background theory on `asclepias`
+* Instructions for using `asclepias`
 * References
 
 == Getting Started
@@ -93,7 +93,7 @@ and `[(SubjectID, Event c m a)]`,
 a list of Subject ID/event pairs.  
 
 == Examples
-This section provides detailed examples of asclepias usage.
+This section provides detailed examples of `asclepias` usage.
 #TODO include examples of creating events?#
 
 === Features

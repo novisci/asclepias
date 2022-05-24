@@ -4,24 +4,24 @@
 :cabal: 3.6.2.0
 :asclepias-url: https://gitlab.novisci.com/nsStat/asclepias
 
-= Introduction to asclepias
+= Introduction to `asclepias`
 
-This site is the documentation hub for asclepias.
-asclepias is a domain specific language written in Haskell to build and analyze cohorts.
-For a deeper dive into the theory underlying asclepias, 
+This site is the documentation hub for `asclepias`.
+`asclepias` is a domain specific language written in Haskell to build and analyze cohorts.
+For a deeper dive into the theory underlying `asclepias`, 
 see xref:theory:index.adoc[Theory and Design].
-Information on the <<motivation>> to build asclepias and its <<benefits>> are included below.
+Information on the <<motivation>> to build `asclepias` and its <<benefits>> are included below.
 
-If you are contributing to the development of asclepias,
+If you are contributing to the development of `asclepias`,
 see the xref:dev-guide:index.adoc[developer guide] for more details.
 
-If you are using asclepias for your project, 
+If you are using `asclepias` for your project, 
 see the xref:user-guide:index.adoc[user guide] for more details.
 
-See the {haddock-site}[asclepias API documentation]
-for detailed information on the types and functions exported from asclepias.
+See the {haddock-site}[`asclepias` API documentation]
+for detailed information on the types and functions exported from `asclepias`.
 
-asclepias code is hosted on {asclepias-url}[GitLab].
+`asclepias` code is hosted on {asclepias-url}[GitLab].
 
 [#motivation]
 == Motivation

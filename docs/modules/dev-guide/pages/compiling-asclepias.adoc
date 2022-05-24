@@ -2,26 +2,26 @@
 :source-highlighter: highlightjs
 :url-usage-guide: https://docs.novisci.com/nsBuild/index.html
 
-= Building asclepias packages 
-This section outlines asclepias-specific build instructions.
+= Building `asclepias` packages 
+This section outlines `asclepias`-specific build instructions.
 For details on building Haskell projects in general,
 see the {url-usage-guide}[Usage Guide]. 
 #TODO not sure the best way to link to the usage guide here#
 #TODO can this link be added as an doc-level attribute?#
 
-The asclepias repository is organized using a multiple project setup.
+The `asclepias` repository is organized using a multiple project setup.
 Some of the subdirectories of the repository 
 such as `hasklepias-core`, `hasklepias-main`, etc. 
 contain a Cabal package that we call a "project" or "sub-project".
 
 We can choose which subset of projects to build, 
-including theentire asclepias project, 
+including theentire `asclepias` project, 
 using the `cabal build` command as outlined in the {url-usage-guide}[Usage Guide]. 
 
 [NOTE]
 ..Best Practice
 ====
-Build the entire asclepias project only after all edits are complete. 
+Build the entire `asclepias` project only after all edits are complete. 
 This saves compile time.
 ====
 

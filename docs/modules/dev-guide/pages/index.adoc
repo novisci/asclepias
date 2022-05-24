@@ -3,21 +3,21 @@
 :source-highlighter: highlightjs
 :navtitle: Developer Guide
 
-= The asclepias Developer Guide 
+= The `asclepias` Developer Guide 
 
 [NOTE]
-This guide is designed for asclepias *developers*,
-i.e. folks who contribute the asclepias repository.
+This guide is designed for `asclepias` *developers*,
+i.e. folks who contribute the `asclepias` repository.
 For the user guide, 
 xref:ROOT:introduction.adoc[click here].
 
 These documents describe how to: 
 
-* contribute to `+asclepias+`
+* contribute to `asclepias`
 * install the Haskell toolchain
 * set up your development environment
 
-To develop and work with asclepias locally, clone the repository:
+To develop and work with `asclepias` locally, clone the repository:
 
 ----
 git clone git@gitlab.novisci.com:nsStat/asclepias.git

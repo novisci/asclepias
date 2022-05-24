@@ -3,7 +3,7 @@
 This examples demonstrates:
 
 * [x] specifying cohorts from calendar-based indices
-* [x] using asclepias'
+* [x] using `asclepias'`
 xref:theory:cohort-theory.adoc[cohort module] without using its
 xref:theory:feature-theory.adoc[feature module] 
 * [x] using an empty return type for the cohort data

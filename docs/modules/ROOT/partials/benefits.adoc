@@ -1,11 +1,11 @@
 :description: Lists the features and benefits of asclepias
 
-asclepias is a domain specific language and a collection of tools
+`asclepias` is a domain specific language and a collection of tools
 for defining cohorts.
-Benefits of asclepias include:
+Benefits of `asclepias` include:
 
 Formally defines a cohort::
-asclepias provides a formal definition of a cohort specification,
+`asclepias` provides a formal definition of a cohort specification,
 which includes defining one or more **index** events,
 a set criteria that determine how subjects will be included or excluded,
 and the set of features (i.e. variables) the cohort contains.
@@ -13,9 +13,9 @@ and the set of features (i.e. variables) the cohort contains.
 xref:theory:page$cohort-theory.adoc[Read about the theory of cohorts].
 
 Provides tools for defining and testing features::
-A `+Feature+` in asclepias can be thought of
+A `+Feature+` in `asclepias` can be thought of
 like covariates, outcomes, or other variables.
-asclepias includes a language for defining features
+`asclepias` includes a language for defining features
 of nearly arbitrary shape.
 The language elegantly handles failures and
 prevents certain programming bugs.
@@ -25,7 +25,7 @@ xref:theory:page$feature-theory.adoc[Read about the theory of features].
 Includes a well-tested library of common features::
 Cohorts often include many simple features such as 
 indicators that a subject has some condition during a baseline period.
-asclepias includes templates for many common features.
+`asclepias` includes templates for many common features.
 +
 xref:user-guide:page$index.adoc#templates[See all available templates].
 
@@ -35,7 +35,7 @@ SAS, R, python are dynamically, as opposed to statically, typed.
 These languages are great for many programming tasks,
 but statically typed languages can prevent many common programming errors
 by identifying them when the program is compiled.
-Most of the asclepias tools are written in languages like
+Most of the `asclepias` tools are written in languages like
 https://www.haskell.org/[Haskell]
 or
 https://dhall-lang.org/[Dhall]

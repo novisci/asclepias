@@ -6,12 +6,12 @@
 :edm-path: https://docs.novisci.com/edm-sandbox/latest
 :source-highlighter: highlightjs
 
-To get started using asclepias, there are a few prerequisite tasks.
+To get started using `asclepias`, there are a few prerequisite tasks.
 This section covers instructions on the installation of necessary software tools
-and prepping data for use by asclepias functions.
+and prepping data for use by `asclepias` functions.
 
 ## Setting Up Software Tools
-To use asclepias, you will need to install the Haskell tool chain.
+To use `asclepias`, you will need to install the Haskell tool chain.
 To install, 
 follow the directions in the xref:nsBuild:ROOT:haskell-setup.adoc[setup guide],
 with these special instructions:
@@ -23,7 +23,7 @@ If you are new to Haskell,
 review the xref:nsBuild:usage-guides:index.adoc[Haskell usage guide] for best practices.
 
 ## Data Requirements
-asclepias expects data to be in a particular format.
+`asclepias` expects data to be in a particular format.
 The data must be in JSON file, 
 and follow
 NoviSci's standard 

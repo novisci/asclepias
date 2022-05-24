@@ -1,8 +1,8 @@
 :navtitle: Theory and Design
 
-= Theory and Design of asclepias
+= Theory and Design of `asclepias`
 
-asclepias is organized around three abstractions:
+`asclepias` is organized around three abstractions:
 events, features and cohorts.
 
 include::event-theory.adoc[leveloffset=+1]

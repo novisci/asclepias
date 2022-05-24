@@ -128,7 +128,7 @@ but we give a couple examples of using events here.
 
 The 'event' function is a smart constructor for 'Event'.
 
->>> :set -XOverloadedStrings
+>>> :set -XOverloadedStrings -XDeriveGeneric
 >>> import IntervalAlgebra ( beginerval ) 
 
 >>> data SomeDomain = A | B deriving (Eq, Ord, Show, Generic)
@@ -136,7 +136,7 @@ The 'event' function is a smart constructor for 'Event'.
 >>> type MyEvent = Event T.Text SomeDomain Integer
 >>> let myEvent = event (beginerval 5 0) (context (packConcepts ["foo"]) A Nothing) :: MyEvent
 >>> show myEvent
-"MkEvent {(0, 5), Context {concepts = Concepts (fromList [Concept \"foo\"]), facts = A, source = Nothing}}"
+"MkEvent {(0, 5), MkContext {getConcepts = MkConcepts (fromList [MkConcept \"foo\"]), getFacts = A, getSource = Nothing}}"
 
 >>> hasAnyConcepts myEvent (["foo", "duck"] :: [T.Text])
 True
@@ -150,11 +150,10 @@ False
 >>> type NewEvent = Event MyConcepts NewDomain Integer
 >>> let newEvent = event (beginerval 5 0) (context (packConcepts [Foo, Bar]) (A "cool") Nothing) :: NewEvent
 >>> show newEvent
-"MkEvent {(0, 5), Context {concepts = Concepts (fromList [Concept Foo,Concept Bar]), facts = A \"cool\", source = Nothing}}"
+"MkEvent {(0, 5), MkContext {getConcepts = MkConcepts (fromList [MkConcept Foo,MkConcept Bar]), getFacts = A \"cool\", getSource = Nothing}}"
 
 >>> hasConcept newEvent Foo
 True
-
 >>> hasConcept newEvent Baz
 False
 

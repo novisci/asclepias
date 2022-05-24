@@ -1,17 +1,14 @@
-packages: hasklepias-core
-        , hasklepias-examples
-        , hasklepias-main
-        , hasklepias-appBuilder
-        , hasklepias-templates
-        , cohort-collector
-        , event-data-theory
-        , stype
-        , maybe-toxic-tutorial
-        , monarch
+-- The cabal.project file configures the build of asclepias packages.
+-- cabal.project reference:
+-- https://cabal.readthedocs.io/en/latest/cabal-project.html
 
--- allow-newer:
---  amazonka:bytestring,
---  generic-lens-core:text,
---  generic-lens:text,
---  witch:text,
---  ListLike:text
+packages: */*.cabal
+
+package event-data-theory
+  tests: True
+
+allow-newer:
+  , doctest:*
+  , ghc:*
+  , template-haskell:*
+  , unix:*

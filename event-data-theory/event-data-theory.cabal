@@ -11,7 +11,7 @@ category:       Data Science
 synopsis:       event data theory 
 license:        BSD-3-Clause
 license-file:   LICENSE
-build-type:     Simple
+build-type:     Custom
 extra-source-files:
     README.adoc
     ChangeLog.md
@@ -19,6 +19,12 @@ extra-source-files:
 source-repository head
   type: git
   location: https://github.com/novisci/asclepias
+
+custom-setup
+  setup-depends:
+      base
+    , Cabal
+    , cabal-doctest  >=1.0.9 && <1.1
 
 library
   exposed-modules:
@@ -59,4 +65,19 @@ test-suite tests
       test
   build-depends:
       event-data-theory, base
+  default-language: Haskell2010
+
+test-suite doctests
+  type:             exitcode-stdio-1.0
+  main-is:          doctests.hs
+  build-depends:
+      base
+    -- , base-compat       >=0.10.5 && <0.13
+    , doctest           >=0.15   && <0.19
+    -- , QuickCheck        >=2.12   && <2.15
+    , event-data-theory
+    -- , template-haskell
+
+  ghc-options:      -Wall -threaded
+  hs-source-dirs:   test
   default-language: Haskell2010

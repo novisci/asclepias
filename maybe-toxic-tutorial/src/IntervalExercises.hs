@@ -61,7 +61,8 @@ shiftMeeting :: Hour -> Meeting Hour -> Meeting Hour
 shiftMeeting = undefined
 
 
--- Here i create a type alias called Schedule of a list of MeetingData Hour objects, which could represent the collection of meetings on a given day. It's just to make for easier typing.
+-- Here i create a type alias called Schedule of a list of MeetingData Hour objects, 
+-- which could represent the collection of meetings on a given day. It's just to make for easier typing.
 
 -- A reminder about basic differences between newtypes and type aliases: type
 -- aliases are defined with the type keyword whereas new types are defined with
@@ -123,7 +124,8 @@ isConflict = undefined
 
      MEETING IN UTC TIME
 
-     Hour was a fine construct for making a Meeting that represented a single calendar day. But we might wish to have a meeting type that can
+     Hour was a fine construct for making a Meeting that represented a single calendar day. 
+     But we might wish to have a meeting type that can
 
      i) represent intervals delineated in any UTC time
      ii) where time blocks are in 15 minute chunks
@@ -136,9 +138,12 @@ isConflict = undefined
 
      https://hackage.haskell.org/package/time-1.12/docs/Data-Time-Clock.html
 
-     However, the instance above defines the moment (minimal interval chunk) to be 1e-12 seconds. Not very practical for meetings.
+     However, the instance above defines the moment (minimal interval chunk) to be 1e-12 seconds. 
+     Not very practical for meetings.
 
-     One solution is to create a wrapper type around NominalDiffTime that has the Meeting-related properties we want, and that allows us to create a new IntervalSizeable instance with a moment of 15 minutes. I don't know if that's the best way to go, but it at least allows us to practice.
+     One solution is to create a wrapper type around NominalDiffTime that has the Meeting-related properties we want, 
+     and that allows us to create a new IntervalSizeable instance with a moment of 15 minutes. 
+     I don't know if that's the best way to go, but it at least allows us to practice.
       -}
 
 

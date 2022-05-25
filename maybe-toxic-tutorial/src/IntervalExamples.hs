@@ -6,6 +6,7 @@
 {-# HLINT ignore #-}
 {-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE TypeApplications #-}
 {-# OPTIONS_GHC -Wno-unused-type-patterns #-}
 {-# OPTIONS_GHC -Wno-missing-signatures #-}
 {-# OPTIONS_GHC -Wno-type-defaults #-}
@@ -33,7 +34,10 @@ import           IntervalAlgebra
     BASICS
 
     An Interval in IntervalAlgebra is a data type (like Int or String) endowed
-    with three essential pieces of information: A begin, an end and a duration. The main benefit of the Interval type is that it ensures begin, end and duration are defined in a consistent set of units, units which are again represented by types. With this, IntervalAlgebra can also define relations between two intervals of the same type.
+    with three essential pieces of information: A begin, an end and a duration. 
+    the main benefit of the Interval type is that it ensures begin, end and duration 
+    are defined in a consistent set of units, units which are again represented by types. 
+    With this, IntervalAlgebra can also define relations between two intervals of the same type.
 
     For example, below we will look at Intervals whose begin, end and duration are all of the Int type.
 
@@ -41,28 +45,52 @@ import           IntervalAlgebra
 
 -- CREATING INTERVALS
 
--- creates an interval from a duration and a starting point
--- beginerval duration start
+-- below is an interval defined using the beginerval function.
+-- beginerval takes two arguments, duration and begin.
+-- duration is the length of the interval
+-- begin is the start point of the interval.
+-- notice that beginerDefault is not the interval (0, 0)
+-- (you can see this in the ghci by typing beginerDefault + enter)
+-- but instead the interval (0, 1)
 -- each `Interval a` type has a smallest possible duration, called the moment
--- beginerval takes the max of moment and the supplied duration
--- for Interval Int, moment is 1
--- (0, 1)
+-- When the supplied duration is less than the moment,
+-- the supplied duration is replaced with the moment.
+-- Since begin is 0, the duration of 1 is added to the
+-- right, and we end up with (0, 1)
 beginerDefault :: Interval Int
 beginerDefault = beginerval 0 0
 
+-- enderval is very similar to beginerval
+-- the difference is that instead of taking in 
+-- a begin value, it takes an end value
+-- this means that when we pass in the
+-- end of 0 and the duration of 0
+-- the moment increases the duration
+-- to 1 and adds this to the left,
+-- resulting in (-1, 0)
 enderDefault :: Interval Int
 enderDefault = enderval 0 0
 
+-- no moment is applied since the
+-- duration is greater than the moment.
+-- we create an interval that ends
+-- at 2 and has length 2
+-- (2, 2)
 startFromEnd :: Interval Int
 startFromEnd = enderval 2 2
 
--- a function that builds an interval of smallest possible length starting from
--- a given value.
+-- Below is a function that takes in an integer and
+-- builds an interval of smallest possible length starting from
+-- that integer.
+-- Notice that beginerval is partially evaluated.
+-- A duration of 0 is passed, but no begin value.
+-- to evaluate unitInterval, we must provide the begin value.
 unitInterval :: Int -> Interval Int
 unitInterval = beginerval 0
 
--- begin, end, duration are utilities that return these fundamental pieces of
--- information about an interval. 'diff' is a difference function giving the
+-- begin, end, duration are utility functions that 
+-- take in an interval, and return the corresponding piece of
+-- information about that interval. 'diff' is a difference function giving the
 -- difference between the points provided. For intervals with Int endpoint
 -- types, diff y x = y - x.
 gospel :: Interval Int -> Bool
@@ -326,7 +354,7 @@ meetingRunsOver = expandr 1 shortestMeeting
 -- changing the moment definition to 2 from 1 in the IntervalSizeable Hour
 -- Integer instance
 meetingRunsOver' :: Meeting Hour
-meetingRunsOver' = expandr (moment shortestMeeting) shortestMeeting
+meetingRunsOver' = expandr (moment @Hour) shortestMeeting
 
 
 -- PREDICATES FOR SCHEDULING LOGIC

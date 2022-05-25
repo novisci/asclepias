@@ -11,6 +11,9 @@ packages: hasklepias-core
 
 with-compiler: ghc-8.10.7
 
+constraints:
+  interval-algebra < 2
+
 -- allow-newer:
 --  amazonka:bytestring,
 --  generic-lens-core:text,

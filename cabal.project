@@ -13,6 +13,8 @@ with-compiler: ghc-8.10.7
 
 constraints:
   interval-algebra < 2
+  -- adds Quarter and other types
+  , time >= 1.11.1
 
 -- allow-newer:
 --  amazonka:bytestring,

@@ -9,6 +9,8 @@ packages: hasklepias-core
         , maybe-toxic-tutorial
         , monarch
 
+with-compiler: ghc-8.10.7
+
 -- allow-newer:
 --  amazonka:bytestring,
 --  generic-lens-core:text,

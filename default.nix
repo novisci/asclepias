@@ -34,11 +34,11 @@ in pkgs.haskell-nix.cabalProject {
 
   # easiest way to configure is with module
   modules = [
-    {
-      # https://github.com/input-output-hk/cardano-node/blob/0f6a20d15b69f599eafc3d46535474ba67c52693/nix/haskell.nix#L165
-      # Do not ignore version bounds
-      packages.hasklepias-main.doExactConfig = false;
-    }
+    #{
+    #  # https://github.com/input-output-hk/cardano-node/blob/0f6a20d15b69f599eafc3d46535474ba67c52693/nix/haskell.nix#L165
+    #  # Do not ignore version bounds
+    #  packages.hasklepias-main.doExactConfig = false;
+    #}
     {
       packages.hasklepias-main.components.foreignlibs.time.doExactConfig = true;
       packages.hasklepias-core.components.library.doCoverage = false;

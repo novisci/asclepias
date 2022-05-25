@@ -6,7 +6,6 @@ packages: hasklepias-core
         , cohort-collector
         , event-data-theory
         , stype
-        , maybe-toxic-tutorial
         , monarch
 
 -- allow-newer:

@@ -48,7 +48,7 @@ library
     , tasty  >= 1.4.1
     , tasty-hunit >= 0.10
     , text == 1.2.4.1
-    , time >= 1.9
+    , time >= 1.11
     , tuple >= 0.3
     , witherable >= 0.4.1
     , witch >= 1.0

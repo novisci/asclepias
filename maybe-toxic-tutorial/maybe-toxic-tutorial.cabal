@@ -58,3 +58,4 @@ test-suite maybe-toxic-tutorial-test
     build-depends:   
         base >=4.14
         , hspec
+        , maybe-toxic-tutorial

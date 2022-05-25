@@ -20,7 +20,6 @@ specs = describe "First type exercises" $ do
   it "doublePower Int Int" $ do
     doublePower (4 :: Int) ((-1) :: Int) `shouldBe` 0.25 :: Int
 
-
 -- TODO implement something like this, cribbed from exercism
 --specs :: Spec
 --specs = describe "TypeExercises" $ for_ cases test

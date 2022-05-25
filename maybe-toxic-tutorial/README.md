@@ -36,8 +36,8 @@ A rough roadmap for modules to add is below. If you think this general idea is u
 		- modifying intervals
 		- defining our own intervals
 		- defining structures that contain intervals
-* [ ] Asclepias basics
-* [ ] Asclepias extended
+* [ ] asclepias basics
+* [ ] asclepias extended
 
 ## How to use
 For now this will live in asclepias.

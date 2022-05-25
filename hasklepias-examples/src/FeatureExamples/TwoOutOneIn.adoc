@@ -19,23 +19,22 @@ include::{sourcefile}[tag=definition]
 ----
 
 <1> The `twoOutOneIn` function returns a 
-xref:features:page$theory.adoc[`Definition`].
+xref:theory:event-theory.adoc[`Definition`].
 <2> We use the 
-xref:features:page$templates.adoc[`buildNofXOrMofYWithGapBool`]
+xref:user-guide:index.adoc#build-n-of-x-or-m-of-y-with-gap[`buildNofXOrMofYWithGapBool`]
 template function to build our definition. 
 This function takes seven arguments.
 <3> The first two are passed to the
-xref:features:page$templates.adoc[`buildNofX`]
+xref:user-guide:index.adoc#build-n-of-x[`buildNofX`]
 template.
 The given arguments say that we're looking for *at least* `1` event
 that contains one or more of the `inpatientConcepts`.
 <4> The next three arguments are passed to the 
-xref:features:page$templates.adoc[`buildNofXWithGap`]
+xref:user-guide:index.adoc#build-n-of-x-with-gap[`buildNofXWithGap`]
 template.
 The given arguments say that we're looking for *at least* `1` gap 
 between any pair of events (and thus at least 2 events)
 that contains one or more of the `outpatientConcepts`.
 <5> The last two arguments determine when the events 
 must occur relative to the index event.
-Here, the events must `concur` with a baseline 
-xref:cohorts:page$examples.adoc[assessment interval].
+Here, the events must `concur` with a baseline assessment interval.

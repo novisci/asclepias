@@ -38,19 +38,19 @@ library
     , hasklepias-templates
     , stype
     -- External packages
-    , aeson == 1.5.6.0
-    , base >=4.14 && <5
-    , containers == 0.6.5.1
-    , flow >= 2.0.0.0
-    , generic-lens >= 2.2.0.0
-    , microlens >= 0.4.12.0
-    , safe >= 0.3
-    , tasty  >= 1.4.1
-    , tasty-hunit >= 0.10
-    , text == 1.2.4.1
-    , time >= 1.11
-    , tuple >= 0.3
-    , witherable >= 0.4.1
-    , witch >= 1.0
+    , aeson
+    , base >=4.14
+    , containers
+    , flow
+    , generic-lens
+    , microlens
+    , safe
+    , tasty
+    , tasty-hunit
+    , text
+    , time
+    , tuple
+    , witherable
+    , witch
   default-language: Haskell2010
 -- end::devel-docs-components[]

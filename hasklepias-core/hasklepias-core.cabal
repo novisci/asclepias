@@ -47,25 +47,25 @@ library
   hs-source-dirs:
       src
   build-depends:
-      aeson == 1.5.6.0
-    , base >=4.14 && <5
-    , binary == 0.8.8.0
-    , bytestring == 0.10.12.0
-    , containers == 0.6.5.1
-    , ghc-prim == 0.6.1
-    , interval-algebra >= 1.3
-    , microlens == 0.4.12.0
-    , nonempty-containers == 0.3.4.4
-    , QuickCheck >= 2.14
-    , safe >= 0.3
-    , tasty  == 1.4.1
-    , tasty-hunit == 0.10.0.3
-    , tasty-quickcheck == 0.10.2
-    , template-haskell ^>= 2.16.0
-    , text == 1.2.4.1
-    , time >= 1.11
-    , witch >= 1.0
-    , witherable >= 0.4
+      aeson
+    , base >=4.14
+    , binary
+    , bytestring
+    , containers
+    , ghc-prim
+    , interval-algebra
+    , microlens
+    , nonempty-containers
+    , QuickCheck
+    , safe
+    , tasty
+    , tasty-hunit
+    , tasty-quickcheck
+    , template-haskell
+    , text
+    , time
+    , witch
+    , witherable
   default-language: Haskell2010
 
 test-suite hasklepias-core-test

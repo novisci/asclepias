@@ -51,7 +51,7 @@ library
     -- other-extensions:
     build-depends:    
         -- upper bound from filepath package
-        base ^>=4.14.1.0
+        base >=4.14.1.0
         , witch
         -- NOTE: edm module fixes interval-algebra version
         -- though monarch does not depend on edm at all, cabal seems to think

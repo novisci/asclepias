@@ -1,13 +1,3 @@
 == Comments on this build approach
 
-1. Lower bounds don't seem to prevent `*-compat` versions from being chosen, though perhaps only for dependencies of dependencies.
-
-This came up in a weird issue with `time` library. unconstrained, cabal picks the fallback `time-1.9.3`. That led to a build failure, though, as `hasklepias-main` uses types added only in `1.11`, e.g. `Quarter`. 
-
-Adding a lower bound in the `cabal.project` file for `1.11.1` (see `time` changelog for why +.1) allows `cabal` to pick an appropriate version for `hasklepias-main` and use the compatibility version elsewhere.
-
-See (using ripgrep)
-
-```
-rg time dist-newstyle/packagedb/ghc-8.10.7/
-```
+1. `cabal test` outside of the `nix-shell` fails to compile because of amazonka dependency problems. However, it succeeds within the `nix-shell`. TODO: Why?

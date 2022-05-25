@@ -130,7 +130,7 @@ isConflict = undefined
 
      Some of the work is already done for you, since interval-alebra already defines the instance IntervalSizeable UTCTime NominalDiffTime
 
-     https://hackage.haskell.org/package/interval-algebra-2.0.0/docs/IntervalAlgebra-Core.html#t:IntervalSizeable
+     https://hackage.haskell.org/package/interval-algebra-2.0.1/docs/IntervalAlgebra-Core.html#t:IntervalSizeable
 
      To learn more about those types
 

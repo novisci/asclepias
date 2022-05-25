@@ -106,7 +106,7 @@ nutinRight _         = beginerDefault
 -- Now is a good time to check the interval-algebra docs to
 -- familiarize yourself with those classes and their
 -- methods.
--- https://hackage.haskell.org/package/interval-algebra-2.0.0/docs/IntervalAlgebra-Core.html#t:Intervallic
+-- https://hackage.haskell.org/package/interval-algebra-2.0.1/docs/IntervalAlgebra-Core.html#t:Intervallic
 
 -- There is really only one way to modify an interval: adjust the left endpoint
 -- or the right one. And you can only expand it, you can't make it shorter.
@@ -132,7 +132,7 @@ longerDefault' = expandr (-1) longerDefault
 -- COMPARING INTERVALS
 -- many more operations for comparing intervals than these examples show
 -- 13 ways two intervals can relate
--- https://hackage.haskell.org/package/interval-algebra-2.0.0/docs/IntervalAlgebra-Core.html#g:5
+-- https://hackage.haskell.org/package/interval-algebra-2.0.1/docs/IntervalAlgebra-Core.html#g:5
 
 relDefaults :: IntervalRelation
 relDefaults = relate beginerDefault enderDefault
@@ -171,7 +171,7 @@ metOrBefore' = foldr (<|>) metBy [meets, before]
 -- provide an empty list of predicates.
 
 -- see the source code for unionPredicates for how it is actually defined
--- https://hackage.haskell.org/package/interval-algebra-2.0.0/docs/src/IntervalAlgebra.Core.html#unionPredicates
+-- https://hackage.haskell.org/package/interval-algebra-2.0.1/docs/src/IntervalAlgebra.Core.html#unionPredicates
 -- Look at the type signature of unionPredicates to see that function is more general than the version defined here, which includes some typeclass constraints necessary for using (<|>)
 
 -- here (\x y -> False) is an anonymous function that always returns False.
@@ -210,7 +210,7 @@ startMetOrBefore = metOrBefore startFromEnd beginerDefault
 
 -- MORE UTILITIES
 -- and there are still many more
--- https://hackage.haskell.org/package/interval-algebra-2.0.0/docs/IntervalAlgebra-IntervalUtilities.html
+-- https://hackage.haskell.org/package/interval-algebra-2.0.1/docs/IntervalAlgebra-IntervalUtilities.html
 
 -- these first to are not from IntervalAlgebra but will help with examples
 
@@ -282,7 +282,7 @@ typoTime = Meeting (beginerval 23 (Hour 8))
 -- impossibleMeet might not give what you expect!
 -- equals Meeting (Hour 0, Hour 1)
 -- look at the source for beginerval and compare with the definition of add in the IntervalSizeable Hour Integer instance below
--- https://hackage.haskell.org/package/interval-algebra-2.0.0/docs/src/IntervalAlgebra.Core.html#beginerval
+-- https://hackage.haskell.org/package/interval-algebra-2.0.1/docs/src/IntervalAlgebra.Core.html#beginerval
 
 -- when all is done, we are silently coercing the inputs such that
 -- i) the meeting start time cannot be less than Hour 0 (so -1 gets converted to 0)
@@ -318,7 +318,8 @@ badStart = Meeting (beginerval 3 (Hour (-2)))
 meetingRunsOver :: Meeting Hour
 meetingRunsOver = expandr 1 shortestMeeting
 
--- 1 happens to be the 'moment' for Hour, meaning the smallest unit increment for our intervals. This is given in the IntervalSizeable typeclass definition.
+-- 1 happens to be the 'moment' for Hour, meaning the smallest unit increment for our intervals. 
+-- This is given in the IntervalSizeable typeclass definition.
 -- instead of specifying 1 literally, we could make this code easier to
 -- refactor if we change moment later, by actually extracting the moment here
 -- and expanding by that one unit. You can test this for yourself by manually

@@ -1,4 +1,3 @@
-{-# LANGUAGE TupleSections #-}
 {-|
 Module      : Misc utilities useful in working with events 
 -}

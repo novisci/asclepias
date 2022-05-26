@@ -1,3 +1,7 @@
+index-state: 2022-05-24T14:02:16Z
+
+with-compiler: ghc-8.10.7
+
 packages: hasklepias-core
         , hasklepias-examples
         , hasklepias-main
@@ -8,9 +12,8 @@ packages: hasklepias-core
         , stype
         , monarch
 
--- allow-newer:
---  amazonka:bytestring,
---  generic-lens-core:text,
---  generic-lens:text,
---  witch:text,
---  ListLike:text
+constraints:
+  -- TODO should be a lower bound of 2.0 as part of or after
+  -- https://gitlab.novisci.com/nsStat/asclepias/-/issues/214#note_35300
+  interval-algebra < 2.0
+  , time >= 1.11.1

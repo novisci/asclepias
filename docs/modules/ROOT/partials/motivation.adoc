@@ -9,7 +9,7 @@ research.
 Moreover, the translation of scientists' analysis plans into code
 can be prone to ambiguity and misinterpretation.
 
-The aim of asclepias is to make epidemiologic research
+The aim of `asclepias` is to make epidemiologic research
 less effort,
 less error-prone,
 and more robust by

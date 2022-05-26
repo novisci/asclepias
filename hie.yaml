@@ -16,7 +16,5 @@ cradle:
       component: "cohort-collector"
     - path: "./stype/"
       component: "stype"
-    - path: "./maybe-toxic-tutorial/"
-      component: "maybe-toxic-tutorial"
     - path: "./monarch/"
       component: "monarch"

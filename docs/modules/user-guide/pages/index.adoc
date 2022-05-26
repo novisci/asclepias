@@ -1,0 +1,172 @@
+:navtitle: User Guide
+:description: Guide to using asclepias in projects
+:toc: auto
+:toclevels: 3
+:lawvere-url: https://bartoszmilewski.com/2017/08/26/lawvere-theories/
+:ghc: 8.10.7
+:cabal: 3.6.2.0
+:source-highlighter: highlightjs
+
+= The `asclepias` User Guide 
+
+The purpose of the user guide is to provide guidance on using `asclepias`.
+This guide covers:
+
+* How to get started using `asclepias`
+* Background theory on `asclepias`
+* Instructions for using `asclepias`
+* References
+
+== Getting Started
+include::getting-started.adoc[leveloffset=+1]
+
+== Background
+#TODO flesh this out a bit#
+The xref:theory:index.adoc[Theory and design] 
+section contains background information on the event-data-model design.
+
+== Instructions
+
+=== 1. Initialize a Project
+include::initialize-new-project.adoc[leveloffset=+1]
+
+=== 2. Define Data Schema
+*TODO* placeholder really - need to update with exact steps
+
+=== 3. Create Events
+#TODO write a procedures.adoc for creating an event.#
+
+As a best practice, the `Concepts` type `c` should be a sum type object.
+Meaning, each possible concept should be enumerated in the type
+(`+data MyProjectTags = Diabetes | BirthDay | InHospital | ...+`).
+By defining the concepts as a sum type, type safety is ensured.
+One cannot misspell a concept or use an undefined concept, for example.
+
+The schema (`m`) type for an `Event` must an instance of
+`Eq`, `Show`, `Generic`, and `FromJSON` typeclasses.
+The 
+https://downloads.haskell.org/ghc/latest/docs/html/users_guide/exts/generics.html?highlight=derivegeneric#extension-DeriveGeneric[`DeriveGeneric`]
+language extension makes deriving the `Generic` instance trivial,
+as in the code above.
+At this time, users do need to provide the `FromJSON` instance,
+and the boilerplate in the example above should work in most cases.
+
+The concept (`c`) type for an `Event` must an instance of
+`Eq`, `Show`, `Typeable`, and `FromJSON` typeclasses.
+Making `c` `Generic` will also make it `Typeable`,
+so in most cases simply `deriving (Eq, Show, Generic)` 
+and a stock `FromJSON` instance
+is sufficient for the concept type.
+
+The `event-data-theory` packages provides a few utilities for testing
+a new model.
+These can be found in the `EventDataTheory.Test` module,
+which is not included in the main set of exported modules.
+
+The `eventDecodeTests` and `eventDecodeFailTests` functions, for example, test for
+successful parsing and successful failed parsing (respectively) 
+of `+EventLine m c a+`
+into the corresponding `+Event c m a+`.
+These functions take a directory path as an argument. 
+Each file ending `.jsonl` in that directory should contain
+a single `EventLine` as JSON 
+to be tested.
+See the `test` directory and `EventDataTheory.TheoryTest` module
+in this package for examples.
+
+=== 4. Create Features
+include::features-procedures.adoc[leveloffset=+1]
+
+
+=== 5. Create Cohorts
+include::cohort-procedures.adoc[leveloffset=+1]
+
+=== 6. Read in Project Data
+#TODO write this up#
+
+The `EventDataTheory.EventLines` module provides several utilities
+for decoding events from eventlines.
+The `parseEventLinesL` function, for example,
+converts a `ByteString` of new-line delimed JSON
+into a pair of `[String]` (containing any parse error messages)
+and `[(SubjectID, Event c m a)]`, 
+a list of Subject ID/event pairs.  
+
+== Examples
+This section provides detailed examples of `asclepias` usage.
+#TODO include examples of creating events?#
+
+=== Features
+
+This section provides examples of feature creation.
+
+include::features:example$src/LastEventInWindow.adoc[leveloffset=+3]
+
+include::features:example$src/DurationsWithMultipleConditions.adoc[leveloffset=+3]
+
+include::features:example$src/HistoryOfEvent.adoc[leveloffset=+3]
+
+include::features:example$src/TwoOutOneIn.adoc[leveloffset=+3]
+
+include::features:example$src/CountOfHospitalEvents.adoc[leveloffset=+3]
+
+include::features:example$src/DrugDiscontinuation.adoc[leveloffset=+3]
+
+=== Cohorts
+This section provides examples for defining cohorts.
+
+include::cohorts:example$src/DefineIndexSet.adoc[leveloffset=+3]
+
+include::cohorts:example$src/CreateAssessmentInterval.adoc[leveloffset=+3]
+
+include::cohorts:example$src/Minimal.adoc[leveloffset=+3]
+
+include::cohorts:example$src/CalendarCohort.adoc[leveloffset=+3]
+
+==== Create a cohort with multiple indices
+
+#TODO#
+
+==== Collect attrition info across partitions
+
+#TODO#
+
+==== Create a cohort application and process in AWS batch
+
+#TODO#
+
+== Templates
+
+=== Features
+This section includes description and usage guides for
+`Definition` templates.
+A `Definiton` is a function that returns a `Feature`.
+
+[#build-n-of-x-base]
+include::features:example$templatesSrc/BuildNofXBase.adoc[leveloffset=+3]
+
+[#build-n-of-x]
+include::features:example$templatesSrc/BuildNofX.adoc[leveloffset=+3]
+
+[#build-n-of-unique-begins]
+include::features:example$templatesSrc/BuildNofUniqueBegins.adoc[leveloffset=+3]
+
+[#build-n-of-with-gap]
+include::features:example$templatesSrc/BuildNofXWithGap.adoc[leveloffset=+3]
+
+[#build-n-of-x-or-m-of-y-with-gap]
+include::features:example$templatesSrc/BuildNofXOrMofYWithGap.adoc[leveloffset=+3]
+
+[#build-is-enrolled]
+include::features:example$templatesSrc/BuildIsEnrolled.adoc[leveloffset=+3]
+
+[#build-continuous-enrollment]
+include::features:example$templatesSrc/BuildContinuousEnrollment.adoc[leveloffset=+3]
+
+=== Cohorts
+This section includes description and usage guides for cohort specification templates.
+
+== References
+include::references.adoc[leveloffset=+1]
+
+

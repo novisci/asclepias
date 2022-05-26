@@ -5,7 +5,7 @@ title: Asclepias
 # TODO: 
 # how do we check that version aligns
 # with asclepias version in hasklepias-main?
-version: '0.25'
+version: '0.26'
 prerelease: -RC
 nav:
 - modules/ROOT/nav.adoc

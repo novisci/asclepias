@@ -1,0 +1,101 @@
+:navtitle: Event Data Theory
+:description: Explanation and details of Event data theory
+:source-highlighter: highlightjs
+:toc: auto
+:interval-algebra-v: 1.3.0
+// TODO: update edm-path to non-sandbox URL
+:edm-path: https://docs.novisci.com/edm-sandbox/latest
+:lawvere-url: https://bartoszmilewski.com/2017/08/26/lawvere-theories/
+
+= Event Data Theory
+`asclepias` provides the types and functions
+for defining *models* of event data.
+The terms "theory" and "model" are borrowed from the notion of a
+{lawvere-url}[Lawvere theory].
+footnote:lawvere[
+We use the terms informally
+to give the sense that a model of events is an instance of the theory.
+We have not checked that the event data theory
+actually is a universal algebra.
+]
+
+== Definitions
+=== Event
+An `+Event+` is a `Context` (what happened) with an associated time interval (when it happened).
+Concretely, an `+Event+` is a wrapper around the `+interval-algebra+` package's
+https://hackage.haskell.org/package/interval-algebra-{interval-algebra-v}/docs/IntervalAlgebra-PairedInterval.html[`PairedInterval` type]:
+
+[source,haskell]
+----
+include::ROOT:example$EventDataTheory/Core.hs[tag=eventType]
+----
+
+=== Context
+A `Context` contains up to three types of information: 
+1) A set of concepts (required)
+2) Facts about the event (required)
+3) Metadata on the source of the event (optional)
+
+A concept is a set of tags that give meaning to the events of interest.
+For example, diabetes diagnosis, birth day, in hospital are all possible tags,
+that together might define the study concepts.
+
+An example of a context is below.
+
+[source,haskell]
+----
+include::ROOT:example$EventDataTheory/Core.hs[tag=contextType]
+----
+<1> a set of `+Concepts+`, or tags, 
+which can be used to identify events in a collection;
+<2> facts about the event whose shape and possible values
+are determined by the schema type `m`;
+<3> (optionally) data about the provenance of the event in a `+Source+` object.
+
+=== Facts
+Facts are the data of interest for a particular event.
+The schema of the facts data is dynamic
+and is passed to the object as a parameter.
+
+=== Source
+#TODO What can be in the metadata source object?#
+
+=== Event Model
+Passing in specific parameters `m` and `c` to `Context` creates a new event model.
+
+An example of an event model is below.
+
+[source,haskell]
+----
+include::ROOT:example$EventDataTheory/TheoryTest.hs[tag=exampleEvent]
+----
+
+The `+SillyEvent+` type is a synonym for an `Event` where
+the concepts are `Text`, 
+
+#TODO We should change this to a sum-type example since that's what we want users to do.#
+
+the facts are of shape `SillySchema`, 
+and the `Interval` type is any valid type `a`.
+
+The type parameter `m` provides
+a high degree of flexibility in defining new event models.
+The `m` type represents the schema, or shape, 
+of an event's data and
+can be a nearly arbitrary type
+composed of sum and product types.
+Often, the `m` type will be a sum type of "domains"
+
+#TODO Is this still true given we are no longer using the "domain" keyword?#
+
+where each domain is a group of facts relevant to a given domain.
+The schema of NoviSci's standard 
+{edm-path}/index.html[EDM]
+is organized around this idea.
+
+
+
+
+
+
+

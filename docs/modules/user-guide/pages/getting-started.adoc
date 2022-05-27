@@ -1,0 +1,34 @@
+:navtitle: Getting Started
+:description: Instructions on getting started with asclepias
+:ghc: 8.10.7
+:cabal: 3.6.2.0
+// TODO: update edm-path to non-sandbox URL
+:edm-path: https://docs.novisci.com/edm-sandbox/latest
+:source-highlighter: highlightjs
+
+To get started using `asclepias`, there are a few prerequisite tasks.
+This section covers instructions on the installation of necessary software tools
+and prepping data for use by `asclepias` functions.
+
+## Setting Up Software Tools
+To use `asclepias`, you will need to install the Haskell tool chain.
+To install, 
+follow the directions in the xref:nsBuild:ROOT:haskell-setup.adoc[setup guide],
+with these special instructions:
+
+* Use ghc version {ghc}.
+* Use cabal version {cabal}.
+
+If you are new to Haskell, 
+review the xref:nsBuild:usage-guides:index.adoc[Haskell usage guide] for best practices.
+
+## Data Requirements
+`asclepias` expects data to be in a particular format.
+The data must be in JSON file, 
+and follow
+NoviSci's standard 
+{edm-path}/index.html#_event_representation[EDM]
+schema where http://ndjson.org/[each line]
+in the file is a valid `EventLine`.
+See the `+EventLine+` type in event-data-model for more details.
+Any project that uses the event-data-model package will meet these requirements.

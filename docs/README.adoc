@@ -1,4 +1,4 @@
-= Asclepias documentation
+= asclepias documentation
 
 This directory contains documentation files for the asclepias repository.
 We use 
@@ -14,7 +14,7 @@ https://gitlab.novisci.com/nsStat/noviverse-site/-/blob/master/antora-playbook.y
 file therein for
 which branches of the asclepias repo are included in the noviverse site.
 
-== Testing antora locally
+== Testing Antora locally
 
 [NOTE]
 You will need to 

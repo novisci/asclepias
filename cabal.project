@@ -2,14 +2,26 @@
 -- cabal.project reference:
 -- https://cabal.readthedocs.io/en/latest/cabal-project.html
 
-packages: */*.cabal
+index-state: 2022-05-24T14:02:16Z
 
-test-show-details: always
+with-compiler: ghc-9.2.2
 
-package event-data-theory
-  tests: True
+packages: hasklepias-core
+        , hasklepias-examples
+        , hasklepias-main
+        , hasklepias-appBuilder
+        , hasklepias-templates
+        , cohort-collector
+        , event-data-theory
+        , stype
+        , monarch
 
-keep-going: True
+constraints:
+  -- TODO should be a lower bound of 2.0 as part of or after
+  -- https://gitlab.novisci.com/nsStat/asclepias/-/issues/214#note_35300
+  interval-algebra < 2.0
+  , time >= 1.11.1
+
 
 -- For amazonka
 -- Multiple subdirs in a single `source-repository-package` stanza are supported by cabal-install >= 3.2.0.0.
@@ -18,17 +30,3 @@ source-repository-package
     location: https://github.com/brendanhay/amazonka
     tag: 27322ea0db68712e1c331be4124080144c975750
     subdir: lib/amazonka lib/amazonka-core lib/services/amazonka-sso lib/services/amazonka-sts lib/services/amazonka-s3
-
-constraints:
-  , amazonka ^>= 2
-  , aeson ^>= 2
-  , interval-algebra < 2.0
-  , text ^>= 1.2
-  , time ^>= 1.11
-  , semigroups ^>= 0.18
-
-allow-newer:
-  , interval-algebra:*
-  , amazonka-core:*
-  , amazonka:*
-  , aeson:*

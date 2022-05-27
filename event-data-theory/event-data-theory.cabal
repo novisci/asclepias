@@ -34,8 +34,8 @@ library
       base >=4.14 && <5
     , aeson
     , binary
-    , bytestring 
-    , containers 
+    , bytestring
+    , containers
     , dhall
     , deepseq
     , filepath
@@ -48,7 +48,7 @@ library
     , tasty-silver
     , time
     , text
-    , witch 
+    , witch
     , witherable
   default-language: Haskell2010
 

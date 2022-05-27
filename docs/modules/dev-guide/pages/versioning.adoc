@@ -1,18 +1,18 @@
 :description: This file details how asclepias is versioned 
 :toc: right 
-:source-highlighter: highlightjs:
+:source-highlighter: highlightjs
 :navtitle: Versioning
 :antora-site: https://docs.antora.org/antora/latest
 
-= Versioning asclepias
+= Versioning `asclepias`
 
-Asclepias tries to follow
+`asclepias` tries to follow
 https://semver.org/[semantic versioning 2.0.0].
 
 [NOTE]
-While each component package of `+asclepias+` has its own version,
-the primary version of `+asclepias+` is the version in `+hasklepias-main+`.
-That is, when we refer to the "version of `+asclepias+`",
+While each component package of `asclepias` has its own version,
+the primary version of `asclepias` is the version in `+hasklepias-main+`.
+That is, when we refer to the "version of `asclepias`",
 we mean the version number in `+hasklepias-main+`. 
 
 Starting with version `0.24.0`,
@@ -28,5 +28,5 @@ determines which branches of `asclepias` are used for the documentation site.
 
 
 [CAUTION]
-Until `+asclepias+` version `1.0` is released,
+Until `asclepias` version `1.0` is released,
 no guarantees of backwards-compatability are made. 

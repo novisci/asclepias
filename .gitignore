@@ -23,3 +23,5 @@ dist-newstyle*
 install/*
 builds/*
 docs-site/*
+
+*.tix

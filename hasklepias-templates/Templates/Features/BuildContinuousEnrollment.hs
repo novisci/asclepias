@@ -3,6 +3,7 @@ module Templates.Features.BuildContinuousEnrollment
   , buildContinuousEnrollmentTests
   ) where
 
+import           EventDataTheory                ( makeGapsWithinPredicate )
 import           Templates.FeatureReqs         as F
 
 {- | 
@@ -67,18 +68,17 @@ type ContEnrollTestCase
 buildContinuousEnrollmentTestCases :: [ContEnrollTestCase]
 buildContinuousEnrollmentTestCases =
   [ f "Exclude if previously excluded"
-      (makeBaselineMeetsIndex 10     , isEnrollmentEvent, 3)
-      (pure $ readIntervalSafe (0, 1), pure []          , pure Exclude)
+      (makeBaselineMeetsIndex 10 , isEnrollmentEvent, 3)
+      (pure $ safeInterval (0, 1), pure []          , pure Exclude)
       Exclude
   , f "Exclude if no events"
-      (makeBaselineMeetsIndex 10     , isEnrollmentEvent, 3)
-      (pure $ readIntervalSafe (0, 1), pure []          , pure Include)
+      (makeBaselineMeetsIndex 10 , isEnrollmentEvent, 3)
+      (pure $ safeInterval (0, 1), pure []          , pure Include)
       Exclude
-  , f
-    "Exclude if gap >= 3"
-    (makeBaselineMeetsIndex 10       , isEnrollmentEvent         , 3)
-    (pure $ readIntervalSafe (10, 11), pure [g (1, 4), g (9, 12)], pure Include)
-    Exclude
+  , f "Exclude if gap >= 3"
+      (makeBaselineMeetsIndex 10   , isEnrollmentEvent         , 3)
+      (pure $ safeInterval (10, 11), pure [g (1, 4), g (9, 12)], pure Include)
+      Exclude
       {- 
                   -           <- Index
          ----------           <- Baseline
@@ -86,8 +86,8 @@ buildContinuousEnrollmentTestCases =
         |--------------|
       -}
   , f "Exclude if gap >= 3"
-      (makeBaselineMeetsIndex 10       , isEnrollmentEvent, 3)
-      (pure $ readIntervalSafe (10, 11), pure [g (1, 7)]  , pure Include)
+      (makeBaselineMeetsIndex 10   , isEnrollmentEvent, 3)
+      (pure $ safeInterval (10, 11), pure [g (1, 7)]  , pure Include)
       Exclude
       {-
                   -           <- Index
@@ -96,8 +96,8 @@ buildContinuousEnrollmentTestCases =
         |--------------|
       -}
   , f "Exclude if gap >= 3"
-      (makeBaselineMeetsIndex 10       , isEnrollmentEvent, 3)
-      (pure $ readIntervalSafe (10, 11), pure [g (6, 13)] , pure Include)
+      (makeBaselineMeetsIndex 10   , isEnrollmentEvent, 3)
+      (pure $ safeInterval (10, 11), pure [g (6, 13)] , pure Include)
       Exclude
         {-
                   -           <- Index
@@ -105,11 +105,10 @@ buildContinuousEnrollmentTestCases =
               -------         <- Enrollment
         |--------------|
       -}
-  , f
-    "Include if gaps less than 3"
-    (makeBaselineMeetsIndex 10       , isEnrollmentEvent         , 3)
-    (pure $ readIntervalSafe (10, 11), pure [g (1, 3), g (5, 12)], pure Include)
-    Include
+  , f "Include if gaps less than 3"
+      (makeBaselineMeetsIndex 10   , isEnrollmentEvent         , 3)
+      (pure $ safeInterval (10, 11), pure [g (1, 3), g (5, 12)], pure Include)
+      Include
       {-
                   -           <- Index
          ----------           <- Baseline
@@ -117,8 +116,8 @@ buildContinuousEnrollmentTestCases =
         |--------------|
       -}
   , f "Include if gaps less than 3"
-      (makeBaselineMeetsIndex 10       , isEnrollmentEvent, 3)
-      (pure $ readIntervalSafe (10, 11), pure [g (2, 9)]  , pure Include)
+      (makeBaselineMeetsIndex 10   , isEnrollmentEvent, 3)
+      (pure $ safeInterval (10, 11), pure [g (2, 9)]  , pure Include)
       Include
       {-
                   -           <- Index
@@ -126,11 +125,10 @@ buildContinuousEnrollmentTestCases =
           -------             <- Enrollment
         |--------------|
       -}
-  , f
-    "Include if gaps less than 3"
-    (makeBaselineMeetsIndex 10       , isEnrollmentEvent        , 3)
-    (pure $ readIntervalSafe (10, 11), pure [g (1, 6), g (4, 8)], pure Include)
-    Include
+  , f "Include if gaps less than 3"
+      (makeBaselineMeetsIndex 10   , isEnrollmentEvent        , 3)
+      (pure $ safeInterval (10, 11), pure [g (1, 6), g (4, 8)], pure Include)
+      Include
         {-
                   -           <- Index
          ----------           <- Baseline

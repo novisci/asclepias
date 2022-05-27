@@ -5,9 +5,9 @@ module Templates.Features.BuildNofXWithGap
   , buildNofXWithGapTests
   ) where
 
-import           Templates.FeatureReqs              as F
+import           EventDataTheory                ( pairGaps )
+import           Templates.FeatureReqs         as F
 import           Templates.Features.BuildNofXBase
-import           EventDataTheory                   (pairGaps)
 
 {- tag::template0[] -}
 buildNofXWithGap

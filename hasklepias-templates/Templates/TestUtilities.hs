@@ -62,9 +62,8 @@ makeEventWithConcepts
   => [Text]
   -> (a, a)
   -> Event Text TestSchema a
-makeEventWithConcepts cpts intrvl = event
-  (safeInterval intrvl)
-  (context (packConcepts cpts) Enrollment Nothing)
+makeEventWithConcepts cpts intrvl =
+  event (safeInterval intrvl) (context (packConcepts cpts) Enrollment Nothing)
 
 isEnrollmentEvent :: Predicate (Event c TestSchema a)
 isEnrollmentEvent = liftToEventPredicate (Predicate (== Enrollment))

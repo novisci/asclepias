@@ -62,9 +62,7 @@ import qualified Data.Map.Strict               as M
                                                 , toList
                                                 )
 import           Data.Semigroup                 ( Semigroup((<>)) )
-import           Data.String.Interpolate        ( __i
-                                                , i
-                                                )
+import           Data.String.Interpolate        ( i )
 import           Development.GitRev             ( gitDirty
                                                 , gitHash
                                                 )
@@ -128,7 +126,7 @@ makeCohortParserInfo name version = Options.Applicative.info
   Create cohorts for #{ name } 
   based on code from gitrev: #{ githash }.
   
-  #{ gitdirty }.
+  #{ gitdirty }
   |]
       <> helpText
       )
@@ -215,7 +213,7 @@ evaluateFeaturesParser =
       SkipFeatures
       (  long "skip-features"
       <> help
-           "Skip evaluating any features. This can be used to evaluate a cohort just for attrition info)."
+           "Skip evaluating any features. This can be used to evaluate a cohort just for attrition info."
       )
     <|> flag'
           OnAll

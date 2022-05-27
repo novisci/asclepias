@@ -48,11 +48,13 @@ library
     , conduit
     , conduit-extra
     , generic-lens
+    , gitrev
     , interval-algebra
     , microlens
     , optparse-applicative
     , process
     , regex-compat
+    , string-interpolate
     , tasty
     , tasty-silver
     , time

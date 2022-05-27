@@ -5,6 +5,7 @@ module Templates.Features.BuildNofXWithGap
   , buildNofXWithGapTests
   ) where
 
+import           EventDataTheory                ( pairGaps )
 import           Templates.FeatureReqs         as F
 import           Templates.Features.BuildNofXBase
 

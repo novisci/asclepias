@@ -1,4 +1,6 @@
 # Changelog for hasklepias-core
+## 0.26.0
+* Update to interval-algebra 2.0
 
 ## 0.25.0
 * Changes names of "make" intervals

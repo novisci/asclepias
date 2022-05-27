@@ -318,7 +318,7 @@ flupEvents
        )
 flupEvents = define
   (\index es -> es |> filterConcur (followupInterval index) |> fmap
-    (diffFromBegin (followupInterval index))
+    (shiftFromBegin (followupInterval index))
   )
 
 {-
@@ -352,7 +352,7 @@ disenrollment = define
            (headMay . filter (\x -> duration x > 30))
              =<< x
   -- Shift endpoints of intervals so that end of follow up is reference point
-             |>  fmap (diffFromBegin (followupInterval i))
+             |>  fmap (shiftFromBegin (followupInterval i))
   -- take the end of this gap as the time of disenrollment
              |>  fmap end
              |>  mkEventTime

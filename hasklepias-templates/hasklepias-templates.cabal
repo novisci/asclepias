@@ -66,6 +66,7 @@ test-suite templates
   hs-source-dirs:
       template-test
   build-depends:
-      hasklepias-templates, base 
+      hasklepias-templates
+    , base
   default-language: Haskell2010
 

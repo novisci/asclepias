@@ -272,6 +272,7 @@ data EvaluateFeatures =
   --   of subjects that have an index,
   --   when a unit's 'CohortStatus' is 'Included'.
   | OnlyOnIncluded
+  deriving (Show, Eq)
 
 {-|
 Determines which subjects will be processed.
@@ -286,6 +287,7 @@ data SubjectSample =
   -- | Process the first @n@ subjects
   | FirstNSubjects Int
   -- TODO: SampleNSubjects -- take a random sample of N subjects
+  deriving (Show, Eq)
 
 {- (internal)
 NOTE: 

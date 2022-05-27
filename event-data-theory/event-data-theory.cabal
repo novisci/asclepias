@@ -32,11 +32,12 @@ library
       src
   build-depends:
       base >=4.14 && <4.15
-    , aeson == 1.5.6.0
-    , binary == 0.8.8.0
-    , bytestring >= 0.10
-    , containers == 0.6.5.1
+    , aeson
+    , binary
+    , bytestring
+    , containers
     , dhall
+<<<<<<< HEAD
     , deepseq == 1.4.4.0
     , filepath >= 1.4
     , interval-algebra == 2.0.1
@@ -50,6 +51,21 @@ library
     , text == 1.2.4.1
     , witch == 1.0.0.1
     , witherable >= 0.4.1
+=======
+    , deepseq
+    , filepath
+    , interval-algebra
+    , QuickCheck
+    , safe
+    , scientific
+    , tasty
+    , tasty-hunit
+    , tasty-silver
+    , time
+    , text
+    , witch
+    , witherable
+>>>>>>> v0.26
   default-language: Haskell2010
 
 test-suite tests

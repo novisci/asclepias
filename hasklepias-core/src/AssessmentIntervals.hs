@@ -102,7 +102,6 @@ import           IntervalAlgebra                ( Interval
                                                 , moment
                                                 )
 import           Witch
-import Witherable (WitherableWithIndex)
 
 {-| A type to contain baseline intervals. See the 'Baseline' typeclass for methods
 to create values of this type.

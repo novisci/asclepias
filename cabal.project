@@ -15,5 +15,5 @@ packages: hasklepias-core
 constraints:
   -- TODO should be a lower bound of 2.0 as part of or after
   -- https://gitlab.novisci.com/nsStat/asclepias/-/issues/214#note_35300
-  interval-algebra < 2.0
+  interval-algebra >= 2.0.1
   , time >= 1.11.1

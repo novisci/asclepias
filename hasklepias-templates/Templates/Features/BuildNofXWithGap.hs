@@ -7,7 +7,7 @@ module Templates.Features.BuildNofXWithGap
 
 import           Templates.FeatureReqs              as F
 import           Templates.Features.BuildNofXBase
-import           IntervalAlgebra                   (pairGaps)
+import           EventDataTheory                   (pairGaps)
 
 {- tag::template0[] -}
 buildNofXWithGap

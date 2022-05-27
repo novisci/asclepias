@@ -4,7 +4,7 @@ module Templates.Features.BuildContinuousEnrollment
   ) where
 
 import           Templates.FeatureReqs         as F
-import           IntervalAlgebra                    (makeGapsWithinPredicate)
+import           EventDataTheory               (makeGapsWithinPredicate)
 
 {- | 
 TODO

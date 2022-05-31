@@ -1,4 +1,5 @@
 = Defining Assessment Intervals 
+:source-highlighter: highlightjs
 
 This example demonstrates:
 

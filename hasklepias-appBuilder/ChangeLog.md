@@ -1,4 +1,14 @@
 # Changelog for hasklepias-appBuilder
+## 0.26.0
+* Update to interval-algebra 2.0
+
+## 0.2.0
+
+* Exposes CLI options for `EvaluateFeatures` and `SubjectSample`
+to control cohort evaluation from a cohort app.
+* Adds help text to the cohort app,
+including information on the git commit from which the application was built.
+* Fixes a bug where options were overwritten in `runApp`.
 
 ## 0.1.0
 

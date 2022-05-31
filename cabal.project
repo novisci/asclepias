@@ -1,3 +1,7 @@
+index-state: 2022-05-27T15:12:55Z
+
+with-compiler: ghc-8.10.7
+
 packages: hasklepias-core
         , hasklepias-examples
         , hasklepias-main
@@ -6,12 +10,8 @@ packages: hasklepias-core
         , cohort-collector
         , event-data-theory
         , stype
-        , maybe-toxic-tutorial
         , monarch
 
--- allow-newer:
---  amazonka:bytestring,
---  generic-lens-core:text,
---  generic-lens:text,
---  witch:text,
---  ListLike:text
+constraints:
+  interval-algebra >= 2.0.1
+  , time >= 1.11.1

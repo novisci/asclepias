@@ -15,6 +15,9 @@
 
 # Create temp place for docs-site
 # This directory should not be committed to git.
+# 
+# Note: If linking to other sites in the noviverse,
+# add a new url section for each git project linked.
 builddir=docs-site
 mkdir -p "$builddir"
 
@@ -25,6 +28,9 @@ site:
 content:
   sources:
   - url: ../
+    start_path: docs
+    branches: [HEAD]
+  - url: https://gitlab+user-guide:11HiN9THLsxPVHSPpzxB@gitlab.novisci.com/nsStat/nsBuild.git
     start_path: docs
     branches: [HEAD]
 ui:

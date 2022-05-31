@@ -1,5 +1,8 @@
 # Changelog for event-data-theory
 
+## 0.26.0
+* Update to interval-algebra 2.0
+
 ## 0.2.0
 
 * Adds to `ToJSON` instance for `EventLine`.

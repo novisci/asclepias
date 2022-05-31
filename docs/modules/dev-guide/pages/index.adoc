@@ -3,38 +3,27 @@
 :source-highlighter: highlightjs
 :navtitle: Developer Guide
 
-= The Asclepias Developer Guide 
+= The `asclepias` Developer Guide 
 
 [NOTE]
-This guide is designed for asclepias *developers*,
-i.e. folks who contribute the asclepias repository.
+This guide is designed for `asclepias` *developers*,
+i.e. folks who contribute the `asclepias` repository.
 For the user guide, 
 xref:ROOT:introduction.adoc[click here].
 
 These documents describe how to: 
 
-* contribute to `+asclepias+`
+* contribute to `asclepias`
 * install the Haskell toolchain
 * set up your development environment
 
-To develop and work with asclepias locally, clone the repository:
+To develop and work with `asclepias` locally, clone the repository:
 
 ----
 git clone git@gitlab.novisci.com:nsStat/asclepias.git
 ----
 
-include::quick-start.adoc[leveloffset=+1]
-
-include::installing-ghc-and-cabal.adoc[leveloffset=+1]
-
-include::setting-up-a-development-environment.adoc[leveloffset=+1]
 
 include::compiling-asclepias.adoc[leveloffset=+1]
-
-include::haskell-module-system.adoc[leveloffset=+1]
-
-include::interactive-usage-of-ghci.adoc[leveloffset=+1]
-
-include::linting-and-formatting.adoc[leveloffset=+1]
 
 include::versioning.adoc[leveloffset=+1]

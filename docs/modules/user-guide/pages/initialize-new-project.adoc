@@ -1,26 +1,23 @@
 :navtitle: Initialize new project
 :description: How to initialize a new asclepias project
+:hasklepias-version: 0.2.5
 
-= Initialize an asclepias project
-
-[CAUTION]
-These instructions are a temporary shim
-until an initialization script or application is provided.
-
-In the following,
-change `myProj` to your project ID.
-
+. Initialize a git repo for your project.
+. In your terminal, navigate to the project folder.
+. Execute the following code in the terminal,
+replacing `myProj` with your project name.
++
 [source,haskell]
 ----
 PROJID=myProj
 cabal init --libandexe --application-dir=apps --source-dir=plans --package-name=$PROJID -m -u https://gitlab.novisci.com/nsResearch/$PROJID -d hasklepias 
 cabal update
 ----
-
++
 . Rename `MyLib.hs` to `Cohorts.hs`.
 . Update `myProj.cabal`
 .. expose all modules
-.. set `hasklepias` to a particular version
+.. set `hasklepias` to a {hasklepias-version}
 .. set library default extensions:
 +
 ----

@@ -99,6 +99,7 @@ import           IntervalAlgebra                ( Interval
                                                 , end
                                                 , enderval
                                                 , extenterval
+                                                , moment
                                                 )
 import           Witch
 
@@ -229,7 +230,7 @@ MkFollowupInterval (10, 20)
 StartedBy
 
 Note the consequence of providing a duration less than or equal to the duration 
-of the index: a 'IntervalAlgebra.moment' is added to the duration, so that the 
+of the index: a 'IntervalAlgebra.moment is added to the duration, so that the 
 end of the 'FollowupInterval' is greater than the end of the index.
 
 >>> import Cohort.Index
@@ -268,7 +269,7 @@ class Intervallic i a => Followup i a where
     -> FollowupInterval a
   followup dur index = MkFollowupInterval (beginerval d2 (begin  index))
     where d2 = if dur <= dindex
-                 then dindex + moment' (into @(i a) index)
+                 then dindex + moment @a
                  else dur
           dindex = duration  index
 

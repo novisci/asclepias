@@ -1,5 +1,10 @@
 # Changelog for hasklepias-main
 
+## 0.26.0
+
+* Update to `interval-algebra-2.0`.
+* Refactor `cabal.project` and individual package dependency bounds. The project now pins a Hackage index state and a compiler version.
+
 ## 0.25.0
 
 * Combines reexports modules into a single module.

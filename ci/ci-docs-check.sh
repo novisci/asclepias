@@ -11,6 +11,6 @@ COLLECTORAPP=$(<install/cohort-collector.name)
 # into cohort-collector
 cp install/"${COLLECTORAPP}" install/cohort-collector
 ./install/cohort-collector --help >"${TEMP}"help.txt
-diff "${TEMP}"help.txt cohort-collector/help.txt
+diff -Bb "${TEMP}"help.txt cohort-collector/help.txt
 
 rm -r "${TEMP}"

@@ -70,7 +70,7 @@ The first method is a way to get data directly into a `Feature`.
 The following function takes a list of `Events` and
 makes a `Feature` of them:
 
-[source,hasekll]
+[source,haskell]
 ----
 allEvents :: [Event Day] -> Feature "allEvents" [Event Day]
 allEvents = pure
@@ -84,7 +84,7 @@ Specifically,
 `Definition` is a type which contains a function which maps `Feature` inputs
 to a `Feature` output, for example:
 
-[source,hasekll]
+[source,haskell]
 ----
 myDef :: Definition (Feature "a" Int -> Feature "b" Bool)
 myDef = define (\x -> if x > 0 then True else False)
@@ -102,7 +102,7 @@ do the magic of lifting these types to the `Feature` level.
 To see this, 
 in the following, `myDef2` is equivalent to `myDef`: 
 
-[source,hasekll]
+[source,haskell]
 ----
 intToBool :: Int -> Bool
 intToBool x = if x > 0 then True else False)

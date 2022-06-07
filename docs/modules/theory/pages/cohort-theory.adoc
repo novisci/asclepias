@@ -1,7 +1,221 @@
 :navtitle: Theory of Cohorts
 :description: Explanation and details of Cohort module design
 :toc: right
+:stem: latexmath
+
 
 = Theory of Cohorts
 
-#TODO#
+[NOTE]
+All the capabilities described below have been implemented in asclepias.
+
+== Input/output types
+
+There are seven key input/output types associated with cohorts,
+described in the following table.
+
+[cols="1,1"]
+|===
+| Name (Symbol) | Description
+
+| Population (stem:[P])
+| an indexed set of Subjects
+
+| Subject (stem:[S_i])
+| an element of a Population
+comprised of a the subject's input data, stem:[D^in].
+The set of all subjects is denoted 
+stem:[S = (S_i : i \in I)] and stem:[I] is some index set.
+Morally, stem:[S = P], but we distinguish them for semantic reasons 
+(see also note about metadata below).
+
+| Input data (stem:[D^{in}])
+| The abstract shape of input data.
+For example, in many examples, "list of events" is the shape.
+
+| Output data (stem:[D^{out}])
+| The abstract shape of an observational unit's output data in a cohort.
+For example, "row of a data table" is a possible shape.
+
+| Criteria (stem:[Cr])
+| A Criteria is an ordered set of criterion,
+where a criterion is simply a pair
+of a label and a status (stem:[= \{Include, Exclude\}]).
+A criterion corresponds to a row in an attrition table.
+Only units who satisfy all criterion
+(i.e. none of the criterion evaluate to `Exclude`)
+are included in the cohort.
+
+| Observational unit (stem:[O_{ij}])
+| The result of evaluating a cohort mapping on a subject.
+Importantly, depending on how the cohort mapping is defined,
+one Subject may produce zero or more observational units.
+
+| Cohort (stem:[C])
+| A collection of observational units paired with a summary of attrition counts
+|===
+
+[NOTE]
+All the types in the table above can, in principle, 
+be paired with some metadata.
+We use the symbol stem:[\Box^X] to mean for "metadata about the set stem:[X]",
+where the structure of the metadata may depend on the set.
+Such metadata stem:[\Box^X] is purely for convenience:
+it's data that is not necessary for creating a cohort,
+but is useful for tracking or logging.
+For example, we can define a population as stem:[P = (S, \Box^P)].
+
+== Cohort map
+
+How a population is transformed into a cohort is specified by a cohort map.
+This function, denoted stem:[\zeta], is a triple of functions
+mapping subject's input data stem:[D^{in}_i] 
+into a set of output data stem:[\{D^{out}_i\} = {D^{out}_{11}, \dots, D^{out}_{1m}}]:
+
+[stem]
+++++
+\zeta := (runIndices, runCriteria, runFeatures): D^{in} \mapsto \{D^{out}\}. \\
+++++
+
+Each element of stem:[\{D^{out}\}] corresponds to one observational unit.
+
+The component functions of stem:[\zeta] act
+on a subject's input data in particular ways.
+
+[cols="1,1,1"]
+|===
+| Function | Mapping | Description
+
+|stem:[runIndices]
+|stem:[D^{in} \mapsto J]
+|Maps a subject's input data to a set of indices,
+one per observational unit that is a candidate for inclusion by the criteria.
+The resulting set may be empty, in which case,
+the subject produces no observational units and
+the following functions are not evaluated.
+
+|stem:[runCriteria]
+|stem:[(j, D^{in}) \mapsto Cr]
+|Maps a unit's index and its subject's input data to inclusion/exclusion Criteria.
+This function is applied to each stem:[j \in J].
+
+|stem:[runFeatures]
+|stem:[(j, D^{in}) \mapsto D^{out}]
+|For each stem:[j \in J] such that the unit's diposition is `Include`,
+this function maps a unit's index and its subject's input data
+to the output data,
+corresponding to observational unit stem:[ij].
+|===
+
+== Evaluating a cohort
+
+The stem:[runCohort] function takes a cohort map stem:[\zeta] to produce a function
+mapping a population to a cohort by evaluating stem:[\zeta] on each subject:
+
+[stem]
+++++
+runCohort(\zeta) : P \mapsto C = \sum_i \zeta(S_i).
+++++
+
+== Compositon of cohort mappings
+
+=== Stacking multiple independent cohorts
+
+Taking the product of two cohort mappings
+produces a pair of cohorts.
+
+[stem]
+++++
+\zeta_1 \times \zeta_2 = (\zeta_1, \zeta_2)
+++++
+
+When evaluated by stem:[runCohort], stem:[\zeta_1 \times \zeta_2]
+(intuitvely) copies a subject's data
+and passes it to each cohort map, 
+producing a pair of cohorts. 
+That is,
+stem:[runCohort(\zeta_1 \times \zeta_2) = \sum_i (\zeta_1(S_i), \zeta_2(S_i))].
+
+This operation is associative; i.e:
+
+[stem]
+++++
+\zeta_1 \times (\zeta_2 \times \zeta_3) = (\zeta_1 \times \zeta_2) \times \zeta_3
+++++
+
+The product operator is commutative isomorphically; that is,
+the tuple of resulting cohorts reflects the order of operations.
+The result of evaluating stem:[\zeta_2 \times \zeta_1]
+contains the same information as stem:[\zeta_1 \times \zeta_2]
+but the resulting container of cohorts may be in a different order.
+
+=== Unioning two cohort maps into one
+
+[stem]
+++++
+\zeta_1 \otimes \zeta_2 = \zeta^{\dagger}
+++++
+
+where stem:[\zeta^{\dagger}:]  
+
+[stem]
+++++
+\begin{array}{lll}
+( & D^{in}      & \mapsto {J}_1 \cup {J}_2 \\
+, & (j, D^{in}) & \mapsto Cr_1 \cup Cr_2 \\
+, & (j, D^{in}) & \mapsto D^{out}_1 \cup D^{out}_2 \\
+)
+\end{array}
+++++
+
+In words, stem:[\otimes]:
+
+* Takes the union
+on the codomain of the stem:[runIndices] function.
+* *Appends* the criteria of the second map to the first map.
+The order of the cohort maps matters here
+for the order in which criterion are evaluated.
+The order does not matter in terms of which observational units
+are included in the cohort (stem:[Cr_1 \ast Cr_2 \cong Cr_2 \ast Cr_1]).
+Where it does matter is in how the criterion are ordered in the attrition counts.
+* Takes the union of codomain of the stem:[runFeatures] function.
+
+=== Intersecting two cohort maps into one
+
+[stem]
+++++
+\zeta_1 \oplus \zeta_2 = \zeta^*
+++++
+
+where stem:[\zeta^* :]  
+
+[stem]
+++++
+\begin{array}{lll}
+( & D^{in}      & \mapsto {J}_1 \cap {J}_2 \\
+, & (j, D^{in}) & \mapsto Cr_1 \cap Cr_2 \\
+, & (j, D^{in}) & \mapsto D^{out}_1 \cap D^{out}_2 \\
+)
+\end{array}
+++++
+
+In words, stem:[\oplus]:
+
+* Takes the intersection
+on the codomain of the stem:[runIndices] function.
+* Intersects the criteria of the second map to the first map.
+Where it does matter is in how the criterion are ordered in the attrition counts.
+* Takes the intersection of codomain of the stem:[runFeatures] function.
+
+=== Nesting one cohort in another
+
+[stem]
+++++
+\zeta_1 \odot \zeta_2 = ( \zeta_1, \zeta_2^{\cdot1} )
+++++
+
+where stem:[\zeta_2^{\cdot1}] indicates that only those subjects
+whose status is `Include` in the result of stem:[runCohort(\zeta_1)]
+are then evaluated in stem:[runCohort(\zeta_2)].
+Note, however, that the same stem:[D^{in}] is passed to both
+stem:[\zeta_1] and stem:[\zeta_2^{\cdot1}]. 

@@ -7,7 +7,7 @@
 = Theory of Cohorts
 
 [NOTE]
-All the capabilities described below have been implemented in asclepias.
+All the capabilities described below may not have been implemented in asclepias.
 
 == Input/output types
 

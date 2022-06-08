@@ -39,9 +39,9 @@ import           Witch.TryFromException
 
 -- | Internal type giving supported @Atomic@ values.
 data TestAtomic = TInteger Integer
-    | TNatural Natural     
-    | TBool Bool           
-    | TDouble Double       
+    | TNatural Natural
+    | TBool Bool
+    | TDouble Double
     | TText Text
     | TUnion (DM.Map Text (Maybe (DC.Expr Src Void))) (Text, Maybe TestAtomic)
     deriving (Show, Eq)
@@ -84,11 +84,11 @@ type Atomizable v = (TryFrom TestVal v)
 instance Dhall.FromDhall TestAtomic where
   autoWith _ = Dhall.Decoder extractOut expectedOut
    where
-    extractOut (DC.IntegerLit x) = pure $ TInteger x
-    extractOut (DC.NaturalLit x) = pure $ TNatural x
+    extractOut (DC.IntegerLit x              ) = pure $ TInteger x
+    extractOut (DC.NaturalLit x              ) = pure $ TNatural x
     extractOut (DC.DoubleLit x) = pure $ TDouble $ DC.getDhallDouble x
-    extractOut (DC.BoolLit x) = pure $ TBool x
-    extractOut (DC.TextLit (DC.Chunks _ x)) = pure $ TText x
+    extractOut (DC.BoolLit    x              ) = pure $ TBool x
+    extractOut (DC.TextLit    (DC.Chunks _ x)) = pure $ TText x
     extractOut (DC.App (DC.Field (DC.Union dx) fs) x) =
       pure $ toUVal dx (DC.fieldSelectionLabel fs) x
     -- There is not a value
@@ -129,8 +129,8 @@ instance From TestAtomic (DC.Expr Src Void) where
     (from v)
 
 instance From TestVal (DC.Expr Src Void) where
-  from (Atomic x) = from x
-  from (List xs) = DC.ListLit Nothing (fromList $ map from xs)
+  from (Atomic x ) = from x
+  from (List   xs) = DC.ListLit Nothing (fromList $ map from xs)
 
 -- TODO Give this instance a home
 instance (Dhall.FromDhall a) => TryFrom (DC.Expr Src Void) a where

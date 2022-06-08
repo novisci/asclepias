@@ -101,7 +101,7 @@ This function is applied to each stem:[j \in J].
 
 |stem:[runFeatures]
 |stem:[(j, D^{in}) \mapsto D^{out}]
-|For each stem:[j \in J] such that the unit's diposition is `Include`,
+|For each stem:[j \in J] such that the observational unit's diposition is `Include`,
 this function maps an observational unit's index and its subject's input data
 to the output data,
 corresponding to observational unit stem:[ij].

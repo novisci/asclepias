@@ -31,7 +31,7 @@ Morally, stem:[S = P], but we distinguish them for semantic reasons
 
 | Input data (stem:[D^{in}])
 | The abstract shape of input data.
-For example, in many examples, "list of events" is the shape.
+In many scenarios, "list of events" is the shape.
 
 | Output data (stem:[D^{out}])
 | The abstract shape of an observational unit's output data in a cohort.
@@ -42,7 +42,7 @@ For example, "row of a data table" is a possible shape.
 where a criterion is simply a pair
 of a label and a status (stem:[= \{Include, Exclude\}]).
 A criterion corresponds to a row in an attrition table.
-Only units who satisfy all criterion
+Only observational units that satisfy all criterion
 (i.e. none of the criterion evaluate to `Exclude`)
 are included in the cohort.
 
@@ -96,13 +96,13 @@ the following functions are not evaluated.
 
 |stem:[runCriteria]
 |stem:[(j, D^{in}) \mapsto Cr]
-|Maps a unit's index and its subject's input data to inclusion/exclusion Criteria.
+|Maps an observational unit's index and associated subject data to inclusion/exclusion Criteria.
 This function is applied to each stem:[j \in J].
 
 |stem:[runFeatures]
 |stem:[(j, D^{in}) \mapsto D^{out}]
 |For each stem:[j \in J] such that the unit's diposition is `Include`,
-this function maps a unit's index and its subject's input data
+this function maps an observational unit's index and its subject's input data
 to the output data,
 corresponding to observational unit stem:[ij].
 |===

@@ -49,7 +49,7 @@ library
     , conduit-extra
     , generic-lens
     , gitrev
-    , interval-algebra
+    , interval-algebra >= 2.0.1
     , microlens
     , optparse-applicative
     , process
@@ -57,7 +57,7 @@ library
     , string-interpolate
     , tasty
     , tasty-silver
-    , time
+    , time >= 1.11.1
     , text
     , vector
     , witch

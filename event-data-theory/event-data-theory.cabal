@@ -39,14 +39,14 @@ library
     , dhall
     , deepseq
     , filepath
-    , interval-algebra
+    , interval-algebra >= 2.0.1
     , QuickCheck
     , safe
     , scientific
     , tasty
     , tasty-hunit
     , tasty-silver
-    , time
+    , time >= 1.11.1
     , text
     , witch
     , witherable

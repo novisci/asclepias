@@ -48,7 +48,7 @@ library
     , tasty
     , tasty-hunit
     , text
-    , time
+    , time >= 1.11.1
     , tuple
     , witherable
     , witch

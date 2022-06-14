@@ -22,7 +22,7 @@ source-repository head
 
 library
   exposed-modules:
-      AssessmentIntervals
+
       Features
       Features.Attributes
       Features.Core
@@ -36,7 +36,6 @@ library
       Cohort.IndexSet
       Tests
   other-modules:
-      Tests.AssessmentIntervals
       Tests.Features
       Tests.Features.Core
       Tests.Features.Output
@@ -53,7 +52,6 @@ library
     , bytestring
     , containers
     , ghc-prim
-    , interval-algebra >= 2.0.1
     , microlens
     , nonempty-containers
     , QuickCheck

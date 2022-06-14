@@ -32,7 +32,7 @@ stages:
 # https://docs.gitlab.com/ee/ci/yaml/index.html#when
 .rules-only-if-default:
   rules:
-    - if: $CI_COMMIT_BRANCH =~ $CI_DEFAULT_BRANCH
+    - if: $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH
       when: never
 
 # The child pipeline needs at minimum one job to run - otherwise the sub-pipeline fails

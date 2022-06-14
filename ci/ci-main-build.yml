@@ -73,7 +73,7 @@ upload-haddock-docs:
       optional: false
       artifacts: true
   rules:
-    # run only if commit message does not match -build
+    # run only if commit message matches -build
     - if: '$CI_COMMIT_MESSAGE !~ /-build/'
       when: never
     # if it does, run according to main-build rules

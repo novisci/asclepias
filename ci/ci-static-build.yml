@@ -26,6 +26,15 @@ stages:
     - if: '$CI_COMMIT_MESSAGE =~ /-static-build/'
     - if: '$CI_COMMIT_MESSAGE =~ /-docker/'
 
+# Rule to run only if commit branch is default
+# This goofy syntax is the result of no logical AND being available among if conditions.
+# See the example:
+# https://docs.gitlab.com/ee/ci/yaml/index.html#when
+.rules-only-if-default:
+  rules:
+    - if: $CI_COMMIT_BRANCH =~ $CI_DEFAULT_BRANCH
+      when: never
+
 # The child pipeline needs at minimum one job to run - otherwise the sub-pipeline fails
 # See https://gitlab.com/gitlab-org/gitlab/-/issues/218538
 dummy:
@@ -86,8 +95,8 @@ check-docs:
   script: 
     - ./ci/ci-docs-check.sh
   rules:
+    - !reference [.rules-only-if-default, rules]
     - !reference [.rules-build-cohort-collector-static, rules]
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
 
 # Deploy the executable bundle to an S3 location
 deploy-aws-cohort-collector-static:
@@ -102,8 +111,8 @@ deploy-aws-cohort-collector-static:
         s3://$(< ci/downloads_path)${BUNDLE} \
         --acl public-read
   rules:
+    - !reference [.rules-only-if-default, rules]
     - !reference [.rules-build-cohort-collector-static, rules]
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
 
 # Deploy the app as a docker container
 deploy-docker-cohort-collector-static:
@@ -117,5 +126,5 @@ deploy-docker-cohort-collector-static:
     - echo $VERSION
     - ./ci/ci-docker-build-cohort-collector.sh $VERSION install/$FILE
   rules:
+    - !reference [.rules-only-if-default, rules]
     - !reference [.rules-build-cohort-collector-static, rules]
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH

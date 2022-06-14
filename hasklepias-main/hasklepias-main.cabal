@@ -26,31 +26,146 @@ source-repository head
 library
   exposed-modules:
       Hasklepias
+      Hasklepias.AppUtilities
+      Hasklepias.MakeCohortApp
+      Hasklepias.MakeFilterApp
       Hasklepias.Misc
       Hasklepias.Reexports
+
+      -- Monarch 
+      Monarch
+      Test.Monarch.TestMap
+      Test.Monarch.ToOutput
+      Test.Monarch.MonarchException
+      Test.Monarch.Parse
+      Test.Tasty.Monarch
+        -- TODO remove or relocate
+      Examples.Simple
+      
+      -- Stype
+      Stype
+      Stype.Aeson
+      Stype.Numeric
+      Stype.Numeric.Count
+      Stype.Numeric.Continuous
+      Stype.Numeric.Censored
+      Stype.Categorical
+      Stype.Categorical.Binary
+      Stype.Categorical.Nominal
+      Stype.Tests
+
+      -- Templates
+      Templates.Features
+      Templates.Tests
+
+      -- Etc
+      TestUtils.BuildLargeTestData
+      TestUtils.ConstructTestTree
+      TestUtils.SessionId
+      TestUtils.S3Utils
+      TestUtils.TestCases
+  other-modules:
+      Stype.Tests.Aeson
+      Stype.Tests.Censored
+      Templates.Features.BuildIsEnrolled
+      Templates.Features.BuildContinuousEnrollment
+      Templates.Features.BuildNofXBase
+      Templates.Features.BuildNofX
+      Templates.Features.BuildNofXWithGap
+      Templates.Features.BuildNofXOrMofYWithGap
+      Templates.Features.BuildNofUniqueBegins
+      Templates.FeatureReqs
+      Templates.TestUtilities
+
+      Test.Monarch.Internal.Map
+      Test.Monarch.Internal.Dhall
+      Test.Monarch.Internal.EventDataTheory
+      Test.Monarch.Internal.Csv
+      Test.Monarch.Internal.Atomic
+      Test.Monarch.Internal.Utilities
   hs-source-dirs:
       src
   build-depends:
     -- Internal packages
       event-data-theory
-    , hasklepias-appBuilder
     , hasklepias-core
-    , hasklepias-templates
-    , stype
+    
     -- External packages
     , aeson
+    , amazonka
+    , amazonka-s3
     , base >=4.14 && <5
+    , bytestring
+    , cassava
+    , co-log-core
     , containers
+    , conduit
+    , conduit-extra
+    , dhall
+    , dhall-csv
+    , filepath
     , flow
     , generic-lens
+    , gitrev
     , microlens
+    , OneTuple
+    , optparse-applicative
+    , process
+    , regex-compat
     , safe
+    , semiring-simple
+    , string-interpolate
     , tasty
     , tasty-hunit
+    , tasty-silver
     , text
     , time >= 1.11.1
     , tuple
+    , vector
     , witherable
     , witch
   default-language: Haskell2010
+  build-tool-depends: 
+    autoexporter:autoexporter
+  default-extensions: 
+    DataKinds
+    OverloadedStrings
+    TupleSections
 -- end::devel-docs-components[]
+
+test-suite stype-test
+  type: exitcode-stdio-1.0
+  main-is: Main.hs
+  hs-source-dirs: stype-test
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      hasklepias-main, base
+  default-language: Haskell2010
+
+test-suite templates-test
+  type: exitcode-stdio-1.0
+  main-is: Main.hs
+  hs-source-dirs: templates-test
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      hasklepias-main, base
+  default-language: Haskell2010
+
+test-suite monarch-test-suite
+  type: exitcode-stdio-1.0
+  main-is: Main.hs
+  hs-source-dirs:
+      monarch-test
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends: 
+    hasklepias-main, base, filepath
+  default-language: Haskell2010
+
+executable monarch-demo
+    main-is:          Main.hs
+    build-depends:
+        base
+        , hasklepias-main
+        , tasty
+    hs-source-dirs:   monarch-demo
+    default-language: Haskell2010

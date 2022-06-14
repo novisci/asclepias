@@ -16,21 +16,17 @@ module Hasklepias.MakeFilterApp
   , FilterApp
   ) where
 
-import           Control.Applicative            ( (<**>)
-                                                , Alternative((<|>))
-                                                , Applicative(liftA2)
-                                                )
-import           Control.Monad                  ( join )
-import           EventDataTheory         hiding ( (<|>) )
-import           IntervalAlgebra                ( IntervalSizeable )
-
-
 import           Conduit                        ( (.|)
                                                 , ConduitM
                                                 , mapC
                                                 , runConduit
                                                 , yield
                                                 )
+import           Control.Applicative            ( (<**>)
+                                                , Alternative((<|>))
+                                                , Applicative(liftA2)
+                                                )
+import           Control.Monad                  ( join )
 import           Data.Aeson                    as A
                                                 ( FromJSON(parseJSON)
                                                 , decodeStrict'
@@ -42,6 +38,7 @@ import           Data.Maybe                     ( fromMaybe )
 import           Data.Monoid                    ( Any(Any, getAny) )
 import           Data.Text                      ( Text )
 import           Data.Vector                    ( (!) )
+import           EventDataTheory         hiding ( (<|>) )
 
 import           Colog.Core                     ( (<&)
                                                 , logStringStderr

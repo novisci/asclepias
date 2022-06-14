@@ -23,25 +23,6 @@ module Hasklepias.MakeCohortApp
 
 
 import           Cohort
-import           Data.Aeson                     ( FromJSON
-                                                , ToJSON(..)
-                                                , decode
-                                                , encode
-                                                )
-import           Data.Bifunctor                 ( Bifunctor(second) )
-import           Data.List                      ( sort )
-import           Data.Map.Strict                ( fromList
-                                                , toList
-                                                )
-import           Data.Monoid                    ( Monoid(mconcat) )
-import           Data.Text                      ( Text
-                                                , pack
-                                                , splitOn
-                                                )
-import           EventDataTheory         hiding ( (<|>) )
-import           GHC.Num                        ( Natural )
-import           IntervalAlgebra                ( IntervalSizeable )
-
 import           Colog.Core                     ( (<&)
                                                 , HasLog(..)
                                                 , LogAction(..)
@@ -50,6 +31,12 @@ import           Colog.Core                     ( (<&)
                                                 , logStringStderr
                                                 , logStringStdout
                                                 )
+import           Data.Aeson                     ( FromJSON
+                                                , ToJSON(..)
+                                                , decode
+                                                , encode
+                                                )
+import           Data.Bifunctor                 ( Bifunctor(second) )
 import qualified Data.ByteString.Char8         as CH
 import qualified Data.ByteString.Lazy          as B
 import qualified Data.ByteString.Lazy.Char8    as C
@@ -57,16 +44,27 @@ import qualified Data.ByteString.Lazy.Char8    as C
                                                 , putStrLn
                                                 , toStrict
                                                 )
+import           Data.List                      ( sort )
+import           Data.Map.Strict                ( fromList
+                                                , toList
+                                                )
 import qualified Data.Map.Strict               as M
                                                 ( fromListWith
                                                 , toList
                                                 )
+import           Data.Monoid                    ( Monoid(mconcat) )
 import           Data.Semigroup                 ( Semigroup((<>)) )
 import           Data.String.Interpolate        ( i )
+import           Data.Text                      ( Text
+                                                , pack
+                                                , splitOn
+                                                )
 import           Development.GitRev             ( gitDirty
                                                 , gitHash
                                                 )
+import           EventDataTheory         hiding ( (<|>) )
 import           GHC.Generics                   ( Generic )
+import           GHC.Num                        ( Natural )
 import           Hasklepias.AppUtilities
 import           Options.Applicative
 import           Options.Applicative.Help

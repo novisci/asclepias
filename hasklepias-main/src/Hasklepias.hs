@@ -43,7 +43,7 @@ module Hasklepias
   , module Hasklepias.Misc
 
     -- * Intervals based on an index
-  , module AssessmentIntervals
+  , module Hasklepias.AssessmentIntervals
 
     -- * Specifying and building cohorts
   , module Cohort
@@ -61,7 +61,7 @@ module Hasklepias
   , module Hasklepias.Reexports
   ) where
 
-import           AssessmentIntervals
+
 
 import           EventDataTheory
 
@@ -70,6 +70,7 @@ import           Features
 import           Cohort
 
 import           Hasklepias.AppUtilities
+import           Hasklepias.AssessmentIntervals
 import           Hasklepias.MakeCohortApp
 import           Hasklepias.MakeFilterApp
 import           Hasklepias.Misc

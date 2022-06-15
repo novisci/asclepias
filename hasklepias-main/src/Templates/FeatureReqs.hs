@@ -4,7 +4,7 @@
 -- {-# OPTIONS_HADDOCK hide #-}
 
 module Templates.FeatureReqs
-  ( module AssessmentIntervals
+  ( module Hasklepias.AssessmentIntervals
   , module Cohort
   , module Data.Foldable
   , module Data.Maybe
@@ -20,7 +20,6 @@ module Templates.FeatureReqs
   , module W
   ) where
 
-import           AssessmentIntervals
 import           Cohort
 import           Data.Foldable                  ( toList )
 import           Data.Maybe                     ( catMaybes )
@@ -32,6 +31,7 @@ import           Flow                           ( (.>) )
 import           GHC.Natural                    ( Natural
                                                 , naturalToInt
                                                 )
+import           Hasklepias.AssessmentIntervals
 import           Stype
 import           Templates.TestUtilities
 import           Test.Tasty                     ( TestTree )

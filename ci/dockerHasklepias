@@ -15,14 +15,10 @@ WORKDIR /project
 # TODO: surely there's a clean way to copy in necessary files
 COPY cabal.project .
 COPY hasklepias-core/hasklepias-core.cabal hasklepias-core/hasklepias-core.cabal
-COPY hasklepias-templates/hasklepias-templates.cabal hasklepias-templates/hasklepias-templates.cabal
-COPY hasklepias-appBuilder/hasklepias-appBuilder.cabal hasklepias-appBuilder/hasklepias-appBuilder.cabal
 COPY hasklepias-main/hasklepias-main.cabal hasklepias-main/hasklepias-main.cabal
 COPY hasklepias-examples/hasklepias-examples.cabal hasklepias-examples/hasklepias-examples.cabal
 COPY cohort-collector/cohort-collector.cabal cohort-collector/cohort-collector.cabal
 COPY event-data-theory/event-data-theory.cabal event-data-theory/event-data-theory.cabal
-COPY stype/stype.cabal stype/stype.cabal
-COPY monarch/monarch.cabal monarch/monarch.cabal
 
 RUN cabal update
 

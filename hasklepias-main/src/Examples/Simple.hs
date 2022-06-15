@@ -91,7 +91,7 @@ instance ToOutput [ProjEvent] [ProjOccurrence] where
 
 -- specifying the files
 projPath :: String
-projPath = "monarch/src/Examples"
+projPath = "hasklepias-main/src/Examples"
 
 inputCsv, outputCsv :: String
 inputCsv = projPath </> "input.csv"

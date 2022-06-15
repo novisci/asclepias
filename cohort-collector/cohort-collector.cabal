@@ -29,7 +29,7 @@ library
   build-depends:
     -- Internal
       hasklepias-core
-    , hasklepias-appBuilder
+    , hasklepias-main
 
     -- External
     , aeson
@@ -61,7 +61,7 @@ test-suite collector-test
       base
     , cohort-collector
     , directory
-    , hasklepias-appBuilder
+    , hasklepias-main
     , tasty
     , temporary
   other-modules:

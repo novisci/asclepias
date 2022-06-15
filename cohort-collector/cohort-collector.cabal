@@ -67,3 +67,5 @@ test-suite collector-test
   other-modules:
       ConstructPaths
   default-language: Haskell2010
+
+

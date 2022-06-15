@@ -7,6 +7,34 @@ stages:
   - checks
   - deploy
 
+# Baseline set of rules for build-cohort-collector-static job and dependencies
+# This should guarantee dependent jobs run only when the upstream job is run
+# I (bbrown) have not specifically checked that the rules here are consistent
+# with the rules in the dependent jobs
+.rules-build-cohort-collector-static:
+  rules:
+    - if: '$PARENT_CI_PIPELINE_SOURCE == "merge_request_event" || $PARENT_CI_PIPELINE_SOURCE == "push"'
+      changes:
+        - "cohort-collector/*.cabal"
+        - "cohort-collector/**/*.hs"
+        - "hasklepias-main/**/*.hs"
+        - "hasklepias-core/**/*.hs"
+        - "ci/ci-cabal-build-exe-static.sh"
+        - "ci/ci-static-build.yml"
+        - "ci/ci-docker-build.sh"
+        - "ci/dockerHasklepias"
+    - if: '$CI_COMMIT_MESSAGE =~ /-static-build/'
+    - if: '$CI_COMMIT_MESSAGE =~ /-docker/'
+
+# Rule to run only if commit branch is default
+# This goofy syntax is the result of no logical AND being available among if conditions.
+# See the example:
+# https://docs.gitlab.com/ee/ci/yaml/index.html#when
+.rules-only-if-default:
+  rules:
+    - if: $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH
+      when: never
+
 # The child pipeline needs at minimum one job to run - otherwise the sub-pipeline fails
 # See https://gitlab.com/gitlab-org/gitlab/-/issues/218538
 dummy:
@@ -47,18 +75,7 @@ build-cohort-collector-static:
     - job: "docker-build-musl"
       optional: true
   rules:
-    - if: '$PARENT_CI_PIPELINE_SOURCE == "merge_request_event" || $PARENT_CI_PIPELINE_SOURCE == "push"'
-      changes:
-        - "cohort-collector/*.cabal"
-        - "cohort-collector/**/*.hs"
-        - "hasklepias-appBuilder/**/*.hs"
-        - "hasklepias-core/**/*.hs"
-        - "ci/ci-cabal-build-exe-static.sh"
-        - "ci/ci-static-build.yml"
-        - "ci/ci-docker-build.sh"
-        - "ci/dockerHasklepias"
-    - if: '$CI_COMMIT_MESSAGE =~ /-static-build/'
-    - if: '$CI_COMMIT_MESSAGE =~ /-docker/'
+    - !reference [.rules-build-cohort-collector-static, rules]
   image: registry.novisci.com/nsstat/asclepias/hasklepias-build-musl:${MAINVERSION}
   artifacts:
     name: "${CI_JOB_NAME}-${CI_COMMIT_SHORT_SHA}"
@@ -78,7 +95,8 @@ check-docs:
   script: 
     - ./ci/ci-docs-check.sh
   rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - !reference [.rules-only-if-default, rules]
+    - !reference [.rules-build-cohort-collector-static, rules]
 
 # Deploy the executable bundle to an S3 location
 deploy-aws-cohort-collector-static:
@@ -93,7 +111,8 @@ deploy-aws-cohort-collector-static:
         s3://$(< ci/downloads_path)${BUNDLE} \
         --acl public-read
   rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - !reference [.rules-only-if-default, rules]
+    - !reference [.rules-build-cohort-collector-static, rules]
 
 # Deploy the app as a docker container
 deploy-docker-cohort-collector-static:
@@ -107,4 +126,5 @@ deploy-docker-cohort-collector-static:
     - echo $VERSION
     - ./ci/ci-docker-build-cohort-collector.sh $VERSION install/$FILE
   rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - !reference [.rules-only-if-default, rules]
+    - !reference [.rules-build-cohort-collector-static, rules]

@@ -5,9 +5,8 @@ module Tests.AssessmentIntervals
   ( tests
   ) where
 
-import           AssessmentIntervals
-import           IntervalAlgebra
-import           IntervalAlgebra.Arbitrary
+import           EventDataTheory
+import           Hasklepias.AssessmentIntervals
 import           Test.Tasty
 import           Test.Tasty.QuickCheck
 

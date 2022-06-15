@@ -19,12 +19,7 @@ module Test.Monarch.Internal.EventDataTheory where
 import           Control.Applicative
 import           Data.Bifunctor                 ( first )
 import           Dhall                          ( FromDhall )
-import           EventDataTheory.Core
-import           IntervalAlgebra                ( Interval
-                                                , PairedInterval
-                                                , makePairedInterval
-                                                , parseInterval
-                                                )
+import           EventDataTheory
 import           Prelude                 hiding ( lookup )
 import           Test.Monarch.Internal.Atomic
 import           Test.Monarch.Internal.Map

@@ -15,7 +15,7 @@ Maintainer  : bsaul@novisci.com
 {-# LANGUAGE ScopedTypeVariables #-}
 
 
-module AssessmentIntervals
+module Hasklepias.AssessmentIntervals
   (
   {- |
 The assessment intervals provided are:
@@ -87,20 +87,10 @@ import           Data.Functor                   ( Functor(fmap) )
 import           Data.Ord                       ( (<=)
                                                 , Ord
                                                 )
+import           EventDataTheory
 import           GHC.Generics                   ( Generic )
 import           GHC.Num                        ( Num((+)) )
 import           GHC.Show                       ( Show )
-import           IntervalAlgebra                ( Interval
-                                                , IntervalSizeable(..)
-                                                , Intervallic(..)
-                                                , begin
-                                                , beginerval
-                                                , duration
-                                                , end
-                                                , enderval
-                                                , extenterval
-                                                , moment
-                                                )
 import           Witch
 
 {-| A type to contain baseline intervals. See the 'Baseline' typeclass for methods

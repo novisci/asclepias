@@ -17,7 +17,7 @@ stages:
       changes:
         - "cohort-collector/*.cabal"
         - "cohort-collector/**/*.hs"
-        - "hasklepias-appBuilder/**/*.hs"
+        - "hasklepias-main/**/*.hs"
         - "hasklepias-core/**/*.hs"
         - "ci/ci-cabal-build-exe-static.sh"
         - "ci/ci-static-build.yml"

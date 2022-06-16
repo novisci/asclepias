@@ -72,9 +72,11 @@ import           Safe                           ( headMay )
 import           Test.QuickCheck                ( Arbitrary(arbitrary)
                                                 , arbitraryASCIIChar
                                                 )
+import           Text.Printf                    ( PrintfArg
+                                                , printf
+                                                )
 import           Witch                          ( From(..)
                                                 , into
-                                                , via
                                                 )
 import qualified Witherable                    as W
 
@@ -93,8 +95,18 @@ instance Arbitrary SubjID where
   arbitrary = into . pack <$> replicateM 10 arbitraryASCIIChar
 
 -- | Smart constructor for @'SubjID'@.
-makeSubjID :: (From t Text) => t -> SubjID
-makeSubjID = MkSubjID . into
+makeSubjID :: (PrintfArg t) => t -> SubjID
+{-
+NOTE: This function uses printf rather than Show,
+since `show` adds quotes around its output which we don't need.
+The use of PrintfArg does limit the available instance to types
+like Int*, Word*, and text-like types (String, Text) etc,
+but this seems reasonable for the types can be cast to a SubjectID.
+At any rate, printf can be extended if necessary:
+https://hackage.haskell.org/package/base-4.16.1.0/docs/Text-Printf.html#g:2
+-}
+makeSubjID = MkSubjID . pack . printf "%s"
+
 
 {-| 
 A subject is just a pair of a 'Text' ID and data.
@@ -114,7 +126,8 @@ instance Functor Subject where
   fmap f (MkSubject (id, x)) = MkSubject (id, f x)
 
 instance (FromJSON d) => FromJSON (Subject d)
-instance From (Text, d) (Subject d)
+instance (PrintfArg t) => From (t, d) (Subject d) where
+  from (x, y) = MkSubject (makeSubjID x, y)
 instance Binary d => Binary (Subject d)
 instance (Arbitrary d) => Arbitrary (Subject d) where
   arbitrary = do
@@ -134,6 +147,8 @@ instance Functor Population where
 
 instance (FromJSON d) => FromJSON (Population d) where
 instance From [Subject d] (Population d) where
+instance PrintfArg t => From [(t, d)] (Population d) where
+  from x = into $ fmap (into @(Subject d)) x
 instance From (Population d) [Subject d] where
 instance (Arbitrary d) => Arbitrary (Population d) where
   arbitrary = MkPopulation <$> arbitrary

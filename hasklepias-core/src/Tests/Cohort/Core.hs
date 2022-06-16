@@ -20,6 +20,16 @@ import           Test.Tasty
 import           Test.Tasty.HUnit
 import           Witch
 
+
+{-
+This example is purely here to check that GHC can relatively easily infer
+types based on the From instances for subject/population types
+-}
+examplePopulation :: Population (Bool, Integer)
+examplePopulation =
+  from @[(Integer, (Bool, Integer))] [(1, (True, 5)), (2, (True, 0))]
+
+
 {-
 Test Cohort
 -}

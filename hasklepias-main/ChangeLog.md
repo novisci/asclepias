@@ -1,9 +1,16 @@
 # Changelog for hasklepias-main
 
+## x.xx.x
+
+* Adds `pretty-simple` dependency and reexports its `pPrint` function.
+From the docs: "`pretty-simple` is a pretty printer
+for Haskell data types that have a Show instance."
+
 ## 0.26.0
 
 * Update to `interval-algebra-2.0`.
-* Refactor `cabal.project` and individual package dependency bounds. The project now pins a Hackage index state and a compiler version.
+* Refactor `cabal.project` and individual package dependency bounds.
+The project now pins a Hackage index state and a compiler version.
 
 ## 0.25.0
 

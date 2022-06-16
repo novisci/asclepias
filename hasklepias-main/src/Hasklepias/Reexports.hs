@@ -56,6 +56,7 @@ module Hasklepias.Reexports
   , module Lens
   , module Test.Tasty
   , module Test.Tasty.HUnit
+  , module Text.Pretty.Simple
   , module Witch
   , naturalToInt
   ) where
@@ -233,6 +234,7 @@ import           GHC.Natural                    ( Natural
                                                 )
 import           Test.Tasty              hiding ( after )
 import           Test.Tasty.HUnit
+import Text.Pretty.Simple (pPrint)
 
 import           Witch
 

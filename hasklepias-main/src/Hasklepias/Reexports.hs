@@ -234,7 +234,7 @@ import           GHC.Natural                    ( Natural
                                                 )
 import           Test.Tasty              hiding ( after )
 import           Test.Tasty.HUnit
-import Text.Pretty.Simple (pPrint)
+import           Text.Pretty.Simple             ( pPrint )
 
 import           Witch
 

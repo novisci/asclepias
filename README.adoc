@@ -7,3 +7,6 @@
 See documentation at the
 https://docs.novisci.com/noviverse/[noviverse].
 
+Latest Haddock documentation can be found
+https://docs.novisci.com/asclepias/hasklepias-main/latest/hasklepias-main/index.html[here].
+

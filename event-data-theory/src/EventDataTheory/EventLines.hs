@@ -90,6 +90,7 @@ instance (Eventable c m a, FromJSONEvent c m a, IntervalSizeable a b)
 
 instance (Ord a, ToJSON a, ToJSON c, ToJSON m) => ToJSON (EventLine c m a)
 
+-- | A synonym for the basic class constraints needed to create an @EventLine@.
 type EventLineAble c m a b
   = (Generic m, Typeable m, Typeable c, Typeable a, IntervalSizeable a b)
 

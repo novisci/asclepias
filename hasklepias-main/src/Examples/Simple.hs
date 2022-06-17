@@ -278,7 +278,7 @@ cohortBuilderHomeVNotHome idx es = event i (whatIsIt c)
 
 -- defining the conversion
 instance ToOutput [ProConEvent] [ProjOccurrence] where
-toOutput = cohortBuilderHomeVNotHome index
+  toOutput = cohortBuilderHomeVNotHome index
 
 inputNestedSumCsv, outputNestedSumCsv :: String
 inputNestedSumCsv = projPath </> "input_nested_sum.csv"

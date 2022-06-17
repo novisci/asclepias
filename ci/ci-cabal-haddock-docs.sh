@@ -18,6 +18,7 @@ TEMP=$(mktemp -d)
 # The --haddock-html-location value must be in single quotes;
 # as we don't want substitution by the shell.
 # See https://cabal.readthedocs.io/en/3.6/cabal-project.html#cfg-field-haddock-html-location
+# shellcheck disable=SC2016
 cabal haddock all \
   --enable-documentation \
   --haddock-html-location='https://docs.novisci.com/asclepias/$pkg/$version/$pkg' \

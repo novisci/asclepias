@@ -204,7 +204,7 @@ instance (  Eventable c m a
           , Generic m
           , Typeable c
           , Typeable a
-          , Arbitrary m, Arbitrary c, Arbitrary (Interval a)) =>
+          , Arbitrary m, Arbitrary c, Arbitrary a) =>
       Arbitrary (Event c m a) where
   arbitrary = liftM2 event arbitrary arbitrary
 

@@ -221,7 +221,7 @@ data ExFourOutput = MkExFourOutput
 
 -- Ex. 5
 data TrueFactsPlus = AwesomePlus Text
-                   | NotAwesomePlus Text 
+                   | NotAwesomePlus Text
                    deriving (Show, Eq, Generic)
 
 instance FromDhall TrueFactsPlus
@@ -259,9 +259,9 @@ instance FromJSON WhatShouldIDo
 -- 'cohort-building' routines
 proConSum :: [Event a ProCon b] -> (Integer, Integer)
 proConSum es = (sumPro, sumCon)
-  where
-    sumPro es = length [x | x <- getFacts (getContext es), x == Pro]
-    sumCon es = length es - sumPro
+ where
+  sumPro es = length [ x | x <- getFacts (getContext es), x == Pro ]
+  sumCon es = length es - sumPro
 
 -- Cohort builder
 -- Change Facts field
@@ -269,12 +269,12 @@ cohortBuilderHomeVNotHome :: Index -> [ProConEvent] -> ProjHomeVNotHome
 cohortBuilderHomeVNotHome idx es = event i (whatIsIt c)
  where
   pcSum = proConSum es
-  pros = fst pcSum
-  cons = snd pcSum
-  c = getContext (head es)
+  pros  = fst pcSum
+  cons  = snd pcSum
+  c     = getContext (head es)
   whatIsIt c' | pros < cons = c' { getFacts = StayAtHome }
-              | pros > cons = c' { getFacts = GoOut      }
-              | otherwise   = c' { getFacts = CoinToss   }
+              | pros > cons = c' { getFacts = GoOut }
+              | otherwise   = c' { getFacts = CoinToss }
 
 -- defining the conversion
 instance ToOutput [ProConEvent] [ProjOccurrence] where
@@ -286,11 +286,13 @@ outputNestedSumCsv = replaceFileName inputNestedSumCsv "output_nested_sum.csv"
 
 inputNestedSumDhall, outputNestedSumDhall :: String
 inputNestedSumDhall = projPath </> "input_nested_sum.dhall"
-outputNestedSumDhall = replaceFileName inputNestedSumCsv "output_nested_sum.dhall"
+outputNestedSumDhall =
+  replaceFileName inputNestedSumCsv "output_nested_sum.dhall"
 
 myNestedSumRoutine :: TestRoutine
-myNestedSumRoutine = Golden (MkRoutineElem @[ProjEvent] inputNestedSumCsv inputNestedSumDhall)
-                     (MkRoutineElem @[ProjOccurrence] outputNestedSumCsv outputNestedSumDhall)
+myNestedSumRoutine = Golden
+  (MkRoutineElem @[ProjEvent] inputNestedSumCsv inputNestedSumDhall)
+  (MkRoutineElem @[ProjOccurrence] outputNestedSumCsv outputNestedSumDhall)
 
 
 

@@ -60,7 +60,7 @@ tests = testGroup
   $   checkCohortStatus (criteria $ f1 Include : [f2 Exclude, f3 Include])
   @?= ExcludedBy (2, "f2")
   , testCase "error on f4"
-  $ checkCohortStatus (criteria $ f1 Include : [f2 Include, f3 Include, f4])
+  $   checkCohortStatus (criteria $ f1 Include : [f2 Include, f3 Include, f4])
   @?= ExcludedBy (4, "f4")
   , testCase "semigroup: testAttr1 <> testAttr2"
   $   testAttr1

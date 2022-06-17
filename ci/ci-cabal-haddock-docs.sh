@@ -13,14 +13,14 @@ mkdir -p "$ARTIFACT_DIR"
 # Create a location in which to place any temporary files.
 TEMP=$(mktemp -d)
 
-# Just dummy variables to avoid ShellCheck hint
-pkg= 
-version=
-
 # Build documentation
+# NOTEs:
+# The --haddock-html-location value must be in single quotes;
+# as we don't want substitution by the shell.
+# See https://cabal.readthedocs.io/en/3.6/cabal-project.html#cfg-field-haddock-html-location
 cabal haddock all \
   --enable-documentation \
-  --haddock-html-location="https://$(< ci/docs_path)$pkg/$version" \
+  --haddock-html-location='https://docs.novisci.com/asclepias/$pkg/$version/$pkg' \
   --haddock-hyperlink-source \
   --haddock-quickjump > "${TEMP}"/haddock-output.txt
 

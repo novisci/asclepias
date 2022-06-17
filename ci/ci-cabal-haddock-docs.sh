@@ -13,8 +13,6 @@ mkdir -p "$ARTIFACT_DIR"
 # Create a location in which to place any temporary files.
 TEMP=$(mktemp -d)
 
-shellcheck --version
-
 # Build documentation
 # NOTEs:
 # The --haddock-html-location value must be in single quotes;

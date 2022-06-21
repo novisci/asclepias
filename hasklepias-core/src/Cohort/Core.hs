@@ -72,7 +72,7 @@ import           Safe                           ( headMay )
 import           Test.QuickCheck                ( Arbitrary(arbitrary)
                                                 , arbitraryASCIIChar
                                                 )
-import   Text.Printf (printf)
+import           Text.Printf                    ( printf )
 import           Witch                          ( From(..)
                                                 , into
                                                 , via

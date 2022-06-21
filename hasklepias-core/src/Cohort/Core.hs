@@ -72,6 +72,7 @@ import           Safe                           ( headMay )
 import           Test.QuickCheck                ( Arbitrary(arbitrary)
                                                 , arbitraryASCIIChar
                                                 )
+import   Text.Printf (printf)
 import           Witch                          ( From(..)
                                                 , into
                                                 , via
@@ -92,8 +93,16 @@ instance Binary SubjID
 instance Arbitrary SubjID where
   arbitrary = into . pack <$> replicateM 10 arbitraryASCIIChar
 
+-- These instances might ideally part of the Witch package,
+-- but they're here for casting common ID types 
+-- (Int/Integer for now) to Text.
+instance From Int Text where
+  from = pack . printf "%d"
+instance From Integer Text where
+  from = pack . printf "%d"
+
 -- | Smart constructor for @'SubjID'@.
-makeSubjID :: (Show t) => t -> SubjID
+makeSubjID :: (From t Text) => t -> SubjID
 {-
 NOTE: This function uses printf rather than Show,
 since `show` adds quotes around its output which we don't need.
@@ -103,8 +112,7 @@ but this seems reasonable for the types can be cast to a SubjectID.
 At any rate, printf can be extended if necessary:
 https://hackage.haskell.org/package/base-4.16.1.0/docs/Text-Printf.html#g:2
 -}
-makeSubjID = MkSubjID . pack . show
-
+makeSubjID = MkSubjID . into
 
 {-| 
 A subject is just a pair of a 'Text' ID and data.
@@ -124,7 +132,7 @@ instance Functor Subject where
   fmap f (MkSubject (id, x)) = MkSubject (id, f x)
 
 instance (FromJSON d) => FromJSON (Subject d)
-instance (Show t) => From (t, d) (Subject d) where
+instance (From t Text) => From (t, d) (Subject d) where
   from (x, y) = MkSubject (makeSubjID x, y)
 instance Binary d => Binary (Subject d)
 instance (Arbitrary d) => Arbitrary (Subject d) where
@@ -145,7 +153,7 @@ instance Functor Population where
 
 instance (FromJSON d) => FromJSON (Population d) where
 instance From [Subject d] (Population d) where
-instance Show t => From [(t, d)] (Population d) where
+instance From t Text => From [(t, d)] (Population d) where
   from x = into $ fmap (into @(Subject d)) x
 instance From (Population d) [Subject d] where
 instance (Arbitrary d) => Arbitrary (Population d) where

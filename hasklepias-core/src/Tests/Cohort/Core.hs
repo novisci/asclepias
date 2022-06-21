@@ -27,7 +27,7 @@ types based on the From instances for subject/population types
 -}
 examplePopulation :: Population (Bool, Integer)
 examplePopulation =
-  from @[(Integer, (Bool, Integer))] [(1, (True, 5)), (2, (True, 0))]
+  from @[(Int, (Bool, Integer))] [(1, (True, 5)), (2, (True, 0))]
 
 
 {-

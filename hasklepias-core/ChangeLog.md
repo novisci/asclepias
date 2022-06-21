@@ -1,8 +1,17 @@
 # Changelog for hasklepias-core
+
+## x.xx.x
+
+* Tweaks and adds to the `From` instances for `Subject` and `Population`
+in order to make type inference easier for GHC
+and thus users need to write fewer type annotations to help the compiler.
+
 ## 0.26.0
+
 * Update to interval-algebra 2.0
 
 ## 0.25.0
+
 * Changes names of "make" intervals
   * makeFollowupFromIndex -> makeFollowupStartedByIndex
   * makeFollowUpMeetingIndex -> makeFollowupMetByIndex

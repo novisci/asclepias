@@ -40,14 +40,15 @@ myNestedSumRoutine = Golden
   (MkRoutineElem @[ProjOccurrence] outputNestedSumCsv outputNestedSumDhall)
 
 tests :: TestTree
-tests = testGroup "Examples.Simple"
-                  [monarchTest "good" myRoutine
-                  , monarchTest "nestedSum" myNestedSumRoutine
+tests = testGroup
+  "Examples.Simple"
+  [ monarchTest "good"      myRoutine
+  , monarchTest "nestedSum" myNestedSumRoutine
 -- TODO include tests expected to fail
 --  , monarchTest "bad"             myBadRoutine
 --  , monarchTest "ugly"            myMisspecRoutine
 --  , monarchTest "conversion fail" myRoutine2
-                                               ]
+  ]
 
 main :: IO ()
 main = defaultMain tests

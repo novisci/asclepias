@@ -220,8 +220,10 @@ data ExFourOutput = MkExFourOutput
 --exFourFun = undefined
 
 -- Ex. 5
-data TrueFactsPlus = AwesomePlus Text
-                   | NotAwesomePlus Text
+data TrueFactsPlus = NoDishes
+                   | SadPets
+                   | NoNaps
+                   | FunStuff
                    deriving (Show, Eq, Generic)
 
 instance FromDhall TrueFactsPlus
@@ -230,8 +232,8 @@ instance ToDhall TrueFactsPlus
 instance ToJSON TrueFactsPlus
 instance FromJSON TrueFactsPlus
 
-data ProCon = Pro TrueFactsPlus Text |
-              Con TrueFactsPlus Text
+data ProCon = Pro TrueFactsPlus
+            | Con TrueFactsPlus
               deriving (Show, Eq, Generic)
 
 instance FromDhall ProCon
@@ -257,16 +259,20 @@ instance ToJSON WhatShouldIDo
 instance FromJSON WhatShouldIDo
 
 -- 'cohort-building' routines
-proConSum :: [Event a ProCon b] -> (Integer, Integer)
+isPro :: ProCon -> Bool
+isPro (Pro _) = True
+isPro (Con _) = False
+
+proConSum :: [Event a ProCon b] -> (Int, Int)
 proConSum es = (sumPro, sumCon)
  where
-  sumPro es = length [ x | x <- getFacts (getContext es), x == Pro ]
+  sumPro es = length [ x | x <- map (getFacts . getContext) es, isPro x]
   sumCon es = length es - sumPro
 
 -- Cohort builder
 -- Change Facts field
 cohortBuilderHomeVNotHome :: Index -> [ProConEvent] -> ProjHomeVNotHome
-cohortBuilderHomeVNotHome idx es = event i (whatIsIt c)
+cohortBuilderHomeVNotHome idx es = event idx (whatIsIt c)
  where
   pcSum = proConSum es
   pros  = fst pcSum
@@ -277,7 +283,7 @@ cohortBuilderHomeVNotHome idx es = event i (whatIsIt c)
               | otherwise   = c' { getFacts = CoinToss }
 
 -- defining the conversion
-instance ToOutput [ProConEvent] [ProjOccurrence] where
+instance ToOutput [ProConEvent] ProjHomeVNotHome where
   toOutput = cohortBuilderHomeVNotHome index
 
 inputNestedSumCsv, outputNestedSumCsv :: String

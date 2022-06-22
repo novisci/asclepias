@@ -230,6 +230,9 @@ instance ToDhall TrueFactsPlus
 instance ToJSON TrueFactsPlus
 instance FromJSON TrueFactsPlus
 
+-- TODO Each variant has more than one value, which monarch does not support at
+-- the moment. e.g., to create a Pro value you would `Pro (AwesomePlus "a") "b"`
+-- If you remove the `Text` field here, monarch should handle the type just fine.
 data ProCon = Pro TrueFactsPlus Text |
               Con TrueFactsPlus Text
               deriving (Show, Eq, Generic)
@@ -256,10 +259,16 @@ instance ToDhall WhatShouldIDo
 instance ToJSON WhatShouldIDo
 instance FromJSON WhatShouldIDo
 
+-- TODO length returns Int not Integer
+--
 -- 'cohort-building' routines
 proConSum :: [Event a ProCon b] -> (Integer, Integer)
 proConSum es = (sumPro, sumCon)
  where
+   -- TODO: x == Pro is asking whether a ProCon value matches the *constructor*
+   -- Pro, which doesn't quite make sense. You could write a little helper
+   -- `isPro` to pattern match the Pro variant, discarding the value it holds,
+   -- and use it here instead of x == Pro. Otherwise, I think this looks good.
   sumPro es = length [ x | x <- getFacts (getContext es), x == Pro ]
   sumCon es = length es - sumPro
 

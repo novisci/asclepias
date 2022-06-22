@@ -25,9 +25,24 @@ myRoutine :: TestRoutine
 myRoutine = Golden (MkRoutineElem @[ProjEvent] inputCsv inputDhall)
                    (MkRoutineElem @[ProjOccurrence] outputCsv outputDhall)
 
+inputNestedSumCsv, outputNestedSumCsv :: String
+inputNestedSumCsv = projPath </> "input_nested_sum.csv"
+outputNestedSumCsv = replaceFileName inputNestedSumCsv "output_nested_sum.csv"
+
+inputNestedSumDhall, outputNestedSumDhall :: String
+inputNestedSumDhall = projPath </> "input_nested_sum.dhall"
+outputNestedSumDhall =
+  replaceFileName inputNestedSumCsv "output_nested_sum.dhall"
+
+myNestedSumRoutine :: TestRoutine
+myNestedSumRoutine = Golden
+  (MkRoutineElem @[ProjEvent] inputNestedSumCsv inputNestedSumDhall)
+  (MkRoutineElem @[ProjOccurrence] outputNestedSumCsv outputNestedSumDhall)
+
 tests :: TestTree
 tests = testGroup "Examples.Simple"
                   [monarchTest "good" myRoutine
+                  , monarchTest "nestedSum" myNestedSumRoutine
 -- TODO include tests expected to fail
 --  , monarchTest "bad"             myBadRoutine
 --  , monarchTest "ugly"            myMisspecRoutine

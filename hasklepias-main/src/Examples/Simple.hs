@@ -266,8 +266,8 @@ isPro (Con _) = False
 proConSum :: [Event a ProCon b] -> (Int, Int)
 proConSum es = (sumPro, sumCon)
  where
-  sumPro es = length [ x | x <- map (getFacts . getContext) es, isPro x]
-  sumCon es = length es - sumPro
+  sumPro = length [ x | x <- map (getFacts . getContext) es, isPro x]
+  sumCon = length es - sumPro
 
 -- Cohort builder
 -- Change Facts field

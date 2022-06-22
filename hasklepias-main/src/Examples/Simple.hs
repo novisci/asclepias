@@ -260,7 +260,7 @@ instance ToJSON WhatShouldIDo
 instance FromJSON WhatShouldIDo
 
 -- TODO length returns Int not Integer
---
+-- TODO `sumPro` has type `[Event a ProCon b] -> Int` (after fixing the x == Pro issue below), but you just want an `Int`.
 -- 'cohort-building' routines
 proConSum :: [Event a ProCon b] -> (Integer, Integer)
 proConSum es = (sumPro, sumCon)

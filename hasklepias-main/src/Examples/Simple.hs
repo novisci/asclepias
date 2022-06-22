@@ -268,7 +268,14 @@ proConSum es = (sumPro, sumCon)
    -- TODO: x == Pro is asking whether a ProCon value matches the *constructor*
    -- Pro, which doesn't quite make sense. You could write a little helper
    -- `isPro` to pattern match the Pro variant, discarding the value it holds,
-   -- and use it here instead of x == Pro. Otherwise, I think this looks good.
+   -- and use it here instead of x == Pro.
+   --
+   -- TODO `getContext` has signature
+   -- getContext :: Event c m a -> Context c m
+   -- but you are applying it to `[Event c m a]`
+   -- so the getFacts . getContext should be applied to
+   -- each element `x` that you pull from `es`, not to
+   -- `es` itself. 
   sumPro es = length [ x | x <- getFacts (getContext es), x == Pro ]
   sumCon es = length es - sumPro
 

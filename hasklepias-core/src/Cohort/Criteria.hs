@@ -171,8 +171,8 @@ Converts a subject's @'Criteria'@ to a @'CohortStatus'@.
 The status is set to @'Included'@
 if none of the @'Criterion'@ have a status of @'Exclude'@.
 -}
-checkCohortStatus :: i -> Criteria -> CohortStatus
-checkCohortStatus index x =
+checkCohortStatus :: Criteria -> CohortStatus
+checkCohortStatus x =
   maybe Included (\(i, n, _) -> ExcludedBy (i, n)) (findExclude x)
 
 {-|

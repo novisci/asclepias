@@ -416,9 +416,7 @@ makeSubjectEvaluator opts spec subj = do
       let crits         = fmap (flip (runCriteria spec) sdt) ins
 
       -- For each index/criteria evaluate cohort status
-      -- checkCohortStatus has sig:: Maybe a -> Criteria -> CohortStatus
-      -- Thus use of Just here to lift an Index back into Maybe
-      let stats         = zipWith checkCohortStatus ins crits
+      let stats         = fmap checkCohortStatus crits
 
       -- Pair up each status with its index for ease of processing later.
       let statusIndices = liftA2 (\x y -> (makeObsID y sid, x)) stats ins

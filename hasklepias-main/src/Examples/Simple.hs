@@ -220,8 +220,10 @@ data ExFourOutput = MkExFourOutput
 --exFourFun = undefined
 
 -- Ex. 5
-data TrueFactsPlus = AwesomePlus Text
-                   | NotAwesomePlus Text
+data TrueFactsPlus = NoDishes
+                   | SadPets
+                   | NoNaps
+                   | FunStuff
                    deriving (Show, Eq, Generic)
 
 instance FromDhall TrueFactsPlus
@@ -230,11 +232,8 @@ instance ToDhall TrueFactsPlus
 instance ToJSON TrueFactsPlus
 instance FromJSON TrueFactsPlus
 
--- TODO Each variant has more than one value, which monarch does not support at
--- the moment. e.g., to create a Pro value you would `Pro (AwesomePlus "a") "b"`
--- If you remove the `Text` field here, monarch should handle the type just fine.
-data ProCon = Pro TrueFactsPlus Text |
-              Con TrueFactsPlus Text
+data ProCon = Pro TrueFactsPlus
+            | Con TrueFactsPlus
               deriving (Show, Eq, Generic)
 
 instance FromDhall ProCon
@@ -262,27 +261,20 @@ instance FromJSON WhatShouldIDo
 -- TODO length returns Int not Integer
 -- TODO `sumPro` has type `[Event a ProCon b] -> Int` (after fixing the x == Pro issue below), but you just want an `Int`.
 -- 'cohort-building' routines
-proConSum :: [Event a ProCon b] -> (Integer, Integer)
+isPro :: ProCon -> Bool
+isPro (Pro _) = True
+isPro (Con _) = False
+
+proConSum :: [Event a ProCon b] -> (Int, Int)
 proConSum es = (sumPro, sumCon)
  where
-   -- TODO: x == Pro is asking whether a ProCon value matches the *constructor*
-   -- Pro, which doesn't quite make sense. You could write a little helper
-   -- `isPro` to pattern match the Pro variant, discarding the value it holds,
-   -- and use it here instead of x == Pro.
-   --
-   -- TODO `getContext` has signature
-   -- getContext :: Event c m a -> Context c m
-   -- but you are applying it to `[Event c m a]`
-   -- so the getFacts . getContext should be applied to
-   -- each element `x` that you pull from `es`, not to
-   -- `es` itself. 
-  sumPro es = length [ x | x <- getFacts (getContext es), x == Pro ]
-  sumCon es = length es - sumPro
+  sumPro = length [ x | x <- map (getFacts . getContext) es, isPro x]
+  sumCon = length es - sumPro
 
 -- Cohort builder
 -- Change Facts field
 cohortBuilderHomeVNotHome :: Index -> [ProConEvent] -> ProjHomeVNotHome
-cohortBuilderHomeVNotHome idx es = event i (whatIsIt c)
+cohortBuilderHomeVNotHome idx es = event idx (whatIsIt c)
  where
   pcSum = proConSum es
   pros  = fst pcSum
@@ -293,7 +285,7 @@ cohortBuilderHomeVNotHome idx es = event i (whatIsIt c)
               | otherwise   = c' { getFacts = CoinToss }
 
 -- defining the conversion
-instance ToOutput [ProConEvent] [ProjOccurrence] where
+instance ToOutput [ProConEvent] ProjHomeVNotHome where
   toOutput = cohortBuilderHomeVNotHome index
 
 inputNestedSumCsv, outputNestedSumCsv :: String

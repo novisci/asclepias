@@ -1,4 +1,4 @@
 List { concepts : Text, 
-       facts : < Pro : < AwesomePlus : Text | NotAwesomePlus : Text > | Con : < AwesomePlus : Text | NotAwesomePlus : Text >  >, 
+       facts : < Pro : < FunStuff | NoDishes | NoNaps | SadPets > | Con : < FunStuff | NoDishes | NoNaps | SadPets > >, 
        begin : Integer, 
        end : Integer }

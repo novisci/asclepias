@@ -48,19 +48,19 @@ tests :: TestTree
 tests = testGroup
   "Unit tests on Cohort.Criteria"
   [ testCase "include f1"
-  $   checkCohortStatus () (criteria $ pure (f1 Include))
+  $   checkCohortStatus (criteria $ pure (f1 Include))
   @?= Included
   , testCase "include f1, f2, f3"
-  $   checkCohortStatus () (criteria $ f1 Include : [f2 Include, f3 Include])
+  $   checkCohortStatus (criteria $ f1 Include : [f2 Include, f3 Include])
   @?= Included
   , testCase "exclude on f2"
-  $   checkCohortStatus () (criteria $ f2 Exclude : [f3 Include])
+  $   checkCohortStatus (criteria $ f2 Exclude : [f3 Include])
   @?= ExcludedBy (1, "f2")
   , testCase "exclude on f2"
-  $   checkCohortStatus () (criteria $ f1 Include : [f2 Exclude, f3 Include])
+  $   checkCohortStatus (criteria $ f1 Include : [f2 Exclude, f3 Include])
   @?= ExcludedBy (2, "f2")
   , testCase "error on f4"
-  $ checkCohortStatus () (criteria $ f1 Include : [f2 Include, f3 Include, f4])
+  $   checkCohortStatus (criteria $ f1 Include : [f2 Include, f3 Include, f4])
   @?= ExcludedBy (4, "f4")
   , testCase "semigroup: testAttr1 <> testAttr2"
   $   testAttr1

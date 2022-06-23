@@ -1,0 +1,9 @@
+[mermaid]   
+.... 
+graph TD
+  A["event-data-theory"]
+  A --> C
+  B["hasklepias-core"] --> C["haskelpias-main"]
+  C --> D["hasklepias-examples"]
+  C --> E["cohort-collector"]
+....

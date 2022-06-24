@@ -20,14 +20,18 @@
 # add a new url section for each git project linked.
 # 
 # NOTE: Install asciidoctor-kroki with:
-# npm i  asciidoctor-kroki   
+# npm i  asciidoctor-kroki 
+# or globally with
+# npm i asciidoctor-kroki -g
 builddir=docs-site
 mkdir -p "$builddir"
 
 # Check that asciidoctor-kroki is installed
 cd "$builddir" && npm ls asciidoctor-kroki && cd ..
 status=$?
-[ $status -ne 0 ] && echo "you need to install: npm i asciidoctor-kroki" && exit 1
+[ $status -ne 0 ] && 
+  echo "you need to install: npm i asciidoctor asciidoctor-kroki" &&
+  exit 1
 
 
 cat > $builddir/playbook.yml <<- EOM

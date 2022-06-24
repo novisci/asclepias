@@ -14,6 +14,10 @@ Some of the subdirectories of the repository
 such as `hasklepias-core`, `hasklepias-main`, etc. 
 contain a Cabal package that we call a "project" or "sub-project".
 
+[#fig-package]
+.Package dependency graph
+include::partial$package-dependencies.adoc[]
+
 We can choose which subset of projects to build, 
 including theentire `asclepias` project, 
 using the `cabal build` command as outlined in the {url-usage-guide}[Usage Guide]. 

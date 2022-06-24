@@ -23,7 +23,6 @@ To develop and work with `asclepias` locally, clone the repository:
 git clone git@gitlab.novisci.com:nsStat/asclepias.git
 ----
 
-
 include::compiling-asclepias.adoc[leveloffset=+1]
 
 include::versioning.adoc[leveloffset=+1]

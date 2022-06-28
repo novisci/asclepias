@@ -58,7 +58,7 @@ buildNofUniqueBeginsTestCases =
         |--------------|
       -}
   , f "2 results if 2 different begins"
-      (makeFollowupStartedByIndex 10, concur, containsConcepts ["A"])
+      (makeFollowupStartedByIndex 10, concur, containsTag ["A"])
       (0, 1)
       [h ["A"] (2, 5), h ["A"] (4, 5)]
       [(2, 1), (4, 2)]
@@ -70,7 +70,7 @@ buildNofUniqueBeginsTestCases =
         |--------------|
       -}
   , f "2 results when multiple begins at same time"
-      (makeFollowupStartedByIndex 10, concur, containsConcepts ["A"])
+      (makeFollowupStartedByIndex 10, concur, containsTag ["A"])
       (0, 1)
       [h ["A"] (2, 3), h ["A"] (2, 5), h ["A"] (4, 5)]
       [(2, 1), (4, 2)]
@@ -83,7 +83,7 @@ buildNofUniqueBeginsTestCases =
         |--------------|
       -}
   , f "1 result based on predicate filter"
-      (makeFollowupStartedByIndex 10, concur, containsConcepts ["A"])
+      (makeFollowupStartedByIndex 10, concur, containsTag ["A"])
       (0, 1)
       [h ["B"] (2, 3), h ["B"] (2, 5), h ["A"] (4, 5)]
       [(4, 1)]
@@ -97,7 +97,7 @@ buildNofUniqueBeginsTestCases =
       -}
   ] where
   f = makeTestCaseOfIndexAndEvents
-  h = makeEventWithConcepts
+  h = makeEventWithTagSet
 
 buildNofUniqueBeginsTests :: TestTree
 buildNofUniqueBeginsTests = makeTestGroup "Tests ofNofUniqueBegins template"

@@ -15,16 +15,16 @@ import           Hasklepias
 
 {- tag::function[] -}
 durationsOf
-  :: forall n m c a b
-   . (KnownSymbol n, Eventable c m a, IntervalSizeable a b)
-  => [c]
-  -> [Event c m a]
+  :: forall n m t a b
+   . (KnownSymbol n, Eventable t m a, IntervalSizeable a b)
+  => [t]
+  -> [Event t m a]
   -> Feature n [b]
-durationsOf cpts =
-  filter (`hasAnyConcepts` cpts) -- <1>
-    .> fmap (into @(ConceptsInterval c a)) -- <2> <3>
+durationsOf tSet =
+  filter (`hasAnyTag` tSet) -- <1>
+    .> fmap (into @(TagSetInterval t a)) -- <2> <3>
     .> formMeetingSequence -- <4>
-    .> filter (`hasAllConcepts` cpts) -- <5>
+    .> filter (`hasAllTags` tSet) -- <5>
     .> \x -> if null x -- <6>
          then makeFeature $ featureDataL $ Other "no cases"
          else makeFeature $ featureDataR (durations x)
@@ -32,10 +32,10 @@ durationsOf cpts =
 
 {- tag::definition[] -}
 def
-  :: (KnownSymbol n1, KnownSymbol n2, Eventable c m a, IntervalSizeable a b)
-  => [c] -- <1>
-  -> Def (F n1 [Event c m a] -> F n2 [b]) -- <2>
-def cpts = defineA (durationsOf cpts)
+  :: (KnownSymbol n1, KnownSymbol n2, Eventable t m a, IntervalSizeable a b)
+  => [t] -- <1>
+  -> Def (F n1 [Event t m a] -> F n2 [b]) -- <2>
+def tSet = defineA (durationsOf tSet)
 {- end::definition[] -}
 
 example :: TestTree

@@ -55,11 +55,11 @@ of the given concepts.
 ------------------------------
 ----
 
-<2> Cast each event into a `+ConceptsInterval c a+`, 
-which is a synonym for `+PairedInterval (Concepts c) a+`. 
+<2> Cast each event into a `+TagSetInterval t a+`, 
+which is a synonym for `+PairedInterval (TagSet t) a+`. 
 <3> This step is important for the `+formMeetingSequence+` function,
 as it requires the "data" part of the paired interval to be a `+Monoid+`.
-`+Concepts+` are a `+Monoid+` by unioning the elements of two values.
+`+TagSet+` are a `+Monoid+` by unioning the elements of two values.
 <4> Form a sequence of intervals where one meets the next. 
 The data of the running example would look like:
 +
@@ -73,9 +73,9 @@ The data of the running example would look like:
 ------------------------------
 ----
 
-<5> Filter to those intervals that have both of the given concepts.
-Note that `hasAllConcepts` works here because 
-`PairedInterval (Concepts c) a` is defined as an instance of the `HasConcepts`
+<5> Filter to those intervals that have both of the given tags.
+Note that `hasAllTags` works here because 
+`PairedInterval (TagSet c) a` is defined as an instance of the `HasTag`
 typeclass in `event-data-theory`.
 +
 [source]

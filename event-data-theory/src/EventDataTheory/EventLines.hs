@@ -411,7 +411,7 @@ updateEventLineFromEvent (MkEventLine _ _ _ _ _ f) x =
                       (toJSON (begin i))
                       (toJSON (Just . end $ i))
                       (toJSON (show . toConstr . getFacts $ ctxt))
-                      (into (getConcepts ctxt))
+                      (into (getTagSet ctxt))
                       (updateFactsLineWithInterval f ctxt i)
 
 {-
@@ -437,7 +437,7 @@ eitherModifyEventLineFromContext opt g (MkEventLine a b c m e f) = do
   ev <- first show $ tryInto @(Event c m a) (MkEventLine a b c m e f, opt)
   let ctxt  = g (getContext ev)
   let newFl = updateFactsLine f ctxt
-  pure $ MkEventLine a b c m (into . getConcepts $ ctxt) newFl
+  pure $ MkEventLine a b c m (into . getTagSet $ ctxt) newFl
 
 {-
 TODO

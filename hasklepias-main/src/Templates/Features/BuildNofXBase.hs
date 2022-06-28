@@ -78,5 +78,5 @@ defBaseline180Enrollment
 {- tag::example1[] -}
 defBaseline180Enrollment = example (makeBaselineMeetsIndex 180) -- <1>
                                    concur -- <2>
-                                   (containsConcepts ["enrollment"]) -- <3>
+                                   (containsTag ["enrollment"]) -- <3>
 {- end::example1[] -}

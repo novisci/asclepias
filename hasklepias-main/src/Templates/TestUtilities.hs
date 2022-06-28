@@ -17,7 +17,7 @@ module Templates.TestUtilities
   , TestSchema(..)
   , isEnrollmentEvent
   , makeEnrollmentEvent
-  , makeEventWithConcepts
+  , makeEventWithTagSet
   , makeTestCase
   , makeTestCaseOfIndexAndEvents
   , makeTestGroup
@@ -57,13 +57,13 @@ makeEnrollmentEvent
 makeEnrollmentEvent intrvl =
   event (safeInterval intrvl) (context mempty Enrollment Nothing)
 
-makeEventWithConcepts
+makeEventWithTagSet
   :: (Integral b, IntervalSizeable a b, Typeable a, Show a)
   => [Text]
   -> (a, a)
   -> Event Text TestSchema a
-makeEventWithConcepts cpts intrvl =
-  event (safeInterval intrvl) (context (packConcepts cpts) Enrollment Nothing)
+makeEventWithTagSet tSet intrvl =
+  event (safeInterval intrvl) (context (packTagSet tSet) Enrollment Nothing)
 
 isEnrollmentEvent :: Predicate (Event c TestSchema a)
 isEnrollmentEvent = liftToEventPredicate (Predicate (== Enrollment))

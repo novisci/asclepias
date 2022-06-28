@@ -18,7 +18,7 @@ examplePairComparison
   -> Maybe a
 examplePairComparison (c1, c2) i =
   filterConcur i    --  <1>
-    .> splitByConcepts c1 c2 -- <2>
+    .> splitByTags c1 c2 -- <2>
     .> uncurry allPairs -- <3>
     .> filter (\pr -> fst pr `concur` expand 3 3 (snd pr)) -- <4>
     .> lastMay -- <5>

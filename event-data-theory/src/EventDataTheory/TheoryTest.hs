@@ -111,34 +111,34 @@ eventIntervalUnitTests = testGroup
   ni = beginerval 6 4
 
 {-
-Tests of the hasConcepts functions.
+Tests of the hasTagSet functions.
 -}
-hasConceptUnitTests :: TestTree
-hasConceptUnitTests = testGroup
-  "Unit tests for HasConcepts using a dummy event model"
-  [ testCase "hasConcept should have concept"
-  $   hasConcept e1 ("this" :: Text)
+hasTagUnitTests :: TestTree
+hasTagUnitTests = testGroup
+  "Unit tests for hasTagSet using a dummy event model"
+  [ testCase "hasTag should have concept"
+  $   hasTag e1 ("this" :: Text)
   @?= True
-  , testCase "hasConcept should not have concept"
-  $   hasConcept e1 ("not" :: Text)
+  , testCase "hasTag should not have concept"
+  $   hasTag e1 ("not" :: Text)
   @?= False
   , testCase "haAnyConcept works"
-  $   hasAnyConcepts e1 (["this"] :: [Text])
+  $   hasAnyTag e1 (["this"] :: [Text])
   @?= True
   , testCase "haAnyConcepts works"
-  $   hasAnyConcepts e1 (["not"] :: [Text])
+  $   hasAnyTag e1 (["not"] :: [Text])
   @?= False
   , testCase "haAnyConcepts works"
-  $   hasAnyConcepts e1 (["not", "this"] :: [Text])
+  $   hasAnyTag e1 (["not", "this"] :: [Text])
   @?= True
   , testCase "haAllConcepts works"
-  $   hasAllConcepts e1 (["not", "this"] :: [Text])
+  $   hasAllTags e1 (["not", "this"] :: [Text])
   @?= False
   , testCase "haAllConcepts works"
-  $   hasAllConcepts e1 (["that", "this"] :: [Text])
+  $   hasAllTags e1 (["that", "this"] :: [Text])
   @?= True
   , testCase "haAllConcepts works"
-  $   hasAllConcepts e1 (["that", "this", "not"] :: [Text])
+  $   hasAllTags e1 (["that", "this", "not"] :: [Text])
   @?= False
   ]
 
@@ -167,13 +167,13 @@ eventPredicateUnitTests = testGroup
   @?= getPredicate (liftToEventPredicate cPred3) e1
   ]
 
-toFromConceptsUnitTests :: TestTree
-toFromConceptsUnitTests = testGroup
-  "Unit test that pack/unpack getConcepts roundtrips"
-  [ testCase "single concept" $ "foo" @?= (unpackConcept . packConcept) "foo"
+toFromTagSetUnitTests :: TestTree
+toFromTagSetUnitTests = testGroup
+  "Unit test that pack/unpack getTagSet roundtrips"
+  [ testCase "single concept" $ "foo" @?= (unpackTag . packTag) "foo"
   , testCase "multiple concepts"
   $   sort ["foo", "bar"]
-  @?= (unpackConcepts . packConcepts) ["foo", "bar"]
+  @?= (unpackTagSet . packTagSet) ["foo", "bar"]
   ]
 
 -- | Check that files in test/events-day-text-good successfully parse
@@ -281,11 +281,11 @@ singleEventGoodOut =
       \\"patient_id\":\"abc\",\
       \\"time\":{\"begin\":\"2020-01-01\",\"end\":\"2020-01-01\"}}]"
 
-testAddConceptViaEventLine :: IO ()
-testAddConceptViaEventLine =
+testAddTagViaEventLine :: IO ()
+testAddTagViaEventLine =
   let x = modifyEventLineWithContext @SillySchema @SillySchema @Text @Text @Day
         defaultParseEventLineOption
-        (liftToContextFunction $ addConcepts ["foo", "bar" :: Text])
+        (liftToContextFunction $ addTagSet ["foo", "bar" :: Text])
         singleEventGoodIn
   in  case x of
         Left  s -> assertFailure s
@@ -296,8 +296,8 @@ testAddConceptViaEventLine =
 coreUtilitiesUnitTests :: TestTree
 coreUtilitiesUnitTests = testGroup
   "Unit tests on Core utilities"
-  [ testCase "check that concepts are added as expected"
-             testAddConceptViaEventLine
+  [ testCase "check that tag set is added as expected"
+             testAddTagViaEventLine
   ]
 
 
@@ -306,16 +306,16 @@ utilitiesUnitTests :: TestTree
 utilitiesUnitTests = testGroup
   "Unit tests on utilities"
   [ testCase "find first occurrence of Concept 'this'"
-  $   firstOccurrenceOfConcept ["this"] [e1, e2]
+  $   firstOccurrenceOfTag ["this"] [e1, e2]
   @?= Just e1
   , testCase "find last occurrence of Concept 'this'"
-  $   lastOccurrenceOfConcept ["this"] [e1, e2]
+  $   lastOccurrenceOfTag ["this"] [e1, e2]
   @?= Just e2
   , testCase "find first occurrence of Concept 'another'"
-  $   firstOccurrenceOfConcept ["another"] [e1, e2]
+  $   firstOccurrenceOfTag ["another"] [e1, e2]
   @?= Just e2
   , testCase "find first occurrence of Concept 'blah'"
-  $   firstOccurrenceOfConcept ["blah"] [e1, e2]
+  $   firstOccurrenceOfTag ["blah"] [e1, e2]
   @?= Nothing
   ]
 
@@ -332,9 +332,9 @@ theoryTests = defaultMain . testGroup "Event Theory tests" =<< sequenceA
   , modifySillyTests1
   , pure coreUtilitiesUnitTests
   , pure eventIntervalUnitTests
-  , pure hasConceptUnitTests
+  , pure hasTagUnitTests
   , pure eventPredicateUnitTests
-  , pure toFromConceptsUnitTests
+  , pure toFromTagSetUnitTests
   , pure utilitiesUnitTests
   , pure parserUnitTests
   ]

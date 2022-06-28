@@ -81,7 +81,7 @@ buildNofConceptsBinaryConcurBaseline
      )
   => Natural -- ^ minimum number of events. 
   -> b  -- ^ duration of baseline (passed to 'Cohort.makeBaselineMeetsIndex')
-  -> [c] -- ^ list of 'EventData.Concepts' passed to 'EventData.containsConcepts'
+  -> [c] -- ^ list of 'EventData.Concepts' passed to 'EventData.containsTag'
   -> Definition
        (  Feature indexName (i0 a)
        -> Feature eventsName (t (Event c m a))
@@ -91,7 +91,7 @@ buildNofConceptsBinaryConcurBaseline n baselineDur cpts = buildNofXBinary
   n
   (makeBaselineMeetsIndex baselineDur)
   concur
-  (containsConcepts cpts)
+  (containsTag cpts)
 {- tag::template4[] -}
 
 type NofXArgs
@@ -124,38 +124,38 @@ buildNofXTestCases =
     False
   , f
     "True if 1 event before index and looking for single event concurring with baseline"
-    (1, makeBaselineMeetsIndex 10, concur, containsConcepts ["A"])
+    (1, makeBaselineMeetsIndex 10, concur, containsTag ["A"])
     (0, 1)
     [h ["A", "B"] (-5, -4)]
     True
   , f
     "True if 2 events before index and looking for at least 2 events concurring with baseline"
-    (2, makeBaselineMeetsIndex 10, concur, containsConcepts ["A"])
+    (2, makeBaselineMeetsIndex 10, concur, containsTag ["A"])
     (0, 1)
     [h ["A", "B"] (-5, -4), h ["A", "C"] (-3, -2)]
     True
   , f
     "True if 3 events before index and looking for at least 2 events concurring with baseline"
-    (2, makeBaselineMeetsIndex 10, concur, containsConcepts ["A"])
+    (2, makeBaselineMeetsIndex 10, concur, containsTag ["A"])
     (0, 1)
     [h ["A", "B"] (-7, -6), h ["A", "B"] (-5, -4), h ["A", "C"] (-3, -2)]
     True
   , f
     "True if 2 events of same interval before index and looking for at least 2 events concurring with baseline"
-    (2, makeBaselineMeetsIndex 10, concur, containsConcepts ["A"])
+    (2, makeBaselineMeetsIndex 10, concur, containsTag ["A"])
     (0, 1)
     [h ["A"] (-5, -4), h ["A", "B"] (-5, -4)]
     True
   , f
     "False if 1 event before index and looking for at least 2 events concurring with baseline"
-    (2, makeBaselineMeetsIndex 10, concur, containsConcepts ["A"])
+    (2, makeBaselineMeetsIndex 10, concur, containsTag ["A"])
     (0, 1)
     [h ["A", "C"] (-3, -2)]
     False
   ] where
   f = makeTestCaseOfIndexAndEvents
   g = makeEnrollmentEvent
-  h = makeEventWithConcepts
+  h = makeEventWithTagSet
 
 buildNofXTests :: TestTree
 buildNofXTests =

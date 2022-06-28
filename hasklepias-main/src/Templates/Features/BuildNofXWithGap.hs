@@ -160,7 +160,7 @@ buildNofXWithGapTestCases =
         |--------------|
       -}
   , f "True if 1 gap satisfy gap condition"
-      (1, 3, makeBaselineMeetsIndex 10, concur, containsConcepts ["A"])
+      (1, 3, makeBaselineMeetsIndex 10, concur, containsTag ["A"])
       (10, 11)
       [h ["C", "A"] (2, 3), h ["A", "B"] (8, 9)]
       True
@@ -172,7 +172,7 @@ buildNofXWithGapTestCases =
         |--------------|
       -}
   , f "True if 1 gap satisfy gap condition "
-      (1, 3, makeBaselineMeetsIndex 10, concur, containsConcepts ["A"])
+      (1, 3, makeBaselineMeetsIndex 10, concur, containsTag ["A"])
       (10, 11)
       [h ["C", "A"] (2, 3), h ["D", "E"] (5, 6), h ["A", "B"] (8, 9)]
       True
@@ -186,7 +186,7 @@ buildNofXWithGapTestCases =
       -}
   , f
     "True if 1 gap satisfy gap condition"
-    (1, 3, makeBaselineMeetsIndex 10, concur, containsConcepts ["A"])
+    (1, 3, makeBaselineMeetsIndex 10, concur, containsTag ["A"])
     (10, 11)
     [ h ["A"] (1, 2)
     , h ["A"] (2, 3)
@@ -206,7 +206,7 @@ buildNofXWithGapTestCases =
         |--------------|
       -}
   , f "False if no gap satisfy gap condition"
-      (1, 3, makeBaselineMeetsIndex 10, concur, containsConcepts ["A"])
+      (1, 3, makeBaselineMeetsIndex 10, concur, containsTag ["A"])
       (10, 11)
       [h ["A"] (1, 2), h ["A"] (2, 3), h ["A"] (3, 4), h ["A"] (4, 5)]
       False
@@ -222,7 +222,7 @@ buildNofXWithGapTestCases =
   ] where
   f = makeTestCaseOfIndexAndEvents
   g = makeEnrollmentEvent
-  h = makeEventWithConcepts
+  h = makeEventWithTagSet
 
 buildNofXWithGapTests :: TestTree
 buildNofXWithGapTests = makeTestGroup "Tests of NofXWithGap template"

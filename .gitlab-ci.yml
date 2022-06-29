@@ -25,6 +25,12 @@ build_vars:
     reports:
       dotenv: .env
 
+# rule evaluating to true only if commit branch is default (master) and a
+# version tag is pushed. 
+.rules-version-tag-master:
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_TAG =~ /v.+/'
+
 check-source:
   stage: prep
   image: registry.novisci.com/nsstat/nsbuild/haskell:$GHC
@@ -50,9 +56,12 @@ trigger-static-build:
     include: ci/ci-static-build.yml
     strategy: depend
 
-# Trigger the downstream noviverse site to build
+# Trigger the downstream noviverse site to build *only* if a tag is pushed with
+# name v* (version tag)
 trigger-doc-site:
   stage: build
+  rules:
+    - !reference [.rules-version-tag-master, rules]
   trigger: nsStat/noviverse-site
 
 # # Report the test coverage as described in the following links. If the pipeline

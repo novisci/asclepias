@@ -74,7 +74,7 @@ toEvent
   => EventData a
   -> Event Text ExampleModel a
 toEvent x = event (beginerval (t1 x) (t2 x))
-                  (context (packConcepts [t3 x]) Enrollment Nothing)
+                  (context (packTagSet [t3 x]) Enrollment Nothing)
 
 toEvents
   :: (Ord a, Show a, IntervalSizeable a a, Typeable a)

@@ -34,35 +34,35 @@ import           Witch.TryFromException
 
      -}
 
-instance (Ord c, Show c, FromDhall c) => TryFrom TestMap (Concepts c) where
-  tryFrom input = concepts
+instance (Ord t, Show t, FromDhall t) => TryFrom TestMap (TagSet t) where
+  tryFrom input = tagSet
    where
     -- TODO: This awful hack is because lists are not supported by dhallFromCsv.
-    -- It means we only support Concepts with one element. You could add
+    -- It means we only support TagSet with one element. You could add
     -- support for multi-element sets by adding a grouping variable to the
-    -- schema and collecting "concepts" values on that variable. Since that
+    -- schema and collecting "tagSet" values on that variable. Since that
     -- adds some cognitive complexity to the csv input and since most cases
-    -- involve just one concept, that method is not used here. You could also
+    -- involve just one tag, that method is not used here. You could also
     -- consider rewriting `dhallFromCsv`, largely copying and pasting from the
     -- dhall-csv source. However, the function uses multiple internal types,
     -- which left me stumped as to what to do.
-    concepts = case singleValToList <$> lookup "concepts" input of
+    tagSet = case singleValToList <$> lookup "tagSet" input of
       Nothing        -> Left $ TryFromException input Nothing
       Just (Left  _) -> Left $ TryFromException input Nothing
-      Just (Right v) -> first (const err) $ tryFrom @TestVal @(Concepts c) v
+      Just (Right v) -> first (const err) $ tryFrom @TestVal @(TagSet t) v
     singleValToList x = List . (: []) <$> tryFrom @TestVal x
     err = TryFromException input Nothing
 
-instance (Ord c, FromDhall c, Show c, FromDhall m) => TryFrom TestMap (Context c m) where
+instance (Ord t, FromDhall t, Show t, FromDhall m) => TryFrom TestMap (Context t m) where
   tryFrom input = liftA3 context
-                         (first (const err) concepts)
+                         (first (const err) tagSet)
                          (joinMaybeEither err facts)
                          -- NOTE: ignoring Source in all cases
                          (pure Nothing)
    where
-    concepts = tryFrom input
-    facts    = tryFrom @TestVal <$> lookup "facts" input
-    err      = TryFromException input Nothing
+    tagSet = tryFrom input
+    facts  = tryFrom @TestVal <$> lookup "facts" input
+    err    = TryFromException input Nothing
 
 instance (Show a, Ord a, FromDhall a) => TryFrom TestMap (Interval a) where
   tryFrom input = joinEitherOuter err $ liftA2 parseInterval b e
@@ -81,9 +81,9 @@ instance (Show a, Ord a, FromDhall a, TryFrom TestMap c) => TryFrom TestMap (Pai
     interval = tryFrom input
     err      = TryFromException input Nothing
 
-instance (Show a, Ord a, Show c, Ord c, Eq m, Show m, Atomizable a, TryFrom TestMap (Interval a), TryFrom TestMap (Context c m)) => TryFrom TestMap (Event c m a) where
-  tryFrom input = liftA2 event (first (const err) i) (first (const err) c)
+instance (Show a, Ord a, Show t, Ord t, Eq m, Show m, Atomizable a, TryFrom TestMap (Interval a), TryFrom TestMap (Context t m)) => TryFrom TestMap (Event t m a) where
+  tryFrom input = liftA2 event (first (const err) i) (first (const err) t)
    where
     i   = tryFrom @TestMap input
-    c   = tryFrom @TestMap input
+    t   = tryFrom @TestMap input
     err = TryFromException input Nothing

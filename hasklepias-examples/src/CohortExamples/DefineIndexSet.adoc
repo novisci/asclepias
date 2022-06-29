@@ -16,14 +16,14 @@ include::{sourcefile}[tag=function]
 ----
 
 <1> The input type for this example is a list of events, 
-where the concepts are `Text`, 
+where the tag set is `Text`, 
 the data model is `ExampleModel`,
 and the interval time is a generic type `a`.
 <2> The return type is an `Indexset` of `Interval`.
 The `IndexSet` type is defined in `hasklepias-core`
 as either `Nothing` or a set of *unique* ordered values.
 <3> To determine whether a subject has an index,
-we filter to the events tagged with the concept `"wasBitByOrca"`.
+we filter to the events tagged with the tag `"wasBitByOrca"`.
 <4> The `headMay` function gets the first event,
 if one exists.
 We're assuming the input list has already been sorted.

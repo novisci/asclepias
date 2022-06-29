@@ -17,15 +17,15 @@ buildNofXBase
      , Witherable container0
      , Witherable container1
      )
-  => (container0 (Event c m a) -> container1 (i1 a)) -- ^ function mapping a container of events to a container of intervallic intervals (which could be events!)
-  -> (container1 (i1 a) -> t) -- ^ function mapping the processed events to an intermediate type
-  -> (AssessmentInterval a -> t -> outputType) -- ^ function casting intermediate type to output type with the option to use the assessment interval
+  => (container0 (Event t m a) -> container1 (i1 a)) -- ^ function mapping a container of events to a container of intervallic intervals (which could be events!)
+  -> (container1 (i1 a) -> t1) -- ^ function mapping the processed events to an intermediate type
+  -> (AssessmentInterval a -> t1 -> outputType) -- ^ function casting intermediate type to output type with the option to use the assessment interval
   -> (i0 a -> AssessmentInterval a) -- ^ function which maps index interval to interval in which to assess the feature
-  -> ComparativePredicateOf2 (AssessmentInterval a) (Event c m a) -- ^ the interval relation of the input events to the assessment interval
-  -> Predicate (Event c m a) -- ^ The predicate to filter to Enrollment events (e.g. 'FeatureEvents.isEnrollment')
+  -> ComparativePredicateOf2 (AssessmentInterval a) (Event t m a) -- ^ the interval relation of the input events to the assessment interval
+  -> Predicate (Event t m a) -- ^ The predicate to filter to Enrollment events (e.g. 'FeatureEvents.isEnrollment')
   -> Definition
        (  Feature indexName (i0 a)
-       -> Feature eventsName (container0 (Event c m a))
+       -> Feature eventsName (container0 (Event t m a))
        -> Feature varName outputType
        )
 buildNofXBase runPreProcess runProcess runPostProcess makeAssessmentInterval relation predicate
@@ -52,11 +52,11 @@ An example of using the buildNofXBase function
 example
   :: (Ord a, IntervalSizeable a b)
   => (Interval a -> AssessmentInterval a)
-  -> ComparativePredicateOf2 (AssessmentInterval a) (Event c m a)
-  -> Predicate (Event c m a)
+  -> ComparativePredicateOf2 (AssessmentInterval a) (Event t m a)
+  -> Predicate (Event t m a)
   -> Definition
        (  Feature indexName (Interval a)
-       -> Feature eventsName [Event c m a]
+       -> Feature eventsName [Event t m a]
        -> Feature varName [b]
        )
 {- tag::example0sig[] -}
@@ -78,5 +78,5 @@ defBaseline180Enrollment
 {- tag::example1[] -}
 defBaseline180Enrollment = example (makeBaselineMeetsIndex 180) -- <1>
                                    concur -- <2>
-                                   (containsConcepts ["enrollment"]) -- <3>
+                                   (containsTag ["enrollment"]) -- <3>
 {- end::example1[] -}

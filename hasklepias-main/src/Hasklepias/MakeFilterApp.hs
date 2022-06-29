@@ -103,8 +103,8 @@ instance Semigroup FilterState where
 -- Initialize a FilterState using a given parser and predicate function.
 initFilterState
   :: (Show a, FromJSON a, IntervalSizeable a b)
-  => (C.ByteString -> Maybe (Event c m a)) -- ^ Event parser
-  -> (Event c m a -> Bool) -- ^ Predicate on events
+  => (C.ByteString -> Maybe (Event t m a)) -- ^ Event parser
+  -> (Event t m a -> Bool) -- ^ Predicate on events
   -> C.ByteString -- ^ the data to (attempt to) parse into an event
   -> FilterState
 initFilterState f p x = FilterState (id, b, x)
@@ -134,8 +134,8 @@ fscIO x y = do
 -- here. Their data is accumulated but not output (if it needs to be) by this 
 -- Conduit.
 prefilterC
-  :: (Eventable c m a, EventLineAble c m a b, FromJSONEvent c m a, Monad f)
-  => (Event c m a -> Bool)
+  :: (Eventable t m a, EventLineAble t m a b, FromJSONEvent t m a, Monad f)
+  => (Event t m a -> Bool)
   -> C.ByteString
   -> ConduitM i g f (Maybe (IO FilterState))
 prefilterC p x =
@@ -161,12 +161,12 @@ desc =
   \Lines that fail to parse as an `Event` do not satisfy the predicate, but are not \
   \dropped from the output. In other words, all of a subject's data is returned in \
   \the same order as the input, provided that at least one line successfully parses \
-  \into an Event c m and satisfies the predicate."
+  \into an Event t m and satisfies the predicate."
 
 {- | 
 Create a application that filters event data with two arguments: 
   * a string for the name of the application (e.g. the project ID)
-  * a predicate function of type @Event c m a -> Bool@. 
+  * a predicate function of type @Event t m a -> Bool@. 
 
 The application takes event data formatted as [`ndjson`](http://ndjson.org/)
 (i.e. one event per line). The application returns the event data filtered to
@@ -179,9 +179,9 @@ the same order as the input, provided that at least one line successfully parses
 into an `Event` and satisfies the predicate. 
 -}
 makeFilterApp
-  :: (Eventable c m a, EventLineAble c m a b, FromJSONEvent c m a)
+  :: (Eventable t m a, EventLineAble t m a b, FromJSONEvent t m a)
   => String -- ^ name of the app (e.g. a project's id)
-  -> (Event c m a -> Bool) -- ^ predicate to evaluate for each event
+  -> (Event t m a -> Bool) -- ^ predicate to evaluate for each event
   -> FilterApp IO
 makeFilterApp name predicate = MkFilterApp $ \l -> do
   options <- execParser (makeAppArgs name)

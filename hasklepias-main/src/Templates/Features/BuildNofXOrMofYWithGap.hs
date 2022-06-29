@@ -19,19 +19,19 @@ buildNofXOrMofYWithGap
   => (outputType -> outputType -> outputType)
   -> (Bool -> outputType)
   -> Natural -- ^ count passed to 'buildNofX'
-  -> Predicate (Event c m a) -- ^ predicate for 'buildNofX' 
+  -> Predicate (Event t m a) -- ^ predicate for 'buildNofX' 
   -> Natural -- ^ the minimum number of gaps passed to 'buildNofXWithGap'
   -> b -- ^ the minimum duration of a gap passed to 'buildNofXWithGap'
-  -> Predicate (Event c m a) -- ^ predicate for 'buildNofXWithGap' 
+  -> Predicate (Event t m a) -- ^ predicate for 'buildNofXWithGap' 
   -> ComparativePredicateOf2
        (AssessmentInterval a)
-       (Event c m a)
+       (Event t m a)
   -> (i a -> AssessmentInterval a)
   -> Definition
        (  Feature indexName (i a)
        -> Feature
             eventsName
-            (container (Event c m a))
+            (container (Event t m a))
        -> Feature varName outputType
        )
 buildNofXOrMofYWithGap f cast xCount xPred gapCount gapDuration yPred intervalPred assess
@@ -48,17 +48,17 @@ buildNofXOrMofYWithGapBool
      , Witherable container
      )
   => Natural -- ^ count passed to 'buildNofX'
-  -> Predicate (Event c m a)
+  -> Predicate (Event t m a)
   -> Natural -- ^ the minimum number of gaps passed to 'buildNofXWithGap'
   -> b -- ^ the minimum duration of a gap passed to 'buildNofXWithGap'
-  -> Predicate (Event c m a)
+  -> Predicate (Event t m a)
   -> ComparativePredicateOf2
        (AssessmentInterval a)
-       (Event c m a)
+       (Event t m a)
   -> (i a -> AssessmentInterval a)
   -> Definition
        (  Feature indexName (i a)
-       -> Feature eventsName (container (Event c m a))
+       -> Feature eventsName (container (Event t m a))
        -> Feature varName Bool
        )
 buildNofXOrMofYWithGapBool = buildNofXOrMofYWithGap (||) id
@@ -72,17 +72,17 @@ buildNofXOrMofYWithGapBinary
      , Witherable container
      )
   => Natural -- ^ count passed to 'buildNofX'
-  -> Predicate (Event c m a)
+  -> Predicate (Event t m a)
   -> Natural -- ^ the minimum number of gaps passed to 'buildNofXWithGap'
   -> b -- ^ the minimum duration of a gap passed to 'buildNofXWithGap'
-  -> Predicate (Event c m a)
+  -> Predicate (Event t m a)
   -> ComparativePredicateOf2
        (AssessmentInterval a)
-       (Event c m a)
+       (Event t m a)
   -> (i a -> AssessmentInterval a)
   -> Definition
        (  Feature indexName (i a)
-       -> Feature eventsName (container (Event c m a))
+       -> Feature eventsName (container (Event t m a))
        -> Feature varName Binary
        )
 buildNofXOrMofYWithGapBinary = buildNofXOrMofYWithGap
@@ -114,7 +114,7 @@ buildNofXOrMofYWithGapTestCases =
   [ f
     "True if looking for no events and there are no events"
     ( 0
-    , containsConcepts ["A"]
+    , containsTag ["A"]
     , 0
     , 3
     , isEnrollmentEvent
@@ -133,7 +133,7 @@ buildNofXOrMofYWithGapTestCases =
   , f
     "True if looking for (at least) no events and there are events satisfying gap condition"
     ( 0
-    , containsConcepts ["A"]
+    , containsTag ["A"]
     , 0
     , 3
     , isEnrollmentEvent
@@ -152,7 +152,7 @@ buildNofXOrMofYWithGapTestCases =
   , f
     "False if no X or Y events and looking for 1 X or 1 Y gap"
     ( 1
-    , containsConcepts ["A"]
+    , containsTag ["A"]
     , 1
     , 3
     , isEnrollmentEvent
@@ -171,7 +171,7 @@ buildNofXOrMofYWithGapTestCases =
   , f
     "False if a no X and Y single event TestSchema Text  and looking for gap"
     ( 1
-    , containsConcepts ["A"]
+    , containsTag ["A"]
     , 1
     , 3
     , isEnrollmentEvent
@@ -190,7 +190,7 @@ buildNofXOrMofYWithGapTestCases =
   , f
     "False if no X 1 gap but not satisfying gap condition"
     ( 1
-    , containsConcepts ["A"]
+    , containsTag ["A"]
     , 1
     , 3
     , isEnrollmentEvent
@@ -209,10 +209,10 @@ buildNofXOrMofYWithGapTestCases =
   , f
     "True if 1 gap satisfy gap condition"
     ( 1
-    , containsConcepts ["D"]
+    , containsTag ["D"]
     , 1
     , 3
-    , containsConcepts ["A"]
+    , containsTag ["A"]
     , concur
     , makeBaselineMeetsIndex 10
     )
@@ -229,10 +229,10 @@ buildNofXOrMofYWithGapTestCases =
   , f
     "True if 1 X event"
     ( 1
-    , containsConcepts ["C"]
+    , containsTag ["C"]
     , 1
     , 3
-    , containsConcepts ["A"]
+    , containsTag ["A"]
     , concur
     , makeBaselineMeetsIndex 10
     )
@@ -248,10 +248,10 @@ buildNofXOrMofYWithGapTestCases =
   , f
     "True if 1 gap satisfy gap condition "
     ( 2
-    , containsConcepts ["D"]
+    , containsTag ["D"]
     , 1
     , 3
-    , containsConcepts ["A"]
+    , containsTag ["A"]
     , concur
     , makeBaselineMeetsIndex 10
     )
@@ -269,10 +269,10 @@ buildNofXOrMofYWithGapTestCases =
   , f
     "False if only one X and if no gap satisfy gap condition "
     ( 2
-    , containsConcepts ["D"]
+    , containsTag ["D"]
     , 1
     , 3
-    , containsConcepts ["A"]
+    , containsTag ["A"]
     , concur
     , makeBaselineMeetsIndex 10
     )
@@ -289,10 +289,10 @@ buildNofXOrMofYWithGapTestCases =
   , f
     "True if two X and if no gap satisfy gap condition "
     ( 2
-    , containsConcepts ["D"]
+    , containsTag ["D"]
     , 1
     , 3
-    , containsConcepts ["A"]
+    , containsTag ["A"]
     , concur
     , makeBaselineMeetsIndex 10
     )
@@ -309,7 +309,7 @@ buildNofXOrMofYWithGapTestCases =
   ] where
   f = makeTestCaseOfIndexAndEvents
   g = makeEnrollmentEvent
-  h = makeEventWithConcepts
+  h = makeEventWithTagSet
 
 buildNofXOrMofYWithGapTests :: TestTree
 buildNofXOrMofYWithGapTests = makeTestGroup "Tests of NofXWithGap template"

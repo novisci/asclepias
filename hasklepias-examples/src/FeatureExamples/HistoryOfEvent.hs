@@ -20,9 +20,9 @@ makeHx
   -> AssessmentInterval a
   -> [Event Text ExampleModel a]
   -> Maybe (Interval a) -- <2>
-makeHx cpts i events =
+makeHx t i events =
   events
-    |> filterEvents (containsConcepts cpts &&& Predicate (enclose i)) -- <3>
+    |> filterEvents (containsTag t &&& Predicate (enclose i)) -- <3>
     |> lastMay -- <4>
     |> fmap getInterval -- <5>
 {- end::function[] -}

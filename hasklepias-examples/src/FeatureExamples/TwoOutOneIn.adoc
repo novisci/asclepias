@@ -9,8 +9,8 @@ This example demonstrates:
 
 This example defines a feature that indicates either:
 
-* at least 1 event during the baseline interval has any of the `cpts1` concepts
-* there are at least 2 events that have `cpts2` concepts which have at least
+* at least 1 event during the baseline interval has a tag from the `tag1` tag set
+* there are at least 2 events that have tag set `tag2` which have at least
 7 days between them during the baseline interval
 
 [source,haskell]
@@ -28,13 +28,13 @@ This function takes seven arguments.
 xref:user-guide:index.adoc#build-n-of-x[`buildNofX`]
 template.
 The given arguments say that we're looking for *at least* `1` event
-that contains one or more of the `inpatientConcepts`.
+that contains one or more of the `inpatientTagSet`.
 <4> The next three arguments are passed to the 
 xref:user-guide:index.adoc#build-n-of-x-with-gap[`buildNofXWithGap`]
 template.
 The given arguments say that we're looking for *at least* `1` gap 
 between any pair of events (and thus at least 2 events)
-that contains one or more of the `outpatientConcepts`.
+that contains one or more of the `outpatientTagSet`.
 <5> The last two arguments determine when the events 
 must occur relative to the index event.
 Here, the events must `concur` with a baseline assessment interval.

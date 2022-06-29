@@ -1,4 +1,4 @@
-concepts,facts,begin,end
+tagSet,facts,begin,end
 "home",WasAfter,0,4
 "not home",WasAfter,1,10
 "home",WasAfter,0,20

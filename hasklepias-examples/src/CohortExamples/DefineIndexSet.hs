@@ -15,7 +15,7 @@ defineIndexSet
   -> IndexSet (Interval a) -- <2>
 defineIndexSet events =
   events
-    |> filterEvents (containsConcepts ["wasBitByOrca"]) -- <3>
+    |> filterEvents (containsTag ["wasBitByOrca"]) -- <3>
     |> headMay -- <4>
     |> fmap getInterval -- <5>
     |> into -- <6>

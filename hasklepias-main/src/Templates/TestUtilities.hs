@@ -65,7 +65,7 @@ makeEventWithTagSet
 makeEventWithTagSet tSet intrvl =
   event (safeInterval intrvl) (context (packTagSet tSet) Enrollment Nothing)
 
-isEnrollmentEvent :: Predicate (Event c TestSchema a)
+isEnrollmentEvent :: Predicate (Event t TestSchema a)
 isEnrollmentEvent = liftToEventPredicate (Predicate (== Enrollment))
 
 {-

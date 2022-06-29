@@ -34,7 +34,7 @@ import           Witch.TryFromException
 
      -}
 
-instance (Ord c, Show c, FromDhall c) => TryFrom TestMap (TagSet c) where
+instance (Ord t, Show t, FromDhall t) => TryFrom TestMap (TagSet t) where
   tryFrom input = tagSet
    where
     -- TODO: This awful hack is because lists are not supported by dhallFromCsv.
@@ -49,11 +49,11 @@ instance (Ord c, Show c, FromDhall c) => TryFrom TestMap (TagSet c) where
     tagSet = case singleValToList <$> lookup "tagSet" input of
       Nothing        -> Left $ TryFromException input Nothing
       Just (Left  _) -> Left $ TryFromException input Nothing
-      Just (Right v) -> first (const err) $ tryFrom @TestVal @(TagSet c) v
+      Just (Right v) -> first (const err) $ tryFrom @TestVal @(TagSet t) v
     singleValToList x = List . (: []) <$> tryFrom @TestVal x
     err = TryFromException input Nothing
 
-instance (Ord c, FromDhall c, Show c, FromDhall m) => TryFrom TestMap (Context c m) where
+instance (Ord t, FromDhall t, Show t, FromDhall m) => TryFrom TestMap (Context t m) where
   tryFrom input = liftA3 context
                          (first (const err) tagSet)
                          (joinMaybeEither err facts)
@@ -61,8 +61,8 @@ instance (Ord c, FromDhall c, Show c, FromDhall m) => TryFrom TestMap (Context c
                          (pure Nothing)
    where
     tagSet = tryFrom input
-    facts    = tryFrom @TestVal <$> lookup "facts" input
-    err      = TryFromException input Nothing
+    facts  = tryFrom @TestVal <$> lookup "facts" input
+    err    = TryFromException input Nothing
 
 instance (Show a, Ord a, FromDhall a) => TryFrom TestMap (Interval a) where
   tryFrom input = joinEitherOuter err $ liftA2 parseInterval b e
@@ -82,8 +82,8 @@ instance (Show a, Ord a, FromDhall a, TryFrom TestMap c) => TryFrom TestMap (Pai
     err      = TryFromException input Nothing
 
 instance (Show a, Ord a, Show t, Ord t, Eq m, Show m, Atomizable a, TryFrom TestMap (Interval a), TryFrom TestMap (Context t m)) => TryFrom TestMap (Event t m a) where
-  tryFrom input = liftA2 event (first (const err) i) (first (const err) c)
+  tryFrom input = liftA2 event (first (const err) i) (first (const err) t)
    where
     i   = tryFrom @TestMap input
-    c   = tryFrom @TestMap input
+    t   = tryFrom @TestMap input
     err = TryFromException input Nothing

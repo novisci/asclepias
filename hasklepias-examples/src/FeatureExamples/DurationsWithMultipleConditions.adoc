@@ -6,18 +6,18 @@ This example demonstrates
 
 * [x] reasoning with the interval algebra
 * [x] manipulating intervals
-* [x] using concepts to group events
+* [x] using a tag set to group events
 
 In this example,
 the goal is to write a function that,
-given a pair of lists of concepts and
+given a pair of lists of tags and
 an interval of time: 
 
 * filters an input list of events to those that concur with the given interval.
 Note that concur, in this context, means that the intervals are not disjoint.
-* splits the events into those with the first concepts and those with the second
-* returns the start of the last event of the first set of concepts where
-it occurs within +/- 3 time units of an event of the second set of concepts.
+* splits the events into those with the first tag and those with the second
+* returns the start of the last event of the first tag set where
+it occurs within +/- 3 time units of an event of the second tag set.
 
 [TIP]
 A function like this is useful
@@ -58,9 +58,9 @@ Below, we walk through the function step-by-by using this case.
 ----
 
 <2> Form a pair of lists where the first element
-has `c1` (dx in our example) event intervals and
-the second has `c2` (pr in our example) event intervals.
-Any events without `c1` or `c2` concepts are dropped.
+has `t1` (dx in our example) event intervals and
+the second has `t2` (pr in our example) event intervals.
+Any events without tag `t1` or `t2` are dropped.
 In the running example, 
 the intervals of the events would make the 
 following pair:

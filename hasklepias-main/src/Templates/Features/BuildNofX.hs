@@ -3,7 +3,7 @@ module Templates.Features.BuildNofX
   , buildNofXBool
   , buildNofXBinary
   , buildNofXBinaryConcurBaseline
-  , buildNofConceptsBinaryConcurBaseline
+  , buildNofTagSetBinaryConcurBaseline
   , buildNofXTests
   ) where
 
@@ -16,11 +16,11 @@ buildNofX
   => (Bool -> outputType) -- ^ casting function
   -> Natural -- ^ minimum number of cases
   -> (i a -> AssessmentInterval a) -- ^ function to transform a 'Cohort.Index' to an 'Cohort.AssessmentInterval'
-  -> ComparativePredicateOf2 (AssessmentInterval a) (Event c m a) -- ^ interval predicate
-  -> Predicate (Event c m a) -- ^ a predicate on events
+  -> ComparativePredicateOf2 (AssessmentInterval a) (Event t m a) -- ^ interval predicate
+  -> Predicate (Event t m a) -- ^ a predicate on events
   -> Definition
        (  Feature indexName (i a)
-       -> Feature eventsName (container (Event c m a))
+       -> Feature eventsName (container (Event t m a))
        -> Feature varName outputType
        )
 buildNofX f n = buildNofXBase id (\x -> length x >= naturalToInt n) (const f)
@@ -31,11 +31,11 @@ buildNofXBinary
   :: (Intervallic i a, Witherable container)
   => Natural
   -> (i a -> AssessmentInterval a)
-  -> ComparativePredicateOf2 (AssessmentInterval a) (Event c m a)
-  -> Predicate (Event c m a)
+  -> ComparativePredicateOf2 (AssessmentInterval a) (Event t m a)
+  -> Predicate (Event t m a)
   -> Definition
        (  Feature indexName (i a)
-       -> Feature eventsName (container (Event c m a))
+       -> Feature eventsName (container (Event t m a))
        -> Feature varName Binary
        )
 buildNofXBinary = buildNofX fromBool
@@ -46,11 +46,11 @@ buildNofXBool
   :: (Intervallic i a, Witherable container)
   => Natural -- ^ minimum number of cases 
   -> (i a -> AssessmentInterval a) -- ^ function to transform a to an 'AssessmentInterval'
-  -> ComparativePredicateOf2 (AssessmentInterval a) (Event c m a) -- ^ interval predicate
-  -> Predicate (Event c m a) -- ^ a predicate on events
+  -> ComparativePredicateOf2 (AssessmentInterval a) (Event t m a) -- ^ interval predicate
+  -> Predicate (Event t m a) -- ^ a predicate on events
   -> Definition
        (  Feature indexName (i a)
-       -> Feature eventsName (container (Event c m a))
+       -> Feature eventsName (container (Event t m a))
        -> Feature varName Bool
        )
 buildNofXBool = buildNofX id
@@ -58,13 +58,13 @@ buildNofXBool = buildNofX id
 
 {- tag::template3[] -}
 buildNofXBinaryConcurBaseline
-  :: (Intervallic i0 a, Witherable t, IntervalSizeable a b, Baseline i0 a)
+  :: (Intervallic i0 a, Witherable t1, IntervalSizeable a b, Baseline i0 a)
   => Natural -- ^ minimum number of events.
   -> b -- ^ duration of baseline (passed to 'makeBaselineMeetsIndex')
-  -> Predicate (Event c m a)
+  -> Predicate (Event t m a)
   -> Definition
        (  Feature indexName (i0 a)
-       -> Feature eventsName (t (Event c m a))
+       -> Feature eventsName (t1 (Event t m a))
        -> Feature varName Binary
        )
 buildNofXBinaryConcurBaseline n baselineDur =
@@ -72,26 +72,26 @@ buildNofXBinaryConcurBaseline n baselineDur =
 {- end::template3[] -}
 
 {- tag::template4[] -}
-buildNofConceptsBinaryConcurBaseline
+buildNofTagSetBinaryConcurBaseline
   :: ( Intervallic i0 a
-     , Witherable t
+     , Witherable t1
      , IntervalSizeable a b
      , Baseline i0 a
-     , Ord c
+     , Ord t
      )
   => Natural -- ^ minimum number of events. 
   -> b  -- ^ duration of baseline (passed to 'Cohort.makeBaselineMeetsIndex')
-  -> [c] -- ^ list of 'EventData.Concepts' passed to 'EventData.containsTag'
+  -> [t] -- ^ list of 'EventData.Tag' passed to 'EventData.containsTag'
   -> Definition
        (  Feature indexName (i0 a)
-       -> Feature eventsName (t (Event c m a))
+       -> Feature eventsName (t1 (Event t m a))
        -> Feature varName Binary
        )
-buildNofConceptsBinaryConcurBaseline n baselineDur cpts = buildNofXBinary
+buildNofTagSetBinaryConcurBaseline n baselineDur tagSet = buildNofXBinary
   n
   (makeBaselineMeetsIndex baselineDur)
   concur
-  (containsTag cpts)
+  (containsTag tagSet)
 {- tag::template4[] -}
 
 type NofXArgs

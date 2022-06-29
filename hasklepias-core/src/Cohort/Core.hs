@@ -515,7 +515,7 @@ makeCohortSpecs
   :: [(Text, d1 -> IndexSet i, i -> d1 -> Criteria, i -> d1 -> d0)]
   -> CohortMapSpec d1 d0 i
 makeCohortSpecs l =
-  fromList (fmap (\(n, i, c, f) -> (n, specifyCohort i c f)) l)
+  fromList (fmap (\(n, i, t, f) -> (n, specifyCohort i t f)) l)
 
 {-|
 Evaluates a @'CohortMapSpec'@ on a @'Population'@

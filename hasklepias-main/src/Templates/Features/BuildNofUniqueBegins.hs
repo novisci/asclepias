@@ -15,11 +15,11 @@ import           Templates.Features.BuildNofXBase
 buildNofUniqueBegins
   :: (Intervallic i a, IntervalSizeable a b, Witherable container)
   => (i a -> AssessmentInterval a) -- ^ function to transform a 'Cohort.Index' to an 'Cohort.AssessmentInterval'
-  -> ComparativePredicateOf2 (AssessmentInterval a) (Event c m a) -- ^ interval predicate
-  -> Predicate (Event c m a) -- ^ a predicate on events
+  -> ComparativePredicateOf2 (AssessmentInterval a) (Event t m a) -- ^ interval predicate
+  -> Predicate (Event t m a) -- ^ a predicate on events
   -> Definition
        (  Feature indexName (i a)
-       -> Feature eventsName (container (Event c m a))
+       -> Feature eventsName (container (Event t m a))
        -> Feature varName [(b, Natural)]
        )
 buildNofUniqueBegins = buildNofXBase

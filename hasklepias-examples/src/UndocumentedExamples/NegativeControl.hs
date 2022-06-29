@@ -444,10 +444,9 @@ makeOutcomeDefinition
        -> F name (NegOutcomes b)
        )
 makeOutcomeDefinition t oreason = define
-  (\index events protocols censor ->
-    events |> firstOccurrenceOfTag t |> \x ->
-      makeOccurrence oreason (mkEventTime (fmap begin x))
-        |> makeNegOutcomes index protocols censor
+  (\index events protocols censor -> events |> firstOccurrenceOfTag t |> \x ->
+    makeOccurrence oreason (mkEventTime (fmap begin x))
+      |> makeNegOutcomes index protocols censor
   )
 
 o1 :: (Integral b, IntervalSizeable a b) => Def (OutcomeFeature "wellness" a b)

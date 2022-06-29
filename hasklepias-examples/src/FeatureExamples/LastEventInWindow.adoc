@@ -6,18 +6,18 @@ This example demonstrates:
 
 * [x] the `+formMeetingSequence+` function from `+interval-algebra+`
 * [x] handling a failure case
-* [x] writing a function generic over both the concept and interval types
+* [x] writing a function generic over both the tag and interval types
 
 In this example,
 the goal is to write a function that,
-given a list of concepts,
+given a list of tags,
 converts a list of events into
 a list of interval durations such that:
 
-* the events with any of the given concepts are 
+* the events with any of the given tags are 
 combined into a "meeting sequence";
 * durations of events of the resulting sequence which have 
-all of the given concepts are returned;
+all of the given tags are returned;
 * but an empty result is treated as a failure.
 
 [TIP]
@@ -45,7 +45,7 @@ Below, we walk through the function step-by-by using this case.
 ----
 
 <1> Filter events to those that contain at least one
-of the given concepts.
+of the given tags.
 +
 [source]
 ----
@@ -97,5 +97,5 @@ using `defineA`:
 include::{sourceFile}[tag=definition]
 ----
 
-<1> Create a function which takes a list of concepts and
+<1> Create a function which takes a list of tags and
 <2> Returns a `Definition`

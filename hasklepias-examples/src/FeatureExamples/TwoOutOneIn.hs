@@ -10,8 +10,8 @@ import           ExampleEvents
 import           Hasklepias
 
 -- | Defines a feature that returns 'True' ('False' otherwise) if either:
---   * at least 1 event during the baseline interval has any of the 'cpts1' concepts
---   * there are at least 2 events that have 'cpts2' concepts which have at least
+--   * at least 1 event during the baseline interval has any of the 'tag1' tags
+--   * there are at least 2 events that have a 'tag2' tags which have at least
 --     7 days between them during the baseline interval
 
 {- tag::definition[] -}

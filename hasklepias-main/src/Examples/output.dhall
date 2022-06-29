@@ -1,1 +1,1 @@
-List { concepts : Text, facts : < WasBefore | WasAfter >, begin : Integer, end : Integer}
+List { tagSet : Text, facts : < WasBefore | WasAfter >, begin : Integer, end : Integer}

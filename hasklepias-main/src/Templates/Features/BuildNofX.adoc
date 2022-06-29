@@ -27,10 +27,10 @@ that concur with an assessment interval.
 created by `makeBaselineMeetsIndex` of a specified duration
 and a provided predicate.
 
-`buildNofConceptsBinaryConcurBaseline`:: specialized to filter to events
+`buildNofTagSetBinaryConcurBaseline`:: specialized to filter to events
 that concur with an assessment interval
 created by `makeBaselineMeetsIndex` of a specified duration
-and that have a given set of concepts.
+and that have a given tag set.
 
 
 == Source code

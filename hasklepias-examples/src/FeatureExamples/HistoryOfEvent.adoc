@@ -11,7 +11,7 @@ Epidemiologic studies often seek to determine
 whether and when some event occurred.
 In general, the event logic can be quite complicated,
 but this example demonstrates a simple feature.
-We wish to determine whether an event of some given concepts occurred,
+We wish to determine whether an event of some given tag set occurred,
 relative to a provided assessment interval.
 
 The function is given here:
@@ -21,7 +21,7 @@ The function is given here:
 include::{sourceFile}[tag=function]
 ----
 
-<1> The example events use `+Text+` as the type of concepts,
+<1> The example events use `+Text+` as the type of tag set,
 so the first argument is a list of `+Text+` values
 that will be used to filter events.
 <2> The return type is `+Maybe (Interval a)+`.
@@ -30,7 +30,7 @@ If one or more events occur,
 a value of `+Just < some interval >+` is the interval
 of the last event. 
 <3> The first step in the function is to filter events 
-to those that contain at least one of the given concepts
+to those that contain at least one of the given tags
 and satisfies an interval relation relative to assessment interval.
 For this example, we use the `+enclose+` relation,
 meaning the event must not overlap either end of the assessment interval.

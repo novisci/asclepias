@@ -30,7 +30,7 @@ countOfHospitalEventsDef
 countOfHospitalEventsDef = define countOfHospitalEvents
 {- end::definition[] -}
 
-ev i c = event i (context (packTagSet [c]) Medical Nothing)
+ev i t = event i (context (packTagSet [t]) Medical Nothing)
 
 exampleFollowup = makeFollowupStartedByIndex 10 (beginervalMoment 5)
 

@@ -49,7 +49,7 @@ evalCohorts = makeCohortSpecsEvaluator defaultCohortEvalOptions specs
 -------------------------------------------------------------------------------}
 -- m
 --   :: Year -> MonthOfYear -> Int -> Integer -> [Text] -> ExampleModel -> Evnt
--- m y m d dur c dmn = event itv ctx where
+-- m y m d dur t dmn = event itv ctx where
 --   ctx = context (packTagSet t) dmn Nothing
 --   itv = beginerval dur (fromGregorian y m d)
 

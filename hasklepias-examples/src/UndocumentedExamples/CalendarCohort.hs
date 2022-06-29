@@ -80,8 +80,8 @@ getBaselineConcur index = filterConcur (baselineInterval index)
 -------------------------------------------------------------------------------}
 
 -- | Defines a feature that returns 'True' ('False' otherwise) if either:
---   * at least 1 event during the baseline interval has any of the 'tag1' concepts
---   * there are at least 2 events that have 'tag2' concepts which have at least
+--   * at least 1 event during the baseline interval has any of the 'tag1' tags
+--   * there are at least 2 events that have 'tag2' tags which have at least
 --     7 days between them during the baseline interval
 twoOutOneIn
   :: [Text] -- ^ tag1
@@ -92,17 +92,17 @@ twoOutOneIn
        -> Feature name Bool
        )
 twoOutOneIn tag1 tag2 = buildNofXOrMofYWithGapBool 1
-                                                     (containsTag tag1)
-                                                     1
-                                                     7
-                                                     (containsTag tag2)
-                                                     concur
-                                                     baselineInterval
+                                                   (containsTag tag1)
+                                                   1
+                                                   7
+                                                   (containsTag tag2)
+                                                   concur
+                                                   baselineInterval
 
 -- | Defines a feature that returns 'True' ('False' otherwise) if either:
---   * any events concuring with baseline with concepts in 'tag' have a 
+--   * any events concuring with baseline with tags in 'tag' have a 
 --     duration >= 90 days
---   * at least 2 events with concepts in 'tag' have the same interval 
+--   * at least 2 events with tags in 'tag' have the same interval 
 medHx
   :: [Text]
   -> Definition
@@ -110,11 +110,11 @@ medHx
        -> Feature "allEvents" [Evnt Day]
        -> Feature name Bool
        )
-medHx cpt = define
+medHx tag = define
   (\index events ->
     (  events
       |> getBaselineConcur index
-      |> filterEvents (containsTag cpt)
+      |> filterEvents (containsTag tag)
       |> combineIntervals
       |> durations
       |> any (>= 90)
@@ -353,8 +353,8 @@ evalCohorts = makeCohortSpecsEvaluator defaultCohortEvalOptions cohortSpecs
 -------------------------------------------------------------------------------}
 m
   :: Year -> MonthOfYear -> Int -> Integer -> [Text] -> ExampleModel -> Evnt Day
-m y m d dur c dmn = event itv ctx where
-  ctx = context (packTagSet c) dmn Nothing
+m y m d dur t dmn = event itv ctx where
+  ctx = context (packTagSet t) dmn Nothing
   itv = beginerval dur (fromGregorian y m d)
 
 testData1 :: [Evnt Day]

@@ -69,13 +69,13 @@ instance ToJSON SillySchema where
   toJSON = genericToJSON defaultOptions { sumEncoding = UntaggedValue }
 
 
--- | Just a dummy type to test non-text Concepts
-data SillyConcepts = Mouse | Giraffe | Hornbill
+-- | Just a dummy type to test non-text tag set
+data SillyTagSet= Mouse | Giraffe | Hornbill
   deriving (Show, Eq, Ord, Generic)
 
-instance FromJSON SillyConcepts
+instance FromJSON SillyTagSet
 
-type SillyEvent2 a = Event SillyConcepts SillySchema a
+type SillyEvent2 a = Event SillyTagSet SillySchema a
 
 c1 :: Context Text SillySchema
 c1 = context (into (["this", "that"] :: [Text])) (A 1) Nothing
@@ -116,28 +116,20 @@ Tests of the hasTagSet functions.
 hasTagUnitTests :: TestTree
 hasTagUnitTests = testGroup
   "Unit tests for hasTagSet using a dummy event model"
-  [ testCase "hasTag should have concept"
-  $   hasTag e1 ("this" :: Text)
-  @?= True
-  , testCase "hasTag should not have concept"
-  $   hasTag e1 ("not" :: Text)
-  @?= False
-  , testCase "haAnyConcept works"
-  $   hasAnyTag e1 (["this"] :: [Text])
-  @?= True
-  , testCase "haAnyConcepts works"
-  $   hasAnyTag e1 (["not"] :: [Text])
-  @?= False
-  , testCase "haAnyConcepts works"
+  [ testCase "hasTag should have tag" $ hasTag e1 ("this" :: Text) @?= True
+  , testCase "hasTag should not have tag" $ hasTag e1 ("not" :: Text) @?= False
+  , testCase "hasAnyTag works" $ hasAnyTag e1 (["this"] :: [Text]) @?= True
+  , testCase "hasAnyTags works" $ hasAnyTag e1 (["not"] :: [Text]) @?= False
+  , testCase "hasAnyTags works"
   $   hasAnyTag e1 (["not", "this"] :: [Text])
   @?= True
-  , testCase "haAllConcepts works"
+  , testCase "hasAllTags works"
   $   hasAllTags e1 (["not", "this"] :: [Text])
   @?= False
-  , testCase "haAllConcepts works"
+  , testCase "hasAllTags works"
   $   hasAllTags e1 (["that", "this"] :: [Text])
   @?= True
-  , testCase "haAllConcepts works"
+  , testCase "hasAllTags works"
   $   hasAllTags e1 (["that", "this", "not"] :: [Text])
   @?= False
   ]
@@ -170,10 +162,9 @@ eventPredicateUnitTests = testGroup
 toFromTagSetUnitTests :: TestTree
 toFromTagSetUnitTests = testGroup
   "Unit test that pack/unpack getTagSet roundtrips"
-  [ testCase "single concept" $ "foo" @?= (unpackTag . packTag) "foo"
-  , testCase "multiple concepts"
-  $   sort ["foo", "bar"]
-  @?= (unpackTagSet . packTagSet) ["foo", "bar"]
+  [ testCase "single tag" $ "foo" @?= (unpackTag . packTag) "foo"
+  , testCase "tag set" $ sort ["foo", "bar"] @?= (unpackTagSet . packTagSet)
+    ["foo", "bar"]
   ]
 
 -- | Check that files in test/events-day-text-good successfully parse
@@ -198,7 +189,7 @@ decodeSillyFailTests1 =
 
 -- | Check that files in test/events-integer-silly-good successfully parse
 decodeSillyTests2 :: IO TestTree
-decodeSillyTests2 = eventDecodeTests @SillySchema @SillyConcepts @Integer
+decodeSillyTests2 = eventDecodeTests @SillySchema @SillyTagSet @Integer
   "test/events-integer-silly-good"
 
 -- | Check that files in test/events-integer-silly-bad successfully fail
@@ -296,25 +287,23 @@ testAddTagViaEventLine =
 coreUtilitiesUnitTests :: TestTree
 coreUtilitiesUnitTests = testGroup
   "Unit tests on Core utilities"
-  [ testCase "check that tag set is added as expected"
-             testAddTagViaEventLine
-  ]
+  [testCase "check that tag set is added as expected" testAddTagViaEventLine]
 
 
 -- | Unit tests on utilities
 utilitiesUnitTests :: TestTree
 utilitiesUnitTests = testGroup
   "Unit tests on utilities"
-  [ testCase "find first occurrence of Concept 'this'"
+  [ testCase "find first occurrence of Tag 'this'"
   $   firstOccurrenceOfTag ["this"] [e1, e2]
   @?= Just e1
-  , testCase "find last occurrence of Concept 'this'"
+  , testCase "find last occurrence of Tag 'this'"
   $   lastOccurrenceOfTag ["this"] [e1, e2]
   @?= Just e2
-  , testCase "find first occurrence of Concept 'another'"
+  , testCase "find first occurrence of Tag 'another'"
   $   firstOccurrenceOfTag ["another"] [e1, e2]
   @?= Just e2
-  , testCase "find first occurrence of Concept 'blah'"
+  , testCase "find first occurrence of Tag 'blah'"
   $   firstOccurrenceOfTag ["blah"] [e1, e2]
   @?= Nothing
   ]

@@ -32,13 +32,13 @@ include::ROOT:example$EventDataTheory/Core.hs[tag=eventType]
 
 === Context
 A `Context` contains up to three types of information: 
-1) A set of concepts (required)
+1) A tag set (required)
 2) Facts about the event (required)
 3) Metadata on the source of the event (optional)
 
-A concept is a set of tags that give meaning to the events of interest.
+A tag is a set of labels that give meaning to the events of interest.
 For example, diabetes diagnosis, birth day, in hospital are all possible tags,
-that together might define the study concepts.
+that together might define the study tag set.
 
 An example of a context is below.
 
@@ -46,7 +46,7 @@ An example of a context is below.
 ----
 include::ROOT:example$EventDataTheory/Core.hs[tag=contextType]
 ----
-<1> a set of `+Concepts+`, or tags, 
+<1> a set of `+TagSet+`, or labels, 
 which can be used to identify events in a collection;
 <2> facts about the event whose shape and possible values
 are determined by the schema type `m`;
@@ -71,7 +71,7 @@ include::ROOT:example$EventDataTheory/TheoryTest.hs[tag=exampleEvent]
 ----
 
 The `+SillyEvent+` type is a synonym for an `Event` where
-the concepts are `Text`, 
+the tag set is `Text`, 
 
 #TODO We should change this to a sum-type example since that's what we want users to do.#
 

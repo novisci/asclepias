@@ -11,14 +11,14 @@ import           Hasklepias
 
 {- tag::function[] -}
 examplePairComparison
-  :: (Eventable c m a, IntervalSizeable a b)
-  => ([c], [c])
+  :: (Eventable t m a, IntervalSizeable a b)
+  => ([t], [t])
   -> Interval a
-  -> [Event c m a]
+  -> [Event t m a]
   -> Maybe a
-examplePairComparison (c1, c2) i =
+examplePairComparison (t1, t2) i =
   filterConcur i    --  <1>
-    .> splitByConcepts c1 c2 -- <2>
+    .> splitByTags t1 t2 -- <2>
     .> uncurry allPairs -- <3>
     .> filter (\pr -> fst pr `concur` expand 3 3 (snd pr)) -- <4>
     .> lastMay -- <5>
@@ -27,10 +27,10 @@ examplePairComparison (c1, c2) i =
 
 {- tag::definition[] -}
 def
-  :: (Eventable c m a, IntervalSizeable a b)
-  => ([c], [c])
-  -> Def (F n1 (Interval a) -> F n2 [Event c m a] -> F n3 (Maybe a))
-def cpts = define (examplePairComparison cpts)
+  :: (Eventable t m a, IntervalSizeable a b)
+  => ([t], [t])
+  -> Def (F n1 (Interval a) -> F n2 [Event t m a] -> F n3 (Maybe a))
+def tag = define (examplePairComparison tag)
 {- end::definition[] -}
 
 flwup :: (Interval Int)

@@ -80,29 +80,29 @@ getBaselineConcur index = filterConcur (baselineInterval index)
 -------------------------------------------------------------------------------}
 
 -- | Defines a feature that returns 'True' ('False' otherwise) if either:
---   * at least 1 event during the baseline interval has any of the 'cpts1' concepts
---   * there are at least 2 events that have 'cpts2' concepts which have at least
+--   * at least 1 event during the baseline interval has any of the 'tag1' tags
+--   * there are at least 2 events that have 'tag2' tags which have at least
 --     7 days between them during the baseline interval
 twoOutOneIn
-  :: [Text] -- ^ cpts1
-  -> [Text] -- ^ cpts2
+  :: [Text] -- ^ tag1
+  -> [Text] -- ^ tag2
   -> Definition
        (  Feature "calendarIndex" (Interval Day)
        -> Feature "allEvents" [Evnt Day]
        -> Feature name Bool
        )
-twoOutOneIn cpts1 cpts2 = buildNofXOrMofYWithGapBool 1
-                                                     (containsConcepts cpts1)
-                                                     1
-                                                     7
-                                                     (containsConcepts cpts2)
-                                                     concur
-                                                     baselineInterval
+twoOutOneIn tag1 tag2 = buildNofXOrMofYWithGapBool 1
+                                                   (containsTag tag1)
+                                                   1
+                                                   7
+                                                   (containsTag tag2)
+                                                   concur
+                                                   baselineInterval
 
 -- | Defines a feature that returns 'True' ('False' otherwise) if either:
---   * any events concuring with baseline with concepts in 'cpts' have a 
+--   * any events concuring with baseline with tags in 'tag' have a 
 --     duration >= 90 days
---   * at least 2 events with concepts in 'cpts' have the same interval 
+--   * at least 2 events with tags in 'tag' have the same interval 
 medHx
   :: [Text]
   -> Definition
@@ -110,11 +110,11 @@ medHx
        -> Feature "allEvents" [Evnt Day]
        -> Feature name Bool
        )
-medHx cpt = define
+medHx tag = define
   (\index events ->
     (  events
       |> getBaselineConcur index
-      |> filterEvents (containsConcepts cpt)
+      |> filterEvents (containsTag tag)
       |> combineIntervals
       |> durations
       |> any (>= 90)
@@ -148,7 +148,7 @@ age
 age = defineA
   (\index events ->
     events
-      |> filterEvents (containsConcepts ["is_birth_year"])
+      |> filterEvents (containsTag ["is_birth_year"])
       |> fmap viewBirthYears
       |> catMaybes
       |> headMay
@@ -176,7 +176,7 @@ deathDay
 deathDay = define
   (\events ->
     events
-      |> filterEvents (containsConcepts ["is_death"])
+      |> filterEvents (containsTag ["is_death"])
       |> fmap getEvent
       |> intervals
       |> headMay
@@ -191,7 +191,7 @@ critFemale
   :: Definition (Feature "allEvents" [Evnt Day] -> Feature "isFemale" Status)
 critFemale = define
   (\events ->
-    events |> filterEvents (containsConcepts ["is_female"]) |> headMay |> \case
+    events |> filterEvents (containsTag ["is_female"]) |> headMay |> \case
       Nothing -> Exclude
       Just _  -> Include
   )
@@ -353,8 +353,8 @@ evalCohorts = makeCohortSpecsEvaluator defaultCohortEvalOptions cohortSpecs
 -------------------------------------------------------------------------------}
 m
   :: Year -> MonthOfYear -> Int -> Integer -> [Text] -> ExampleModel -> Evnt Day
-m y m d dur c dmn = event itv ctx where
-  ctx = context (packConcepts c) dmn Nothing
+m y m d dur t dmn = event itv ctx where
+  ctx = context (packTagSet t) dmn Nothing
   itv = beginerval dur (fromGregorian y m d)
 
 testData1 :: [Evnt Day]

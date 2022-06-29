@@ -69,13 +69,13 @@ instance ToJSON SillySchema where
   toJSON = genericToJSON defaultOptions { sumEncoding = UntaggedValue }
 
 
--- | Just a dummy type to test non-text Concepts
-data SillyConcepts = Mouse | Giraffe | Hornbill
+-- | Just a dummy type to test non-text tag set
+data SillyTagSet= Mouse | Giraffe | Hornbill
   deriving (Show, Eq, Ord, Generic)
 
-instance FromJSON SillyConcepts
+instance FromJSON SillyTagSet
 
-type SillyEvent2 a = Event SillyConcepts SillySchema a
+type SillyEvent2 a = Event SillyTagSet SillySchema a
 
 c1 :: Context Text SillySchema
 c1 = context (into (["this", "that"] :: [Text])) (A 1) Nothing
@@ -111,34 +111,26 @@ eventIntervalUnitTests = testGroup
   ni = beginerval 6 4
 
 {-
-Tests of the hasConcepts functions.
+Tests of the hasTagSet functions.
 -}
-hasConceptUnitTests :: TestTree
-hasConceptUnitTests = testGroup
-  "Unit tests for HasConcepts using a dummy event model"
-  [ testCase "hasConcept should have concept"
-  $   hasConcept e1 ("this" :: Text)
+hasTagUnitTests :: TestTree
+hasTagUnitTests = testGroup
+  "Unit tests for hasTagSet using a dummy event model"
+  [ testCase "hasTag should have tag" $ hasTag e1 ("this" :: Text) @?= True
+  , testCase "hasTag should not have tag" $ hasTag e1 ("not" :: Text) @?= False
+  , testCase "hasAnyTag works" $ hasAnyTag e1 (["this"] :: [Text]) @?= True
+  , testCase "hasAnyTags works" $ hasAnyTag e1 (["not"] :: [Text]) @?= False
+  , testCase "hasAnyTags works"
+  $   hasAnyTag e1 (["not", "this"] :: [Text])
   @?= True
-  , testCase "hasConcept should not have concept"
-  $   hasConcept e1 ("not" :: Text)
+  , testCase "hasAllTags works"
+  $   hasAllTags e1 (["not", "this"] :: [Text])
   @?= False
-  , testCase "haAnyConcept works"
-  $   hasAnyConcepts e1 (["this"] :: [Text])
+  , testCase "hasAllTags works"
+  $   hasAllTags e1 (["that", "this"] :: [Text])
   @?= True
-  , testCase "haAnyConcepts works"
-  $   hasAnyConcepts e1 (["not"] :: [Text])
-  @?= False
-  , testCase "haAnyConcepts works"
-  $   hasAnyConcepts e1 (["not", "this"] :: [Text])
-  @?= True
-  , testCase "haAllConcepts works"
-  $   hasAllConcepts e1 (["not", "this"] :: [Text])
-  @?= False
-  , testCase "haAllConcepts works"
-  $   hasAllConcepts e1 (["that", "this"] :: [Text])
-  @?= True
-  , testCase "haAllConcepts works"
-  $   hasAllConcepts e1 (["that", "this", "not"] :: [Text])
+  , testCase "hasAllTags works"
+  $   hasAllTags e1 (["that", "this", "not"] :: [Text])
   @?= False
   ]
 
@@ -167,13 +159,12 @@ eventPredicateUnitTests = testGroup
   @?= getPredicate (liftToEventPredicate cPred3) e1
   ]
 
-toFromConceptsUnitTests :: TestTree
-toFromConceptsUnitTests = testGroup
-  "Unit test that pack/unpack getConcepts roundtrips"
-  [ testCase "single concept" $ "foo" @?= (unpackConcept . packConcept) "foo"
-  , testCase "multiple concepts"
-  $   sort ["foo", "bar"]
-  @?= (unpackConcepts . packConcepts) ["foo", "bar"]
+toFromTagSetUnitTests :: TestTree
+toFromTagSetUnitTests = testGroup
+  "Unit test that pack/unpack getTagSet roundtrips"
+  [ testCase "single tag" $ "foo" @?= (unpackTag . packTag) "foo"
+  , testCase "tag set" $ sort ["foo", "bar"] @?= (unpackTagSet . packTagSet)
+    ["foo", "bar"]
   ]
 
 -- | Check that files in test/events-day-text-good successfully parse
@@ -198,7 +189,7 @@ decodeSillyFailTests1 =
 
 -- | Check that files in test/events-integer-silly-good successfully parse
 decodeSillyTests2 :: IO TestTree
-decodeSillyTests2 = eventDecodeTests @SillySchema @SillyConcepts @Integer
+decodeSillyTests2 = eventDecodeTests @SillySchema @SillyTagSet @Integer
   "test/events-integer-silly-good"
 
 -- | Check that files in test/events-integer-silly-bad successfully fail
@@ -281,11 +272,11 @@ singleEventGoodOut =
       \\"patient_id\":\"abc\",\
       \\"time\":{\"begin\":\"2020-01-01\",\"end\":\"2020-01-01\"}}]"
 
-testAddConceptViaEventLine :: IO ()
-testAddConceptViaEventLine =
+testAddTagViaEventLine :: IO ()
+testAddTagViaEventLine =
   let x = modifyEventLineWithContext @SillySchema @SillySchema @Text @Text @Day
         defaultParseEventLineOption
-        (liftToContextFunction $ addConcepts ["foo", "bar" :: Text])
+        (liftToContextFunction $ addTagSet ["foo", "bar" :: Text])
         singleEventGoodIn
   in  case x of
         Left  s -> assertFailure s
@@ -296,26 +287,24 @@ testAddConceptViaEventLine =
 coreUtilitiesUnitTests :: TestTree
 coreUtilitiesUnitTests = testGroup
   "Unit tests on Core utilities"
-  [ testCase "check that concepts are added as expected"
-             testAddConceptViaEventLine
-  ]
+  [testCase "check that tag set is added as expected" testAddTagViaEventLine]
 
 
 -- | Unit tests on utilities
 utilitiesUnitTests :: TestTree
 utilitiesUnitTests = testGroup
   "Unit tests on utilities"
-  [ testCase "find first occurrence of Concept 'this'"
-  $   firstOccurrenceOfConcept ["this"] [e1, e2]
+  [ testCase "find first occurrence of Tag 'this'"
+  $   firstOccurrenceOfTag ["this"] [e1, e2]
   @?= Just e1
-  , testCase "find last occurrence of Concept 'this'"
-  $   lastOccurrenceOfConcept ["this"] [e1, e2]
+  , testCase "find last occurrence of Tag 'this'"
+  $   lastOccurrenceOfTag ["this"] [e1, e2]
   @?= Just e2
-  , testCase "find first occurrence of Concept 'another'"
-  $   firstOccurrenceOfConcept ["another"] [e1, e2]
+  , testCase "find first occurrence of Tag 'another'"
+  $   firstOccurrenceOfTag ["another"] [e1, e2]
   @?= Just e2
-  , testCase "find first occurrence of Concept 'blah'"
-  $   firstOccurrenceOfConcept ["blah"] [e1, e2]
+  , testCase "find first occurrence of Tag 'blah'"
+  $   firstOccurrenceOfTag ["blah"] [e1, e2]
   @?= Nothing
   ]
 
@@ -332,9 +321,9 @@ theoryTests = defaultMain . testGroup "Event Theory tests" =<< sequenceA
   , modifySillyTests1
   , pure coreUtilitiesUnitTests
   , pure eventIntervalUnitTests
-  , pure hasConceptUnitTests
+  , pure hasTagUnitTests
   , pure eventPredicateUnitTests
-  , pure toFromConceptsUnitTests
+  , pure toFromTagSetUnitTests
   , pure utilitiesUnitTests
   , pure parserUnitTests
   ]

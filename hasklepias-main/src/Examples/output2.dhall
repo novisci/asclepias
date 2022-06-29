@@ -1,1 +1,1 @@
-List { concepts : Text }
+List { tagSet : Text }

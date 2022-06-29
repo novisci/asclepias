@@ -19,7 +19,7 @@ discontinuation
   -> Maybe (a, b)
 discontinuation i events =
   events
-    |> filterEvents (containsConcepts ["tookAntibiotics"]) -- <1>
+    |> filterEvents (containsTag ["tookAntibiotics"]) -- <1>
     |> fmap (expandr 5) -- <2>
     |> combineIntervals -- <3>
     |> nothingIfNone (startedBy <|> overlappedBy $ i) -- <4>
@@ -39,7 +39,7 @@ discontinuationDef
 discontinuationDef = define discontinuation
 {- end::definition[] -}
 
-ev i c = event i (context (packConcepts [c]) Medical Nothing)
+ev i t = event i (context (packTagSet [t]) Medical Nothing)
 
 exampleFollowup = makeFollowupStartedByIndex 10 (beginervalMoment 5)
 

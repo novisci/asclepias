@@ -102,7 +102,7 @@ The logic of the feature is defined in the `discontinuation` function:
 include::{sourceFile}[tag=function]
 ----
 
-<1> First, we filter to events that have the concept `"tookAntibiotics"`.
+<1> First, we filter to events that have the tag `"tookAntibiotics"`.
 In Case 1, the third interval is filtered out:
 +
 [source]

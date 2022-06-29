@@ -126,9 +126,9 @@ f1, f2 :: TrueFacts
 f1 = Awesome
 f2 = NotAwesome "ugh"
 
-c1, c2 :: Concepts Text
-c1 = packConcepts ["yay"]
-c2 = packConcepts ["not yay"]
+c1, c2 :: TagSet Text
+c1 = packTagSet ["yay"]
+c2 = packTagSet ["not yay"]
 
 e1, e2 :: ProjEvent
 e1 = event (beginerval 0 1) (context c1 f1 Nothing)
@@ -142,8 +142,8 @@ e1Out = cohortBuilder index [e1]
 
 -- note these conversions are never ones the programmer need to do, and the
 -- exception handling uses MonarchException not Text
-c1'' :: Either Text (Concepts Text)
-c1'' = first (const "bad") $ tryFrom @TestVal @(Concepts Text) c1'
+c1'' :: Either Text (TagSet Text)
+c1'' = first (const "bad") $ tryFrom @TestVal @(TagSet Text) c1'
 
 
   {- ------
@@ -169,10 +169,10 @@ c1'' = first (const "bad") $ tryFrom @TestVal @(Concepts Text) c1'
 -- Currently, the input2.dhall file is misspecified: begin and end are Integer,
 -- but they should be Natural. See the error.
 type ExOneInput = Event Text Text Natural
-type ExOneOutput = Concepts Text
+type ExOneOutput = TagSet Text
 
 exOneFun :: [ExOneInput] -> [ExOneOutput]
-exOneFun = map (getConcepts . getContext)
+exOneFun = map (getTagSet . getContext)
 
 instance ToOutput [ExOneInput] [ExOneOutput] where
   toOutput = exOneFun

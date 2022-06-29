@@ -16,7 +16,7 @@ for creating new templates with the following pattern:
 
 1. Filter events to those satisfying two conditions:
   * an interval relation with an `+AssessmentInterval+`
-  * a provided `Predicate` (such as containing certain concepts)
+  * a provided `Predicate` (such as containing a certain tag set)
 2. Preprocess these events.
 3. Process the events.
 4. Postprocess the events,
@@ -57,9 +57,9 @@ include::BuildNofXBase.hs[tag=example1]
 <1> Create a baseline interval from the index to 180 units (e.g. days)
 back in time.
 <2> Filter to events that concur with the baseline interval and
-<3> contains the concept `"enrollment"`.
+<3> contains the tag `"enrollment"`.
 +
-NOTE: This example assumes the `Concept` type is `Text`.
+NOTE: This example assumes the `Tag` type is `Text`.
 
 == Source code
 

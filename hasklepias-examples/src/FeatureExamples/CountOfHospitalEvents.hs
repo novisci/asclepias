@@ -13,7 +13,7 @@ countOfHospitalEvents
   -> [Event Text ExampleModel a]
   -> (Int, Maybe b)
 countOfHospitalEvents i =
-  filterEvents (containsConcepts ["wasHospitalized"]) -- <1>
+  filterEvents (containsTag ["wasHospitalized"]) -- <1>
     .> combineIntervals -- <2>
     .> filterConcur i -- <3>
     .> (\x -> (length x, duration <$> lastMay x)) -- <4>
@@ -30,7 +30,7 @@ countOfHospitalEventsDef
 countOfHospitalEventsDef = define countOfHospitalEvents
 {- end::definition[] -}
 
-ev i c = event i (context (packConcepts [c]) Medical Nothing)
+ev i t = event i (context (packTagSet [t]) Medical Nothing)
 
 exampleFollowup = makeFollowupStartedByIndex 10 (beginervalMoment 5)
 

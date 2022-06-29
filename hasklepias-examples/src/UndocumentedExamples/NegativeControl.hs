@@ -35,7 +35,7 @@ toEvent
   => EventData a b
   -> MyEvent a
 toEvent x = event (beginerval (t1 x) (t2 x))
-                  (context (packConcepts [t3 x]) AlternativeFacts Nothing)
+                  (context (packTagSet [t3 x]) AlternativeFacts Nothing)
 
 toEvents
   :: (Typeable a, Show a, IntervalSizeable a b, Integral b)
@@ -300,7 +300,7 @@ decideOutcome adminTime exposure outcomeTime censorTime = case exposure of
 -}
 index :: (Ord a) => Def (F "events" (Events a) -> F "index" (Interval a))
 index = defineA
-  (  filterEvents (Predicate (`hasConcept` ("index" :: Text)))
+  (  filterEvents (Predicate (`hasTag` ("index" :: Text)))
   .> intervals'
   .> headMay
   .> \case
@@ -328,7 +328,7 @@ flupEvents = define
 death
   :: Integral b
   => Def (F "allFollowupEvents" (Events b) -> F "death" (EventTime b))
-death = define (mkEventTime . fmap begin . firstOccurrenceOfConcept ["death"])
+death = define (mkEventTime . fmap begin . firstOccurrenceOfTag ["death"])
 
 disenrollment
   :: (Integral b, IntervalSizeable a b)
@@ -342,7 +342,7 @@ disenrollment
 disenrollment = define
   (\i events ->
     events
-      |> filterEvents (Predicate (`hasConcept` ("enrollment" :: Text)))
+      |> filterEvents (Predicate (`hasTag` ("enrollment" :: Text)))
   -- combine any concurring enrollment intervals
       |> combineIntervals
   -- find gaps between any enrollment intervals (as well as bounds of followup )
@@ -385,7 +385,7 @@ censorTime = define
 -}
 
 pcskEvents :: Def (F "events" (Events a) -> F "pcskEvents" (Events a))
-pcskEvents = define $ filterEvents (Predicate (`hasConcept` ("pcsk" :: Text)))
+pcskEvents = define $ filterEvents (Predicate (`hasTag` ("pcsk" :: Text)))
 
 pcskProtocols
   :: (Integral b, IntervalSizeable a b)
@@ -443,11 +443,10 @@ makeOutcomeDefinition
        -> F "censortime" (Occurrence CensorReason b)
        -> F name (NegOutcomes b)
        )
-makeOutcomeDefinition cpt oreason = define
-  (\index events protocols censor ->
-    events |> firstOccurrenceOfConcept cpt |> \x ->
-      makeOccurrence oreason (mkEventTime (fmap begin x))
-        |> makeNegOutcomes index protocols censor
+makeOutcomeDefinition t oreason = define
+  (\index events protocols censor -> events |> firstOccurrenceOfTag t |> \x ->
+    makeOccurrence oreason (mkEventTime (fmap begin x))
+      |> makeNegOutcomes index protocols censor
   )
 
 o1 :: (Integral b, IntervalSizeable a b) => Def (OutcomeFeature "wellness" a b)

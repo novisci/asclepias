@@ -30,16 +30,15 @@ library
       Hasklepias.AppUtilities
       Hasklepias.AssessmentIntervals
       Hasklepias.MakeCohortApp
-      Hasklepias.MakeFilterApp
       Hasklepias.AppBuilder.LineFilterApp
-      Hasklepias.AppBuilder.LineFilterApp.LineFilterLogic
-      Hasklepias.AppBuilder.LineFilterApp.Conduit
-      Hasklepias.AppBuilder.LineFilterApp.Foldl
+
 
       Hasklepias.Misc
       Hasklepias.Reexports
       Tests.Hasklepias
       Tests.AppBuilder.LineFilterApp
+
+
       -- Monarch 
       Monarch
       Test.Monarch.TestMap
@@ -73,6 +72,10 @@ library
       TestUtils.S3Utils
       TestUtils.TestCases
   other-modules:
+
+      Hasklepias.AppBuilder.LineFilterApp.LineFilterLogic
+      Hasklepias.AppBuilder.LineFilterApp.Conduit
+
       Stype.Tests.Aeson
       Stype.Tests.Censored
       Templates.Features.BuildIsEnrolled
@@ -128,7 +131,6 @@ library
     , regex-compat
     , safe
     , semiring-simple
-    -- , streamly
     , string-interpolate
     , tasty
     , tasty-bench
@@ -196,49 +198,21 @@ executable monarch-demo
     hs-source-dirs:   monarch-demo
     default-language: Haskell2010
 
+-- This executable can be use for locally testing the line filter application
+executable testLineFilterApp
+  main-is:       Main.hs
+  build-depends: 
+        base
+      , hasklepias-main
+  hs-source-dirs: lineFilter-test 
+  default-language: Haskell2010
 
-
-
-
-benchmark apps
+benchmark hasklepias
   main-is:       Main.hs
   type:          exitcode-stdio-1.0
   build-depends: 
         base
       , hasklepias-main
-      , tasty-bench
   hs-source-dirs: bench
   ghc-options:  "-with-rtsopts=-A32m --nonmoving-gc"
-  default-language: Haskell2010
-
-executable test-filter-foldl-1
-  main-is:       TestFold1.hs
-  build-depends: 
-        base
-      , hasklepias-main
-  hs-source-dirs: app
-  default-language: Haskell2010
-
-executable test-filter-foldl-2
-  main-is:       TestFold2.hs
-  build-depends: 
-        base
-      , hasklepias-main
-  hs-source-dirs: app
-  default-language: Haskell2010
-
-executable test-filter-conduit-1
-  main-is:       TestC1.hs
-  build-depends: 
-        base
-      , hasklepias-main
-  hs-source-dirs: app
-  default-language: Haskell2010
-
-executable test-filter-conduit-2
-  main-is:       TestC2.hs
-  build-depends: 
-        base
-      , hasklepias-main
-  hs-source-dirs: app
   default-language: Haskell2010

@@ -24,10 +24,16 @@ a few common shorthands are:
 
 -}
 
-module Hasklepias.AppBuilder.LineFilterApp.LineFilterLogic where
+module Hasklepias.AppBuilder.LineFilterApp.LineFilterLogic
+  ( filterGroupFold
+  , filterAppStepM
+  , filterAppBeginM
+  , filterAppDoneM
+  , filterAppFoldM
+  ) where
 
-import Data.String ( IsString )
-import qualified Control.Foldl as L
+import qualified Control.Foldl                 as L
+import           Data.String                    ( IsString )
 
 -- INTERNAL
 -- Run a parser then a predicate, 
@@ -46,15 +52,15 @@ unline x y = x <> "\n" <> y
 type GroupState t = (Bool, t)
 
 -- Fold step for within a group.
-filterGroupStep :: (Semigroup t, IsString t, Eq t) =>
-     (t -> Maybe a) -- ^ parsing function
+filterGroupStep
+  :: (Semigroup t, IsString t, Eq t)
+  => (t -> Maybe a) -- ^ parsing function
   -> (a -> Bool) -- ^ predicate
   -> (GroupState t -> t -> GroupState t)
-filterGroupStep prl prd (b, x) y =
-    case (b, x == "") of
-      (True, _) -> (b, unline x y)
-      (False, True)  -> (parseThenPredicate prl prd y, y)
-      (False, False) -> (parseThenPredicate prl prd y, unline x y)
+filterGroupStep prl prd (b, x) y = case (b, x == "") of
+  (True , _    ) -> (b, unline x y)
+  (False, True ) -> (parseThenPredicate prl prd y, y)
+  (False, False) -> (parseThenPredicate prl prd y, unline x y)
 {-# INLINE filterGroupStep #-}
 
 -- Initial step of a group-level fold
@@ -68,17 +74,19 @@ filterGroupDone (b, x) = if b then x else ""
 -- Extraction step of group-level fold within a monad with IO capabailities
 -- Allows for result to be output in IO at end of group's fold.
 filterGroupDoneIO :: Applicative m => (t -> m ()) -> GroupState t -> m ()
-filterGroupDoneIO put (b, x) = if b then  put x else pure ()
+filterGroupDoneIO put (b, x) = if b then put x else pure ()
 
 -- Defines the Control.Foldl version of the within group fold process.
-filterGroupFold :: (Semigroup t, IsString t, Eq t) => 
-     (t -> Maybe a) 
-  -> (a -> Bool) 
+filterGroupFold
+  :: (Semigroup t, IsString t, Eq t)
+  => (t -> Maybe a)
+  -> (a -> Bool)
   -> L.Fold t t
-filterGroupFold prl prd = L.Fold step begin done 
-  where begin = filterGroupBegin
-        step  = filterGroupStep prl prd
-        done  = filterGroupDone 
+filterGroupFold prl prd = L.Fold step begin done
+ where
+  begin = filterGroupBegin
+  step  = filterGroupStep prl prd
+  done  = filterGroupDone
 {-# INLINE filterGroupFold #-}
 
 {-
@@ -100,41 +108,44 @@ to return a new state within a monadic context.
 If the new line has a diffenent identifier, 
 then the current state is output and 
 -}
-filterAppStepM :: (Monad m, Eq i, Semigroup t, IsString t, Eq t) =>
-     (t -> m ()) -- ^ output function
+filterAppStepM
+  :: (Monad m, Eq i, Semigroup t, IsString t, Eq t)
+  => (t -> m ()) -- ^ output function
   -> (t -> i) -- ^ identifier parser
   -> (t -> Maybe a) -- ^ parsing function
   -> (a -> Bool) -- ^ predicate
   -> (LinesAppState i t -> t -> m (LinesAppState i t))
-filterAppStepM put pid psl prd (i, x) y =
-  do
-    let newId = pid y
-    if i == newId then
-      pure (i, filterGroupStep psl prd x y) 
-    else (do
-      filterGroupDoneIO put x
-      pure (newId, (parseThenPredicate psl prd y, y)))
+filterAppStepM put pid psl prd (i, x) y = do
+  let newId = pid y
+  if i == newId
+    then pure (i, filterGroupStep psl prd x y)
+    else
+      (do
+        filterGroupDoneIO put x
+        pure (newId, (parseThenPredicate psl prd y, y))
+      )
 {-# INLINE filterAppStepM #-}
 
 -- Begin step for line process app in monadic context
-filterAppBeginM :: (Applicative m, IsString t) =>
-  (t -> i) -> m (i, GroupState t)
-filterAppBeginM pid = pure (pid "", filterGroupBegin) 
+filterAppBeginM
+  :: (Applicative m, IsString t) => (t -> i) -> m (i, GroupState t)
+filterAppBeginM pid = pure (pid "", filterGroupBegin)
 
 -- Done step for line process app in monadic context
 filterAppDoneM :: Applicative m => (t -> m ()) -> LinesAppState i t -> m ()
-filterAppDoneM put (i, x) = filterGroupDoneIO put x 
+filterAppDoneM put (i, x) = filterGroupDoneIO put x
 
 -- Control.Foldl version of the line processing application's fold
-filterAppFoldM :: (Eq i, Semigroup t, IsString t, Eq t) =>
-     (t -> IO ())
+filterAppFoldM
+  :: (Eq i, Semigroup t, IsString t, Eq t)
+  => (t -> IO ())
   -> (t -> i)
   -> (t -> Maybe a)
   -> (a -> Bool)
   -> L.FoldM IO t ()
 filterAppFoldM put pid psl prd = L.FoldM step begin done
-  where 
-    step = filterAppStepM put pid psl prd
-    begin = filterAppBeginM pid
-    done = filterAppDoneM put
+ where
+  step  = filterAppStepM put pid psl prd
+  begin = filterAppBeginM pid
+  done  = filterAppDoneM put
 {-# INLINE filterAppFoldM #-}

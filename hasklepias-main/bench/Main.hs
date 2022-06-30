@@ -1,7 +1,6 @@
-module Main where 
+module Main where
 
-import Test.Tasty.Bench
-import Tests.MakeFilterApp
+import           Tests.Hasklepias
 
 main :: IO ()
-main = defaultMain benches
+main = benches

@@ -12,7 +12,6 @@ import           Data.Aeson
 import qualified Data.ByteString.Char8         as C
 import           EventDataTheory         hiding ( (<|>) )
 import           Hasklepias.AppBuilder.LineFilterApp.Conduit
-import           Hasklepias.AppBuilder.LineFilterApp.Foldl
 import           Hasklepias.AppUtilities
 import           Options.Applicative
 

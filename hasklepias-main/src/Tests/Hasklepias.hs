@@ -10,7 +10,7 @@ import qualified Tests.AppBuilder.LineFilterApp
 import qualified Tests.AssessmentIntervals     as AI
 
 tests :: IO ()
-tests = defaultMain $ testGroup "Cohort module(s) tests" [AI.tests]
+tests = defaultMain $ testGroup "Cohort module(s) tests" [AI.tests, LF.tests]
 
 benches :: IO ()
 benches = B.defaultMain LF.benches

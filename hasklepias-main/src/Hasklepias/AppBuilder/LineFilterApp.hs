@@ -8,10 +8,11 @@ module Hasklepias.AppBuilder.LineFilterApp
   ) where
 
 import           Conduit
+import qualified Control.Foldl                 as L
 import           Data.Aeson
 import qualified Data.ByteString.Char8         as C
 import           EventDataTheory         hiding ( (<|>) )
-import           Hasklepias.AppBuilder.LineFilterApp.Conduit
+import           Hasklepias.AppBuilder.LineFilterApp.LineFilterLogic
 import           Hasklepias.AppUtilities
 import           Options.Applicative
 
@@ -20,7 +21,6 @@ data LineFilterAppOpts = MkLineFilterAppOpts
   { input  :: Input
   , output :: Output
   }
-
 
 desc =
   "The application takes event data formatted as ndjson (http://ndjson.org/) \
@@ -43,7 +43,12 @@ makeAppArgs name = Options.Applicative.info
   )
   (fullDesc <> progDesc desc <> header ("Filter events for " <> name))
 
-
+type LineFilterLogic i a
+  =  (C.ByteString -> i)  -- ^ identifier parser
+  -> (C.ByteString -> Maybe a)  -- ^ parsing function
+  -> (a -> Bool)  -- ^ predicate
+  -> C.ByteString
+  -> C.ByteString
 
 {-| 
 Creates a application that filters (groups of) lines based on:
@@ -60,18 +65,23 @@ The rest are dropped.
 -}
 makeLineFilterApp
   :: (Eq a, Eq i)
-  => String -- ^ name of the app (e.g. a project's id)
+  => LineFilterLogic i a
+  -> String -- ^ name of the app (e.g. a project's id)
   -> (C.ByteString -> i) -- ^ parser for line identifier
   -> (C.ByteString -> Maybe a) -- ^ parser
   -> (a -> Bool) -- ^ predicate
   -> IO ()
-makeLineFilterApp name pid psl prd = do
+makeLineFilterApp logic name pid psl prd = do
   options <- execParser (makeAppArgs name)
   let inloc  = inputToLocation $ input options
   let outloc = outputToLocation $ output options
 
   dat <- readDataStrict inloc
-  writeDataStrict outloc $ runConduitPure (filterAppC pid psl prd dat)
+
+  writeDataStrict outloc $ logic pid psl prd dat
+  -- --  filterAppFold' pid psl prd dat
+  --     L.fold (filterAppFold pid psl prd) (C.lines dat)
+                          --  runConduitPure (filterAppC pid psl prd dat)
 
 {-| 
 Create a application that filters event data with two arguments: 
@@ -94,11 +104,13 @@ provided that at least one line successfully parses
 into an `Event` and satisfies the predicate. 
 -}
 makeFilterEventLineApp
-  :: (Eventable c m a, EventLineAble c m a b, FromJSONEvent c m a)
+  :: (Eventable t m a, EventLineAble t m a b, FromJSONEvent t m a)
   => String -- ^ name of the app (e.g. a project's id)
-  -> (Event c m a -> Bool) -- ^ predicate to evaluate for each event
+  -> (Event t m a -> Bool) -- ^ predicate to evaluate for each event
   -> IO ()
 makeFilterEventLineApp name = makeLineFilterApp
+  (\f g h x -> runConduitPure $ filterAppC f g h x)
   name
   (decodeStrict' @SubjectIDLine)
   (fmap snd . decodeEventStrict' defaultParseEventLineOption)
+

@@ -207,22 +207,15 @@ processGroup_OptionC :: (C.ByteString -> Maybe a) -> (a -> Bool) -> C.ByteString
 processGroup_OptionC psl prd x = fromMaybe "" $ accumulated
  (processGroup_OptionCInternal psl prd (MkOptionC False Nothing) x) 
 
-data LineIndex = 
-      Start
-    | Cont Int 
-  | End
-  deriving (Eq, Show)
+{-
+  Group Option D:
+
+-}
 
 data OptionD = MkOptionD {
       predicateSatified' :: Bool
-    , lastNewLinePosition :: LineIndex
+    , lastIndex :: Maybe Int
   } deriving (Eq, Show)
-
-
-
--- showMe :: (Show a) =>  a -> String 
--- showMe x = show x
-
 
 processGroup_OptionDInternal ::
      (C.ByteString -> Maybe a)
@@ -235,18 +228,14 @@ processGroup_OptionDInternal psl prd status x
   | otherwise = 
     if predicateSatified' status then 
       status
-    else case lastNewLinePosition status of
-      Start ->
-        case endLine x of 
-          Nothing -> MkOptionD (pp x) End
-          Just i -> go (MkOptionD (pp (C.take i x)) (Cont i))
-      Cont i -> 
+    else case lastIndex status of
+      Just i -> 
         case endLine (C.drop (i + 1) x) of 
           Nothing ->
-             go (MkOptionD (pp (takeEnd i x)) End)
+             go (MkOptionD (pp (takeEnd i x)) Nothing)
           Just n -> 
-            go (MkOptionD (pp (takeLine i n)) (Cont $ i + n + 1))
-      End -> status
+            go (MkOptionD (pp (takeLine i n)) (Just $ i + n + 1))
+      Nothing -> status
     where go = flip (processGroup_OptionDInternal psl prd) x
           pp = parseThenPredicate psl prd
           endLine = C.elemIndex '\n'
@@ -258,8 +247,9 @@ processGroup_OptionDInternal psl prd status x
 processGroup_OptionD :: (C.ByteString -> Maybe a) -> (a -> Bool) -> C.ByteString -> C.ByteString
 processGroup_OptionD psl prd x =
   let status = predicateSatified' $ 
-        processGroup_OptionDInternal psl prd  (MkOptionD False Start) x in
+        processGroup_OptionDInternal psl prd  (MkOptionD False (Just (-1))) x in
   if status then x else C.empty
+
 {-------------------------------------------------------------------------------
    Across-group fold ("application") logic
 -------------------------------------------------------------------------------}
@@ -514,10 +504,47 @@ runProcessLinesApp_OptionE f g h =
 
 
 
--- lines :: BS.ByteString -> [BS.ByteString]
--- lines ps
---     | null ps = []
---     | otherwise = case search ps of
---              Nothing -> [ps]
---              Just n  -> take n ps : lines (drop (n+1) ps)
---     where search = elemIndex '\n'
+{-
+  App Option E:
+  Applies group option D at the app level
+-}
+
+
+data OptionF i = MkOptionF {
+      currentID :: i
+    , groupStart :: Maybe Int
+  } deriving (Eq, Show)
+
+processLines_OptionFInternal ::
+     (C.ByteString -> i)
+  -> (C.ByteString -> Maybe a)
+  -> (a -> Bool)
+  -> OptionD 
+  -> C.ByteString 
+  -> OptionD
+processLines_OptionFInternal pri psl prd status x 
+  | C.null x = status 
+  | otherwise = 
+    if predicateSatified' status then 
+      status
+    else case lastIndex status of
+      Just i -> 
+        case endLine (C.drop (i + 1) x) of 
+          Nothing ->
+             go (MkOptionD (pp (takeEnd i x)) Nothing)
+          Just n -> 
+            go (MkOptionD (pp (takeLine i n)) (Just $ i + n + 1))
+      Nothing -> status
+    where go = flip (processGroup_OptionDInternal psl prd) x
+          pp = parseThenPredicate psl prd
+          endLine = C.elemIndex '\n'
+          takeEnd n = C.drop (C.length x - n)
+          takeLine i n = C.take n (C.drop (i + 1) x)
+-- {-# INLINE processGroup_OptionDInternal #-}
+
+
+-- processGroup_OptionD :: (C.ByteString -> Maybe a) -> (a -> Bool) -> C.ByteString -> C.ByteString
+-- processGroup_OptionD psl prd x =
+--   let status = predicateSatified' $ 
+--         processGroup_OptionDInternal psl prd  (MkOptionD False (Just (-1))) x in
+--   if status then x else C.empty

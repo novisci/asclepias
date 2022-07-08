@@ -7,10 +7,9 @@ module Hasklepias.AppBuilder.LineFilterApp
   , makeFilterEventLineApp
   ) where
 
-import           Conduit
 import qualified Control.Foldl                 as L
-import           Data.Aeson
-import qualified Data.ByteString.Char8         as C
+import           Data.Aeson                     ( decodeStrict' )
+import qualified Data.ByteString.Char8         as BS
 import           EventDataTheory         hiding ( (<|>) )
 import           Hasklepias.AppBuilder.LineFilterApp.LineFilterLogic
 import           Hasklepias.AppUtilities
@@ -43,12 +42,13 @@ makeAppArgs name = Options.Applicative.info
   )
   (fullDesc <> progDesc desc <> header ("Filter events for " <> name))
 
+-- A function that performs the logic of line processing
 type LineFilterLogic i a
-  =  (C.ByteString -> i)  -- ^ identifier parser
-  -> (C.ByteString -> Maybe a)  -- ^ parsing function
+  =  (BS.ByteString -> i)  -- ^ identifier parser
+  -> (BS.ByteString -> Maybe a)  -- ^ parsing function
   -> (a -> Bool)  -- ^ predicate
-  -> C.ByteString
-  -> C.ByteString
+  -> BS.ByteString
+  -> BS.ByteString
 
 {-| 
 Creates a application that filters (groups of) lines based on:
@@ -67,8 +67,8 @@ makeLineFilterApp
   :: (Eq a, Eq i)
   => LineFilterLogic i a
   -> String -- ^ name of the app (e.g. a project's id)
-  -> (C.ByteString -> i) -- ^ parser for line identifier
-  -> (C.ByteString -> Maybe a) -- ^ parser
+  -> (BS.ByteString -> i) -- ^ parser for line identifier
+  -> (BS.ByteString -> Maybe a) -- ^ parser
   -> (a -> Bool) -- ^ predicate
   -> IO ()
 makeLineFilterApp logic name pid psl prd = do
@@ -79,9 +79,6 @@ makeLineFilterApp logic name pid psl prd = do
   dat <- readDataStrict inloc
 
   writeDataStrict outloc $ logic pid psl prd dat
-  -- --  filterAppFold' pid psl prd dat
-  --     L.fold (filterAppFold pid psl prd) (C.lines dat)
-                          --  runConduitPure (filterAppC pid psl prd dat)
 
 {-| 
 Create a application that filters event data with two arguments: 
@@ -105,12 +102,12 @@ into an `Event` and satisfies the predicate.
 -}
 makeFilterEventLineApp
   :: (Eventable t m a, EventLineAble t m a b, FromJSONEvent t m a)
-  => String -- ^ name of the app (e.g. a project's id)
+  => LineFilterLogic (Maybe SubjectIDLine) (Event t m a)
+  -> String -- ^ name of the app (e.g. a project's id)
   -> (Event t m a -> Bool) -- ^ predicate to evaluate for each event
   -> IO ()
-makeFilterEventLineApp name = makeLineFilterApp
-  (\f g h x -> runConduitPure $ filterAppC f g h x)
+makeFilterEventLineApp logic name = makeLineFilterApp
+  logic
   name
   (decodeStrict' @SubjectIDLine)
   (fmap snd . decodeEventStrict' defaultParseEventLineOption)
-

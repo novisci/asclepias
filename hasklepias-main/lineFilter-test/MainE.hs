@@ -4,4 +4,4 @@ import           Tests.AppBuilder.LineFilterApp
 
 
 main :: IO ()
-main = testFilterAppF
+main = testFilterAppE

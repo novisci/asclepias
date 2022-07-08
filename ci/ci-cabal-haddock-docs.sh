@@ -3,8 +3,10 @@
 # Builds the asclepias documentation using cabal haddock.
 set -e
 
-# Create a location in which to copy the resulting files. If being run as part
-# of the CI then require the presence of $HADDOCK_DIR, otherwise a fallback of
+# Create a location in which to copy the resulting files.
+# If being run as part
+# of the CI then require the presence of $HADDOCK_DIR,
+# otherwise a fallback of
 # `"install"` is provided as a convenience for local testing
 [[ -n $GITLAB_CI ]] && [[ -z $HADDOCK_DIR ]] && exit 1
 ARTIFACT_DIR="${HADDOCK_DIR:-install}"/docs
@@ -15,15 +17,19 @@ TEMP=$(mktemp -d)
 
 # Build documentation
 # NOTEs:
-# The --haddock-html-location value must be in single quotes;
-# as we don't want substitution by the shell.
-# See https://cabal.readthedocs.io/en/3.6/cabal-project.html#cfg-field-haddock-html-location
+# This page was quite helpful in getting the cabal haddock
+# command to build a single site
+# https://haskell-haddock.readthedocs.io/en/latest/multi-components.html
 # shellcheck disable=SC2016
-cabal haddock all \
-  --enable-documentation \
-  --haddock-html-location='https://docs.novisci.com/asclepias/$pkg/$version/$pkg' \
+cabal haddock \
   --haddock-hyperlink-source \
-  --haddock-quickjump > "${TEMP}"/haddock-output.txt
+  --haddock-quickjump \
+  --haddock-html \
+  --haddock-html-location='https://docs.novisci.com/asclepias/api-docs/$pkg/$version/$pkg' \
+  --haddock-option=--lib=../resources/haddock-api-resources/ \
+  --haddock-option=--use-index=../doc-index.html \
+  --haddock-option=--use-contents=../index.html \
+  all > "${TEMP}"/haddock-output.txt
 
 # Get the paths to each documentation index.html in the haddock output
 # TODO: surely there's a better way of getting the paths to the documentation
@@ -37,11 +43,17 @@ for path in $index_paths; do
 	packageVersion=$(./scripts/get-version-from-cabal.sh "$packageName"/"$packageName".cabal)
 
   touch "${ARTIFACT_DIR}"/manifest.txt
-  mkdir -p "${ARTIFACT_DIR}/${packageName}/${packageVersion}"
   echo "${packageName}/${packageVersion}" >> "${ARTIFACT_DIR}"/manifest.txt
-  mkdir -p "${ARTIFACT_DIR}/${packageName}/latest"
-  echo "${packageName}/latest" >> "${ARTIFACT_DIR}"/manifest.txt
 
-  cp -R "$dir" "${ARTIFACT_DIR}/${packageName}/${packageVersion}"
-  cp -R "$dir" "${ARTIFACT_DIR}/${packageName}"/latest
+  cp -r "$dir" "${ARTIFACT_DIR}"
 done
+
+# Build a single "directory" pages for each package
+haddock \
+  -o "${ARTIFACT_DIR}" \
+  --quickjump --gen-index --gen-contents \
+  --read-interface=event-data-theory,"${ARTIFACT_DIR}"/event-data-theory/event-data-theory.haddock \
+  --read-interface=hasklepias-core,"${ARTIFACT_DIR}"/hasklepias-core/hasklepias-core.haddock \
+  --read-interface=hasklepias-main,"${ARTIFACT_DIR}"/hasklepias-main/hasklepias-main.haddock \
+  --read-interface=hasklepias-examples,"${ARTIFACT_DIR}"/hasklepias-examples/hasklepias-examples.haddock \
+  --read-interface=cohort-collector,"${ARTIFACT_DIR}"/cohort-collector/cohort-collector.haddock

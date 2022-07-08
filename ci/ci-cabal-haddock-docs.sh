@@ -25,7 +25,7 @@ cabal haddock \
   --haddock-hyperlink-source \
   --haddock-quickjump \
   --haddock-html \
-  --haddock-html-location='https://docs.novisci.com/asclepias/api-docs/$pkg/$version/$pkg' \
+  --haddock-html-location='https://docs.novisci.com/asclepias/api/$pkg/$version/$pkg' \
   --haddock-option=--lib=../resources/haddock-api-resources/ \
   --haddock-option=--use-index=../doc-index.html \
   --haddock-option=--use-contents=../index.html \

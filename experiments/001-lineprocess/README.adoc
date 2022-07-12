@@ -1,0 +1,14 @@
+= Benchmark Line Processing Logic
+
+== Backgound
+
+This experiment was conducted as part of the work for
+https://gitlab.novisci.com/nsStat/asclepias/-/merge_requests/245[`asclepias!245`]
+in order to better understand the performance of processing lines of data.
+
+== Run Experiment
+
+[source,shell]
+----
+cabal run 001-lineprocess.hs -- --csv benchmarks.csv +RTS -T
+----

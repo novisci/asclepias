@@ -1,6 +1,6 @@
 {-# LANGUAGE BangPatterns #-}
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
-{-# HLINT ignore "Use camelCase" #-}
+{- HLINT ignore "Use camelCase" -}
 {-|
 Core logic of Filter Application
 
@@ -40,11 +40,13 @@ module Hasklepias.AppBuilder.LineFilterApp.LineFilterLogic
   , processLinesApp_OptionD
   , processLinesApp_OptionE
   , runProcessLinesApp_OptionE
+  , processLinesApp_OptionF
   ) where
 
 import           Conduit
 import qualified Control.Foldl                 as L
 import qualified Data.ByteString.Char8         as C
+import qualified Data.ByteString.Lazy          as BL
 import           Data.Conduit.Combinators      as CC
                                                 ( filter
                                                 , linesUnboundedAscii
@@ -62,6 +64,7 @@ import           GHC.Exts                       ( IsList(fromList)
                                                 , IsString
                                                 )
 import Debug.Trace
+import Data.ByteString.Builder
 
 
 -- INTERNAL
@@ -177,35 +180,35 @@ data OptionC = MkOptionC {
 processGroup_OptionCInternal ::
      (C.ByteString -> Maybe a)
   -> (a -> Bool)
-  -> OptionC 
-  -> C.ByteString 
   -> OptionC
-processGroup_OptionCInternal psl prd status x 
-  | C.null x = status 
-  | otherwise = 
-    if predicateSatified status then 
+  -> C.ByteString
+  -> OptionC
+processGroup_OptionCInternal psl prd status x
+  | C.null x = status
+  | otherwise =
+    if predicateSatified status then
       MkOptionC True (unline (accumulated status) x)
-    else 
+    else
       case C.elemIndex '\n' x of
         -- If no new line, then you're at the last line.
-        Nothing -> 
-          if parseThenPredicate psl prd x 
+        Nothing ->
+          if parseThenPredicate psl prd x
             then MkOptionC True (unline (accumulated status) x)
           else MkOptionC False (Just C.empty)
         -- Otherwise recursively process lines
-        Just n -> 
+        Just n ->
           processGroup_OptionCInternal psl prd
-            (MkOptionC (parseThenPredicate psl prd (C.take n x)) 
+            (MkOptionC (parseThenPredicate psl prd (C.take n x))
                        (unline (accumulated status) (C.take n x)))
             (C.drop (n+1) x)
-      where unline Nothing y = Just y 
+      where unline Nothing y = Just y
             unline (Just x) y = Just (x <> "\n" <> y)
 {-# INLINE processGroup_OptionCInternal #-}
 
 
 processGroup_OptionC :: (C.ByteString -> Maybe a) -> (a -> Bool) -> C.ByteString -> C.ByteString
 processGroup_OptionC psl prd x = fromMaybe "" $ accumulated
- (processGroup_OptionCInternal psl prd (MkOptionC False Nothing) x) 
+ (processGroup_OptionCInternal psl prd (MkOptionC False Nothing) x)
 
 {-
   Group Option D:
@@ -220,33 +223,33 @@ data OptionD = MkOptionD {
 processGroup_OptionDInternal ::
      (C.ByteString -> Maybe a)
   -> (a -> Bool)
-  -> OptionD 
-  -> C.ByteString 
   -> OptionD
-processGroup_OptionDInternal psl prd status x 
-  | C.null x = status 
-  | otherwise = 
-    if predicateSatified' status then 
+  -> C.ByteString
+  -> OptionD
+processGroup_OptionDInternal psl prd status x
+  | C.null x = status
+  | otherwise =
+    if predicateSatified' status then
       status
     else case lastIndex status of
-      Just i -> 
-        case endLine (C.drop (i + 1) x) of 
+      Just i ->
+        case endLine (C.drop (i + 1) x) of
           Nothing ->
-             go (MkOptionD (pp (takeEnd i x)) Nothing)
-          Just n -> 
+             go (MkOptionD (pp (takeEnd i)) Nothing)
+          Just n ->
             go (MkOptionD (pp (takeLine i n)) (Just $ i + n + 1))
       Nothing -> status
     where go = flip (processGroup_OptionDInternal psl prd) x
           pp = parseThenPredicate psl prd
           endLine = C.elemIndex '\n'
-          takeEnd n = C.drop (C.length x - n)
+          takeEnd n = C.drop (C.length x - n) x
           takeLine i n = C.take n (C.drop (i + 1) x)
 {-# INLINE processGroup_OptionDInternal #-}
 
 
 processGroup_OptionD :: (C.ByteString -> Maybe a) -> (a -> Bool) -> C.ByteString -> C.ByteString
 processGroup_OptionD psl prd x =
-  let status = predicateSatified' $ 
+  let status = predicateSatified' $
         processGroup_OptionDInternal psl prd  (MkOptionD False (Just (-1))) x in
   if status then x else C.empty
 
@@ -505,46 +508,81 @@ runProcessLinesApp_OptionE f g h =
 
 
 {-
-  App Option E:
+  App Option F:
   Applies group option D at the app level
 -}
 
-
 data OptionF i = MkOptionF {
-      currentID :: i
-    , groupStart :: Maybe Int
-  } deriving (Eq, Show)
+      lastID :: Maybe i
+    , groupStart ::  Int
+    , lastLineStart :: Maybe Int
+    , builder :: Builder
+  }
 
-processLines_OptionFInternal ::
+processLinesApp_OptionFInternal :: (Eq i, Show i) =>
      (C.ByteString -> i)
   -> (C.ByteString -> Maybe a)
   -> (a -> Bool)
-  -> OptionD 
-  -> C.ByteString 
-  -> OptionD
-processLines_OptionFInternal pri psl prd status x 
-  | C.null x = status 
-  | otherwise = 
-    if predicateSatified' status then 
-      status
-    else case lastIndex status of
-      Just i -> 
-        case endLine (C.drop (i + 1) x) of 
+  -> OptionF i
+  -> C.ByteString
+  -> OptionF i
+processLinesApp_OptionFInternal pri psl prd status x
+  | C.null x = status
+  | otherwise =
+    case lastLineStart status of
+      Just i ->
+        case endLine (C.drop (i + 1) x) of
+          Just n ->
+
+              let currentID = pri (takeLines i n) in
+              if Just currentID == lastID status then
+                -- trace (show ("1", i, n, currentID, groupStart status))
+                go $ MkOptionF
+                  (Just currentID)
+                  (groupStart status)
+                  (Just $ i + n + 1)
+                  (builder status)
+              else
+                -- trace (show ("2", i, n, currentID, groupStart status
+                --             , takeLines (groupStart status - 1) (i - groupStart status)
+                --             , processGroup $ takeLines (groupStart status - 1) (i - groupStart status + 1) ))
+                go $ MkOptionF
+                  (Just currentID)
+                  (i + 1)
+                  (Just $ i + n + 1)
+                  (builder status <> buildGroup (groupStart status - 1) (i - groupStart status + 1) )
           Nothing ->
-             go (MkOptionD (pp (takeEnd i x)) Nothing)
-          Just n -> 
-            go (MkOptionD (pp (takeLine i n)) (Just $ i + n + 1))
+              let currentID = pri (takeEnd i) in
+              if Just currentID == lastID status then
+                -- trace (show ("3",i, currentID, groupStart status))
+                go $ MkOptionF
+                  (Just currentID)
+                  (groupStart status)
+                  Nothing (builder status)
+              else
+                -- trace (show ("4", i, currentID, groupStart status))
+                go $ MkOptionF
+                  (lastID status)
+                  i
+                  Nothing
+                  (builder status <> byteString (processGroup ( C.drop (groupStart status) x) ))
+            -- Just n
       Nothing -> status
-    where go = flip (processGroup_OptionDInternal psl prd) x
+    where go = flip (processLinesApp_OptionFInternal pri psl prd) x
+          processGroup = processGroup_OptionD psl prd
+          buildGroup i n = byteString $ processGroup ( takeLines i n )
           pp = parseThenPredicate psl prd
           endLine = C.elemIndex '\n'
-          takeEnd n = C.drop (C.length x - n)
-          takeLine i n = C.take n (C.drop (i + 1) x)
--- {-# INLINE processGroup_OptionDInternal #-}
+          takeEnd n = C.drop (C.length x - n) x
+          takeLines i n = C.take n (C.drop (i + 1) x)
+{-# INLINE processLinesApp_OptionFInternal #-}
 
 
--- processGroup_OptionD :: (C.ByteString -> Maybe a) -> (a -> Bool) -> C.ByteString -> C.ByteString
--- processGroup_OptionD psl prd x =
---   let status = predicateSatified' $ 
---         processGroup_OptionDInternal psl prd  (MkOptionD False (Just (-1))) x in
---   if status then x else C.empty
+processLinesApp_OptionF :: (Eq i, Show i) =>
+     (C.ByteString -> i)
+  -> (C.ByteString -> Maybe a)
+  -> (a -> Bool) -> C.ByteString
+  -> C.ByteString
+processLinesApp_OptionF pri psl prd x =
+  BL.toStrict $ toLazyByteString $ builder
+      (processLinesApp_OptionFInternal pri psl prd (MkOptionF Nothing (-1) (Just (-1)) mempty) x)

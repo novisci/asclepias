@@ -256,18 +256,18 @@ makeAppBenchInputs =
   , ("last-pass" , makeAppBenchInput nFailOnepass)
   ]
 
-appBenchCounts =
-  [(100000, 10), (10000, 100), (1000, 1000), (100, 10000), (10, 100000)]
+-- appBenchCounts =
+--   [(100000, 10), (10000, 100), (1000, 1000), (100, 10000), (10, 100000)]
 
 -- appBenchCounts = [(10000, 10), (1000, 100), (100, 1000), (10, 10000)]
 
--- appBenchCounts =
---     [ 
---       (1000, 10)
---     , (100, 100)
---     , (10, 1000)
---     , (1, 10000)
---     ]
+appBenchCounts =
+    [ 
+      (1000, 10)
+    , (100, 100)
+    , (10, 1000)
+    , (1, 10000)
+    ]
 
 cartProd x y = (,) <$> x <*> y
 
@@ -281,6 +281,7 @@ app_optionA = L.fold (processLinesApp_OptionA dciS' dclS' tpr)
 app_optionC = runProcessLinesApp_OptionC dciS' dclS' tpr
 app_optionD = L.fold (processLinesApp_OptionD dciS' dclS' tpr)
 app_optionE = L.fold (processLinesApp_OptionE dciS' dclS' tpr)
+app_optionF = processLinesApp_OptionF dciS' dclS' tpr 
 
 runAppExperiment1 = fmap
   (\((inputLabel, input), (fLabel, f)) -> makeBench f fLabel input inputLabel)
@@ -291,19 +292,22 @@ runAppExperiment1 = fmap
     , ("app_optionC", app_optionC)
     , ("app_optionD", app_optionD . BS.lines)
     , ("app_optionE", app_optionE . BS.lines)
+    , ("app_optionF", app_optionF)
     ]
   )
 
 
 
 benches =
-  bgroup "group experiments" (
+  -- bgroup "group experiments" 
+  -- (
           -- Prelude.concatMap runGroupExperiment1 [10, 100, 1000]
       --  ++ 
-       Prelude.concatMap runGroupExperiment2 [10000, 100000]) 
-       : []
+      --  Prelude.concatMap runGroupExperiment2 [10000, 100000]) 
+      --  : 
+      --  runAppExperiment1
   --      : 
-  -- [bgroup "app experiments" runAppExperiment1]
+  [bgroup "app experiments" runAppExperiment1]
 
 -- These files were created in a ghci session for benchmarking externally,
 -- using hyperfine.

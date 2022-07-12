@@ -10,5 +10,6 @@ in order to better understand the performance of processing lines of data.
 
 [source,shell]
 ----
+cd experiments/001-lineprocess
 cabal run 001-lineprocess.hs -- --csv benchmarks.csv +RTS -T
 ----

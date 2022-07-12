@@ -1,5 +1,4 @@
 {-# LANGUAGE BangPatterns #-}
-{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 {- HLINT ignore "Use camelCase" -}
 {-|
 Core logic of Filter Application
@@ -515,7 +514,7 @@ runProcessLinesApp_OptionE f g h =
 data OptionF i = MkOptionF {
       lastID :: Maybe i
     , groupStart ::  Int
-    , lastLineStart :: Maybe Int
+    , lastNewLine :: Maybe Int
     , builder :: Builder
   }
 
@@ -529,50 +528,54 @@ processLinesApp_OptionFInternal :: (Eq i, Show i) =>
 processLinesApp_OptionFInternal pri psl prd status x
   | C.null x = status
   | otherwise =
-    case lastLineStart status of
+    case lastNewLine status of
+      -- If no line end then done
+      Nothing -> status
+      -- Otherwise take the index of the newline character end as `i`
       Just i ->
-        case endLine (C.drop (i + 1) x) of
+        -- Is there another newline after `i`?
+        case C.elemIndex '\n' (C.drop (i + 1) x) of
+          -- If yes, take this index as `n`,
+          -- as in the count of characters from i to the next newline
           Just n ->
-
+              -- Identify the groupID in the subset of x
+              -- in the interval [i + 1, i + n].
+              -- When the ID has not changed, 
+              -- just update the index of the last newline.
+              -- When the ID does change,
+              -- then process the group for the last ID
+              -- and update the ID in the accumulator
               let currentID = pri (takeLines i n) in
               if Just currentID == lastID status then
-                -- trace (show ("1", i, n, currentID, groupStart status))
-                go $ MkOptionF
-                  (Just currentID)
-                  (groupStart status)
-                  (Just $ i + n + 1)
-                  (builder status)
+                go $ status { lastNewLine = Just $ i + n + 1 }
               else
-                -- trace (show ("2", i, n, currentID, groupStart status
-                --             , takeLines (groupStart status - 1) (i - groupStart status)
-                --             , processGroup $ takeLines (groupStart status - 1) (i - groupStart status + 1) ))
                 go $ MkOptionF
                   (Just currentID)
                   (i + 1)
                   (Just $ i + n + 1)
-                  (builder status <> buildGroup (groupStart status - 1) (i - groupStart status + 1) )
+                  (builder status <> 
+                   byteString (
+                      processGroup ( 
+                        takeLines 
+                          (groupStart status - 1) (i - groupStart status + 1) )))
           Nothing ->
+              -- The following is similar to the logic above,
+              -- except it handles the case of 
+              -- no further newlines to process.
               let currentID = pri (takeEnd i) in
               if Just currentID == lastID status then
-                -- trace (show ("3",i, currentID, groupStart status))
-                go $ MkOptionF
-                  (Just currentID)
-                  (groupStart status)
-                  Nothing (builder status)
+                go $ status { lastNewLine = Nothing }
               else
-                -- trace (show ("4", i, currentID, groupStart status))
                 go $ MkOptionF
                   (lastID status)
                   i
                   Nothing
-                  (builder status <> byteString (processGroup ( C.drop (groupStart status) x) ))
-            -- Just n
-      Nothing -> status
-    where go = flip (processLinesApp_OptionFInternal pri psl prd) x
+                  (builder status <> 
+                   byteString (processGroup ( C.drop (groupStart status) x) ))
+
+    where -- the recursion 
+          go = flip (processLinesApp_OptionFInternal pri psl prd) x
           processGroup = processGroup_OptionD psl prd
-          buildGroup i n = byteString $ processGroup ( takeLines i n )
-          pp = parseThenPredicate psl prd
-          endLine = C.elemIndex '\n'
           takeEnd n = C.drop (C.length x - n) x
           takeLines i n = C.take n (C.drop (i + 1) x)
 {-# INLINE processLinesApp_OptionFInternal #-}
@@ -581,7 +584,8 @@ processLinesApp_OptionFInternal pri psl prd status x
 processLinesApp_OptionF :: (Eq i, Show i) =>
      (C.ByteString -> i)
   -> (C.ByteString -> Maybe a)
-  -> (a -> Bool) -> C.ByteString
+  -> (a -> Bool) 
+  -> C.ByteString
   -> C.ByteString
 processLinesApp_OptionF pri psl prd x =
   BL.toStrict $ toLazyByteString $ builder

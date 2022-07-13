@@ -3,5 +3,3 @@
 :toc: right
 
 = Theory of Cohorts
-
-#TODO#

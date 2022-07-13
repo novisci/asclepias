@@ -30,16 +30,12 @@ All the following are valid types for `d`:
 * `(Int, Maybe Text)` 
 * `[Double]`
 
-The `name` type a bit special: 
+The `name` type is a bit special: 
 it does not appear on the right-hand side of the `=`. 
 In type-theory parlance, 
 `name` is a 
 https://wiki.haskell.org/Phantom_type[phantom type]. 
-We'll see in a bit how this can be useful. 
-For now, think of the `name` type as the name of a variable
-as you would in most programming languages. 
-To summarize, 
-a `Feature` type constructor takes two arguments (`name` and `d`),
+So, a `Feature` type constructor takes two arguments (`name` and `d`),
 but its _value_ constructor (`MkFeature`) 
 takes a single value of type `FeatureData d`.
 
@@ -78,11 +74,12 @@ allEvents = pure
 
 The `pure` lifting is generally used to lift a subject's input data into a `Feature`,
 so that other features can be defined from a subject's data.
-`Feature` are
+`Feature`s are
 derived from other `Feature` by the `Definition` type
 Specifically, 
-`Definition` is a type which contains a function which maps `Feature` inputs
-to a `Feature` output, for example:
+`Definition` is a type containing a function that maps `Feature` inputs
+to a `Feature` output.  `define` (or `defineA`) constructs the `Definition`.
+For example:
 
 [source,hasekll]
 ----
@@ -90,17 +87,12 @@ myDef :: Definition (Feature "a" Int -> Feature "b" Bool)
 myDef = define (\x -> if x > 0 then True else False)
 ----
 
-A `Definition` is created by the `define` (or `defineA`) function.
-One may ask why `define` is necessary, 
-and we don't directly define the function 
-(`+Feature "a" Int -> Feature "b" Bool+`) directly.
-What may not be obvious in the above
-is that `x` is type `Int` not `Feature "a" Int` and the return type 
+`x` is type `Int` not `Feature "a" Int` and the return type 
 is `Bool` not `Feature "b" Bool`.
 The `define` function and `Definition` type
 do the magic of lifting these types to the `Feature` level.
-To see this, 
-in the following, `myDef2` is equivalent to `myDef`: 
+To see this more clearly, 
+see `myDef2` below: 
 
 [source,hasekll]
 ----
@@ -111,9 +103,11 @@ myDef2 :: Definition (Feature "a" Int -> Feature "b" Bool)
 myDef2 = define intToBoo
 ----
 
+`myDef2` is equivalent to `myDef`.
+
 The `define` function, then, 
 let's us focus on the *logic* of our `Feature` 
-without needing to worry handling the error cases.
+without needing to worry about handling the error cases.
 If we were to write a function
 with signature `Feature "a" Int -> Feature "b" Bool` directly,
 it would look something like:
@@ -127,6 +121,7 @@ myFeat (MkFeature (MkFeatureData (Right x))) = MkFeature (MkFeatureData (Right $
 
 One would need to pattern match all the possible types of inputs,
 which gets more complicated as the number of inputs increases.
+
 As an aside,
 since `Feature` are
 https://hackage.haskell.org/package/base-4.15.0.0/docs/Data-Functor.html[Functors],
@@ -146,7 +141,7 @@ to these structures without needing to understand the details.
 
 To evaluate a `Definition`, we use the `eval` function.
 Consider the following example.
-The input data is a list of `Int`s if the list is empty (`null`),
+The input data is a list of `Int`s. If the list is empty (`null`),
 this is considered an error in `feat1`.
 If the list has more than 3 elements, then in `feat2`, 
 the sum is computed; otherwise `0` is returned.
@@ -184,11 +179,11 @@ Note the value of `ex0b`.
 It is a `Left` because the value of `ex0a` is a `Left`;
 in other words, errors propogate along `Feature`.
 If a given `Feature` dependency is a `Left` then
-that `Feature` will also be 'Left'.
-A `Feature` internal `Either` structure has important implications
-for designing `Feature` and performance.
-Capturing an error in a `Left` is a way to prevent downstream
-dependencies from needing to be computed.
+that `Feature` will also be `Left`.
+A `Feature`'s internal `Either` structure 
+is a way to prevent downstream
+dependencies from needing to be computed,
+which increases performance.
 
 == Type Safety of Features
 

@@ -3,6 +3,7 @@
 module Hasklepias.AppBuilder.ProcessLines.Tests
   ( tests
   , benches
+  , testFilterApp
   ) where
 
 import           Control.DeepSeq                ( NFData
@@ -22,10 +23,11 @@ import           Data.String.Interpolate        ( i )
 import           Data.Text
 import           Data.Vector                    ( (!) )
 import           Hasklepias.AppBuilder.ProcessLines.Logic
+import           Hasklepias.AppUtilities
+import           Options.Applicative
 import           Test.Tasty
 import           Test.Tasty.Bench
 import           Test.Tasty.HUnit
-
 {-
       Types for testing
 -}
@@ -55,6 +57,34 @@ dciL = decode @LineAppTesterID
 dclL = decode @LineAppTester
 
 tpr = (== MkLineAppTester True)
+
+{-  
+      App for demoing the line filter
+-}
+
+data TestAppOpts = MkTestAppOpts
+  { input  :: Input
+  , output :: Output
+  }
+
+
+makeAppArgs :: ParserInfo TestAppOpts
+makeAppArgs = Options.Applicative.info
+  (   MkTestAppOpts
+  <$> (fileInput <|> s3Input <|> stdInput)
+  <*> (fileOutput <|> s3Output <|> stdOutput)
+  )
+  (fullDesc <> progDesc "An app for testing line filtering ")
+
+testFilterApp :: IO ()
+testFilterApp = do
+  options <- execParser makeAppArgs
+  let inloc  = inputToLocation $ input options
+  let outloc = outputToLocation $ output options
+  dat <- readDataStrict inloc
+
+  writeDataStrict outloc $ processAppLinesStrict dciS' dclS' tpr dat
+
 
 {-
       Test values constructors

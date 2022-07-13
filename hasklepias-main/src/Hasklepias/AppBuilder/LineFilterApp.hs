@@ -7,11 +7,10 @@ module Hasklepias.AppBuilder.LineFilterApp
   , makeFilterEventLineApp
   ) where
 
-import qualified Control.Foldl                 as L
 import           Data.Aeson                     ( decodeStrict' )
 import qualified Data.ByteString.Char8         as BS
 import           EventDataTheory         hiding ( (<|>) )
-import           Hasklepias.AppBuilder.LineFilterApp.LineFilterLogic
+import           Hasklepias.AppBuilder.ProcessLines.Logic
 import           Hasklepias.AppUtilities
 import           Options.Applicative
 

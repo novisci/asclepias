@@ -32,12 +32,9 @@ library
       Hasklepias.MakeCohortApp
       Hasklepias.AppBuilder.LineFilterApp
 
-
       Hasklepias.Misc
       Hasklepias.Reexports
       Tests.Hasklepias
-      Tests.AppBuilder.LineFilterApp
-
 
       -- Monarch 
       Monarch
@@ -73,7 +70,8 @@ library
       TestUtils.TestCases
   other-modules:
 
-      Hasklepias.AppBuilder.LineFilterApp.LineFilterLogic
+      Hasklepias.AppBuilder.ProcessLines.Logic
+      Hasklepias.AppBuilder.ProcessLines.Tests
 
       Stype.Tests.Aeson
       Stype.Tests.Censored
@@ -104,7 +102,6 @@ library
     , hasklepias-core
     
     -- External packages
-    , acc
     , aeson
     , amazonka
     , amazonka-s3
@@ -113,12 +110,10 @@ library
     , cassava
     , co-log-core
     , containers
-    , conduit
     , conduit-extra
     , deepseq
     , dhall
     , dhall-csv
-    , foldl
     , filepath
     , flow
     , generic-lens
@@ -198,33 +193,6 @@ executable monarch-demo
         , tasty
     hs-source-dirs:   monarch-demo
     default-language: Haskell2010
-
--- This executable can be use for locally testing the line filter application
-executable testC
-  main-is:       MainC.hs
-  build-depends: 
-        base
-      , hasklepias-main
-  hs-source-dirs: lineFilter-test 
-  default-language: Haskell2010
-
-executable testA
-  main-is:       MainA.hs
-  build-depends: 
-        base
-      , hasklepias-main
-  hs-source-dirs: lineFilter-test 
-  ghc-options: -rtsopts
-  default-language: Haskell2010
-
-executable testE
-  main-is:       MainE.hs
-  build-depends: 
-        base
-      , hasklepias-main
-  hs-source-dirs: lineFilter-test 
-  ghc-options: -rtsopts
-  default-language: Haskell2010
 
 benchmark hasklepias
   main-is:       Main.hs

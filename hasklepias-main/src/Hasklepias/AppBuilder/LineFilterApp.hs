@@ -9,15 +9,18 @@ module Hasklepias.AppBuilder.LineFilterApp
 
 import           Data.Aeson                     ( decodeStrict' )
 import qualified Data.ByteString.Char8         as BS
+import qualified Data.ByteString.Lazy.Char8    as BL
 import           EventDataTheory         hiding ( (<|>) )
 import           Hasklepias.AppBuilder.ProcessLines.Logic
 import           Hasklepias.AppUtilities
 import           Options.Applicative
 
+
 -- Container for app options
 data LineFilterAppOpts = MkLineFilterAppOpts
   { input  :: Input
   , output :: Output
+  -- , lazy :: Bool
   }
 
 desc =
@@ -37,17 +40,10 @@ makeAppArgs name = Options.Applicative.info
   (    MkLineFilterAppOpts
   <$>  (fileInput <|> s3Input <|> stdInput)
   <*>  (fileOutput <|> s3Output <|> stdOutput)
+  -- <*>  switch (long "lazy" <> short 'l' <> help "Whether to process as lazy bytestring")
   <**> helper
   )
   (fullDesc <> progDesc desc <> header ("Filter events for " <> name))
-
--- A function that performs the logic of line processing
-type LineFilterLogic i a
-  =  (BS.ByteString -> i)  -- ^ identifier parser
-  -> (BS.ByteString -> Maybe a)  -- ^ parsing function
-  -> (a -> Bool)  -- ^ predicate
-  -> BS.ByteString
-  -> BS.ByteString
 
 {-| 
 Creates a application that filters (groups of) lines based on:
@@ -63,21 +59,19 @@ The rest are dropped.
 
 -}
 makeLineFilterApp
-  :: (Eq a, Eq i)
-  => LineFilterLogic i a
-  -> String -- ^ name of the app (e.g. a project's id)
+  :: (Eq a, Eq i, Show i)
+  => String -- ^ name of the app (e.g. a project's id)
   -> (BS.ByteString -> i) -- ^ parser for line identifier
   -> (BS.ByteString -> Maybe a) -- ^ parser
   -> (a -> Bool) -- ^ predicate
   -> IO ()
-makeLineFilterApp logic name pid psl prd = do
+makeLineFilterApp name pid psl prd = do
   options <- execParser (makeAppArgs name)
   let inloc  = inputToLocation $ input options
   let outloc = outputToLocation $ output options
-
   dat <- readDataStrict inloc
 
-  writeDataStrict outloc $ logic pid psl prd dat
+  writeDataStrict outloc $ processAppLinesStrict pid psl prd dat
 
 {-| 
 Create a application that filters event data with two arguments: 
@@ -101,12 +95,10 @@ into an `Event` and satisfies the predicate.
 -}
 makeFilterEventLineApp
   :: (Eventable t m a, EventLineAble t m a b, FromJSONEvent t m a)
-  => LineFilterLogic (Maybe SubjectIDLine) (Event t m a)
-  -> String -- ^ name of the app (e.g. a project's id)
+  => String -- ^ name of the app (e.g. a project's id)
   -> (Event t m a -> Bool) -- ^ predicate to evaluate for each event
   -> IO ()
-makeFilterEventLineApp logic name = makeLineFilterApp
-  logic
+makeFilterEventLineApp name = makeLineFilterApp
   name
   (decodeStrict' @SubjectIDLine)
   (fmap snd . decodeEventStrict' defaultParseEventLineOption)

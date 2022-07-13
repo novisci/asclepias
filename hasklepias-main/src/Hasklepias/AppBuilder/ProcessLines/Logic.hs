@@ -1,13 +1,26 @@
 {-|
-Core logic of processing lines
--}
+Core functionality for processing new line delimited data
 
+In the context of creating cohorts from event lines,
+the functionality herein may be useful when prefiltering events
+in order to reduce the size of the input data.
+For example, if the cohort is consists only of females,
+one could run a prefilter to remove any groups (subjects in this case)
+of event lines for males.
+
+-}
 module Hasklepias.AppBuilder.ProcessLines.Logic
   ( -- * Processing a single group's lines
     -- 
     -- $processGroupLines
     processGroupLinesStrict
   , processGroupLinesLazy
+
+    -- * Processing multiple groups
+    --
+    -- $processAppLines
+  , processAppLinesStrict
+  , processAppLinesLazy
   ) where
 
 
@@ -17,10 +30,7 @@ import qualified Data.ByteString.Internal      as B
 import qualified Data.ByteString.Lazy          as BL
 import           Data.Int
 import qualified Data.Text                     as T
-import           GHC.Exts                       ( IsList(fromList)
-                                                , IsString
-                                                )
--- import Debug.Trace
+import           Debug.Trace
 
 {-
 INTERNAL
@@ -50,33 +60,44 @@ data LineFunctions t i = MkLineFunctions
   , findNewLine :: t -> Maybe i
   , takeEnd     :: t -> i -> t
   , takeSubset  :: t -> i -> i -> t
+  , build       :: t -> Builder
+  , runBuilder  :: Builder -> t
   }
 
 lineFunctionsStrict :: LineFunctions B.ByteString Int
 lineFunctionsStrict = MkLineFunctions
   { isEmpty     = BS.null
   , drop'       = BS.drop
-  , takeEnd     = \x n -> BS.drop (BS.length x - n) x
+  , takeEnd     = flip BS.drop
+  -- , takeEnd     = \x n -> BS.drop (BS.length x - n) x
   , takeSubset  = \x i n -> BS.take n (BS.drop (i + 1) x)
   , findNewLine = BS.elemIndex '\n'
+  , build       = byteString
+  , runBuilder  = BL.toStrict . toLazyByteString
   }
 
 lineFunctionsLazy :: LineFunctions BL.ByteString Int64
 lineFunctionsLazy = MkLineFunctions
   { isEmpty     = BL.null
   , drop'       = BL.drop
-  , takeEnd     = \x n -> BL.drop (BL.length x - n) x
+  , takeEnd     = flip BL.drop
+  -- , takeEnd     = \x n -> BL.drop (BL.length x - n) x
   , takeSubset  = \x i n -> BL.take n (BL.drop (i + 1) x)
   , findNewLine = BL.elemIndex (B.c2w '\n')
+  , build       = lazyByteString
+  , runBuilder  = toLazyByteString
   }
 
 lineFunctionsText :: LineFunctions T.Text Int
 lineFunctionsText = MkLineFunctions
   { isEmpty     = T.null
   , drop'       = T.drop
-  , takeEnd     = \x n -> T.drop (T.length x - n) x
+  , takeEnd     = flip T.drop
+  -- , takeEnd     = \x n -> T.drop (T.length x - n + 1) x
   , takeSubset  = \x i n -> T.take n (T.drop (i + 1) x)
   , findNewLine = T.findIndex (== '\n')
+  , build       = stringUtf8 . T.unpack
+  , runBuilder  = T.pack . show . toLazyByteString
   }
 
 {-------------------------------------------------------------------------------
@@ -125,7 +146,7 @@ processGroupLinesInternal fs psl prd status x
                 if predicateSatified status
     then status
     else case lastNewLine status of
-                                                   -- We're done as soon as there are no more new line characters.
+                                                                                                                     -- We're done as soon as there are no more new line characters.
       Nothing -> status
       -- If there was a new line character at the previous iteration,
       -- see if there is another new line character *after*
@@ -141,7 +162,7 @@ processGroupLinesInternal fs psl prd status x
         Nothing ->
         -- If there is a previous new line but no current new line,
         -- then update the `GrpLines` tracker and continue.
-          go (takeEnd fs x i) Nothing
+          go (takeEnd fs x (i + 1)) Nothing
  where
   go i j = processGroupLinesInternal
     fs
@@ -151,6 +172,11 @@ processGroupLinesInternal fs psl prd status x
     x
 {-# INLINE processGroupLinesInternal #-}
 
+{-
+INTERNAL
+The function used to create a processGroupLines* function
+targeted for a specific type. 
+-}
 processGroupLines
   :: (Num i, Monoid t)
   => LineFunctions t i
@@ -177,13 +203,6 @@ satisfy a predicate.
 If so, then the group's lines are returned unchanged;
 otherwise, an empty string is returned.
 
-In the context of creating cohorts from event lines,
-this operation is often useful when prefiltering events
-in order to reduce the size of the input data.
-For example, if the cohort is consists only of females,
-one could run a prefilter to remove any groups (subjects in this case)
-of event lines for males.
-
 For each line in the input,
 defined as the substring between @'\n'@ characters,
 the provided parser and predicate are applied.
@@ -200,7 +219,7 @@ This version is generally faster,
 but requires that the entire input be loaded into memory.
 * 'processGroupLinesLazy' works on lazy 'BL.ByteString'.
 * 'processGroupLinesText' works on 'Data.Text.Text'
-and mostly useful testing and demostration.
+and mostly useful demostrating the functionality (as below).
 
 The following is a trivial example of the logic at work.
 The data are newline delimited integers.
@@ -210,60 +229,89 @@ and the predicate checks whether the value is @1@.
 >>> let allOnes = "1\n1\n1"
 >>> let allTwos = "2\n2\n2"
 >>> let i321 = "3\n2\n1"
->>> readOne x = if x == "1" || x == "2" then Just 1 else Nothing 
->>> processGroupLinesText readOne (==1) allOnes 
+>>> let i123 = "1\n2\n3" 
+>>> readOne x = if x == "1" then Just 1 else (if x == "2" then Just 2 else Nothing)
+>>> processGroupLinesText readOne (== 1) allOnes 
 "1\n1\n1"
->>> processGroupLinesText readOne (==1) allTwos
+>>> processGroupLinesText readOne (== 1) allTwos
 ""
->>> processGroupLinesText readOne (==1) i321
+>>> processGroupLinesText readOne (== 1) i321
+"3\n2\n1"
+>>> processGroupLinesText readOne (== 1) i123
+"1\n2\n3"
 
 -}
 
+-- | Process a group of strict 'BS.ByteString'.
 processGroupLinesStrict
   :: (B.ByteString -> Maybe a) -> (a -> Bool) -> B.ByteString -> B.ByteString
 processGroupLinesStrict = processGroupLines lineFunctionsStrict
 
+-- | Process a group of lazy 'BL.ByteString'.
 processGroupLinesLazy
   :: (BL.ByteString -> Maybe a) -> (a -> Bool) -> BL.ByteString -> BL.ByteString
 processGroupLinesLazy = processGroupLines lineFunctionsLazy
 
+-- | Process a group of 'Data.Text.Text'. 
 processGroupLinesText :: (T.Text -> Maybe a) -> (a -> Bool) -> T.Text -> T.Text
 processGroupLinesText = processGroupLines lineFunctionsText
 
 {-------------------------------------------------------------------------------
    Across-group fold ("application") logic
 
-   This application processes streams of newline separated text at two levels:
+This application processes streams of newline delimited text at two levels:
 
-(1) A means of grouping the stream. 
+(1) Groups of lines defined by a parser. 
 For example, if the input is event lines data,
 the application groups the input events by subject ID. 
+
+(2) Processing each group
 -------------------------------------------------------------------------------}
 
-data OptionF i = MkOptionF
-  { lastID       :: Maybe i
-  , groupStart   :: Int
-  , lastNewLine' :: Maybe Int
+{- 
+INTERNAL
+Data carrying information about  
+* the group ID at the previous line
+* the index at which the current group started
+* the index of the last new line
+* the accumulated results as a ByteString Builder
+-}
+
+data AppLines id i = MkAppLines
+  { lastID       :: Maybe id
+  , groupStart   :: i
+  , lastNewLine' :: Maybe i
   , builder      :: Builder
   }
 
+{-
+INTERNAL
+The core recursive logic of processing the lines across groups.
+The function "rolls" over the *single string* of new line delimited data 
+updating an `AppLines` value as it encounters new line characters
+within that string.
+
+IMPORTANT
+All the lines for each group are assumed to be contiguous.
+-}
 processAppLinesInternal
-  :: (Eq i, Show i)
-  => (BS.ByteString -> i)
-  -> (BS.ByteString -> Maybe a)
+  :: (Eq id, Show id, Num i, Monoid t)
+  => LineFunctions t i
+  -> (t -> id)
+  -> (t -> Maybe a)
   -> (a -> Bool)
-  -> OptionF i
-  -> BS.ByteString
-  -> OptionF i
-processAppLinesInternal pri psl prd status x
-  | BS.null x = status
+  -> AppLines id i
+  -> t
+  -> AppLines id i
+processAppLinesInternal fs pri psl prd status x
+  | isEmpty fs x = status
   | otherwise = case lastNewLine' status of
       -- If no line end then done
     Nothing -> status
     -- Otherwise take the index of the newline character end as `i`
     Just i  ->
       -- Is there another newline after `i`?
-               case BS.elemIndex '\n' (BS.drop (i + 1) x) of
+               case findNewLine fs (drop' fs (i + 1) x) of
         -- If yes, take this index as `n`,
         -- as in the count of characters from i to the next newline
       Just n ->
@@ -274,54 +322,105 @@ processAppLinesInternal pri psl prd status x
           -- When the ID does change,
           -- then process the group for the last ID
           -- and update the ID in the accumulator
-        let currentID = pri (takeLines i n)
-        in
-          if Just currentID == lastID status
-            then go $ status { lastNewLine' = Just $ i + n + 1 }
-            else go $ MkOptionF
-              (Just currentID)
-              (i + 1)
-              (Just $ i + n + 1)
-              (builder status <> byteString
-                (processGroup
-                  (takeLines (groupStart status - 1) (i - groupStart status + 1)
+        let currentID = pri (takeSubset fs x i n)
+        in  if Just currentID == lastID status
+              then go $ status { lastNewLine' = Just $ i + n + 1 }
+              else go $ MkAppLines
+                (Just currentID)
+                (i + 1)
+                (Just $ i + n + 1)
+                (builder status <> build
+                  fs
+                  (processGroup
+                    (takeSubset fs
+                                x
+                                (groupStart status - 1)
+                                (i - groupStart status + 1)
+                    )
                   )
                 )
-              )
       Nothing ->
           -- The following is similar to the logic above,
           -- except it handles the case of 
           -- no further newlines to process.
-        let currentID = pri (takeEnd i)
+        let currentID = pri (takeEnd fs x i)
         in  if Just currentID == lastID status
               then go $ status { lastNewLine' = Nothing }
-              else go $ MkOptionF
+              else go $ MkAppLines
                 (lastID status)
                 i
                 Nothing
                 (  builder status
-                <> byteString (processGroup (BS.drop (groupStart status) x))
+                <> build fs (processGroup (drop' fs (groupStart status) x))
                 )
 
  where -- the recursion 
-  go           = flip (processAppLinesInternal pri psl prd) x
-  processGroup = processGroupLinesStrict psl prd
-  takeEnd n = BS.drop (BS.length x - n) x
-  takeLines i n = BS.take n (BS.drop (i + 1) x)
+  go           = flip (processAppLinesInternal fs pri psl prd) x
+  processGroup = processGroupLines fs psl prd
 {-# INLINE processAppLinesInternal #-}
 
 
+{-
+INTERNAL
+The function used to create a processAppLines* function
+targeted for a specific type. 
+-}
 processAppLines
-  :: (Eq i, Show i)
-  => (BS.ByteString -> i)
+  :: (Eq id, Show id, Num i, Monoid t)
+  => LineFunctions t i
+  -> (t -> id)
+  -> (t -> Maybe a)
+  -> (a -> Bool)
+  -> t
+  -> t
+processAppLines fs pri psl prd x = runBuilder fs $ builder
+  (processAppLinesInternal fs
+                           pri
+                           psl
+                           prd
+                           (MkAppLines Nothing (-1) (Just (-1)) mempty)
+                           x
+  )
+
+{-|
+$processAppLines
+
+The @processAppLines*@ functions effectively split a string 
+into groups identified by a value parsed from each line, 
+then apply @'processGroupLines'@ to each group.
+
+IMPORTANT: 
+All the lines for each group should be contiguous in the input.
+
+Two variants of @processGroupLines*@ are available:
+
+* 'processAppLinesStrict' works on strict 'BS.ByteString'. 
+This version is generally faster, 
+but requires that the entire input be loaded into memory.
+* 'processAppLinesLazy' works on lazy 'BL.ByteString'.
+
+These functions are difficult to demostrate succinctly.
+For a complete example, 
+see the source code in @Hasklepias.AppBuilder.ProcessLines.Tests@.
+
+-}
+
+-- | Process a strict 'BS.ByteString'.
+processAppLinesStrict
+  :: (Eq id, Show id)
+  => (BS.ByteString -> id)
   -> (BS.ByteString -> Maybe a)
   -> (a -> Bool)
   -> BS.ByteString
   -> BS.ByteString
-processAppLines pri psl prd x = BL.toStrict $ toLazyByteString $ builder
-  (processAppLinesInternal pri
-                           psl
-                           prd
-                           (MkOptionF Nothing (-1) (Just (-1)) mempty)
-                           x
-  )
+processAppLinesStrict = processAppLines lineFunctionsStrict
+
+-- | Process a lazy 'BL.ByteString'.
+processAppLinesLazy
+  :: (Eq id, Show id)
+  => (BL.ByteString -> id)
+  -> (BL.ByteString -> Maybe a)
+  -> (a -> Bool)
+  -> BL.ByteString
+  -> BL.ByteString
+processAppLinesLazy = processAppLines lineFunctionsLazy

@@ -13,5 +13,4 @@ tests :: IO ()
 tests = defaultMain $ testGroup "Cohort module(s) tests" [AI.tests, LF.tests]
 
 benches :: IO ()
-benches = B.defaultMain $ [B.bgroup "Hasklepias benchmarks" []]
--- LF.benches
+benches = B.defaultMain [B.bgroup "Hasklepias benchmarks" [LF.benches]]

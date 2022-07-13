@@ -78,7 +78,7 @@ Create a application that filters event data with two arguments:
   * a string for the name of the application (e.g. the project ID)
   * a predicate function of type @Event c m a -> Bool@. 
 
-The application takes event data formatted as [`ndjson`](http://ndjson.org/)
+The application takes event data formatted as [ndjson](http://ndjson.org/)
 (i.e. one event per line). 
 The application returns the event data
 filtered to all those subjects

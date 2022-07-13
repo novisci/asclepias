@@ -193,8 +193,7 @@ processGroupLines fs psl prd x =
         x
   in  if status then x else mempty
 
-{-|
-$processGroupLines
+{- $processGroupLines
 
 The @processGroupLines*@ functions take
 all of a group's lines as single input.
@@ -239,7 +238,6 @@ and the predicate checks whether the value is @1@.
 "3\n2\n1"
 >>> processGroupLinesText readOne (== 1) i123
 "1\n2\n3"
-
 -}
 
 -- | Process a group of strict 'BS.ByteString'.
@@ -382,8 +380,7 @@ processAppLines fs pri psl prd x = runBuilder fs $ builder
                            x
   )
 
-{-|
-$processAppLines
+{- $processAppLines
 
 The @processAppLines*@ functions effectively split a string 
 into groups identified by a value parsed from each line, 

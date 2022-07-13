@@ -1,3 +1,4 @@
+{-# OPTIONS_HADDOCK hide #-}
 {-|
 Module      : Hasklepias core package tests
 Description : for internal use

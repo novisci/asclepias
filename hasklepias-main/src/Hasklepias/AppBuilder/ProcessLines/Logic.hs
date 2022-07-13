@@ -30,7 +30,6 @@ import qualified Data.ByteString.Internal      as B
 import qualified Data.ByteString.Lazy          as BL
 import           Data.Int
 import qualified Data.Text                     as T
-import           Debug.Trace
 
 {-
 INTERNAL
@@ -55,8 +54,7 @@ I (BS) could not find a typeclass
 that provides the functionality needed.
 -}
 data LineFunctions t i = MkLineFunctions
-  { drop'       :: i -> t -> t
-  , isEmpty     :: t -> Bool
+  { isEmpty     :: t -> Bool
   , findNewLine :: t -> Maybe i
   , takeEnd     :: t -> i -> t
   , takeSubset  :: t -> i -> i -> t
@@ -67,9 +65,7 @@ data LineFunctions t i = MkLineFunctions
 lineFunctionsStrict :: LineFunctions B.ByteString Int
 lineFunctionsStrict = MkLineFunctions
   { isEmpty     = BS.null
-  , drop'       = BS.drop
   , takeEnd     = flip BS.drop
-  -- , takeEnd     = \x n -> BS.drop (BS.length x - n) x
   , takeSubset  = \x i n -> BS.take n (BS.drop (i + 1) x)
   , findNewLine = BS.elemIndex '\n'
   , build       = byteString
@@ -79,9 +75,7 @@ lineFunctionsStrict = MkLineFunctions
 lineFunctionsLazy :: LineFunctions BL.ByteString Int64
 lineFunctionsLazy = MkLineFunctions
   { isEmpty     = BL.null
-  , drop'       = BL.drop
   , takeEnd     = flip BL.drop
-  -- , takeEnd     = \x n -> BL.drop (BL.length x - n) x
   , takeSubset  = \x i n -> BL.take n (BL.drop (i + 1) x)
   , findNewLine = BL.elemIndex (B.c2w '\n')
   , build       = lazyByteString
@@ -91,9 +85,7 @@ lineFunctionsLazy = MkLineFunctions
 lineFunctionsText :: LineFunctions T.Text Int
 lineFunctionsText = MkLineFunctions
   { isEmpty     = T.null
-  , drop'       = T.drop
   , takeEnd     = flip T.drop
-  -- , takeEnd     = \x n -> T.drop (T.length x - n + 1) x
   , takeSubset  = \x i n -> T.take n (T.drop (i + 1) x)
   , findNewLine = T.findIndex (== '\n')
   , build       = stringUtf8 . T.unpack
@@ -150,7 +142,7 @@ processGroupLinesInternal fs psl prd status x
       -- If there was a new line character at the previous iteration,
       -- see if there is another new line character *after*
       -- the previous new line character.
-      Just i  -> case findNewLine fs (drop' fs (i + 1) x) of
+      Just i  -> case findNewLine fs (takeEnd fs x (i + 1)) of
           -- If there is a previous and current new line character,
           -- then update the `GrpLines` tracker 
           -- with the value of the predicate from the current line
@@ -308,7 +300,7 @@ processAppLinesInternal fs pri psl prd status x
     -- Otherwise take the index of the newline character end as `i`
     Just i  ->
       -- Is there another newline after `i`?
-               case findNewLine fs (drop' fs (i + 1) x) of
+               case findNewLine fs (takeEnd fs x (i + 1)) of
         -- If yes, take this index as `n`,
         -- as in the count of characters from i to the next newline
       Just n ->
@@ -341,15 +333,16 @@ processAppLinesInternal fs pri psl prd status x
           -- except it handles the case of 
           -- no further newlines to process.
         let currentID = pri (takeEnd fs x i)
-        in  if Just currentID == lastID status
-              then go $ status { lastNewLine' = Nothing }
-              else go $ MkAppLines
-                (lastID status)
-                i
-                Nothing
-                (  builder status
-                <> build fs (processGroup (drop' fs (groupStart status) x))
-                )
+        in
+          if Just currentID == lastID status
+            then go $ status { lastNewLine' = Nothing }
+            else go $ MkAppLines
+              (lastID status)
+              i
+              Nothing
+              (  builder status
+              <> build fs (processGroup (takeEnd fs x (groupStart status)))
+              )
 
  where -- the recursion 
   go           = flip (processAppLinesInternal fs pri psl prd) x

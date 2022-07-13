@@ -1,5 +1,5 @@
 :navtitle: Introduction
-:haddock-site: https://docs.novisci.com/asclepias/latest/index.html
+:haddock-site: https://docs.novisci.com/asclepias/api
 :ghc: 8.10.7
 :cabal: 3.6.2.0
 :asclepias-url: https://gitlab.novisci.com/nsStat/asclepias

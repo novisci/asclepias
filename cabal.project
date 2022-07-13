@@ -8,3 +8,17 @@ packages: hasklepias-core
         , cohort-collector
         , event-data-theory
 
+package event-data-theory
+  haddock-options: --lib=../resources/haddock-api-resources/ --use-index=../doc-index.html --use-contents=../index.html 
+
+package hasklepias-core
+  haddock-options: --lib=../resources/haddock-api-resources/ --use-index=../doc-index.html --use-contents=../index.html 
+
+package hasklepias-main
+  haddock-options: --lib=../resources/haddock-api-resources --use-index=../doc-index.html --use-contents=../index.html 
+
+package hasklepias-examples
+  haddock-options: --lib=../resources/haddock-api-resources/ --use-index=../doc-index.html --use-contents=../index.html 
+
+package cohort-collector
+  haddock-options: --lib=../resources/haddock-api-resources/ --use-index=../doc-index.html --use-contents=../index.html 

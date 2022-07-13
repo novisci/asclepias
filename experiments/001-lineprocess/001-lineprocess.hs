@@ -60,7 +60,7 @@ import           Data.Aeson
 import           Data.ByteString.Builder
 import qualified Data.ByteString.Char8         as BS
 import qualified Data.ByteString.Lazy          as BL
-import qualified Data.ByteString.Lazy.Char8          as BL
+import qualified Data.ByteString.Lazy.Char8    as BL
 import           Data.Conduit.Combinators      as CC
                                                 ( filter
                                                 , linesUnboundedAscii
@@ -74,12 +74,12 @@ import           Data.Sequence           hiding ( fromList
                                                 )
 import           Data.String                    ( IsString )
 import           Data.String.Interpolate        ( i )
-import           Data.Text (Text)
+import           Data.Text                      ( Text )
 import           Data.Vector                    ( (!) )
+import           Debug.Trace
 import           GHC.Exts                       ( IsList(fromList)
                                                 , IsString
                                                 )
-import           Debug.Trace
 import           Test.Tasty
 import           Test.Tasty.Bench
 import           Test.Tasty.HUnit
@@ -189,86 +189,87 @@ processGroup_OptionB f h = L.foldMap (toGroupLines f h) getGroupLinesDone
 
 -}
 
-data OptionC = MkOptionC {
-      predicateSatified :: Bool
-    , accumulated :: Maybe BS.ByteString
-  } deriving (Eq, Show)
+data OptionC = MkOptionC
+  { predicateSatified :: Bool
+  , accumulated       :: Maybe BS.ByteString
+  }
+  deriving (Eq, Show)
 
-processGroup_OptionCInternal ::
-     (BS.ByteString -> Maybe a)
+processGroup_OptionCInternal
+  :: (BS.ByteString -> Maybe a)
   -> (a -> Bool)
   -> OptionC
   -> BS.ByteString
   -> OptionC
 processGroup_OptionCInternal psl prd status x
   | BS.null x = status
-  | otherwise =
-    if predicateSatified status then
-      MkOptionC True (unline (accumulated status) x)
-    else
-      case BS.elemIndex '\n' x of
-        -- If no new line, then you're at the last line.
-        Nothing ->
-          if parseThenPredicate psl prd x
-            then MkOptionC True (unline (accumulated status) x)
-          else MkOptionC False (Just BS.empty)
-        -- Otherwise recursively process lines
-        Just n ->
-          processGroup_OptionCInternal psl prd
-            (MkOptionC (parseThenPredicate psl prd (BS.take n x))
-                       (unline (accumulated status) (BS.take n x)))
-            (BS.drop (n+1) x)
-      where unline Nothing y = Just y
-            unline (Just x) y = Just (x <> "\n" <> y)
+  | otherwise = if predicateSatified status
+    then MkOptionC True (unline (accumulated status) x)
+    else case BS.elemIndex '\n' x of
+                    -- If no new line, then you're at the last line.
+      Nothing -> if parseThenPredicate psl prd x
+        then MkOptionC True (unline (accumulated status) x)
+        else MkOptionC False (Just BS.empty)
+      -- Otherwise recursively process lines
+      Just n -> processGroup_OptionCInternal
+        psl
+        prd
+        (MkOptionC (parseThenPredicate psl prd (BS.take n x))
+                   (unline (accumulated status) (BS.take n x))
+        )
+        (BS.drop (n + 1) x)
+ where
+  unline Nothing  y = Just y
+  unline (Just x) y = Just (x <> "\n" <> y)
 {-# INLINE processGroup_OptionCInternal #-}
 
 
-processGroup_OptionC :: (BS.ByteString -> Maybe a) -> (a -> Bool) -> BS.ByteString -> BS.ByteString
+processGroup_OptionC
+  :: (BS.ByteString -> Maybe a) -> (a -> Bool) -> BS.ByteString -> BS.ByteString
 processGroup_OptionC psl prd x = fromMaybe "" $ accumulated
- (processGroup_OptionCInternal psl prd (MkOptionC False Nothing) x)
+  (processGroup_OptionCInternal psl prd (MkOptionC False Nothing) x)
 
 {-
   Group Option D:
 
 -}
 
-data OptionD = MkOptionD {
-      predicateSatified' :: Bool
-    , lastIndex :: Maybe Int
-  } deriving (Eq, Show)
+data OptionD = MkOptionD
+  { predicateSatified' :: Bool
+  , lastIndex          :: Maybe Int
+  }
+  deriving (Eq, Show)
 
-processGroup_OptionDInternal ::
-     (BS.ByteString -> Maybe a)
+processGroup_OptionDInternal
+  :: (BS.ByteString -> Maybe a)
   -> (a -> Bool)
   -> OptionD
   -> BS.ByteString
   -> OptionD
 processGroup_OptionDInternal psl prd status x
   | BS.null x = status
-  | otherwise =
-    if predicateSatified' status then
-      status
+  | otherwise = if predicateSatified' status
+    then status
     else case lastIndex status of
-      Just i ->
-        case endLine (BS.drop (i + 1) x) of
-          Nothing ->
-             go (MkOptionD (pp (takeEnd i)) Nothing)
-          Just n ->
-            go (MkOptionD (pp (takeLine i n)) (Just $ i + n + 1))
+      Just i -> case endLine (BS.drop (i + 1) x) of
+        Nothing -> go (MkOptionD (pp (takeEnd i)) Nothing)
+        Just n  -> go (MkOptionD (pp (takeLine i n)) (Just $ i + n + 1))
       Nothing -> status
-    where go = flip (processGroup_OptionDInternal psl prd) x
-          pp = parseThenPredicate psl prd
-          endLine = BS.elemIndex '\n'
-          takeEnd n = BS.drop (BS.length x - n) x
-          takeLine i n = BS.take n (BS.drop (i + 1) x)
+ where
+  go      = flip (processGroup_OptionDInternal psl prd) x
+  pp      = parseThenPredicate psl prd
+  endLine = BS.elemIndex '\n'
+  takeEnd n = BS.drop (BS.length x - n) x
+  takeLine i n = BS.take n (BS.drop (i + 1) x)
 {-# INLINE processGroup_OptionDInternal #-}
 
 
-processGroup_OptionD :: (BS.ByteString -> Maybe a) -> (a -> Bool) -> BS.ByteString -> BS.ByteString
+processGroup_OptionD
+  :: (BS.ByteString -> Maybe a) -> (a -> Bool) -> BS.ByteString -> BS.ByteString
 processGroup_OptionD psl prd x =
-  let status = predicateSatified' $
-        processGroup_OptionDInternal psl prd  (MkOptionD False (Just (-1))) x in
-  if status then x else BS.empty
+  let status = predicateSatified'
+        $ processGroup_OptionDInternal psl prd (MkOptionD False (Just (-1))) x
+  in  if status then x else BS.empty
 
 {-------------------------------------------------------------------------------
    Across-group fold ("application") logic
@@ -529,15 +530,16 @@ runProcessLinesApp_OptionE f g h =
   Applies group option D at the app level
 -}
 
-data OptionF i = MkOptionF {
-      lastID :: Maybe i
-    , groupStart ::  Int
-    , lastNewLine :: Maybe Int
-    , builder :: Builder
+data OptionF i = MkOptionF
+  { lastID      :: Maybe i
+  , groupStart  :: Int
+  , lastNewLine :: Maybe Int
+  , builder     :: Builder
   }
 
-processLinesApp_OptionFInternal :: (Eq i, Show i) =>
-     (BS.ByteString -> i)
+processLinesApp_OptionFInternal
+  :: (Eq i, Show i)
+  => (BS.ByteString -> i)
   -> (BS.ByteString -> Maybe a)
   -> (a -> Bool)
   -> OptionF i
@@ -545,69 +547,76 @@ processLinesApp_OptionFInternal :: (Eq i, Show i) =>
   -> OptionF i
 processLinesApp_OptionFInternal pri psl prd status x
   | BS.null x = status
-  | otherwise =
-    case lastNewLine status of
+  | otherwise = case lastNewLine status of
       -- If no line end then done
-      Nothing -> status
-      -- Otherwise take the index of the newline character end as `i`
-      Just i ->
-        -- Is there another newline after `i`?
-        case BS.elemIndex '\n' (BS.drop (i + 1) x) of
-          -- If yes, take this index as `n`,
-          -- as in the count of characters from i to the next newline
-          Just n ->
-              -- Identify the groupID in the subset of x
-              -- in the interval [i + 1, i + n].
-              -- When the ID has not changed, 
-              -- just update the index of the last newline.
-              -- When the ID does change,
-              -- then process the group for the last ID
-              -- and update the ID in the accumulator
-              let currentID = pri (takeLines i n) in
-              if Just currentID == lastID status then
-                go $ status { lastNewLine = Just $ i + n + 1 }
-              else
-                go $ MkOptionF
-                  (Just currentID)
-                  (i + 1)
-                  (Just $ i + n + 1)
-                  (builder status <> 
-                   byteString (
-                      processGroup ( 
-                        takeLines 
-                          (groupStart status - 1) (i - groupStart status + 1) )))
-          Nothing ->
-              -- The following is similar to the logic above,
-              -- except it handles the case of 
-              -- no further newlines to process.
-              let currentID = pri (takeEnd i) in
-              if Just currentID == lastID status then
-                go $ status { lastNewLine = Nothing }
-              else
-                go $ MkOptionF
-                  (lastID status)
-                  i
-                  Nothing
-                  (builder status <> 
-                   byteString (processGroup ( BS.drop (groupStart status) x) ))
+    Nothing -> status
+    -- Otherwise take the index of the newline character end as `i`
+    Just i  ->
+      -- Is there another newline after `i`?
+               case BS.elemIndex '\n' (BS.drop (i + 1) x) of
+        -- If yes, take this index as `n`,
+        -- as in the count of characters from i to the next newline
+      Just n ->
+          -- Identify the groupID in the subset of x
+          -- in the interval [i + 1, i + n].
+          -- When the ID has not changed, 
+          -- just update the index of the last newline.
+          -- When the ID does change,
+          -- then process the group for the last ID
+          -- and update the ID in the accumulator
+        let currentID = pri (takeLines i n)
+        in
+          if Just currentID == lastID status
+            then go $ status { lastNewLine = Just $ i + n + 1 }
+            else go $ MkOptionF
+              (Just currentID)
+              (i + 1)
+              (Just $ i + n + 1)
+              (builder status <> byteString
+                (processGroup
+                  (takeLines (groupStart status - 1) (i - groupStart status + 1)
+                  )
+                )
+              )
+      Nothing ->
+          -- The following is similar to the logic above,
+          -- except it handles the case of 
+          -- no further newlines to process.
+        let currentID = pri (takeEnd i)
+        in  if Just currentID == lastID status
+              then go $ status { lastNewLine = Nothing }
+              else go $ MkOptionF
+                (lastID status)
+                i
+                Nothing
+                (  builder status
+                <> byteString (processGroup (BS.drop (groupStart status) x))
+                )
 
-    where -- the recursion 
-          go = flip (processLinesApp_OptionFInternal pri psl prd) x
-          processGroup = processGroup_OptionD psl prd
-          takeEnd n = BS.drop (BS.length x - n) x
-          takeLines i n = BS.take n (BS.drop (i + 1) x)
+ where -- the recursion 
+  go           = flip (processLinesApp_OptionFInternal pri psl prd) x
+  processGroup = processGroup_OptionD psl prd
+  takeEnd n = BS.drop (BS.length x - n) x
+  takeLines i n = BS.take n (BS.drop (i + 1) x)
 {-# INLINE processLinesApp_OptionFInternal #-}
 
 
-processLinesApp_OptionF :: (Eq i, Show i) =>
-     (BS.ByteString -> i)
+processLinesApp_OptionF
+  :: (Eq i, Show i)
+  => (BS.ByteString -> i)
   -> (BS.ByteString -> Maybe a)
-  -> (a -> Bool) 
+  -> (a -> Bool)
   -> BS.ByteString
   -> BS.ByteString
 processLinesApp_OptionF pri psl prd x =
   BL.toStrict $ toLazyByteString $ builder
-      (processLinesApp_OptionFInternal pri psl prd (MkOptionF Nothing (-1) (Just (-1)) mempty) x)
+    (processLinesApp_OptionFInternal
+      pri
+      psl
+      prd
+      (MkOptionF Nothing (-1) (Just (-1)) mempty)
+      x
+    )
 
 
 
@@ -776,9 +785,11 @@ runGroupExperiment1 :: Int -> [Benchmark]
 runGroupExperiment1 n =
   fmap (\ex -> bgroup "strict bytestring :: list :: " $ ex processorsS)
        (experimentInputsS BS.lines n)
-    ++ fmap (\ex -> bgroup "strict bytestring :: NA :: " $ 
-          ex [(processGroup_OptionC dclS' tpr, "option C :: strict parse ")])
-      (experimentInputsS id n)
+    ++ fmap
+         (\ex -> bgroup "strict bytestring :: NA :: " $ ex
+           [(processGroup_OptionC dclS' tpr, "option C :: strict parse ")]
+         )
+         (experimentInputsS id n)
     -- ++ fmap (\ex -> bgroup "lazy bytestring :: list :: " $ ex processorsL)
     --         (experimentInputsL BL.lines n)
     -- ++ fmap (\ex -> bgroup "strict bytestring :: acc :: " $ ex processorsS)
@@ -793,12 +804,14 @@ runGroupExperiment1 n =
 runGroupExperiment2 :: Int -> [Benchmark]
 runGroupExperiment2 n =
   fmap (\ex -> bgroup "strict bytestring :: list :: " $ ex processorsS)
-       (experimentInputsS BS.lines n) 
-  ++ fmap (\ex -> bgroup "strict bytestring :: NA :: " $ 
-          ex [
-            (processGroup_OptionC dclS' tpr, "option C :: strict parse ")
-            , (processGroup_OptionD dclS' tpr, "option D :: strict parse ")])
-      (experimentInputsS id n)
+       (experimentInputsS BS.lines n)
+    ++ fmap
+         (\ex -> bgroup "strict bytestring :: NA :: " $ ex
+           [ (processGroup_OptionC dclS' tpr, "option C :: strict parse ")
+           , (processGroup_OptionD dclS' tpr, "option D :: strict parse ")
+           ]
+         )
+         (experimentInputsS id n)
     -- ++ fmap (\ex -> bgroup "strict bytestring :: acc :: " $ ex processorsS)
     --         (experimentInputsS linesAccS n)
     -- ++ fmap (\ex -> bgroup "strict bytestring :: seq :: " $ ex processorsS)
@@ -839,7 +852,7 @@ app_optionA = L.fold (processLinesApp_OptionA dciS' dclS' tpr)
 app_optionC = runProcessLinesApp_OptionC dciS' dclS' tpr
 app_optionD = L.fold (processLinesApp_OptionD dciS' dclS' tpr)
 app_optionE = L.fold (processLinesApp_OptionE dciS' dclS' tpr)
-app_optionF = processLinesApp_OptionF dciS' dclS' tpr 
+app_optionF = processLinesApp_OptionF dciS' dclS' tpr
 
 runAppExperiment1 = fmap
   (\((inputLabel, input), (fLabel, f)) -> makeBench f fLabel input inputLabel)
@@ -857,15 +870,16 @@ runAppExperiment1 = fmap
 
 
 benches =
-  bgroup "group experiments" 
-  (
-          Prelude.concatMap runGroupExperiment1 [10, 100, 1000]
-       ++ 
-       Prelude.concatMap runGroupExperiment2 [10000, 100000]) : 
+  bgroup
+      "group experiments"
+      (  Prelude.concatMap runGroupExperiment1 [10, 100, 1000]
+      ++ Prelude.concatMap runGroupExperiment2 [10000, 100000]
+      )
+    :
       --  : 
       --  runAppExperiment1
   --      : 
-  [bgroup "app experiments" runAppExperiment1]
+      [bgroup "app experiments" runAppExperiment1]
 
 -- These files were created in a ghci session for benchmarking externally,
 -- using hyperfine.

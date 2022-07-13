@@ -146,7 +146,6 @@ processGroupLinesInternal fs psl prd status x
                 if predicateSatified status
     then status
     else case lastNewLine status of
-                                                                                                                                                                                                                        -- We're done as soon as there are no more new line characters.
       Nothing -> status
       -- If there was a new line character at the previous iteration,
       -- see if there is another new line character *after*

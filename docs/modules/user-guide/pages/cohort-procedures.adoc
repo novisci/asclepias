@@ -20,13 +20,14 @@ See below for details on creating these types:
 include::index-set-procedures.adoc[leveloffset+=1]
 
 == d. Define Tags
-. define tags
+
+
 *TODO in the asclepias-project-example we needed to do this,*
 *but I feel like if we use event-data-model, the tags are already defined*
 *in a "real" project, will tags need to be defined in code?*
 
 == e. Define Criteria
-. define criteria
+include::criteria-procedures.adoc[leveloffset=+1]
 
 == f. Create Features
 include::features-procedures.adoc[leveloffset=+1]

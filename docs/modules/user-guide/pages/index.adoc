@@ -34,10 +34,10 @@ include::initialize-new-project.adoc[leveloffset=+1]
 include::load-data-procedures.adoc[leveloffset=+1]
 
 === 5. Create Cohort Application
-include::cohort-procedures.adoc[leveloffset=+1]
+include::cohort-procedures.adoc[leveloffset=+2]
 
 === 6. Test Cohort Application
-include::test-cohort-procedures.adoc[leveloffset=+1]
+include::test-cohort-procedures.adoc[leveloffset=+2]
 
 === 7. Run Cohort Application
 

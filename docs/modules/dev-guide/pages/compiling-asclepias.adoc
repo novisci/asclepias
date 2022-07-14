@@ -6,8 +6,6 @@
 This section outlines `asclepias`-specific build instructions.
 For details on building Haskell projects in general,
 see the {url-usage-guide}[Usage Guide]. 
-#TODO not sure the best way to link to the usage guide here#
-#TODO can this link be added as an doc-level attribute?#
 
 The `asclepias` repository is organized using a multiple project setup.
 Some of the subdirectories of the repository 

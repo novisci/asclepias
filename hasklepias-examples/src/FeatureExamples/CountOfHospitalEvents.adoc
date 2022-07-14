@@ -6,7 +6,6 @@ This example demonstrates:
 
 * [x] using the `AssessmentInterval` type
 * [x] using the `combineIntervals` function 
-// TODO link to combineIntervals
 * [x] counting the number of events satifying a condition
 
 This example defines a function that takes

@@ -1,16 +1,23 @@
 :description: The procedure for creating cohorts 
 
+To define a cohort in asclepias,
+one must create a `CohortSpec` type.
+The `CohortSpec` type takes three inputs:
 
-== a. Define Input Data Shape
-. define input data shape 
+* The shape of the input data
+* The shape of the output data
+* an IndexSet
+
+See below for details on creating these types:
+
+== a. Defining Input Data Shape
 *TODO this is actually pre-defined in step 1 correct?*
 
-== b. Define Output Data Shape
-. define output data shape
+== b. Defining Output Data Shape
 *TODO does this get defined in event-data-model as well?*
 
-== c. Define Index
-. define index
+== c. Defining an IndexSet
+include::index-set-procedures.adoc[leveloffset+=1]
 
 == d. Define Tags
 . define tags

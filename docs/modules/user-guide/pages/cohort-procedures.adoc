@@ -1,11 +1,28 @@
 :description: The procedure for creating cohorts 
 
-#TODO#
 
-* decide input data shape
-** e.g. choose `Event` and a model from `fact-models`
-* decide index type
-* decide output data shape
-* code and test cohort
-* build application
-* run application
+== a. Define Input Data Shape
+. define input data shape 
+*TODO this is actually pre-defined in step 1 correct?*
+
+== b. Define Output Data Shape
+. define output data shape
+*TODO does this get defined in event-data-model as well?*
+
+== c. Define Index
+. define index
+
+== d. Define Tags
+. define tags
+*TODO in the asclepias-project-example we needed to do this,*
+*but I feel like if we use event-data-model, the tags are already defined*
+*in a "real" project, will tags need to be defined in code?*
+
+== e. Define Criteria
+. define criteria
+
+== f. Create Features
+include::features-procedures.adoc[leveloffset=+1]
+
+== g. Define Cohort Specification
+

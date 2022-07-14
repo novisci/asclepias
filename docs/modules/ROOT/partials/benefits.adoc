@@ -57,14 +57,12 @@ often make reasoning about cohorts and features easier.
 xref:theory:index.adoc[Learn about the event data theory].
 
 Is data model agnostic::
-While the using a event-based data model is encouraged,
+While using the event-based data model is encouraged,
 the theory of
 xref:theory:cohort-theory.adoc[cohorts]
 and
 xref:theory:feature-theory.adoc[features]
 both work under a "bring your data model" assumption
 that does not require an event-based model.
-+
-#TODO: link to example#
 
 

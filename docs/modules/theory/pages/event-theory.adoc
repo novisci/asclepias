@@ -32,12 +32,13 @@ include::ROOT:example$EventDataTheory/Core.hs[tag=eventType]
 
 === Context
 A `Context` contains up to three types of information: 
-1) A tag set (required)
-2) Facts about the event (required)
-3) Metadata on the source of the event (optional)
+
+. A tag set (required)
+. Facts about the event (required)
+. Metadata on the source of the event (optional)
 
 A tag is a set of labels that give meaning to the events of interest.
-For example, diabetes diagnosis, birth day, in hospital are all possible tags,
+For example, "diabetes diagnosis", "birth day", "in hospital" are all possible tags,
 that together might define the study tag set.
 
 An example of a context is below.
@@ -58,7 +59,6 @@ The schema of the facts data is dynamic
 and is passed to the object as a parameter.
 
 === Source
-#TODO What can be in the metadata source object?#
 
 === Event Model
 Passing in specific parameters `m` and `c` to `Context` creates a new event model.
@@ -71,9 +71,7 @@ include::ROOT:example$EventDataTheory/TheoryTest.hs[tag=exampleEvent]
 ----
 
 The `+SillyEvent+` type is a synonym for an `Event` where
-the tag set is `Text`, 
-
-#TODO We should change this to a sum-type example since that's what we want users to do.#
+the tag set is `Text`,
 
 the facts are of shape `SillySchema`, 
 and the `Interval` type is any valid type `a`.
@@ -85,9 +83,6 @@ of an event's data and
 can be a nearly arbitrary type
 composed of sum and product types.
 Often, the `m` type will be a sum type of "domains"
-
-#TODO Is this still true given we are no longer using the "domain" keyword?#
-
 where each domain is a group of facts relevant to a given domain.
 The schema of NoviSci's standard 
 {edm-path}/index.html[EDM]

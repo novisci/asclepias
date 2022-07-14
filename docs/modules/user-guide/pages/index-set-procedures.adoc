@@ -47,11 +47,11 @@ then you can create an index set using `makeIndexSet`.
 
 [source,haskell]
 ----
-data EventLine t m a = MkEventLine Value Value Value Value [t] (FactsLine m a)
-deriving (Eq, Show, Generic)
+data EventLine t m a = MkEventLine Value Value Value Value [t] (FactsLine m a) 
+  deriving (Eq, Show, Generic)
 
-newtype Event t m a = MkEvent ( PairedInterval (Context t m) a )
-deriving (Eq, Show, Generic)
+newtype Event t m a = MkEvent ( PairedInterval (Context t m) a ) 
+  deriving (Eq, Show, Generic)
 ----
 
 `makeIndexSet` takes in a list of intervals to produce an IndexSet.

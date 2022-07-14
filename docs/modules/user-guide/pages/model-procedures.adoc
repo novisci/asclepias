@@ -1,0 +1,54 @@
+:navtitle: Define a data model
+:description: How to define a data model
+:hasklepias-version: 0.2.5
+:edm-repo-url: https://gitlab.novisci.com/nsStat/event-data-model/-/tree/master/fact-models/src/Models
+
+
+. Search the {edm-repo-url}[event-data-model] project repo for existing models.
+. If one of the existing models matches your project's use case, select this model.
+. Else, create a new model, following the instructions in the
+xref:event-data:ROOT:add-new-model.adoc[event-data-model documentation] to construct a new model.
+Note that, to make a new model, you may also need to 
+xref:event-data:ROOT:add-new-fact.adoc[make new facts].
+. *TODO: How do you load the model into asclepias?*
+. *TODO: When does a model need to be defined - just for asclepias or for Paul as well?*
+. *TODO: How does Paul's program work with the event-data-model dhall files?*
+
+*Best Practices*
+The `TagSet` type `t` should be a sum type object.
+Meaning, each possible tag should be enumerated in the type
+(`+data MyProjectTags = Diabetes | BirthDay | InHospital | ...+`).
+By defining the tag set as a sum type, type safety is ensured.
+One cannot misspell a tag or use an undefined tag, for example.
+
+The schema (`m`) type for an `Event` must an instance of
+`Eq`, `Show`, `Generic`, and `FromJSON` typeclasses.
+The 
+https://downloads.haskell.org/ghc/latest/docs/html/users_guide/exts/generics.html?highlight=derivegeneric#extension-DeriveGeneric[`DeriveGeneric`]
+language extension makes deriving the `Generic` instance trivial,
+as in the code above.
+At this time, users do need to provide the `FromJSON` instance,
+and the boilerplate in the example above should work in most cases.
+
+The tag (`t`) type for an `Event` must an instance of
+`Eq`, `Show`, `Typeable`, and `FromJSON` typeclasses.
+Making `t` `Generic` will also make it `Typeable`,
+so in most cases simply `deriving (Eq, Show, Generic)` 
+and a stock `FromJSON` instance
+is sufficient for the tag type.
+
+The `event-data-theory` packages provides a few utilities for testing
+a new model.
+These can be found in the `EventDataTheory.Test` module,
+which is not included in the main set of exported modules.
+
+The `eventDecodeTests` and `eventDecodeFailTests` functions, for example, test for
+successful parsing and successful failed parsing (respectively) 
+of `+EventLine m t a+`
+into the corresponding `+Event t m a+`.
+These functions take a directory path as an argument. 
+Each file ending `.jsonl` in that directory should contain
+a single `EventLine` as JSON 
+to be tested.
+See the `test` directory and `EventDataTheory.TheoryTest` module
+in this package for examples.

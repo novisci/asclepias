@@ -1,0 +1,22 @@
+A `Context` contains up to three types of information: 
+
+. A `TagSet` (required)
+. `Fact` s about the event (required)
+. Metadata on the source of the event (optional)
+
+A `TagSet` is a collection labels that give meaning to the events of interest.
+For example, "diabetes diagnosis", "birth day", "in hospital" are all possible tags,
+that together might define the study `TagSet`.
+
+An example of a context is below.
+
+[source,haskell]
+----
+include::ROOT:example$EventDataTheory/Core.hs[tag=contextType]
+----
+<1> a set of `+TagSet+`, or labels, 
+which can be used to identify events in a collection;
+<2> facts about the event whose shape and possible values
+are determined by the schema type `m`;
+<3> (optionally) data about the provenance of the event in a `+Source+` object.
+

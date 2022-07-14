@@ -1,0 +1,21 @@
+:description: The procedure for loading event-lines data
+
+. Make sure that your data is in JSON xref:event-data:ROOT:index.adoc[event-lines] format
+. Read in the data using `parseEventLinesL` or `parseEventLines'` (for lazy evaluation).
+
+*TODO looks like parseEventLinesL/L' take in a ByteString, but I think*
+*ByteString is the result of reading in the JSON from a file.*
+*I'm not sure which function reads in the JSON*
+[source,haskell]
+----
+parseEventLinesL, parseEventLinesL'
+  :: forall m t a b
+   . (Eventable t m a, EventLineAble t m a b, FromJSONEvent t m a)
+  => ParseEventLineOption
+  -> B.ByteString
+  -> ([LineParseError], [(SubjectID, Event t m a)])
+parseEventLinesL opt = makeLineParser (eitherDecodeEvent opt)
+parseEventLinesL' opt = makeLineParser (eitherDecodeEvent' opt)
+----
+
+*TODO after clarification, write up example data read in*

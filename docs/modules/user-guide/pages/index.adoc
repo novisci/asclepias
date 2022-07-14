@@ -11,17 +11,13 @@ The purpose of the user guide is to provide guidance on using `asclepias`.
 This guide covers:
 
 * How to get started using `asclepias`
-* Background theory on `asclepias`
 * Instructions for using `asclepias`
 * References
 
+For background theory on cohort building, see xref:theory:index.adoc[Event Data Theory].
+
 == Getting Started
 include::getting-started.adoc[leveloffset=+1]
-
-== Background
-#TODO flesh this out a bit#
-The xref:theory:index.adoc[Theory and design] 
-section contains background information on the event-data-model design.
 
 == Instructions
 
@@ -34,27 +30,14 @@ include::model-procedures.adoc[leveloffset=+1]
 === 3. Initialize Project Repo
 include::initialize-new-project.adoc[leveloffset=+1]
 
-=== 4. Load Study Data
-This is not an essential step, but I'm sure
-user will want a way to peak at their data
-and use it for testing.
-#TODO how to?#
-
-The `EventDataTheory.EventLines` module provides several utilities
-for decoding events from eventlines.
-The `parseEventLinesL` function, for example,
-converts a `ByteString` of new-line delimed JSON
-into a pair of `[String]` (containing any parse error messages)
-and `[(SubjectID, Event t m a)]`, 
-a list of Subject ID/event pairs.  
+=== 4. Load and Explore Study Data (optional)
+include::load-data-procedures.adoc[leveloffset=+1]
 
 === 5. Create Cohort Application
 include::cohort-procedures.adoc[leveloffset=+1]
 
-
 === 6. Test Cohort Application
-#TODO write this up#
-
+include::test-cohort-procedures.adoc[leveloffset=+1]
 
 === 7. Run Cohort Application
 

@@ -48,9 +48,10 @@ makeAppArgs name = Options.Applicative.info
 {-| 
 Creates a application that filters (groups of) lines based on:
 
-* a function which identifies groups of lines
-* a function which parses lines into some type `a`
-* a predicate function: `a  -> Bool`
+* a function which constructs an identifier from a line
+indicating which group the line belongs to
+* a function which parses a line into some type @a@
+* a predicate function: @a  -> Bool@
 
 All groups of lines where
 at least one line satisfies the predicate 
@@ -74,7 +75,8 @@ makeLineFilterApp name pid psl prd = do
   writeDataStrict outloc $ processAppLinesStrict pid psl prd dat
 
 {-| 
-Create a application that filters event data with two arguments: 
+Create a application that filters event data with two arguments:
+
   * a string for the name of the application (e.g. the project ID)
   * a predicate function of type @Event c m a -> Bool@. 
 

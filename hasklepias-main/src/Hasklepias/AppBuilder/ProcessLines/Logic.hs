@@ -132,28 +132,24 @@ processGroupLinesInternal
   -> t
   -> GrpLines i
 processGroupLinesInternal fs psl prd status x
-  | isEmpty fs x = status
-  | otherwise =
-    -- exit as soon as the predicate is satisfied
-                if predicateSatified status
-    then status
-    else case lastNewLine status of
-      Nothing -> status
-      -- If there was a new line character at the previous iteration,
-      -- see if there is another new line character *after*
-      -- the previous new line character.
-      Just i  -> case findNewLine fs (takeEnd fs x (i + 1)) of
-          -- If there is a previous and current new line character,
-          -- then update the `GrpLines` tracker 
-          -- with the value of the predicate from the current line
-          -- and the index of the current new line character 
-          -- (relative to whole input).
-          -- Then continue.
-        Just n -> go (takeSubset fs x i n) (Just $ i + n + 1)
-        Nothing ->
-        -- If there is a previous new line but no current new line,
-        -- then update the `GrpLines` tracker and continue.
-          go (takeEnd fs x (i + 1)) Nothing
+  | isEmpty fs x || predicateSatified status = status
+  | otherwise = case lastNewLine status of
+    Nothing -> status
+    -- If there was a new line character at the previous iteration,
+    -- see if there is another new line character *after*
+    -- the previous new line character.
+    Just i  -> case findNewLine fs (takeEnd fs x (i + 1)) of
+        -- If there is a previous and current new line character,
+        -- then update the `GrpLines` tracker 
+        -- with the value of the predicate from the current line
+        -- and the index of the current new line character 
+        -- (relative to whole input).
+        -- Then continue.
+      Just n -> go (takeSubset fs x i n) (Just $ i + n + 1)
+      Nothing ->
+      -- If there is a previous new line but no current new line,
+      -- then update the `GrpLines` tracker and continue.
+        go (takeEnd fs x (i + 1)) Nothing
  where
   go i j = processGroupLinesInternal
     fs

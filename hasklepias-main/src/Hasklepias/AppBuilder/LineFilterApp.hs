@@ -8,8 +8,8 @@ module Hasklepias.AppBuilder.LineFilterApp
   ) where
 
 import           Data.Aeson                     ( decodeStrict' )
-import qualified Data.ByteString.Char8         as BS
-import qualified Data.ByteString.Lazy.Char8    as BL
+import qualified Data.ByteString               as BS
+import qualified Data.ByteString.Lazy          as BL
 import           EventDataTheory         hiding ( (<|>) )
 import           Hasklepias.AppBuilder.ProcessLines.Logic
 import           Hasklepias.AppUtilities

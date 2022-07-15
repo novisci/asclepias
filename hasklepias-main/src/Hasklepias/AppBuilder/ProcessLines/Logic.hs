@@ -23,11 +23,11 @@ module Hasklepias.AppBuilder.ProcessLines.Logic
   , processAppLinesLazy
   ) where
 
-
+import qualified Data.ByteString               as BS
 import           Data.ByteString.Builder
-import qualified Data.ByteString.Char8         as BS
-import qualified Data.ByteString.Internal      as B
+import qualified Data.ByteString.Char8         as BSC
 import qualified Data.ByteString.Lazy          as BL
+import qualified Data.ByteString.Lazy.Char8    as BLC
 import           Data.Int
 import qualified Data.Text                     as T
 
@@ -62,12 +62,12 @@ data LineFunctions t i = MkLineFunctions
   , runBuilder  :: Builder -> t
   }
 
-lineFunctionsStrict :: LineFunctions B.ByteString Int
+lineFunctionsStrict :: LineFunctions BS.ByteString Int
 lineFunctionsStrict = MkLineFunctions
   { isEmpty     = BS.null
   , takeEnd     = flip BS.drop
   , takeSubset  = \x i n -> BS.take n (BS.drop (i + 1) x)
-  , findNewLine = BS.elemIndex '\n'
+  , findNewLine = BSC.elemIndex '\n'
   , build       = byteString
   , runBuilder  = BL.toStrict . toLazyByteString
   }
@@ -77,7 +77,7 @@ lineFunctionsLazy = MkLineFunctions
   { isEmpty     = BL.null
   , takeEnd     = flip BL.drop
   , takeSubset  = \x i n -> BL.take n (BL.drop (i + 1) x)
-  , findNewLine = BL.elemIndex (B.c2w '\n')
+  , findNewLine = BLC.elemIndex '\n'
   , build       = lazyByteString
   , runBuilder  = toLazyByteString
   }
@@ -229,7 +229,7 @@ and the predicate checks whether the value is @1@.
 
 -- | Process a group of strict 'BS.ByteString'.
 processGroupLinesStrict
-  :: (B.ByteString -> Maybe a) -> (a -> Bool) -> B.ByteString -> B.ByteString
+  :: (BS.ByteString -> Maybe a) -> (a -> Bool) -> BS.ByteString -> BS.ByteString
 processGroupLinesStrict = processGroupLines lineFunctionsStrict
 
 -- | Process a group of lazy 'BL.ByteString'.

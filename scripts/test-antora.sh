@@ -49,6 +49,9 @@ content:
   - url: https://gitlab+user-guide:11HiN9THLsxPVHSPpzxB@gitlab.novisci.com/nsStat/nsBuild.git
     start_path: docs
     branches: [HEAD]
+  - url: https://gitlab+deploy-token-antora-build:glpat-n2fySz3M7AY_9Z4W7vAz@gitlab.novisci.com/nsStat/event-data-model.git
+    start_path: docs
+    branches: [v3.0]
 ui:
   bundle:
     url: https://gitlab.com/antora/antora-ui-default/-/jobs/artifacts/HEAD/raw/build/ui-bundle.zip?job=bundle-stable

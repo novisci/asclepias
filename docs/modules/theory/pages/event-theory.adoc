@@ -28,40 +28,33 @@ include::theory:define-event.adoc[]
 
 include::theory:define-context.adoc[]
 
-=== Facts
-#TODO# link to event-data-model
+=== Tags
 
-=== Source
+include::theory:define-tagset.adoc[]
 
-=== Event Model
-#TODO# link to event-data-model
-Passing in specific parameters `m` and `c` to `Context` creates a new event model.
+=== Facts and Model
+See the `event-data-model` documentation for a definition of xref:event-data-model:models:page$define-facts.adoc[`Facts`] and  xref:event-data-model:models:page$define-models.adoc[`Model`]. Note that `Fact` and `Model` defined there are types defined in the Dhall programming language. The programmer using `asclepias` must manually define in Haskell code a type `m` within the `Context c m` that corresponds to the `Model` for a given project.
 
-An example of an event model is below.
+=== Example
+Here is an example of an `Event`:
 
 [source,haskell]
 ----
 include::ROOT:example$EventDataTheory/TheoryTest.hs[tag=exampleEvent]
 ----
 
-The `+SillyEvent+` type is a synonym for an `Event` where
-the tag set is `Text`,
+The `+SillyEvent+` type is a project-specific synonym for an `Event` where
+the `TagSet` is `Text`.
 
-the facts are of shape `SillySchema`, 
-and the `Interval` type is any valid type `a`.
+`SillySchema` is the `Model`, a Haskell sum type, with a different `Fact` given by each of its possible value types
 
-The type parameter `m` provides
-a high degree of flexibility in defining new event models.
-The `m` type represents the schema, or shape, 
-of an event's data and
-can be a nearly arbitrary type
-composed of sum and product types.
-Often, the `m` type will be a sum type of "domains"
-where each domain is a group of facts relevant to a given domain.
-The schema of NoviSci's standard 
-{edm-path}/index.html[EDM]
-is organized around this idea.
+and the `Interval` type is any valid type `a`, such as `Int`.
 
+This structure provides a high degree of flexibility in defining new structures for study-specific cohort definitions and analysis.
+
+See the
+{edm-path}/index.html[`event-data-theory`]
+documentation for details.
 
 
 

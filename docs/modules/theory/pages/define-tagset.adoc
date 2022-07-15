@@ -1,0 +1,6 @@
+A `TagSet` is a collection labels ("tags") that summarize the information in the data `Model`, as given by the `Fact` s of that model attached to a particular event. `Fact` and `Model` are defined in the `event-data-model` documentation.
+
+For example, "diabetes diagnosis", "birth day", "in hospital" are all possible tags,
+that together might define the study `TagSet`.
+
+At present, tags are created by manually specifying how a `Model` should be summarized, typically using the helper functions in the `notionate` package in a project-specific `concepts.dhall` file.

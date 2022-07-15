@@ -62,7 +62,7 @@ The rest are dropped.
 makeLineFilterApp
   :: (Eq a, Eq i, Show i)
   => String -- ^ name of the app (e.g. a project's id)
-  -> (BS.ByteString -> i) -- ^ parser for line identifier
+  -> (BS.ByteString -> Maybe i) -- ^ parser for line identifier
   -> (BS.ByteString -> Maybe a) -- ^ parser
   -> (a -> Bool) -- ^ predicate
   -> IO ()

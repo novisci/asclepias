@@ -282,7 +282,7 @@ All the lines for each group are assumed to be contiguous.
 processAppLinesInternal
   :: (Eq id, Show id, Num i, Monoid t)
   => LineFunctions t i
-  -> (t -> id)
+  -> (t -> Maybe id)
   -> (t -> Maybe a)
   -> (a -> Bool)
   -> AppLines id i
@@ -308,10 +308,10 @@ processAppLinesInternal fs pri psl prd status x
           -- then process the group for the last ID
           -- and update the ID in the accumulator
         let currentID = pri (takeSubset fs x i n)
-        in  if Just currentID == lastID status
+        in  if currentID == lastID status
               then go $ status { lastNewLine' = Just $ i + n + 1 }
               else go $ MkAppLines
-                (Just currentID)
+                currentID
                 (i + 1)
                 (Just $ i + n + 1)
                 (builder status <> build
@@ -330,7 +330,7 @@ processAppLinesInternal fs pri psl prd status x
           -- no further newlines to process.
         let currentID = pri (takeEnd fs x i)
         in
-          if Just currentID == lastID status
+          if currentID == lastID status
             then go $ status { lastNewLine' = Nothing }
             else go $ MkAppLines
               (lastID status)
@@ -354,7 +354,7 @@ targeted for a specific type.
 processAppLines
   :: (Eq id, Show id, Num i, Monoid t)
   => LineFunctions t i
-  -> (t -> id)
+  -> (t -> Maybe id)
   -> (t -> Maybe a)
   -> (a -> Bool)
   -> t
@@ -393,7 +393,7 @@ see the source code in @Hasklepias.AppBuilder.ProcessLines.Tests@.
 -- | Process a strict 'BS.ByteString'.
 processAppLinesStrict
   :: (Eq id, Show id)
-  => (BS.ByteString -> id)
+  => (BS.ByteString -> Maybe id)
   -> (BS.ByteString -> Maybe a)
   -> (a -> Bool)
   -> BS.ByteString
@@ -403,7 +403,7 @@ processAppLinesStrict = processAppLines lineFunctionsStrict
 -- | Process a lazy 'BL.ByteString'.
 processAppLinesLazy
   :: (Eq id, Show id)
-  => (BL.ByteString -> id)
+  => (BL.ByteString -> Maybe id)
   -> (BL.ByteString -> Maybe a)
   -> (a -> Bool)
   -> BL.ByteString

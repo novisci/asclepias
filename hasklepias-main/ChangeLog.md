@@ -1,10 +1,18 @@
 # Changelog for hasklepias-main
 
-## x.xx.x
+## 0.27.0
 
+* Adds a benchmarking application and some benchmarking routines to `Tests.Hasklepias` for `Hasklepias.AppBuilder.LineFilterApp`.
+* Replaces `Hasklepias.MakeFilterApp` with `Hasklepias.AppBuilder.LineFilterApp`, refactoring the filter app in the process and fixing unexpected behavior when piping filter app output to aws S3.
 * Adds `pretty-simple` dependency and reexports its `pPrint` function.
 From the docs: "`pretty-simple` is a pretty printer
 for Haskell data types that have a Show instance."
+* Adds explicit dependency bounds in `asclepias` project `package.cabal` files for `interval-algebra` and `time` instead of providing the bounds solely in `cabal.project`, to ensure downstream discoverability of those bounds.
+* Removes `interval-algebra` dependency for `hasklepias-main`, importing that functionality from `event-data-theory`.
+* Package reorganization, in which the following are moved to `hasklepias-main`:
+	* `stype`, `monarch`, `hasklepias-templates` and `hasklepias-appBuilder` packages,
+	* `AssessmentIntervals` module from `haskelpias-core`.
+
 
 ## 0.26.0
 

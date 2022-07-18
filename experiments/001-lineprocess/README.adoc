@@ -1,0 +1,222 @@
+= Benchmark Line Processing Logic
+
+== Backgound
+
+This experiment was conducted as part of the work for
+https://gitlab.novisci.com/nsStat/asclepias/-/merge_requests/245[`asclepias!245`]
+in order to better understand the performance of processing lines of data.
+
+== Run Experiment
+
+[source,shell]
+----
+cd experiments/001-lineprocess
+cabal run 001-lineprocess.hs -- --csv benchmarks.csv +RTS -T
+----
+
+
+// ## Benchmarking
+
+// Run benchmarks with:
+
+// ```shell
+// cabal bench hasklepias-main
+// ```
+
+// The current benchmarks are mostly there as an example.
+// I used the benchmarking along the way towards this MR,
+// but most of that code went bye-bye.
+
+// ## Comments on how I got here
+
+// The following data are the result benchmarking 4 different line filtering applications:
+
+// 1. `test-filter-foldl-1`: based on the following app code, which simply used a monadic `Control.Foldl.FoldM` to *output data along the fold*.
+
+// ```haskell
+// filterAppF
+//   :: (Eq i, Eq a)
+//   => (C.ByteString -> i)
+//   -> (C.ByteString -> Maybe a)
+//   -> (a -> Bool)
+//   -> C.ByteString
+//   -> IO ()
+// filterAppF f g h x = 
+//    C.lines x 
+//   |> L.foldM (filterAppFoldM C.putStrLn f g h)
+// ```
+
+// 2. `test-filter-foldl-2`:  based on the following app code, which simply used a `Control.Foldl.Fold` and then collected results to then output
+
+// ```haskell
+// filterAppF'
+//   :: (Eq i, Eq a)
+//   => (C.ByteString -> i)
+//   -> (C.ByteString -> Maybe a)
+//   -> (a -> Bool)
+//   -> C.ByteString
+//   -> IO ()
+// filterAppF' f g h x =
+//   C.lines x
+//     |> groupBy (\x y -> f x == f y)
+//     |> fmap (L.fold (filterGroupFold g h))
+//     |> C.unlines
+//     |> C.putStrLn
+// ```
+
+// 3. `test-filter-conduit-1`: similar to `test-filter-foldl-1` but used in the `FoldM` component functions in a conduit:
+
+// ```haskell
+// filterAppC :: (Eq a, Monad m) =>
+//        (C.ByteString -> m ())
+//   -> (C.ByteString -> a)
+//    -> (C.ByteString -> Maybe b)
+//    -> (b -> Bool)
+//    -> C.ByteString
+//    -> ConduitT a2 x m ()
+// filterAppC e f g h x =
+//     yield x
+//   .| CC.linesUnboundedAscii
+//   .| sinkFoldM (filterAppStepM e f g h) (filterAppBeginM f) (filterAppDoneM e)
+// ```
+
+// 4. `test-filter-conduit-2`: similar to `test-filter-foldl-2` in that data was collected and then output:
+
+// ```haskell
+// filterAppC
+//   :: (Eq a, Monad m)
+//   => (C.ByteString -> a)
+//   -> (C.ByteString -> Maybe b)
+//   -> (b -> Bool)
+//   -> C.ByteString
+//   -> ConduitT a2 o m C.ByteString
+// filterAppC f g h x =
+//   yield x
+//     .| CC.linesUnboundedAscii
+//     .| foldGroups f
+//     .| mapC (L.fold (filterGroupFold g h))
+//     .| CC.filter (/= "")
+//     .| CC.unlinesAscii
+//     .| foldC
+// ```
+
+// The following benchmarks used `foo.jsonl` as input
+// (this file became `lineFilterTestInputs-1.jsonl` currently in the repo). 
+// This file is:
+
+// * 1.5 MB
+// * 4 groups of ~100000 lines each
+
+// ### Test A
+
+// * `O1` optimization
+// * with `INLINE` pragma
+
+// ```shell
+// bradley.saul@TGTRWE-LT-0126 asclepias % hyperfine --warmup 3 'test-filter-foldl-1 --file foo.jsonl' 'test-filter-foldl-2 --file foo.jsonl' 'test-filter-conduit-1 --file foo.jsonl' 'test-filter-conduit-2 --file foo.jsonl'
+// Benchmark 1: test-filter-foldl-1 --file foo.jsonl
+//   Time (mean ± σ):      1.210 s ±  0.011 s    [User: 1.193 s, System: 0.012 s]
+//   Range (min … max):    1.193 s …  1.227 s    10 runs
+ 
+// Benchmark 2: test-filter-foldl-2 --file foo.jsonl
+//   Time (mean ± σ):      3.033 s ±  0.030 s    [User: 2.954 s, System: 0.072 s]
+//   Range (min … max):    2.996 s …  3.090 s    10 runs
+ 
+// Benchmark 3: test-filter-conduit-1 --file foo.jsonl
+//   Time (mean ± σ):      6.108 s ±  0.031 s    [User: 5.726 s, System: 0.375 s]
+//   Range (min … max):    6.062 s …  6.158 s    10 runs
+ 
+// Benchmark 4: test-filter-conduit-2 --file foo.jsonl
+//   Time (mean ± σ):      1.343 s ±  0.017 s    [User: 1.321 s, System: 0.014 s]
+//   Range (min … max):    1.321 s …  1.375 s    10 runs
+ 
+// Summary
+//   'test-filter-foldl-1 --file foo.jsonl' ran
+//     1.11 ± 0.02 times faster than 'test-filter-conduit-2 --file foo.jsonl'
+//     2.51 ± 0.03 times faster than 'test-filter-foldl-2 --file foo.jsonl'
+//     5.05 ± 0.05 times faster than 'test-filter-conduit-1 --file foo.jsonl'
+// ```
+
+// ### Test B
+
+// * `O2` optimization
+// * with `INLINE` pragmas
+
+// ```shell
+// bradley.saul@TGTRWE-LT-0126 asclepias %
+// hyperfine --warmup 3 'test-filter-foldl-1 --file foo.jsonl' 'test-filter-foldl-2 --file foo.jsonl' 'test-filter-conduit-1 --file foo.jsonl' 'test-filter-conduit-2 --file foo.jsonl'
+// Benchmark 1: test-filter-foldl-1 --file foo.jsonl
+//   Time (mean ± σ):      1.211 s ±  0.010 s    [User: 1.193 s, System: 0.012 s]
+//   Range (min … max):    1.198 s …  1.229 s    10 runs
+ 
+// Benchmark 2: test-filter-foldl-2 --file foo.jsonl
+//   Time (mean ± σ):      2.976 s ±  0.008 s    [User: 2.909 s, System: 0.061 s]
+//   Range (min … max):    2.967 s …  2.993 s    10 runs
+ 
+// Benchmark 3: test-filter-conduit-1 --file foo.jsonl
+//   Time (mean ± σ):      6.112 s ±  0.044 s    [User: 5.720 s, System: 0.383 s]
+//   Range (min … max):    6.074 s …  6.218 s    10 runs
+ 
+// Benchmark 4: test-filter-conduit-2 --file foo.jsonl
+//   Time (mean ± σ):      1.324 s ±  0.011 s    [User: 1.304 s, System: 0.013 s]
+//   Range (min … max):    1.299 s …  1.336 s    10 runs
+ 
+// Summary
+//   'test-filter-foldl-1 --file foo.jsonl' ran
+//     1.09 ± 0.01 times faster than 'test-filter-conduit-2 --file foo.jsonl'
+//     2.46 ± 0.02 times faster than 'test-filter-foldl-2 --file foo.jsonl'
+//     5.05 ± 0.06 times faster than 'test-filter-conduit-1 --file foo.jsonl'
+// ```
+
+// ### Test C
+
+// * `O1` optimization
+// * after removing `INLINE` pragma on `filterAppStepM` *only*
+
+// ```shell
+// bradley.saul@TGTRWE-LT-0126 asclepias % hyperfine --warmup 3 'test-filter-foldl-1 --file foo.jsonl' 'test-filter-conduit-2 --file foo.jsonl'
+// Benchmark 1: test-filter-foldl-1 --file foo.jsonl
+//   Time (mean ± σ):      5.992 s ±  0.122 s    [User: 5.668 s, System: 0.310 s]
+//   Range (min … max):    5.939 s …  6.336 s    10 runs
+ 
+//   Warning: Statistical outliers were detected. Consider re-running this benchmark on a quiet PC without any interferences from other programs. It might help to use the '--warmup' or '--prepare' options.
+ 
+// Benchmark 2: test-filter-conduit-2 --file foo.jsonl
+//   Time (mean ± σ):      1.323 s ±  0.010 s    [User: 1.301 s, System: 0.013 s]
+//   Range (min … max):    1.308 s …  1.338 s    10 runs
+ 
+// Summary
+//   'test-filter-conduit-2 --file foo.jsonl' ran
+//     4.53 ± 0.10 times faster than 'test-filter-foldl-1 --file foo.jsonl'
+// ```
+
+// ### Test D
+
+// * `O2` optimization
+// * after removing `INLINE` pragma on `filterAppStepM` *only*
+
+// Basically same as Test C
+
+
+// After test D, I chose `test-filter-conduit-2` since that
+// option collects and then outputs, 
+// making it easier to output to a file or S3.
+
+// ### Test E
+
+// After choosing `test-filter-conduit-2`, 
+// I realized empty lines were included in the output for excluded groups.
+
+// This test looks at results:
+
+// * after adding `filter` step to conduit to remove empty lines
+// * i.e. this is same as `test-filter-conduit-2` with the added `filter` step
+// * note that my computer was running a bit hotter during this test
+// so take any comparison to the above with a grain of salt.
+
+// ```shell
+// bradley.saul@TGTRWE-LT-0126 asclepias %  hyperfine --warmup 3 'testLineFilterApp --dir hasklepias-main/lineFilter-test --file lineFilterTestInputs-1.jsonl'
+// Benchmark 1: testLineFilterApp --dir hasklepias-main/lineFilter-test --file lineFilterTestInputs-1.jsonl
+//   Time (mean ± σ):      1.698 s ±  0.082 s    [User: 1.627 s, System: 0.028 s]
+//   Range (min … max):    1.594 s …  1.822 s    10 runs
+// ```

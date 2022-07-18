@@ -1,0 +1,149 @@
+Name,Mean (ps),2*Stdev (ps),Allocated,Copied,Peak Memory
+All.group experiments.strict bytestring :: list :: .option A :: strict parse :: :all fail :: 10,3215956,119766,48101,139,3145728
+All.group experiments.strict bytestring :: list :: .option B :: strict parse :: :all fail :: 10,2763267,240748,45068,156,3145728
+All.group experiments.strict bytestring :: list :: .option A :: strict parse :: :all pass :: 10,653606,43244,7631,21,3145728
+All.group experiments.strict bytestring :: list :: .option B :: strict parse :: :all pass :: 10,651211,53138,8199,26,3145728
+All.group experiments.strict bytestring :: list :: .option A :: strict parse :: :first pass :: 10,684844,30144,8079,22,3145728
+All.group experiments.strict bytestring :: list :: .option B :: strict parse :: :first pass :: 10,711270,61344,8687,28,3145728
+All.group experiments.strict bytestring :: list :: .option A :: strict parse :: :last pass :: 10,3653536,257848,53364,148,3145728
+All.group experiments.strict bytestring :: list :: .option B :: strict parse :: :last pass :: 10,3385873,266698,52373,182,3145728
+All.group experiments.strict bytestring :: NA :: .option C :: strict parse :all fail :: 10,2963844,250472,46237,158,3145728
+All.group experiments.strict bytestring :: NA :: .option C :: strict parse :all pass :: 10,344440,29594,5463,14,3145728
+All.group experiments.strict bytestring :: NA :: .option C :: strict parse :first pass :: 10,345892,7848,5495,15,3145728
+All.group experiments.strict bytestring :: NA :: .option C :: strict parse :last pass :: 10,3292382,211384,51391,177,3145728
+All.group experiments.strict bytestring :: list :: .option A :: strict parse :: :all fail :: 100,34124072,3318180,534876,1493,3145728
+All.group experiments.strict bytestring :: list :: .option B :: strict parse :: :all fail :: 100,28280029,1676232,450402,4157,3145728
+All.group experiments.strict bytestring :: list :: .option A :: strict parse :: :all pass :: 100,5826992,410008,82868,273,3145728
+All.group experiments.strict bytestring :: list :: .option B :: strict parse :: :all pass :: 100,5877565,105152,87934,382,3145728
+All.group experiments.strict bytestring :: list :: .option A :: strict parse :: :first pass :: 100,6402581,332686,89262,301,3145728
+All.group experiments.strict bytestring :: list :: .option B :: strict parse :: :first pass :: 100,6200399,445206,94276,415,3145728
+All.group experiments.strict bytestring :: list :: .option A :: strict parse :: :last pass :: 100,34560083,3281276,542134,1494,3145728
+All.group experiments.strict bytestring :: list :: .option B :: strict parse :: :last pass :: 100,33559228,3322220,531152,4413,3145728
+All.group experiments.strict bytestring :: NA :: .option C :: strict parse :all fail :: 100,34855664,1948806,554184,4230,3145728
+All.group experiments.strict bytestring :: NA :: .option C :: strict parse :all pass :: 100,409048,26238,7255,20,3145728
+All.group experiments.strict bytestring :: NA :: .option C :: strict parse :first pass :: 100,412539,26278,7479,20,3145728
+All.group experiments.strict bytestring :: NA :: .option C :: strict parse :last pass :: 100,35307397,3459244,560328,4245,3145728
+All.group experiments.strict bytestring :: list :: .option A :: strict parse :: :all fail :: 1000,481388085,25421296,10303186,18353,4194304
+All.group experiments.strict bytestring :: list :: .option B :: strict parse :: :all fail :: 1000,361439843,28098464,4536481,220646,5242880
+All.group experiments.strict bytestring :: list :: .option A :: strict parse :: :all pass :: 1000,759222656,52949390,5289028,1233732,7340032
+All.group experiments.strict bytestring :: list :: .option B :: strict parse :: :all pass :: 1000,811713281,57051178,5405874,1322081,7340032
+All.group experiments.strict bytestring :: list :: .option A :: strict parse :: :first pass :: 1000,864679687,60959056,5800609,1461902,7340032
+All.group experiments.strict bytestring :: list :: .option B :: strict parse :: :first pass :: 1000,892844140,53338954,5916205,1515676,7340032
+All.group experiments.strict bytestring :: list :: .option A :: strict parse :: :last pass :: 1000,486085351,28357882,10330546,27190,7340032
+All.group experiments.strict bytestring :: list :: .option B :: strict parse :: :last pass :: 1000,1395146875,108016058,10283201,2154406,8388608
+All.group experiments.strict bytestring :: NA :: .option C :: strict parse :all fail :: 1000,1437643750,111530878,10663379,2228764,8388608
+All.group experiments.strict bytestring :: NA :: .option C :: strict parse :all pass :: 1000,922869,52652,25254,48,8388608
+All.group experiments.strict bytestring :: NA :: .option C :: strict parse :first pass :: 1000,990053,60660,27279,53,8388608
+All.group experiments.strict bytestring :: NA :: .option C :: strict parse :last pass :: 1000,1444250000,106230698,10679393,2247329,8388608
+All.group experiments.strict bytestring :: list :: .option A :: strict parse :: :all fail :: 10000,17481000000,1195737350,598028719,1311047,8388608
+All.group experiments.strict bytestring :: list :: .option B :: strict parse :: :all fail :: 10000,3717103125,252200516,45595631,2592571,11534336
+All.group experiments.strict bytestring :: list :: .option A :: strict parse :: :all pass :: 10000,107916800000,7778833280,503102174,271626205,14680064
+All.group experiments.strict bytestring :: list :: .option B :: strict parse :: :all pass :: 10000,107604050000,7424192898,504373682,268917647,14680064
+All.group experiments.strict bytestring :: list :: .option A :: strict parse :: :first pass :: 10000,116047300000,6962668468,553219363,304300679,17825792
+All.group experiments.strict bytestring :: list :: .option B :: strict parse :: :first pass :: 10000,118275050000,8435119230,554479420,307003541,17825792
+All.group experiments.strict bytestring :: list :: .option A :: strict parse :: :last pass :: 10000,18530993750,1683954842,598249539,1327335,17825792
+All.group experiments.strict bytestring :: list :: .option B :: strict parse :: :last pass :: 10000,129437000000,7012309176,598185934,317097363,18874368
+All.group experiments.strict bytestring :: NA :: .option C :: strict parse :all fail :: 10000,122431950000,7256487800,601695227,316897897,19922944
+All.group experiments.strict bytestring :: NA :: .option D :: strict parse :all fail :: 10000,2903595312,209931844,46797837,129870,19922944
+All.group experiments.strict bytestring :: NA :: .option C :: strict parse :all pass :: 10000,5736132,432336,205251,441,19922944
+All.group experiments.strict bytestring :: NA :: .option D :: strict parse :all pass :: 10000,292839,25780,4735,11,19922944
+All.group experiments.strict bytestring :: NA :: .option C :: strict parse :first pass :: 10000,6134255,481304,225276,513,19922944
+All.group experiments.strict bytestring :: NA :: .option D :: strict parse :first pass :: 10000,294906,26022,4735,11,19922944
+All.group experiments.strict bytestring :: NA :: .option C :: strict parse :last pass :: 10000,122540500000,7493063792,601793737,315593703,19922944
+All.group experiments.strict bytestring :: NA :: .option D :: strict parse :last pass :: 10000,2903189062,213244020,46801900,127741,19922944
+All.group experiments.strict bytestring :: list :: .option A :: strict parse :: :all fail :: 100000,1686188800000,90549125534,55480447025,94004698,32505856
+All.group experiments.strict bytestring :: list :: .option B :: strict parse :: :all fail :: 100000,40241000000,3718581046,456160814,36793137,72351744
+All.group experiments.strict bytestring :: list :: .option A :: strict parse :: :all pass :: 100000,14043602200000,691019242504,50031914548,33760016666,135266304
+All.group experiments.strict bytestring :: list :: .option B :: strict parse :: :all pass :: 100000,13461360600000,756976986850,50045267826,32743045482,137363456
+All.group experiments.strict bytestring :: list :: .option A :: strict parse :: :first pass :: 100000,16196043400000,543758960922,55033069330,41749449613,171966464
+All.group experiments.strict bytestring :: list :: .option B :: strict parse :: :first pass :: 100000,15831870000000,108632654482,55046281604,40888844827,176160768
+All.group experiments.strict bytestring :: list :: .option A :: strict parse :: :last pass :: 100000,1754845800000,124887079824,55482652591,91852654,176160768
+All.group experiments.strict bytestring :: list :: .option B :: strict parse :: :last pass :: 100000,15693591400000,657203633694,55483166564,42003946762,219152384
+All.group experiments.strict bytestring :: NA :: .option C :: strict parse :all fail :: 100000,14805213800000,381288050532,55518072859,39834223801,222298112
+All.group experiments.strict bytestring :: NA :: .option D :: strict parse :all fail :: 100000,28949362500,1896856464,467965587,1234908,222298112
+All.group experiments.strict bytestring :: NA :: .option C :: strict parse :all pass :: 100000,50072314,3287608,2005256,2448,222298112
+All.group experiments.strict bytestring :: NA :: .option D :: strict parse :all pass :: 100000,293836,28502,4735,10,222298112
+All.group experiments.strict bytestring :: NA :: .option C :: strict parse :first pass :: 100000,450675195,40350544,2205282,1387667,222298112
+All.group experiments.strict bytestring :: NA :: .option D :: strict parse :first pass :: 100000,296051,12834,4735,10,222298112
+All.group experiments.strict bytestring :: NA :: .option C :: strict parse :last pass :: 100000,13047611400000,183879919634,55519184315,35974481366,241172480
+All.group experiments.strict bytestring :: NA :: .option D :: strict parse :last pass :: 100000,28778375000,1786618314,468003115,1212472,241172480
+All.app experiments.app_optionA:10groups-10000lines-all-pass,203708400000,15968655854,5558984402,33353674,241172480
+All.app experiments.app_optionC:10groups-10000lines-all-pass,260746800000,19321416178,6121630320,29657443,241172480
+All.app experiments.app_optionD:10groups-10000lines-all-pass,1275929800000,27366788762,5592187426,3392686772,241172480
+All.app experiments.app_optionE:10groups-10000lines-all-pass,216469450000,15126552654,5561384815,37570159,241172480
+All.app experiments.app_optionF:10groups-10000lines-all-pass,33759612500,1772531084,491095906,1088285,241172480
+All.app experiments.app_optionA:10groups-10000lines-all-fail,203629000000,15616698754,6486880637,11973785,241172480
+All.app experiments.app_optionC:10groups-10000lines-all-fail,251923000000,18257495036,7058758157,30025959,241172480
+All.app experiments.app_optionD:10groups-10000lines-all-fail,90983275000,3684704616,950454305,70748861,241172480
+All.app experiments.app_optionE:10groups-10000lines-all-fail,62693525000,3774818156,918239483,14633817,241172480
+All.app experiments.app_optionF:10groups-10000lines-all-fail,63472400000,3482899480,958195010,2238080,241172480
+All.app experiments.app_optionA:10groups-10000lines-first-pass,220749100000,17808939798,6060786204,33758747,241172480
+All.app experiments.app_optionC:10groups-10000lines-first-pass,279297200000,25203169386,6625851820,30093487,241172480
+All.app experiments.app_optionD:10groups-10000lines-first-pass,1333215400000,67094561304,6093902851,3451244686,241172480
+All.app experiments.app_optionE:10groups-10000lines-first-pass,216526100000,13444582320,6063186604,33644552,241172480
+All.app experiments.app_optionF:10groups-10000lines-first-pass,33477512500,2282075076,491299465,1784148,241172480
+All.app experiments.app_optionA:10groups-10000lines-last-pass,222962700000,15286207906,6496303972,11581032,241172480
+All.app experiments.app_optionC:10groups-10000lines-last-pass,257210600000,19238234450,7073263348,35453481,241172480
+All.app experiments.app_optionD:10groups-10000lines-last-pass,1342792400000,56103839982,6530938820,3336833473,241172480
+All.app experiments.app_optionE:10groups-10000lines-last-pass,249591200000,19511481958,6500236532,34372277,241172480
+All.app experiments.app_optionF:10groups-10000lines-last-pass,63146450000,3729314172,959459407,2164239,241172480
+All.app experiments.app_optionA:100groups-1000lines-all-pass,72131850000,6953276982,1108304148,52894002,241172480
+All.app experiments.app_optionC:100groups-1000lines-all-pass,119760300000,6829622422,1724749796,51322256,241172480
+All.app experiments.app_optionD:100groups-1000lines-all-pass,230420900000,13885087712,1141661074,481145725,241172480
+All.app experiments.app_optionE:100groups-1000lines-all-pass,71881800000,6929127448,1110705748,52897602,241172480
+All.app experiments.app_optionF:100groups-1000lines-all-pass,33995387500,2384375186,495773339,1774113,241172480
+All.app experiments.app_optionA:100groups-1000lines-all-fail,78448900000,6833647346,1540695299,2191768,241172480
+All.app experiments.app_optionC:100groups-1000lines-all-fail,135734150000,12194173108,2117990674,21480186,241172480
+All.app experiments.app_optionD:100groups-1000lines-all-fail,90981500000,7292935708,958321410,67858277,241172480
+All.app experiments.app_optionE:100groups-1000lines-all-fail,64002100000,4253224900,926168299,13577975,241172480
+All.app experiments.app_optionF:100groups-1000lines-all-fail,65282025000,4513167802,966387231,2002795,241172480
+All.app experiments.app_optionA:100groups-1000lines-first-pass,74775900000,7450354894,1165293228,55905021,241172480
+All.app experiments.app_optionC:100groups-1000lines-first-pass,124710950000,9603241142,1788909252,54363646,241172480
+All.app experiments.app_optionD:100groups-1000lines-first-pass,235924700000,13859596538,1198587285,482433575,241172480
+All.app experiments.app_optionE:100groups-1000lines-first-pass,74974650000,7226748096,1167697228,55920933,241172480
+All.app experiments.app_optionF:100groups-1000lines-first-pass,34094187500,2375822226,496368579,1743092,241172480
+All.app experiments.app_optionA:100groups-1000lines-last-pass,89146700000,8585830212,1605290356,34558512,241172480
+All.app experiments.app_optionC:100groups-1000lines-last-pass,149023100000,6945003530,2241783180,55588376,241172480
+All.app experiments.app_optionD:100groups-1000lines-last-pass,267519000000,14722271562,1639461214,488444284,241172480
+All.app experiments.app_optionE:100groups-1000lines-last-pass,102173350000,7569313710,1608571156,56155652,241172480
+All.app experiments.app_optionF:100groups-1000lines-last-pass,63978050000,4790104820,968432623,1935343,241172480
+All.app experiments.app_optionA:1000groups-100lines-all-pass,54657175000,1082787966,1162809196,3559563,241172480
+All.app experiments.app_optionC:1000groups-100lines-all-pass,202799850000,7042719700,2325138412,292494951,241172480
+All.app experiments.app_optionD:1000groups-100lines-all-pass,194905700000,15488795666,1195775643,428168384,271581184
+All.app experiments.app_optionE:1000groups-100lines-all-pass,54799950000,3730991222,1165225330,2633211,271581184
+All.app experiments.app_optionF:1000groups-100lines-all-pass,36301550000,1904738604,506268523,2092437,271581184
+All.app experiments.app_optionA:1000groups-100lines-all-fail,66113575000,3935367836,1018001364,2120261,271581184
+All.app experiments.app_optionC:1000groups-100lines-all-fail,117025500000,10879588744,1601584584,8658392,271581184
+All.app experiments.app_optionD:1000groups-100lines-all-fail,84567375000,3883491058,965268762,53236473,271581184
+All.app experiments.app_optionE:1000groups-100lines-all-fail,62510200000,3428563028,935220556,4694336,271581184
+All.app experiments.app_optionF:1000groups-100lines-all-fail,65579800000,3834968384,977394319,2245547,271581184
+All.app experiments.app_optionA:1000groups-100lines-first-pass,56237825000,3685990354,1230168489,2548310,271581184
+All.app experiments.app_optionC:1000groups-100lines-first-pass,215642100000,18088895510,2455664084,325711207,271581184
+All.app experiments.app_optionD:1000groups-100lines-first-pass,205883900000,13616312342,1263903078,462602246,273678336
+All.app experiments.app_optionE:1000groups-100lines-first-pass,56145550000,4066401420,1232608578,2536774,273678336
+All.app experiments.app_optionF:1000groups-100lines-first-pass,36124062500,2390636176,511461443,2054892,273678336
+All.app experiments.app_optionA:1000groups-100lines-last-pass,135809300000,9541972880,1678057620,182840321,273678336
+All.app experiments.app_optionC:1000groups-100lines-last-pass,252991750000,10889651050,2913152596,346164685,288358400
+All.app experiments.app_optionD:1000groups-100lines-last-pass,230960500000,14337667870,1709391941,442952680,288358400
+All.app experiments.app_optionE:1000groups-100lines-last-pass,139227750000,6883735268,1678097620,186350867,288358400
+All.app experiments.app_optionF:1000groups-100lines-last-pass,66378550000,4103855558,988063087,2205991,288358400
+All.app experiments.app_optionA:10000groups-10lines-all-pass,231688700000,16825964316,6959028780,8752543,288358400
+All.app experiments.app_optionC:10000groups-10lines-all-pass,449996600000,40294839380,13942083877,20782027,288358400
+All.app experiments.app_optionD:10000groups-10lines-all-pass,1291174200000,27354266782,6934187530,3432159508,357564416
+All.app experiments.app_optionE:10000groups-10lines-all-pass,223840200000,16307196546,6961588780,8639814,357564416
+All.app experiments.app_optionF:10000groups-10lines-all-pass,41480350000,3950796706,557625935,6711144,357564416
+All.app experiments.app_optionA:10000groups-10lines-all-fail,67150375000,3502241468,965272092,1871712,357564416
+All.app experiments.app_optionC:10000groups-10lines-all-fail,120012150000,9660708088,1557545199,3630896,357564416
+All.app experiments.app_optionD:10000groups-10lines-all-fail,85857700000,7047639050,969189698,45773435,357564416
+All.app experiments.app_optionE:10000groups-10lines-all-fail,64820925000,3612479620,944109248,2022902,357564416
+All.app experiments.app_optionF:10000groups-10lines-all-fail,71473925000,6714241316,1006149628,5540720,357564416
+All.app experiments.app_optionA:10000groups-10lines-first-pass,260194100000,20027566446,8151941436,9722119,357564416
+All.app experiments.app_optionC:10000groups-10lines-first-pass,535167550000,21690530202,16333744227,20767373,357564416
+All.app experiments.app_optionD:10000groups-10lines-first-pass,1517626600000,40713431306,8129735190,4020989748,371195904
+All.app experiments.app_optionE:10000groups-10lines-first-pass,260070500000,15609990550,8154741436,9592328,371195904
+All.app experiments.app_optionF:10000groups-10lines-first-pass,45527100000,4020114812,608422487,6771771,371195904
+All.app experiments.app_optionA:10000groups-10lines-last-pass,286855000000,24961226832,8604377196,9555494,371195904
+All.app experiments.app_optionC:10000groups-10lines-last-pass,557044600000,28886420560,16795847778,20250352,371195904
+All.app experiments.app_optionD:10000groups-10lines-last-pass,1529071200000,64771733890,8579756561,3894771412,380633088
+All.app experiments.app_optionE:10000groups-10lines-last-pass,287852800000,27747814746,8604852459,9448435,380633088
+All.app experiments.app_optionF:10000groups-10lines-last-pass,77309850000,7410552884,1089651054,5994422,380633088

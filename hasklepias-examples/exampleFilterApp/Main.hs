@@ -1,6 +1,6 @@
 {-|
-Module      : ExampleCohortApp
-Description : Demostrates how to define a cohort using Hasklepias
+Module      : ExampleFilterApp
+Description : Demostrates how to filter event lines
 Copyright   : (c) NoviSci, Inc 2020
 License     : BSD3
 Maintainer  : bsaul@novisci.com
@@ -17,4 +17,4 @@ import           AppExamples.FilterApp
 import           Hasklepias
 
 main :: IO ()
-main = runFilterApp exampleFilterApp
+main = exampleFilterApp

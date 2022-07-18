@@ -9,11 +9,11 @@ from the input data.
 If indices are required for your project,
 and your input data is in `Event` format
 then you must define a function that takes in a list
-of `Event`s, with defined `t`agSet, `m`odel, and `Interval a` types
-and returns an IndexSet of `Interval a` types.
+of `Event` s, with defined `t` agSet, `m` odel, and `Interval a` types
+and returns an `IndexSet` of `Interval a` types.
 Instructions on defining `t` and `m` are given later.
 
-The following index function takes in a list of `Event`s
+The following index function takes in a list of `Event` s
 and creates an `IndexSet` where the index is defined as
 the last day that `YOUR_TAG` occurred for longer than 1 temporal unit (`a`)
 during `yourStudyPeriod`.

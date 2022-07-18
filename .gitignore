@@ -26,5 +26,10 @@ docs-site/*
 
 *.tix
 
+<<<<<<< HEAD
 # local scratch directory
 scratch**/
+=======
+# local scratch work
+scratch/*
+>>>>>>> c2793b7 (ignore a directory for local work)

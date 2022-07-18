@@ -1,10 +1,11 @@
 # Changelog for hasklepias-core
 
-## x.xx.x
+## 0.27.0
 
 * Tweaks and adds to the `From` instances for `Subject` and `Population`
 in order to make type inference easier for GHC
 and thus users need to write fewer type annotations to help the compiler.
+* Removes unused argument in `checkCohortStatus`.
 
 ## 0.26.0
 

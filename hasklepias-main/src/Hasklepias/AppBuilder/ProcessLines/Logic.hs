@@ -101,6 +101,8 @@ A group is output if at least one of its elements
 both successfully parses (given a parser) and
 satisfies a given predicate.
 Input elements that fail to parse are included in the output.
+
+See NOTE:combine-group-app
 -------------------------------------------------------------------------------}
 
 {- 
@@ -251,6 +253,8 @@ For example, if the input is event lines data,
 the application groups the input events by subject ID. 
 
 (2) Processing each group
+
+See NOTE:combine-group-app
 -------------------------------------------------------------------------------}
 
 {- 
@@ -409,3 +413,18 @@ processAppLinesLazy
   -> BL.ByteString
   -> BL.ByteString
 processAppLinesLazy = processAppLines lineFunctionsLazy
+
+
+{-
+NOTE:combine-group-app
+
+The current implementation of processAppLinesInternal 
+essentially does two passes over a group's lines:
+one to identify a group then a second pass to apply processGroupLines.
+As an optimization, these two operations could (should?) be fused into one pass.
+This optimization was not implemented in
+https://gitlab.novisci.com/nsStat/asclepias/-/merge_requests/245
+because the processAppLines function is many times faster and more efficiently
+than the previous version, 
+and I (B. Saul) decided effort was better spent elsewhere at the time.
+-}

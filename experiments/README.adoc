@@ -1,0 +1,35 @@
+:description: A description of what the experiments directory contains.
+
+= Experiments
+
+The `experiments` directory contains code and results 
+of experiments relevant to `asclepias`.
+In particular, 
+these experiments are here because we'd like make the knowledge gained 
+from the experiments easily accessible
+and not lost in commit history or an issue/MR description or thread.
+Experiments might often involve benchmarking various approaches to a problem,
+but other experiments are welcome too.
+
+Each experiment: 
+
+* should have a stand alone build process,
+which is only expected to build locally (i.e. not in the CI).
+* should not interfere with the hasklepias build
+* should ultimately have some artifact(s), such as a page,
+presented in the developer guide 
+in the form of a summary or report.
+
+== Naming Convention
+
+All files for each experiment
+go in to a subdirectory labeled `nnn-slug`, where
+
+* `nnn` is an incrementor, e.g. `001`, `002`, etc
+* `slug` is a short label
+
+== Experiment file structure
+
+Aside from the naming convention and a `README` file,
+the developer(s) can structure a given experiment
+how best they see fit.

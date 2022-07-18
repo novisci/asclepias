@@ -52,7 +52,7 @@ module Hasklepias
   , module Hasklepias.MakeCohortApp
   , module Hasklepias.AppUtilities
     -- ** Create an application for filtering subjects
-  , module Hasklepias.MakeFilterApp
+  , module Hasklepias.AppBuilder.LineFilterApp
 
     -- * Statistical Types
   , module Stype
@@ -69,10 +69,10 @@ import           Features
 
 import           Cohort
 
+import           Hasklepias.AppBuilder.LineFilterApp
 import           Hasklepias.AppUtilities
 import           Hasklepias.AssessmentIntervals
 import           Hasklepias.MakeCohortApp
-import           Hasklepias.MakeFilterApp
 import           Hasklepias.Misc
 import           Hasklepias.Reexports
 import           Templates.Features

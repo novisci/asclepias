@@ -30,7 +30,9 @@ library
       Hasklepias.AppUtilities
       Hasklepias.AssessmentIntervals
       Hasklepias.MakeCohortApp
-      Hasklepias.MakeFilterApp
+      Hasklepias.AppBuilder.LineFilterApp
+      Hasklepias.AppBuilder.ProcessLines.Tests
+      
       Hasklepias.Misc
       Hasklepias.Reexports
       Tests.Hasklepias
@@ -68,6 +70,10 @@ library
       TestUtils.S3Utils
       TestUtils.TestCases
   other-modules:
+
+      Hasklepias.AppBuilder.ProcessLines.Logic
+
+
       Stype.Tests.Aeson
       Stype.Tests.Censored
       Templates.Features.BuildIsEnrolled
@@ -88,6 +94,7 @@ library
       Test.Monarch.Internal.Utilities
 
       Tests.AssessmentIntervals
+
   hs-source-dirs:
       src
   build-depends:
@@ -104,8 +111,8 @@ library
     , cassava
     , co-log-core
     , containers
-    , conduit
     , conduit-extra
+    , deepseq
     , dhall
     , dhall-csv
     , filepath
@@ -123,6 +130,7 @@ library
     , semiring-simple
     , string-interpolate
     , tasty
+    , tasty-bench
     , tasty-quickcheck
     , tasty-hunit
     , tasty-silver
@@ -186,3 +194,22 @@ executable monarch-demo
         , tasty
     hs-source-dirs:   monarch-demo
     default-language: Haskell2010
+
+executable lineFilter-demo
+    main-is:          Main.hs
+    build-depends:
+          base
+        , hasklepias-main
+        , tasty
+    hs-source-dirs:   lineFilter-demo
+    default-language: Haskell2010
+
+benchmark hasklepias
+  main-is:       Main.hs
+  type:          exitcode-stdio-1.0
+  build-depends: 
+        base
+      , hasklepias-main
+  hs-source-dirs: bench
+  ghc-options:  "-with-rtsopts=-A32m --nonmoving-gc"
+  default-language: Haskell2010

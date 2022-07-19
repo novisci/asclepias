@@ -1,9 +1,7 @@
-:interval-algebra-v: 2.1.0
-
 An `+Event+` is a `Context` with an associated time interval.
 
 Concretely, an `+Event+` is a wrapper around the `+interval-algebra+` package's
-https://hackage.haskell.org/package/interval-algebra-{interval-algebra-v}/docs/IntervalAlgebra-PairedInterval.html[`PairedInterval` type]:
+https://hackage.haskell.org/package/interval-algebra/docs/IntervalAlgebra-PairedInterval.html[`PairedInterval` type]:
 
 [source,haskell]
 ----

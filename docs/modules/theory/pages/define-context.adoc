@@ -13,5 +13,5 @@ include::ROOT:example$EventDataTheory/Core.hs[tag=contextType]
 <1> a `+TagSet+`;
 <2> `Fact` s about the event whose shape and possible values
 are determined by the `Model` type `m`;
-<3> (optionally) data about the provenance of the event in a `+Source+` object.
+<3> optionally, information on the source of the event data.
 

@@ -1,3 +1,5 @@
+:interval-algebra-v: 2.1.0
+
 An `+Event+` is a `Context` with an associated time interval.
 
 Concretely, an `+Event+` is a wrapper around the `+interval-algebra+` package's

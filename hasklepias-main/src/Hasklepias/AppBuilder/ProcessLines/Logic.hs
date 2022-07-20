@@ -23,9 +23,7 @@ import qualified Data.ByteString.Char8         as BSC
 import qualified Data.ByteString.Lazy          as BL
 import qualified Data.ByteString.Lazy.Char8    as BLC
 import           Data.Int
-import           Data.Maybe
-import qualified Data.Text                     as T
-import           Debug.Trace
+
 {-
 INTERNAL
 Run a parser then a predicate, 

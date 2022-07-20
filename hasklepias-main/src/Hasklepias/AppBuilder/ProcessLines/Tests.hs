@@ -287,33 +287,12 @@ appTestCasesLazy =
 tests = testGroup
   "line processing logic"
   [ testGroup
-    "processing lines for single group"
-    [ testGroup "processGroupLinesStrict"
-    $  makeTests (processGroupLinesStrict dclS' tpr) groupTestCasesStrict
-    ++ makeTests
-         (processGroupLinesStrict readOne (== 1))
-         [ ("all ones", "1\n1\n1", "1\n1\n1")
-         , ("all twos", "2\n2\n2", "")
-         , ("1-2-3"   , "1\n2\n3", "1\n2\n3")
-         , ("3-2-1"   , "3\n2\n1", "3\n2\n1")
-         ]
-    , testGroup "processGroupLinesLazy"
-    $  makeTests (processGroupLinesLazy dclL' tpr) groupTestCasesLazy
-    ++ makeTests
-         (processGroupLinesLazy readOne (== 1))
-         [ ("all ones", "1\n1\n1", "1\n1\n1")
-         , ("all twos", "2\n2\n2", "")
-         , ("1-2-3"   , "1\n2\n3", "1\n2\n3")
-         , ("3-2-1"   , "3\n2\n1", "3\n2\n1")
-         ]
-    ]
-  , testGroup
-    "processing lines for application"
-    [ testGroup "processAppLinesStrict"
-      $ makeTests (processAppLinesStrict dciS' dclS' tpr) appTestCasesStrict
-    , testGroup "processAppLinesLazy"
-      $ makeTests (processAppLinesLazy dciL' dclL' tpr) appTestCasesLazy
-    ]
+      "processing lines for application"
+      [ testGroup "processAppLinesStrict"
+        $ makeTests (processAppLinesStrict dciS' dclS' tpr) appTestCasesStrict
+      , testGroup "processAppLinesLazy"
+        $ makeTests (processAppLinesLazy dciL' dclL' tpr) appTestCasesLazy
+      ]
   ]
  where
   makeTests f = fmap (\(n, i, r) -> testCase n $ f i @?= r)

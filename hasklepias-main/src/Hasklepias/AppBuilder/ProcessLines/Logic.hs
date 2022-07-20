@@ -30,7 +30,8 @@ import qualified Data.ByteString.Lazy          as BL
 import qualified Data.ByteString.Lazy.Char8    as BLC
 import           Data.Int
 import qualified Data.Text                     as T
-
+import Data.Maybe
+import Debug.Trace
 {-
 INTERNAL
 Run a parser then a predicate, 
@@ -56,8 +57,7 @@ that provides the functionality needed.
 data LineFunctions t i = MkLineFunctions
   { isEmpty     :: t -> Bool
   , findNewLine :: t -> Maybe i
-  , takeEnd     :: t -> i -> t
-  , takeSubset  :: t -> i -> i -> t
+  , takeSubset :: t -> i -> Maybe i -> t
   , build       :: t -> Builder
   , runBuilder  :: Builder -> t
   }
@@ -65,8 +65,10 @@ data LineFunctions t i = MkLineFunctions
 lineFunctionsStrict :: LineFunctions BS.ByteString Int
 lineFunctionsStrict = MkLineFunctions
   { isEmpty     = BS.null
-  , takeEnd     = flip BS.drop
-  , takeSubset  = \x i n -> BS.take n (BS.drop (i + 1) x)
+
+  , takeSubset  = \x i n -> case n of
+                  Nothing -> BS.drop i x
+                  Just j -> BS.take j (BS.drop i x)
   , findNewLine = BSC.elemIndex '\n'
   , build       = byteString
   , runBuilder  = BL.toStrict . toLazyByteString
@@ -75,22 +77,14 @@ lineFunctionsStrict = MkLineFunctions
 lineFunctionsLazy :: LineFunctions BL.ByteString Int64
 lineFunctionsLazy = MkLineFunctions
   { isEmpty     = BL.null
-  , takeEnd     = flip BL.drop
-  , takeSubset  = \x i n -> BL.take n (BL.drop (i + 1) x)
+  , takeSubset  = \x i n -> case n of
+                  Nothing -> BL.drop i x
+                  Just j -> BL.take j (BL.drop i x)
   , findNewLine = BLC.elemIndex '\n'
   , build       = lazyByteString
   , runBuilder  = toLazyByteString
   }
 
-lineFunctionsText :: LineFunctions T.Text Int
-lineFunctionsText = MkLineFunctions
-  { isEmpty     = T.null
-  , takeEnd     = flip T.drop
-  , takeSubset  = \x i n -> T.take n (T.drop (i + 1) x)
-  , findNewLine = T.findIndex (== '\n')
-  , build       = stringUtf8 . T.unpack
-  , runBuilder  = T.pack . show . toLazyByteString
-  }
 
 {-------------------------------------------------------------------------------
    Within-group fold logic
@@ -139,19 +133,18 @@ processGroupLinesInternal fs psl prd status x
     Nothing -> status
     -- If there was a new line character at the previous iteration,
     -- see if there is another new line character *after*
-    -- the previous new line character.
-    Just i  -> case findNewLine fs (takeEnd fs x (i + 1)) of
-        -- If there is a previous and current new line character,
-        -- then update the `GrpLines` tracker 
-        -- with the value of the predicate from the current line
-        -- and the index of the current new line character 
-        -- (relative to whole input).
-        -- Then continue.
-      Just n -> go (takeSubset fs x i n) (Just $ i + n + 1)
-      Nothing ->
-      -- If there is a previous new line but no current new line,
-      -- then update the `GrpLines` tracker and continue.
-        go (takeEnd fs x (i + 1)) Nothing
+    -- the previous new line character, handling cases as follows:
+    --  * If there is a previous and current new line character,
+    --    then update the `GrpLines` tracker 
+    --    with the value of the predicate from the current line
+    --    and the index of the current new line character 
+    --    (relative to whole input) and continue.
+    --   * If there is a previous new line but no current new line,
+    --     then update the `GrpLines` tracker and continue.
+    Just i  ->
+      let getTailTo = takeSubset fs x (i + 1) in
+      let nl = findNewLine fs (getTailTo Nothing) in
+      go ( getTailTo nl ) (fmap (\n -> n + i + 1) nl)
  where
   go i j = processGroupLinesInternal
     fs
@@ -219,13 +212,13 @@ and the predicate checks whether the value is @1@.
 >>> let i321 = "3\n2\n1"
 >>> let i123 = "1\n2\n3" 
 >>> readOne x = if x == "1" then Just 1 else (if x == "2" then Just 2 else Nothing)
->>> processGroupLinesText readOne (== 1) allOnes 
+>>> processGroupLinesStrict readOne (== 1) allOnes 
 "1\n1\n1"
->>> processGroupLinesText readOne (== 1) allTwos
+>>> processGroupLinesStrict readOne (== 1) allTwos
 ""
->>> processGroupLinesText readOne (== 1) i321
+>>> processGroupLinesStrict readOne (== 1) i321
 "3\n2\n1"
->>> processGroupLinesText readOne (== 1) i123
+>>> processGroupLinesStrict readOne (== 1) i123
 "1\n2\n3"
 -}
 
@@ -238,10 +231,6 @@ processGroupLinesStrict = processGroupLines lineFunctionsStrict
 processGroupLinesLazy
   :: (BL.ByteString -> Maybe a) -> (a -> Bool) -> BL.ByteString -> BL.ByteString
 processGroupLinesLazy = processGroupLines lineFunctionsLazy
-
--- | Process a group of 'Data.Text.Text'. 
-processGroupLinesText :: (T.Text -> Maybe a) -> (a -> Bool) -> T.Text -> T.Text
-processGroupLinesText = processGroupLines lineFunctionsText
 
 {-------------------------------------------------------------------------------
    Across-group fold ("application") logic
@@ -294,56 +283,43 @@ processAppLinesInternal
   -> AppLines id i
 processAppLinesInternal fs pri psl prd status x
   | isEmpty fs x = status
-  | otherwise = case lastNewLine' status of
-      -- If no line end then done
+  | otherwise = case fmap (+1) (lastNewLine' status) of
+    -- If no new line then we're done!
     Nothing -> status
-    -- Otherwise take the index of the newline character end as `i`
-    Just i  ->
-      -- Is there another newline after `i`?
-               case findNewLine fs (takeEnd fs x (i + 1)) of
-        -- If yes, take this index as `n`,
-        -- as in the count of characters from i to the next newline
-      Just n ->
-          -- Identify the groupID in the subset of x
-          -- in the interval [i + 1, i + n].
-          -- When the ID has not changed, 
-          -- just update the index of the last newline.
-          -- When the ID does change,
-          -- then process the group for the last ID
-          -- and update the ID in the accumulator
-        let currentID = pri (takeSubset fs x i n)
-        in  if currentID == lastID status
-              then go $ status { lastNewLine' = Just $ i + n + 1 }
-              else go $ MkAppLines
-                currentID
-                (i + 1)
-                (Just $ i + n + 1)
-                (builder status <> build
-                  fs
-                  (processGroup
-                    (takeSubset fs
-                                x
-                                (groupStart status - 1)
-                                (i - groupStart status + 1)
-                    )
-                  )
-                )
-      Nothing ->
-          -- The following is similar to the logic above,
-          -- except it handles the case of 
-          -- no further newlines to process.
-        let currentID = pri (takeEnd fs x i)
-        in
-          if currentID == lastID status
-            then go $ status { lastNewLine' = Nothing }
-            else go $ MkAppLines
-              (lastID status)
-              i
-              Nothing
-              (  builder status
-              <> build fs (processGroup (takeEnd fs x (groupStart status)))
-              )
+    -- Otherwise take the index immediately after the newline character as `i`
+    Just i  -> do
 
+      let getTail = takeSubset fs x i
+      -- Is there another newline after `i`?
+      let nl = findNewLine fs (getTail Nothing)
+
+      -- Identify the groupID in the subset of x
+      -- in the interval [i, i + n].
+      let currentID = pri (getTail nl)
+
+      -- When the ID has not changed, 
+      -- just update the index of the last newline.
+      -- When the ID does change,
+      -- then process the group for the last ID
+      -- and update the ID in the accumulator
+
+      let newPos = fmap (i +) nl
+      if currentID == lastID status
+          then go $ status { lastNewLine' = newPos }
+          else go $ MkAppLines
+            currentID
+            i
+            newPos
+            (builder status <> build
+              fs
+              (processGroup
+                (takeSubset fs
+                            x
+                            (groupStart status)
+                            (Just (i - groupStart status))
+                )
+              )
+            )
  where -- the recursion 
   go           = flip (processAppLinesInternal fs pri psl prd) x
   processGroup = processGroupLines fs psl prd
@@ -356,19 +332,19 @@ The function used to create a processAppLines* function
 targeted for a specific type. 
 -}
 processAppLines
-  :: (Eq id, Show id, Num i, Monoid t)
+  :: (Eq id, Show id, Num i, Monoid t, Show i, Show t)
   => LineFunctions t i
   -> (t -> Maybe id)
   -> (t -> Maybe a)
   -> (a -> Bool)
   -> t
   -> t
-processAppLines fs pri psl prd x = runBuilder fs $ builder
-  (processAppLinesInternal fs
+processAppLines fs pri psl prd x = runBuilder fs $ builder2
+  (processAppLinesInternal2 fs
                            pri
                            psl
                            prd
-                           (MkAppLines Nothing (-1) (Just (-1)) mempty)
+                           (MkAppLines2 Nothing (0) False (Just (-1)) mempty)
                            x
   )
 
@@ -413,6 +389,118 @@ processAppLinesLazy
   -> BL.ByteString
   -> BL.ByteString
 processAppLinesLazy = processAppLines lineFunctionsLazy
+
+
+
+{-
+INTERNAL
+The core recursive logic of processing the lines across groups.
+The function "rolls" over the *single string* of new line delimited data 
+updating an `AppLines` value as it encounters new line characters
+within that string.
+
+IMPORTANT
+All the lines for each group are assumed to be contiguous.
+-}
+
+data AppLines2 id i = MkAppLines2
+  { lastID2        :: Maybe id
+  , groupStart2    :: i
+  , predSatisfied2 :: Bool
+  , lastNewLine2   :: Maybe i
+  , builder2       :: Builder
+  }
+
+
+processAppLinesInternal2
+  :: (Eq id, Show id, Num i, Monoid t, Show i, Show t)
+  => LineFunctions t i
+  -> (t -> Maybe id)
+  -> (t -> Maybe a)
+  -> (a -> Bool)
+  -> AppLines2 id i
+  -> t
+  -> AppLines2 id i
+processAppLinesInternal2 fs pri psl prd status x
+  | isEmpty fs x = status
+  | otherwise = case fmap (+1) (lastNewLine2 status) of
+    -- If no new line then we're done!
+    Nothing -> 
+      -- trace (show ("e", predSatisfied2 status, groupStart2 status))
+      status { builder2 = if predSatisfied2 status then 
+        builder2 status <> build fs (takeSubset fs
+
+                            x
+                            ( groupStart2 status)
+                            Nothing) else builder2 status }
+    -- Otherwise take the index immediately after the newline character as `i`
+    Just i  -> do
+
+      let getTail = takeSubset fs x i
+      -- Is there another newline after `i`?
+      let nl = findNewLine fs (getTail Nothing)
+
+      -- Identify the groupID in the subset of x
+      -- in the interval [i, i + n].
+      let currentID = pri (getTail nl)
+
+      -- When the ID has not changed, 
+      -- just update the index of the last newline.
+      -- When the ID does change,
+      -- then process the group for the last ID
+      -- and update the ID in the accumulator
+
+      let newPos = fmap (i +) nl
+
+      let newStatus = status { lastNewLine2 = newPos } 
+
+      case (currentID == lastID2 status, predSatisfied2 status) of
+        (True, True)  -> 
+          -- trace (show ("a", predSatisfied2 status, groupStart2 status, lastID2 status))
+          go newStatus
+          
+          -- do
+            -- trace (show ("a", predSatisfied2 status, groupStart2 status))
+          --   case nl of 
+          --     Nothing -> go newStatus { builder2 =
+          --       builder2 status <> build fs (takeSubset fs
+          --                   x
+          --                   (i - groupStart2 status - 1)
+          --                   (Just (groupStart2 status + 1)))  } 
+          --     Just _  ->  go newStatus
+
+        (True, False) ->
+            -- trace (show ("b", predSatisfied2 status, groupStart2 status)) 
+          go newStatus {  predSatisfied2 = processLine (getTail nl ) }
+        (False, True) -> 
+          -- trace (show ("c"
+          --             , currentID
+          --             , predSatisfied2 status
+          --             , groupStart2 status
+          --             , groupStart2 status))
+                      -- , (takeSubset fs x
+                      --     ((groupStart2 status)))
+                      --     (Just $ i - groupStart2 status)))
+                          -- (Just (i - group  Start2 status))
+          go newStatus {
+                lastID2 = currentID
+              , predSatisfied2 = processLine (getTail nl ) 
+              , groupStart2 = i
+              , builder2 =
+                builder2 status <> build fs (takeSubset fs
+                            x
+                            (groupStart2 status)
+                            (Just (i - groupStart2 status)))  }
+        (False, False) -> 
+            trace (show ("d", predSatisfied2 status, groupStart2 status, lastID2 status)) 
+          go newStatus {
+              lastID2 = currentID
+            , groupStart2 = i
+            ,  predSatisfied2 = processLine (getTail nl ) }
+ where -- the recursion 
+  go           = flip (processAppLinesInternal2 fs pri psl prd) x
+  processLine  = parseThenPredicate psl prd
+{-# INLINE processAppLinesInternal2 #-}
 
 
 {-

@@ -59,6 +59,30 @@ The schema of the facts data is dynamic
 and is passed to the object as a parameter.
 
 === Source
+The `Source` type stores information on the origins of the data.
+This allows for increased traceability of the data from source to final analysis.
+
+
+A `Source` type has the following definition:
+
+[source,haskell]
+---
+data Source = MkSource
+  { column   :: Maybe T.Text
+  , file     :: Maybe T.Text
+  , row      :: Maybe Integer
+  , table    :: T.Text
+  , database :: T.Text
+  }
+  deriving (Eq, Show, Generic)
+---
+
+`column` is the column name of the source data.
+`file` is the path of the source data.
+`row` is the row number of the source data.
+`table` is the name of the source data table.
+`database` refers to the name of the data source.
+For example "Optim" or "Medicaid"
 
 === Event Model
 Passing in specific parameters `m` and `c` to `Context` creates a new event model.

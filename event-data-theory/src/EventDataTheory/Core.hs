@@ -334,8 +334,8 @@ dropSource :: Context t m -> Context t m
 dropSource (MkContext tSet fcts _) = MkContext tSet fcts Nothing
 
 {-|
-A source may be used to record the provenance of an event from some database.
-This data is sometimes useful for debugging.
+A @Source@ may be used to record the source of an event from a database.
+This data is sometimes useful for debugging. 
 We generally discourage using @Source@ information in defining features.
 -}
 data Source = MkSource

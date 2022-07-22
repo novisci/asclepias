@@ -217,9 +217,13 @@ processAppLines fs pri psl prd x = runBuilder fs $ builderAcc
 
 {- $processAppLines
 
-The @processAppLines*@ functions effectively split a string 
-into groups identified by a value parsed from each line, 
-then apply @'processGroupLines'@ to each group.
+The @processAppLines*@ functions conceptually splits a string 
+into groups identified by an indentifier parsed from each line, 
+and then check whether any line
+within a group satisfies a predicate condition.
+A single string is returned 
+containing the lines from all groups
+for which the predicate is satisfied.
 
 IMPORTANT: 
 All the lines for each group should be contiguous in the input.

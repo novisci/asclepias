@@ -120,7 +120,6 @@ library
     , generic-lens
     , gitrev
     , microlens
-    , mtl
     , OneTuple
     , optparse-applicative
     , process

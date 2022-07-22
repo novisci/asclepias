@@ -17,7 +17,6 @@ module Hasklepias.AppBuilder.ProcessLines.Logic
   , processAppLinesLazy
   ) where
 
-import           Control.Monad.Except
 import qualified Data.ByteString               as BS
 import           Data.ByteString.Builder
 import qualified Data.ByteString.Char8         as BSC

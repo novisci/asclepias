@@ -119,6 +119,8 @@ within that string.
 
 IMPORTANT
 All the lines for each group are assumed to be contiguous.
+
+See @'processAppLinesStrict'@ for a description of arguments.
 -}
 processAppLinesInternal
   :: (Eq id, Show id, Num i, Monoid t)
@@ -196,7 +198,9 @@ processAppLinesInternal fs pri psl prd status x =
 {-
 INTERNAL
 The function used to create a processAppLines* function
-targeted for a specific type. 
+targeted for a specific type.
+
+See @'processAppLinesStrict'@ for a description of arguments.
 -}
 processAppLines
   :: (Eq id, Show id, Num i, Monoid t, Show i, Show t)
@@ -244,14 +248,15 @@ see the source code in @Hasklepias.AppBuilder.ProcessLines.Tests@.
 -- | Process a strict 'BS.ByteString'.
 processAppLinesStrict
   :: (Eq id, Show id)
-  => (BS.ByteString -> Maybe id)
-  -> (BS.ByteString -> Maybe a)
-  -> (a -> Bool)
-  -> BS.ByteString
+  => (BS.ByteString -> Maybe id) -- ^ parser of a group identifier from a line
+  -> (BS.ByteString -> Maybe a) -- ^ parser of an @a@ from a line
+  -> (a -> Bool) -- ^ predicate to apply to each line
+  -> BS.ByteString -- ^ input string to be split into lines
   -> BS.ByteString
 processAppLinesStrict = processAppLines lineFunctionsStrict
 
--- | Process a lazy 'BL.ByteString'.
+-- | Process a lazy 'BL.ByteString'. 
+-- See @'processAppLinesStrict'@ for a description of arguments.
 processAppLinesLazy
   :: (Eq id, Show id)
   => (BL.ByteString -> Maybe id)

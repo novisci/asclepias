@@ -15,12 +15,16 @@ import           Data.Aeson                     ( FromJSON(parseJSON)
                                                 , decode'
                                                 , decodeStrict
                                                 , decodeStrict'
+                                                , encode
                                                 , withArray
                                                 )
 import qualified Data.ByteString.Char8         as BS
 import qualified Data.ByteString.Lazy.Char8    as BL
+import           Data.List                      ( nub )
+import           Data.Maybe                     ( catMaybes )
 import           Data.String.Interpolate        ( i )
-import           Data.Text
+import qualified Data.Text                     as T
+import qualified Data.Text.Encoding            as T
 import           Data.Vector                    ( (!) )
 import           Hasklepias.AppBuilder.ProcessLines.Logic
 import           Hasklepias.AppUtilities
@@ -28,6 +32,8 @@ import           Options.Applicative
 import           Test.Tasty
 import           Test.Tasty.Bench
 import           Test.Tasty.HUnit
+import           Test.Tasty.QuickCheck   hiding ( output )
+
 {-
       Types for testing
 -}
@@ -39,12 +45,18 @@ instance FromJSON LineAppTesterID where
     id <- parseJSON (a ! 0)
     pure $ MkLineAppTesterID id
 
+instance Arbitrary LineAppTesterID where
+  arbitrary = MkLineAppTesterID <$> arbitrary
+
 newtype LineAppTester = MkLineAppTester Bool deriving (Show, Eq, Ord)
 
 instance FromJSON LineAppTester where
   parseJSON = withArray "Foo" $ \a -> do
     id <- parseJSON (a ! 1)
     pure $ MkLineAppTester id
+
+instance Arbitrary LineAppTester where
+  arbitrary = MkLineAppTester <$> arbitrary
 
 dciS' = decodeStrict' @LineAppTesterID
 dclS' = decodeStrict' @LineAppTester
@@ -90,10 +102,10 @@ testFilterApp = do
       Test values constructors
 -}
 
-mkTestInput :: Int -> Text -> BS.ByteString
+mkTestInput :: Int -> T.Text -> BS.ByteString
 mkTestInput y x = [i|[#{ show y }, #{ x }]|]
 
-mkTestInputL :: Int -> Text -> BL.ByteString
+mkTestInputL :: Int -> T.Text -> BL.ByteString
 mkTestInputL y x = [i|[#{ show y }, #{ x }]|]
 
 mkTestLines x = BS.intercalate "\n" (fmap (uncurry mkTestInput) x)
@@ -250,6 +262,34 @@ appTestCasesLazy =
 
 
 {-
+Provides a way to produce a bytestring from generated test inputs.
+This is full of kludge at this point
+in part due to how the test input functions above are defined.
+This could be cleaned/generalized in the future.
+-}
+makeAppInputs :: [(LineAppTesterID, [LineAppTester])] -> BS.ByteString
+makeAppInputs x = BS.intercalate "\n" (fmap f x)
+ where
+  f (MkLineAppTesterID i, xs) = mkTestLines $ fmap
+    (\(MkLineAppTester z) -> (i, T.decodeUtf8 $ BL.toStrict $ encode z))
+    xs
+
+{-
+This property checks that:
+the count of unique group IDs in the input where at least one line
+satisfies the predicate is equal to the count of group IDs obtains 
+*after* running the inputs through the processAppLines function.
+-}
+prop_nGroups :: [(LineAppTesterID, [LineAppTester])] -> Property
+prop_nGroups x = do
+  let naiveN =
+        length $ nub $ fst <$> filter (\(i, lines) -> or (fmap tpr lines)) x
+  let appOutput = processAppLinesStrict dciS' dclS' tpr (makeAppInputs x)
+  let appN      = length $ nub $ catMaybes $ dciS' <$> BS.lines appOutput
+
+  naiveN === appN
+
+{-
       Tests
 -}
 
@@ -261,6 +301,9 @@ tests = testGroup
         $ makeTests (processAppLinesStrict dciS' dclS' tpr) appTestCasesStrict
       , testGroup "processAppLinesLazy"
         $ makeTests (processAppLinesLazy dciL' dclL' tpr) appTestCasesLazy
+      , testProperty
+        "number of groups determined by processAppLines is same as naive implementation"
+        prop_nGroups
       ]
   ]
  where

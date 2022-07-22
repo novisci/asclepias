@@ -125,9 +125,8 @@ processAppLinesInternal
   -> AppLines id i
   -> t
   -> AppLines id i
-processAppLinesInternal fs pri psl prd status x
-  | isEmpty fs x = status
-  | otherwise = case fmap (+ 1) (lastNewLine status) of
+processAppLinesInternal fs pri psl prd status x = 
+  case fmap (+ 1) (lastNewLine status) of
     -- If no new line then we're done!
     -- Simply update the accumulator for the last group.
     Nothing -> status
@@ -142,45 +141,47 @@ processAppLinesInternal fs pri psl prd status x
       -- Is there another newline character after `i`?
       let nl         = findNewLine fs (getTail Nothing)
       let thisLine   = getTail nl
-      let thisLineID = pri thisLine
-
       -- always update the lastNewLine
       let newStatus  = status { lastNewLine = fmap (i +) nl }
 
-      -- When the ID has not changed, 
-      -- just update the index of the last newline.
-      -- When the ID does change,
-      -- then process the group for the last ID
-      -- and update the ID in the accumulator
+      if isEmpty fs thisLine 
+        then go newStatus
 
-      case (thisLineID == lastLineID status, grpStatus status) of
-        -- ID hasn't changed, predicate already satisfied ==> keep going
-        (True , True ) -> go newStatus
-        -- ID hasn't changed, predicate not satisfied ==> 
-        -- update status with this line
-        (True , False) -> go newStatus { grpStatus = processLine thisLine }
-        -- ID has changed, predicate satisfied ==> 
-        -- update:
-        --   * ID
-        --   * status from this line
-        --   * start of group index
-        --   * accumulator with segment of input corresponding to last group
-        (False, True ) -> go newStatus
-          { lastLineID = thisLineID
-          , grpStatus  = processLine thisLine
-          , grpStart   = i
-          , builderAcc = updateBuilder status (Just i)
-          }
-        -- ID has changed, predicate not satisfied ==> 
-        -- drop last group but
-        -- update:
-        --   * ID
-        --   * status from this line
-        --   * start of group index
-        (False, False) -> go newStatus { lastLineID = thisLineID
-                                       , grpStart   = i
-                                       , grpStatus  = processLine thisLine
-                                       }
+        -- When the ID has not changed, 
+        -- just update the index of the last newline.
+        -- When the ID does change,
+        -- then process the group for the last ID
+        -- and update the ID in the accumulator
+        else do 
+        let thisLineID = pri thisLine
+        case (thisLineID == lastLineID status, grpStatus status) of
+          -- ID hasn't changed, predicate already satisfied ==> keep going
+          (True , True ) -> go newStatus
+          -- ID hasn't changed, predicate not satisfied ==> 
+          -- update status with this line
+          (True , False) -> go newStatus { grpStatus = processLine thisLine }
+          -- ID has changed, predicate satisfied ==> 
+          -- update:
+          --   * ID
+          --   * status from this line
+          --   * start of group index
+          --   * accumulator with segment of input corresponding to last group
+          (False, True ) -> go newStatus
+            { lastLineID = thisLineID
+            , grpStatus  = processLine thisLine
+            , grpStart   = i
+            , builderAcc = updateBuilder status (Just i)
+            }
+          -- ID has changed, predicate not satisfied ==> 
+          -- drop last group but
+          -- update:
+          --   * ID
+          --   * status from this line
+          --   * start of group index
+          (False, False) -> go newStatus { lastLineID = thisLineID
+                                        , grpStart   = i
+                                        , grpStatus  = processLine thisLine
+                                        }
  where -- the recursion 
   go          = flip (processAppLinesInternal fs pri psl prd) x
   processLine = parseThenPredicate psl prd

@@ -21,6 +21,7 @@ import           Data.Aeson                     ( FromJSON(parseJSON)
                                                 )
 import qualified Data.ByteString.Char8         as BS
 import qualified Data.ByteString.Lazy.Char8    as BL
+import           Data.Either
 import           Data.List                      ( nub )
 import           Data.Maybe                     ( mapMaybe )
 import           Data.String.Interpolate        ( i )
@@ -93,10 +94,13 @@ testFilterApp :: IO ()
 testFilterApp = do
   options <- execParser makeAppArgs
   let inloc  = inputToLocation $ input options
-  let outloc = outputToLocation $ output options
-  dat <- readDataStrict inloc
+      outloc = outputToLocation $ output options
 
-  writeDataStrict outloc $ processAppLinesStrict dciS' dclS' tpr dat
+  dat <- processAppLinesStrict dciS' dclS' tpr <$> readDataStrict inloc
+
+  case dat of
+    Left  lae -> BS.putStrLn $ BS.pack $ show lae
+    Right bs  -> writeDataStrict outloc bs
 
 
 {-
@@ -286,7 +290,7 @@ prop_nGroups x = do
   let naiveN =
         length $ nub $ fst <$> filter (\(i, lines) -> or (fmap tpr lines)) x
   let appOutput = processAppLinesStrict dciS' dclS' tpr (makeAppInputs x)
-  let appN      = length $ nub $ mapMaybe dciS' (BS.lines appOutput)
+  let appN = length $ nub $ mapMaybe dciS' (BS.lines (fromRight "" appOutput))
 
   naiveN === appN
 
@@ -308,7 +312,12 @@ tests = testGroup
       ]
   ]
  where
-  makeTests f = fmap (\(n, i, r) -> testCase n $ f i @?= r)
+  makeTests f = fmap
+    (\(n, i, r) -> case f i of
+      Left _ ->
+        testCase n $ assertFailure "Boom! this failed and shouldn't have"
+      Right a -> testCase n $ assertEqual "These should be equal" a r
+    )
   readOne x | x == "1"  = Just 1
             | x == "2"  = Just 2
             | otherwise = Nothing
@@ -360,14 +369,22 @@ makeBench f fn i ipts =
 
 runAppExperimentStrict = fmap
   (\((inputLabel, input), (fLabel, f)) -> makeBench f fLabel input inputLabel)
-  (cartProd appBenchInputsStrict [("", processAppLinesStrict dciS' dclS' tpr)])
+  (cartProd appBenchInputsStrict
+            [("", fromRight "" . processAppLinesStrict dciS' dclS' tpr)]
+  )
 
 runAppExperimentLazy = fmap
   (\((inputLabel, input), (fLabel, f)) -> makeBench f fLabel input inputLabel)
-  (cartProd appBenchInputsLazy [("", processAppLinesLazy dciL' dclL' tpr)])
+  (cartProd appBenchInputsLazy
+            [("", fromRight "" . processAppLinesLazy dciL' dclL' tpr)]
+  )
 
 benches = bgroup
   "line processing benchmarks"
   [ bgroup "strict bytestring" runAppExperimentStrict
   , bgroup "lazy bytestring"   runAppExperimentLazy
   ]
+
+testFoo = processAppLinesStrict dciS' dclS' tpr
+foo :: BS.ByteString
+foo = "[1, 1]"

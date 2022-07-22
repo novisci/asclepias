@@ -102,6 +102,15 @@ data AppLines id i = MkAppLines
   }
 
 {-
+INTERNAL 
+A type to avoid boolean blindness in processAppLinesInternal 
+-}
+data GroupChange = SameGroup | NewGroup
+
+checkGroupChange :: (Eq id) => id -> id -> GroupChange
+checkGroupChange x y = if x == y then SameGroup else NewGroup
+
+{-
 INTERNAL
 The core recursive logic of processing the lines across groups.
 The function "rolls" over the *single string* of new line delimited data 
@@ -149,34 +158,32 @@ processAppLinesInternal fs pri psl prd status x =
         -- and update the ID in the accumulator
         else do
           let thisLineID = pri thisLine
-          case (thisLineID == lastLineID status, grpStatus status) of
+          case
+              ( checkGroupChange thisLineID (lastLineID status)
+              , grpStatus status
+              )
+            of
             -- ID hasn't changed, predicate already satisfied ==> keep going
-            (True , True ) -> go newStatus
-            -- ID hasn't changed, predicate not satisfied ==> 
-            -- update status with this line
-            (True , False) -> go newStatus { grpStatus = processLine thisLine }
-            -- ID has changed, predicate satisfied ==> 
-            -- update:
-            --   * ID
-            --   * status from this line
-            --   * start of group index
-            --   * accumulator with segment of input corresponding to last group
-            (False, True ) -> go newStatus
-              { lastLineID = thisLineID
-              , grpStatus  = processLine thisLine
-              , grpStart   = i
-              , builderAcc = updateBuilder status (Just i)
-              }
-            -- ID has changed, predicate not satisfied ==> 
-            -- drop last group but
-            -- update:
-            --   * ID
-            --   * status from this line
-            --   * start of group index
-            (False, False) -> go newStatus { lastLineID = thisLineID
-                                           , grpStart   = i
-                                           , grpStatus  = processLine thisLine
-                                           }
+              (SameGroup, True) -> go newStatus
+              -- ID hasn't changed, predicate not satisfied ==> 
+              -- update status with this line
+              (SameGroup, False) ->
+                go newStatus { grpStatus = processLine thisLine }
+              -- ID has changed, predicate satisfied ==> 
+              -- add last group to builder and update
+              (NewGroup, True) -> go newStatus
+                { lastLineID = thisLineID
+                , grpStatus  = processLine thisLine
+                , grpStart   = i
+                , builderAcc = updateBuilder status (Just i)
+                }
+              -- ID has changed, predicate not satisfied ==> 
+              -- drop last group and update
+              (NewGroup, False) -> go newStatus
+                { lastLineID = thisLineID
+                , grpStart   = i
+                , grpStatus  = processLine thisLine
+                }
  where -- the recursion 
   go          = flip (processAppLinesInternal fs pri psl prd) x
   processLine = parseThenPredicate psl prd

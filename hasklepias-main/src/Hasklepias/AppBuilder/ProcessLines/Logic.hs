@@ -91,19 +91,14 @@ the application groups the input events by subject ID.
 
 {- 
 INTERNAL
-Data carrying information about  
-* the group ID at the previous line
-* the index at which the current group started
-* the index of the last new line
-* the accumulated results as a ByteString Builder
+Data tracking the state of the application.
 -}
-
 data AppLines id i = MkAppLines
-  { lastLineID  :: Maybe id
-  , grpStart    :: i
-  , grpStatus   :: Bool
-  , lastNewLine :: Maybe i
-  , builderAcc  :: Builder
+  { lastLineID  :: Maybe id -- ^ the group ID at the previous line
+  , grpStart    :: i -- ^  the index at which the current group started
+  , grpStatus   :: Bool -- ^ the predicate status of a group
+  , lastNewLine :: Maybe i -- ^ the index of the last new line
+  , builderAcc  :: Builder -- ^ the accumulated results as a ByteString Builder
   }
 
 {-
@@ -125,7 +120,7 @@ processAppLinesInternal
   -> AppLines id i
   -> t
   -> AppLines id i
-processAppLinesInternal fs pri psl prd status x = 
+processAppLinesInternal fs pri psl prd status x =
   case fmap (+ 1) (lastNewLine status) of
     -- If no new line then we're done!
     -- Simply update the accumulator for the last group.
@@ -137,14 +132,14 @@ processAppLinesInternal fs pri psl prd status x =
     -- Otherwise take the index immediately after the newline character as `i`
     Just i -> do
 
-      let getTail    = takeSubset fs x i
+      let getTail   = takeSubset fs x i
       -- Is there another newline character after `i`?
-      let nl         = findNewLine fs (getTail Nothing)
-      let thisLine   = getTail nl
+      let nl        = findNewLine fs (getTail Nothing)
+      let thisLine  = getTail nl
       -- always update the lastNewLine
-      let newStatus  = status { lastNewLine = fmap (i +) nl }
+      let newStatus = status { lastNewLine = fmap (i +) nl }
 
-      if isEmpty fs thisLine 
+      if isEmpty fs thisLine
         then go newStatus
 
         -- When the ID has not changed, 
@@ -152,36 +147,36 @@ processAppLinesInternal fs pri psl prd status x =
         -- When the ID does change,
         -- then process the group for the last ID
         -- and update the ID in the accumulator
-        else do 
-        let thisLineID = pri thisLine
-        case (thisLineID == lastLineID status, grpStatus status) of
-          -- ID hasn't changed, predicate already satisfied ==> keep going
-          (True , True ) -> go newStatus
-          -- ID hasn't changed, predicate not satisfied ==> 
-          -- update status with this line
-          (True , False) -> go newStatus { grpStatus = processLine thisLine }
-          -- ID has changed, predicate satisfied ==> 
-          -- update:
-          --   * ID
-          --   * status from this line
-          --   * start of group index
-          --   * accumulator with segment of input corresponding to last group
-          (False, True ) -> go newStatus
-            { lastLineID = thisLineID
-            , grpStatus  = processLine thisLine
-            , grpStart   = i
-            , builderAcc = updateBuilder status (Just i)
-            }
-          -- ID has changed, predicate not satisfied ==> 
-          -- drop last group but
-          -- update:
-          --   * ID
-          --   * status from this line
-          --   * start of group index
-          (False, False) -> go newStatus { lastLineID = thisLineID
-                                        , grpStart   = i
-                                        , grpStatus  = processLine thisLine
-                                        }
+        else do
+          let thisLineID = pri thisLine
+          case (thisLineID == lastLineID status, grpStatus status) of
+            -- ID hasn't changed, predicate already satisfied ==> keep going
+            (True , True ) -> go newStatus
+            -- ID hasn't changed, predicate not satisfied ==> 
+            -- update status with this line
+            (True , False) -> go newStatus { grpStatus = processLine thisLine }
+            -- ID has changed, predicate satisfied ==> 
+            -- update:
+            --   * ID
+            --   * status from this line
+            --   * start of group index
+            --   * accumulator with segment of input corresponding to last group
+            (False, True ) -> go newStatus
+              { lastLineID = thisLineID
+              , grpStatus  = processLine thisLine
+              , grpStart   = i
+              , builderAcc = updateBuilder status (Just i)
+              }
+            -- ID has changed, predicate not satisfied ==> 
+            -- drop last group but
+            -- update:
+            --   * ID
+            --   * status from this line
+            --   * start of group index
+            (False, False) -> go newStatus { lastLineID = thisLineID
+                                           , grpStart   = i
+                                           , grpStatus  = processLine thisLine
+                                           }
  where -- the recursion 
   go          = flip (processAppLinesInternal fs pri psl prd) x
   processLine = parseThenPredicate psl prd

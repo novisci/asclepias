@@ -1,5 +1,6 @@
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE QuasiQuotes #-}
+{- HLINT ignore "Avoid restricted function" -}
 module Hasklepias.AppBuilder.ProcessLines.Tests
   ( tests
   , benches
@@ -21,7 +22,7 @@ import           Data.Aeson                     ( FromJSON(parseJSON)
 import qualified Data.ByteString.Char8         as BS
 import qualified Data.ByteString.Lazy.Char8    as BL
 import           Data.List                      ( nub )
-import           Data.Maybe                     ( catMaybes )
+import           Data.Maybe                     ( mapMaybe )
 import           Data.String.Interpolate        ( i )
 import qualified Data.Text                     as T
 import qualified Data.Text.Encoding            as T
@@ -285,7 +286,7 @@ prop_nGroups x = do
   let naiveN =
         length $ nub $ fst <$> filter (\(i, lines) -> or (fmap tpr lines)) x
   let appOutput = processAppLinesStrict dciS' dclS' tpr (makeAppInputs x)
-  let appN      = length $ nub $ catMaybes $ dciS' <$> BS.lines appOutput
+  let appN      = length $ nub $ mapMaybe dciS' (BS.lines appOutput)
 
   naiveN === appN
 

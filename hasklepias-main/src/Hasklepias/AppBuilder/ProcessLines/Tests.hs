@@ -384,7 +384,3 @@ benches = bgroup
   [ bgroup "strict bytestring" runAppExperimentStrict
   , bgroup "lazy bytestring"   runAppExperimentLazy
   ]
-
-testFoo = processAppLinesStrict dciS' dclS' tpr
-foo :: BS.ByteString
-foo = "[1, 1]"

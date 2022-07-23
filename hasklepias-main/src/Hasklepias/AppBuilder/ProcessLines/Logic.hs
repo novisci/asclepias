@@ -7,7 +7,6 @@ in order to reduce the size of the input data.
 For example, if the cohort is consists only of females,
 one could run a prefilter to remove any groups (subjects in this case)
 of event lines for males.
-
 -}
 module Hasklepias.AppBuilder.ProcessLines.Logic
   ( -- * Processing multiple groups
@@ -26,11 +25,14 @@ import           Data.Int
 
 type LineAppMonad = Either LineAppError
 
+{- 
+INTERNAL
+The type of errors in a line processing application
+-}
 data LineAppError =
-    LineParseErrorA Int
-  | LineParseErrorID Int
+    LineParseErrorA Int -- ^ indicates a failure of the `t -> Maybe a` function
+  | LineParseErrorID Int -- ^ indicates a failure of the `t -> Maybe id` function 
 
--- Converts LengthError to a readable message.
 instance Show LineAppError where
   show (LineParseErrorA i) =
     "Line " <> show i <> ": failed to decode line type"
@@ -45,6 +47,11 @@ returning `False` if the parsing failed.
 parseThenPredicate :: (t -> Maybe a) -> (a -> Bool) -> t -> Maybe Bool
 parseThenPredicate psl prd x = prd <$> psl x
 
+{-
+INTERNAL
+Function that lifts a Maybe Bool to the App monad.
+The `Int` input is the line number passed in the case of an error.
+-}
 handleLineParse :: Int -> Maybe Bool -> LineAppMonad Bool
 handleLineParse i x = case x of
   Nothing -> Left $ LineParseErrorA i
@@ -109,6 +116,11 @@ the application groups the input events by subject ID.
 {- 
 INTERNAL
 Data tracking the state of the application.
+
+NOTE: 
+The `Maybe` of the `lastLineID` is used in two senses of `Nothing`:
+* as the the "start" of processing
+* as an error in the parsing of a group identifier from a line
 -}
 data AppLines id i = MkAppLines
   { lastLineID     :: Maybe id -- ^ the group ID at the previous line
@@ -221,7 +233,6 @@ processAppLinesInternal fs pri psl prd status x =
     fs
     (takeSubset fs x (grpStart status) (fmap (\z -> z - grpStart status) i))
 {-# INLINE processAppLinesInternal #-}
-
 
 {-
 INTERNAL

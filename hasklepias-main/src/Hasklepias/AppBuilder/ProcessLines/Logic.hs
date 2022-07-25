@@ -34,8 +34,7 @@ data LineAppError =
   | LineParseErrorID Int -- ^ indicates a failure of the `t -> Maybe id` function 
 
 instance Show LineAppError where
-  show (LineParseErrorA i) =
-    "Line " <> show i <> ": failed to decode line type"
+  show (LineParseErrorA i) = "Line " <> show i <> ": failed to decode line"
   show (LineParseErrorID i) =
     "Line " <> show i <> ": failed to decode identifier"
 

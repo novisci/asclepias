@@ -17,7 +17,7 @@ import           EventDataTheory         hiding ( (<|>) )
 import           Hasklepias.AppBuilder.ProcessLines.Logic
 import           Hasklepias.AppUtilities
 import           Options.Applicative
-
+import           System.Exit
 
 -- Container for app options
 data LineFilterAppOpts = MkLineFilterAppOpts
@@ -77,8 +77,10 @@ makeLineFilterApp name pid psl prd = do
   result <- processAppLinesStrict pid psl prd <$> readDataStrict inloc
 
   case result of
-    Left  lae -> logStringStderr <& show lae
-    Right bs  -> writeDataStrict outloc bs
+    Left lae -> do
+      logStringStderr <& show lae
+      exitWith (ExitFailure 1)
+    Right bs -> writeDataStrict outloc bs
 
 {-| 
 Create a application that filters event data with two arguments:

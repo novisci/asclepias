@@ -4,7 +4,6 @@
 module Hasklepias.AppBuilder.ProcessLines.Tests
   ( tests
   , benches
-  , testFilterApp
   ) where
 
 import           Control.DeepSeq                ( NFData
@@ -82,25 +81,6 @@ data TestAppOpts = MkTestAppOpts
   }
 
 
-makeAppArgs :: ParserInfo TestAppOpts
-makeAppArgs = Options.Applicative.info
-  (   MkTestAppOpts
-  <$> (fileInput <|> s3Input <|> stdInput)
-  <*> (fileOutput <|> s3Output <|> stdOutput)
-  )
-  (fullDesc <> progDesc "An app for testing line filtering ")
-
-testFilterApp :: IO ()
-testFilterApp = do
-  options <- execParser makeAppArgs
-  let inloc  = inputToLocation $ input options
-      outloc = outputToLocation $ output options
-
-  dat <- processAppLinesStrict dciS' dclS' tpr <$> readDataStrict inloc
-
-  case dat of
-    Left  lae -> BS.putStrLn $ BS.pack $ show lae
-    Right bs  -> writeDataStrict outloc bs
 
 
 {-
@@ -265,7 +245,6 @@ appTestCasesLazy =
     )
   ]
 
-
 {-
 Provides a way to produce a bytestring from generated test inputs.
 This is full of kludge at this point
@@ -302,7 +281,13 @@ tests = testGroup
   "line processing logic"
   [ testGroup
       "processing lines for application"
-      [ testGroup "processAppLinesStrict"
+      [ testCase "identifier failure caught"
+      $   show (processAppLinesStrict dciS' dclS' tpr "[1, true]\n[bad]")
+      @?= "Left Line 2: failed to decode identifier"
+      , testCase "identifier failure caught"
+      $ show (processAppLinesStrict dciS' dclS' tpr "[1, \"bad\"]\n[1, false]")
+      @?= "Left Line 1: failed to decode line"
+      , testGroup "processAppLinesStrict"
         $ makeTests (processAppLinesStrict dciS' dclS' tpr) appTestCasesStrict
       , testGroup "processAppLinesLazy"
         $ makeTests (processAppLinesLazy dciL' dclL' tpr) appTestCasesLazy

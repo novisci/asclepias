@@ -1,6 +1,7 @@
 :description: The procedure for creating cohorts 
+Cohorts are creating in the `Cohorts.hs` file.
 
-To define a cohort in asclepias,
+To define cohorts in asclepias,
 one must create a `CohortSpec` type.
 The `CohortSpec` type takes three inputs:
 
@@ -11,10 +12,11 @@ The `CohortSpec` type takes three inputs:
 See below for details on creating these types:
 
 == a. Defining Input Data Shape
-*TODO this is actually pre-defined in step 1 correct?*
+include::input-data-procedures.adoc[leveloffset+=1]
 
 == b. Defining Output Data Shape
-*TODO does this get defined in event-data-model as well?*
+The output data is defined in the `Cohorts.hs` file,
+and should match the specifications for your project.
 
 == c. Defining an IndexSet
 include::index-set-procedures.adoc[leveloffset+=1]

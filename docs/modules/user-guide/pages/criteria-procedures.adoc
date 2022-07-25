@@ -13,8 +13,6 @@ that take in a `Bool` and return a `Status`.
 `includeIf`, given the same inputs,
 returns the opposite `Status` values.
 
-*TODO are list of criteria connected with "AND" or "OR"?*
-
 `CohortSpec` requires a function that
 takes in the `IndexSet` and 
 the shape of the input data and
@@ -22,6 +20,21 @@ returns the `Criteria`.
 Instuctions on creating `Criteria` follow.
 
 *Creating Criteria from an Event*
+
+This assumes that your IndexSet and 
+input data shape are already defined.
+
+. Review the SAP for the inclusion/exclusion criteria.
+. Create a function for each criterion that return a `Bool`.
+. Define your criteria function.
+    . Define your criteria function type,
+    `a -> YourInputData -> Criteria`, where `a` is your IndexSet type and YourInputData is your input data type.
+    . Apply the correct pattern matching for your input data.
+    . Define the function output as `criteria [yourCriterionList]`
+    where yourCriterionList is constructed as 
+    "`criterion` yourLabel (`includeIf`/`excludeIf` yourBoolFunction)".
+    If any of these `criterion` result in a `Status` of `Exclude`, 
+    the subject will be excluded.
 
 *It looks like all of the criteria functions actually*
 *produce features? But these features don't appear*
@@ -69,12 +82,16 @@ input data shape are already defined.
     . Define the function output as `criteria [yourCriterionList]`
     where yourCriterionList is constructed as 
     "`criterion` yourLabel (`includeIf`/`excludeIf` yourBoolFunction)"
+    If any of these `criterion` result in a `Status` of `Exclude`, 
+    the subject will be excluded.
 
-The example below takes in an empty index set,
-and `InputData` and creates `criteria` where
-the `Status` is `Include` if the boolean value that
-is contained in `InputData` is `False`,
-otherwise `Exclude` is returned.
+In the example below we define an empty index set, `YourIndex`,
+and a new type, `YourInputData` which represents the input data type.
+We use these types to define `yourCriteria`,
+a function that returns the `Status` `Include` if the boolean value that
+is contained in `YourInputDataType` is `False`,
+and the integer in `YourInputDataType` is greater than 5.
+Otherwise `Exclude` is returned.
 
 [source,haskell]
 ----

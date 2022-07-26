@@ -41,7 +41,7 @@ instance Show LineAppError where
 {-
 INTERNAL
 Run a parser then a predicate, 
-returning `False` if the parsing failed.
+returning `Nothing` if the parsing failed.
 -}
 parseThenPredicate :: (t -> Maybe a) -> (a -> Bool) -> t -> Maybe Bool
 parseThenPredicate psl prd x = prd <$> psl x

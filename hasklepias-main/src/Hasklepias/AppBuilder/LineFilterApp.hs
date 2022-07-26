@@ -10,7 +10,11 @@ module Hasklepias.AppBuilder.LineFilterApp
 import           Colog.Core                     ( (<&)
                                                 , logStringStderr
                                                 )
-import           Data.Aeson                     ( decodeStrict' )
+import           Data.Aeson                     ( ToJSON
+                                                , decodeStrict'
+                                                , fromEncoding
+                                                , toEncoding
+                                                )
 import qualified Data.ByteString               as BS
 import qualified Data.ByteString.Lazy          as BL
 import           EventDataTheory         hiding ( (<|>) )
@@ -63,7 +67,7 @@ The rest are dropped.
 
 -}
 makeLineFilterApp
-  :: (Eq a, Eq i, Show i)
+  :: (Eq a, Eq i, Show i, ToJSON i, ToJSON a)
   => String -- ^ name of the app (e.g. a project's id)
   -> (BS.ByteString -> Maybe i) -- ^ parser for line identifier
   -> (BS.ByteString -> Maybe a) -- ^ parser
@@ -74,7 +78,8 @@ makeLineFilterApp name pid psl prd = do
   let inloc  = inputToLocation $ input options
       outloc = outputToLocation $ output options
 
-  result <- processAppLinesStrict pid psl prd <$> readDataStrict inloc
+  result <- processAppLinesStrict pid psl prd Just (fromEncoding . toEncoding)
+    <$> readDataStrict inloc
 
   case result of
     Left lae -> do
@@ -104,7 +109,13 @@ provided that at least one line successfully parses
 into an `Event` and satisfies the predicate. 
 -}
 makeFilterEventLineApp
-  :: (Eventable t m a, EventLineAble t m a b, FromJSONEvent t m a)
+  :: ( Eventable t m a
+     , EventLineAble t m a b
+     , FromJSONEvent t m a
+     , ToJSON a
+     , ToJSON m
+     , ToJSON t
+     )
   => String -- ^ name of the app (e.g. a project's id)
   -> (Event t m a -> Bool) -- ^ predicate to evaluate for each event
   -> IO ()

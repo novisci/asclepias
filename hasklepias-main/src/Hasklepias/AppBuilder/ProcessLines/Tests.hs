@@ -1,5 +1,6 @@
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE DeriveGeneric #-}
 {- HLINT ignore "Avoid restricted function" -}
 module Hasklepias.AppBuilder.ProcessLines.Tests
   ( tests
@@ -11,11 +12,14 @@ import           Control.DeepSeq                ( NFData
                                                 )
 import           Control.Exception              ( evaluate )
 import           Data.Aeson                     ( FromJSON(parseJSON)
+                                                , ToJSON
                                                 , decode
                                                 , decode'
                                                 , decodeStrict
                                                 , decodeStrict'
                                                 , encode
+                                                , fromEncoding
+                                                , toEncoding
                                                 , withArray
                                                 )
 import qualified Data.ByteString.Char8         as BS
@@ -27,6 +31,7 @@ import           Data.String.Interpolate        ( i )
 import qualified Data.Text                     as T
 import qualified Data.Text.Encoding            as T
 import           Data.Vector                    ( (!) )
+import           GHC.Generics
 import           Hasklepias.AppBuilder.ProcessLines.Logic
 import           Hasklepias.AppUtilities
 import           Options.Applicative
@@ -39,25 +44,35 @@ import           Test.Tasty.QuickCheck   hiding ( output )
       Types for testing
 -}
 
-newtype LineAppTesterID = MkLineAppTesterID Int deriving (Show, Eq)
+newtype LineAppTesterID = MkLineAppTesterID Int deriving (Show, Eq, Generic)
 
 instance FromJSON LineAppTesterID where
   parseJSON = withArray "FooID" $ \a -> do
     id <- parseJSON (a ! 0)
     pure $ MkLineAppTesterID id
 
+instance ToJSON LineAppTesterID
+
 instance Arbitrary LineAppTesterID where
   arbitrary = MkLineAppTesterID <$> arbitrary
 
-newtype LineAppTester = MkLineAppTester Bool deriving (Show, Eq, Ord)
+newtype LineAppTester = MkLineAppTester Bool deriving (Show, Eq, Ord, Generic)
 
 instance FromJSON LineAppTester where
   parseJSON = withArray "Foo" $ \a -> do
     id <- parseJSON (a ! 1)
     pure $ MkLineAppTester id
 
+instance ToJSON LineAppTester
+
 instance Arbitrary LineAppTester where
   arbitrary = MkLineAppTester <$> arbitrary
+
+data Line = MkLine LineAppTesterID LineAppTester
+  deriving (Show, Eq, Generic)
+
+
+instance ToJSON Line
 
 dciS' = decodeStrict' @LineAppTesterID
 dclS' = decodeStrict' @LineAppTester
@@ -81,17 +96,15 @@ data TestAppOpts = MkTestAppOpts
   }
 
 
-
-
 {-
       Test values constructors
 -}
 
 mkTestInput :: Int -> T.Text -> BS.ByteString
-mkTestInput y x = [i|[#{ show y }, #{ x }]|]
+mkTestInput y x = [i|[#{ show y },#{ x }]|]
 
 mkTestInputL :: Int -> T.Text -> BL.ByteString
-mkTestInputL y x = [i|[#{ show y }, #{ x }]|]
+mkTestInputL y x = [i|[#{ show y },#{ x }]|]
 
 mkTestLines x = BS.intercalate "\n" (fmap (uncurry mkTestInput) x)
 
@@ -136,15 +149,18 @@ rather than copy/pasted and modifying (e.g.) passLines to passLinesL.
 -}
 
 appTestCasesStrict =
-  [ ("no input"                  , ""                   , "")
-  , ("without newline at end"    , "[1,false]\n[1,true]", "[1,false]\n[1,true]")
-  , ("1 group - 1 passing line"  , passLines 1 1        , passLines 1 1)
-  , ("1 group -  2 passing lines", passLines 2 1        , passLines 2 1)
-  , ("1 group - 10 passing lines", passLines 10 1       , passLines 10 1)
-  , ( "1 group - 1 passing line - 1 bad line"
-    , BS.concat [passLines 1 1, badLines 1 1]
-    , BS.concat [passLines 1 1, badLines 1 1]
+  [ ("no input", "", "")
+  , ( "without newline at end of input"
+    , "[1,false]\n[1,true]"
+    , "[1,false]\n[1,true]\n"
     )
+  , ("1 group - 1 passing line"  , passLines 1 1 , passLines 1 1)
+  , ("1 group -  2 passing lines", passLines 2 1 , passLines 2 1)
+  , ("1 group - 10 passing lines", passLines 10 1, passLines 10 1)
+  -- , ( "1 group - 1 passing line - 1 bad line"
+  --   , BS.concat [passLines 1 1, badLines 1 1]
+  --   , BS.concat [passLines 1 1, badLines 1 1]
+  --   )
   , ("1 group - 1 failing line"  , failLines 1 1 , "")
   , ("1 group - 2 failing lines" , failLines 2 1 , "")
   , ("1 group - 10 failing lines", failLines 10 1, "")
@@ -191,15 +207,18 @@ appTestCasesStrict =
   ]
 
 appTestCasesLazy =
-  [ ("no input"                  , ""                   , "")
-  , ("without newline at end"    , "[1,false]\n[1,true]", "[1,false]\n[1,true]")
-  , ("1 group - 1 passing line"  , passLinesL 1 1       , passLinesL 1 1)
-  , ("1 group - 2 passing lines" , passLinesL 2 1       , passLinesL 2 1)
-  , ("1 group - 10 passing lines", passLinesL 10 1      , passLinesL 10 1)
-  , ( "1 group - 1 passing line - 1 bad line"
-    , BL.concat [passLinesL 1 1, badLinesL 1 1]
-    , BL.concat [passLinesL 1 1, badLinesL 1 1]
+  [ ("no input", "", "")
+  , ( "without newline at end of input"
+    , "[1,false]\n[1,true]"
+    , "[1,false]\n[1,true]\n"
     )
+  , ("1 group - 1 passing line"  , passLinesL 1 1 , passLinesL 1 1)
+  , ("1 group - 2 passing lines" , passLinesL 2 1 , passLinesL 2 1)
+  , ("1 group - 10 passing lines", passLinesL 10 1, passLinesL 10 1)
+  -- , ( "1 group - 1 passing line - 1 bad line"
+  --   , BL.concat [passLinesL 1 1, badLinesL 1 1]
+  --   , BL.concat [passLinesL 1 1, badLinesL 1 1]
+  --   )
   , ("1 group - 1 failing line"  , failLinesL 1 1 , "")
   , ("1 group - 2 failing lines" , failLinesL 2 1 , "")
   , ("1 group - 10 failing lines", failLinesL 10 1, "")
@@ -228,8 +247,8 @@ appTestCasesLazy =
     , mkGroupLinesL [(onePassNfailL, 10)]
     )
   , ( "2 groups - 2 pass groups"
-    , mkGroupLinesL [(nFailOnepassL, 10)]
-    , mkGroupLinesL [(nFailOnepassL, 10)]
+    , mkGroupLinesL [(nFailOnepassL, 10), (nFailOnepassL, 10)]
+    , mkGroupLinesL [(nFailOnepassL, 10), (nFailOnepassL, 10)]
     )
   , ( "2 groups - 1 pass group"
     , mkGroupLinesL [(nFailOnepassL, 10), (failLinesL, 10)]
@@ -244,6 +263,25 @@ appTestCasesLazy =
     , ""
     )
   ]
+
+
+{-
+-}
+
+prsStrict = processAppLinesStrict
+  dciS'
+  dclS'
+  tpr
+  Just
+  (fromEncoding . toEncoding . uncurry MkLine)
+
+prsLazy = processAppLinesLazy dciL'
+                              dclL'
+                              tpr
+                              Just
+                              (fromEncoding . toEncoding . uncurry MkLine)
+
+
 
 {-
 Provides a way to produce a bytestring from generated test inputs.
@@ -268,7 +306,7 @@ prop_nGroups :: [(LineAppTesterID, [LineAppTester])] -> Property
 prop_nGroups x = do
   let naiveN =
         length $ nub $ fst <$> filter (\(i, lines) -> or (fmap tpr lines)) x
-  let appOutput = processAppLinesStrict dciS' dclS' tpr (makeAppInputs x)
+  let appOutput = prsStrict (makeAppInputs x)
   let appN = length $ nub $ mapMaybe dciS' (BS.lines (fromRight "" appOutput))
 
   naiveN === appN
@@ -282,15 +320,14 @@ tests = testGroup
   [ testGroup
       "processing lines for application"
       [ testCase "identifier failure caught"
-      $   show (processAppLinesStrict dciS' dclS' tpr "[1, true]\n[bad]")
+      $   show (prsStrict "[1, true]\n[bad]")
       @?= "Left Line 2: failed to decode identifier"
       , testCase "identifier failure caught"
-      $ show (processAppLinesStrict dciS' dclS' tpr "[1, \"bad\"]\n[1, false]")
+      $   show (prsStrict "[1, \"bad\"]\n[1, false]")
       @?= "Left Line 1: failed to decode line"
       , testGroup "processAppLinesStrict"
-        $ makeTests (processAppLinesStrict dciS' dclS' tpr) appTestCasesStrict
-      , testGroup "processAppLinesLazy"
-        $ makeTests (processAppLinesLazy dciL' dclL' tpr) appTestCasesLazy
+        $ makeTests prsStrict appTestCasesStrict
+      , testGroup "processAppLinesLazy" $ makeTests prsLazy appTestCasesLazy
       , testProperty
         "number of groups determined by processAppLines is same as naive implementation"
         prop_nGroups
@@ -301,7 +338,7 @@ tests = testGroup
     (\(n, i, r) -> case f i of
       Left _ ->
         testCase n $ assertFailure "Boom! this failed and shouldn't have"
-      Right a -> testCase n $ assertEqual "These should be equal" a r
+      Right a -> testCase n $ assertEqual "These should be equal" r a
     )
   readOne x | x == "1"  = Just 1
             | x == "2"  = Just 2
@@ -354,15 +391,11 @@ makeBench f fn i ipts =
 
 runAppExperimentStrict = fmap
   (\((inputLabel, input), (fLabel, f)) -> makeBench f fLabel input inputLabel)
-  (cartProd appBenchInputsStrict
-            [("", fromRight "" . processAppLinesStrict dciS' dclS' tpr)]
-  )
+  (cartProd appBenchInputsStrict [("", fromRight "" . prsStrict)])
 
 runAppExperimentLazy = fmap
   (\((inputLabel, input), (fLabel, f)) -> makeBench f fLabel input inputLabel)
-  (cartProd appBenchInputsLazy
-            [("", fromRight "" . processAppLinesLazy dciL' dclL' tpr)]
-  )
+  (cartProd appBenchInputsLazy [("", fromRight "" . prsLazy)])
 
 benches = bgroup
   "line processing benchmarks"

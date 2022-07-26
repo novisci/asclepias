@@ -274,6 +274,13 @@ prsStrict = processAppLinesStrict dciS' dclS' tpr Nothing
 
 
 -- This one converts the bool to a string when the bool is `False`.
+-- >>> prsStrictDrop "[1, true]\n[1, false]" 
+-- Right "[1,\"This line was false\"]\n"
+-- >>> prsStrictDrop "[1, true]\n[1, false]\n[2, false]\n[2, true]" 
+-- Right "[1,\"This line was false\"]\n[2,\"This line was false\"]\n"
+-- >>> prsStrictDrop "[1, true]\n[1, false]\n[2, true]\n[2, true]"  
+-- Right "[1,\"This line was false\"]\n"
+--
 prsStrictDrop = processAppLinesStrict
   dciS'
   dclS'

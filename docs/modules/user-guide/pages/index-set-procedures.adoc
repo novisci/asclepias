@@ -2,18 +2,42 @@
 
 An IndexSet represents the set of all index dates for an event.
 asclepias requires a function defining how to create the IndexSet
-from the input data.
+from the input data in order to create a CohortSpec.
+
+An IndexSet can always be made by applying the `makeIndexSet` function to a list.
+Further, asclepias also defines an instance of `into`, 
+which coerces a list into an IndexSet.
+In fact, makeIndexSet is just a wrapper around `into`,
+as seen below:
+
+[source,haskell]
+----
+makeIndexSet :: (Ord i) => [i] -> IndexSet i
+makeIndexSet = into
+----
+
+*Creating an empty IndexSet*
+
+If no index is required for your project,
+no function need be defined explicitely.
+But, you could a function like that below:
+[source,haskell]
+----
+emptyIndex :: YourInputDataType -> IndexSet ()
+emptyIndex _ = makeIndexSet [()]
+----
+Update `YourInputDataType` with your project-specific input data type.
+
+Instead, you could also use `()` for the Index type when needed.
 
 *Creating an IndexSet from an Event*
 
-If indices are required for your project,
-and your input data is in `Event` format
-then you must define a function that takes in a list
-of `Event` s, with defined `t` agSet, `m` odel, and `Interval a` types
-and returns an `IndexSet` of `Interval a` types.
-Instructions on defining `t` and `m` are given later.
+Define a function with type `[Event t m a] -> IndexSet (Interval a)`,
+where `t` represents the project tags,
+`m` represents the project model,
+and `a` represents the type of the project's temporal unit
 
-The following index function takes in a list of `Event` s
+The following example index function takes in a list of `Event` s
 and creates an `IndexSet` where the index is defined as
 the last day that `YOUR_TAG` occurred for longer than 1 temporal unit (`a`)
 during `yourStudyPeriod`.
@@ -33,66 +57,16 @@ index events =
     |> into
 ----
 
-Update `a` with the type of your input data temporal values (Day, UTCTime, Int, etc.).
 
 *TODO add an example of creating an index set with more than one date*
 
 *Creating an IndexSet from a list*
 
-If your project's InputData is not in `Event` format,
-but is in `EventLine` format,
-then you can create an index set using `makeIndexSet`.
-*TODO not sure this is true*
-*I'm not sure the relationship between eventLines and Events*
+Define a function with type `YourInputDataType -> IndexSet (Interval a)`,
+where `YourInputDataType` is the name of your input data type.
 
-[source,haskell]
-----
-data EventLine t m a = MkEventLine Value Value Value Value [t] (FactsLine m a) 
-  deriving (Eq, Show, Generic)
+*TODO - what restrictions are there when not using Event type?*
 
-newtype Event t m a = MkEvent ( PairedInterval (Context t m) a ) 
-  deriving (Eq, Show, Generic)
-----
 
-`makeIndexSet` takes in a list of intervals to produce an IndexSet.
 
-*TODO shouldn't `i` be an interval? where do we guarantee that?*
-
-[source,haskell]
-----
-makeIndexSet :: (Ord i) => [i] -> IndexSet i
-makeIndexSet = into
-----
-
-*TODO can we use the same sytax with EventLines as we do with Events?*
-
-[source,haskell]
-----
-index :: [EventLine t m a] -> IndexSet (Interval a)
-index events =
-  events
-    |> filterEvents (containsTag [YOUR_TAG])
-    |> combineIntervals
-    |> filter
-         (getPredicate
-           (Predicate ((> 1) . duration) &&& Predicate (concur yourStudyPeriod))
-         )
-    |> fmap (endervalMoment . end)
-    |> into
-----
-
-Update `a` with the type of your input data temporal values (Day, UTCTime, Int, etc.).
-
-*Creating an empty IndexSet*
-
-If no indices are required for your study,
-you must still create an IndexSet
-as this is a requirement for `CohortSpec`.
-You can define an empty IndexSet as follows:
-[source,haskell]
-----
-emptyIndex :: YourInputDataType -> IndexSet ()
-emptyIndex _ = makeIndexSet [()]
-----
-Update `YourInputDataType` with your project-specific input data type.
 

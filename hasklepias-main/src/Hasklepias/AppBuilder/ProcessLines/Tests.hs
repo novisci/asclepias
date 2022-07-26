@@ -1,6 +1,7 @@
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# OPTIONS_HADDOCK hide #-}
 {- HLINT ignore "Avoid restricted function" -}
 module Hasklepias.AppBuilder.ProcessLines.Tests
   ( tests
@@ -341,11 +342,11 @@ tests = testGroup
     [ testCase "silly logic gives correct result on silly input"
     $   prsStrictDrop "[1,false]\n[1,true]\n"
     @?= Right "[1,\"This line was false\"]\n"
-    , testCase "order of true line doesn't matter for dummy logic"
+    , testCase "order of true line doesn't matter for silly logic"
     $   prsStrictDrop "[1,false]\n[1,true]\n"
     @?= prsStrictDrop "[1,true]\n[1,false]\n"
     , testCase
-      "two false lines equal two true lines since true lines are dropped"
+      "two false lines equal two true lines since true lines are dropped in silly logic"
     $   prsStrictDrop "[1,false]\n[1,false]\n"
     @?= prsStrictDrop "[1,true]\n[1,true]\n"
     ]

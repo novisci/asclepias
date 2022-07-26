@@ -25,7 +25,6 @@ import qualified Data.ByteString.Char8         as BSC
 import qualified Data.ByteString.Lazy          as BL
 import qualified Data.ByteString.Lazy.Char8    as BLC
 import           Data.Int
-import           Data.Maybe
 import           GHC.Generics
 
 {-
@@ -138,7 +137,7 @@ data AppLines id i = MkAppLines
   , grpAcc      :: Maybe Builder -- ^ group-level accumulator
   , lastNewLine :: Maybe i -- ^ the index of the last new line
   , builderAcc  :: Builder -- ^ the accumulated results as a ByteString Builder
-  , linelog     :: AppLinesLog -- ^ a logger
+  , lineLog     :: AppLinesLog -- ^ a logger
   }
 
 {-|
@@ -228,9 +227,9 @@ processAppLinesInternal fs pri psl prd pro status x =
       { builderAcc = if grpStatus status
                        then updateAcc status Nothing
                        else builderAcc status
-      , linelog    = if grpStatus status
-                       then incrementGroupKept (linelog status)
-                       else linelog status
+      , lineLog    = if grpStatus status
+                       then incrementGroupKept (lineLog status)
+                       else lineLog status
       }
     -- Otherwise take the index immediately after the newline character as `i`
     Just i -> do
@@ -239,11 +238,11 @@ processAppLinesInternal fs pri psl prd pro status x =
       -- Is there another newline character after `i`?
           nl        = findNewLine fs (getTail Nothing)
           thisLine  = getTail nl
-          lineCount = linesProcessed (linelog status) + 1
+          lineCount = linesProcessed (lineLog status) + 1
       -- always update the lastNewLine and count
           newStatus = status
             { lastNewLine = fmap (i +) nl
-            , linelog     = (linelog status) { linesProcessed = lineCount }
+            , lineLog     = (lineLog status) { linesProcessed = lineCount }
             }
 
       if isEmpty fs thisLine
@@ -288,8 +287,8 @@ processAppLinesInternal fs pri psl prd pro status x =
                           , grpStart   = i
                           , grpAcc     = toAcc $ processLine x thisLineID
                           , builderAcc = updateAcc status (Just i)
-                          , linelog = (incrementGroupKept . incrementGroupCount)
-                                        (linelog newStatus)
+                          , lineLog = (incrementGroupKept . incrementGroupCount)
+                                        (lineLog newStatus)
                           }
                         )
 
@@ -302,7 +301,7 @@ processAppLinesInternal fs pri psl prd pro status x =
                           , grpStart   = i
                           , grpStatus  = b
                           , grpAcc     = toAcc $ processLine x thisLineID
-                          , linelog    = incrementGroupCount (linelog newStatus)
+                          , lineLog    = incrementGroupCount (lineLog newStatus)
                           }
                         )
  where

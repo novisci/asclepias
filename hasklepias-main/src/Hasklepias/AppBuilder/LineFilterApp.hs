@@ -10,11 +10,7 @@ module Hasklepias.AppBuilder.LineFilterApp
 import           Colog.Core                     ( (<&)
                                                 , logStringStderr
                                                 )
-import           Data.Aeson                     ( ToJSON
-                                                , decodeStrict'
-                                                , fromEncoding
-                                                , toEncoding
-                                                )
+import           Data.Aeson                     ( decodeStrict' )
 import qualified Data.ByteString               as BS
 import qualified Data.ByteString.Lazy          as BL
 import           EventDataTheory         hiding ( (<|>) )

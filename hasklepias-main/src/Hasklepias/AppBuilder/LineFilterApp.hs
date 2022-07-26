@@ -74,7 +74,8 @@ makeLineFilterApp name pid psl prd = do
   let inloc  = inputToLocation $ input options
       outloc = outputToLocation $ output options
 
-  result <- processAppLinesStrict pid psl prd NoTransformation <$> readDataStrict inloc
+  result <- processAppLinesStrict pid psl prd NoTransformation
+    <$> readDataStrict inloc
 
   case result of
     Left lae -> do

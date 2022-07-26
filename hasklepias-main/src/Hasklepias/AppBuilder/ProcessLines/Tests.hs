@@ -270,7 +270,7 @@ appTestCasesLazy =
 Tester applications
 -}
 
-prsStrict = processAppLinesStrict dciS' dclS' tpr NoTransformation 
+prsStrict = processAppLinesStrict dciS' dclS' tpr NoTransformation
 
 
 -- This one converts the bool to a string when the bool is `False`.

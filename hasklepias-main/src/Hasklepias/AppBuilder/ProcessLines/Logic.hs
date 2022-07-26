@@ -178,7 +178,7 @@ the second function, the "builder",
 creates the line to be output 
 from the line identifer and the value of type @b@.
 -}
-data LineProcessor a b id = 
+data LineProcessor a b id =
     NoTransformation -- ^ Do not transform lines
   | TransformWith (a -> LineStatus b) -- ^ the transformer
                     ((id, b) -> Builder) -- ^ the builder
@@ -215,7 +215,7 @@ processAppLinesInternal
   -> (t -> Maybe id)
   -> (t -> Maybe a)
   -> (a -> Bool)
-  ->  LineProcessor a b id
+  -> LineProcessor a b id
   -> AppLines id i
   -> t
   -> LineAppMonad (AppLines id i)
@@ -335,7 +335,7 @@ processAppLinesInternal fs pri psl prd pro status x =
   -- A helper function to update the main accumulator,
   -- whose logic depends on whether a LineProcessor is provided.
   updateAcc status i = case pro of
-    TransformWith _ _-> case grpAcc status of
+    TransformWith _ _ -> case grpAcc status of
       Nothing  -> builderAcc status
       Just grp -> builderAcc status <> grp <> char8 '\n'
     NoTransformation -> builderAcc status <> build

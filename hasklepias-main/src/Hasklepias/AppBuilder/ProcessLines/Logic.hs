@@ -167,7 +167,6 @@ data GroupChange = SameGroup | NewGroup
 checkGroupChange :: (Eq id) => id -> id -> GroupChange
 checkGroupChange x y = if x == y then SameGroup else NewGroup
 
-
 {-|
 This type's two functions are used in the @processAppLines*@ functions
 to allow a developer to specify the logic of how to tranform lines.
@@ -194,7 +193,6 @@ data LineStatus b =
 instance Functor LineStatus where
   fmap f DropLine     = DropLine
   fmap f (KeepLine x) = KeepLine (f x)
-
 
 {-
 INTERNAL

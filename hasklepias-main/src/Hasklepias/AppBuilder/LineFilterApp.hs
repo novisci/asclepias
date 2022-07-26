@@ -108,10 +108,7 @@ provided that at least one line successfully parses
 into an `Event` and satisfies the predicate. 
 -}
 makeFilterEventLineApp
-  :: ( Eventable t m a
-     , EventLineAble t m a b
-     , FromJSONEvent t m a
-     )
+  :: (Eventable t m a, EventLineAble t m a b, FromJSONEvent t m a)
   => String -- ^ name of the app (e.g. a project's id)
   -> (Event t m a -> Bool) -- ^ predicate to evaluate for each event
   -> IO ()

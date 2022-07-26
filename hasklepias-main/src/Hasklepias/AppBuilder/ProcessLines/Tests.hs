@@ -68,7 +68,7 @@ instance ToJSON LineAppTester
 instance Arbitrary LineAppTester where
   arbitrary = MkLineAppTester <$> arbitrary
 
-data Line = MkLine LineAppTesterID LineAppTester
+data Line = MkLine LineAppTesterID String
   deriving (Show, Eq, Generic)
 
 
@@ -266,9 +266,23 @@ appTestCasesLazy =
 
 
 {-
+Tester applications
 -}
 
 prsStrict = processAppLinesStrict dciS' dclS' tpr Nothing
+
+
+-- This one converts the bool to a string when the bool is `False`.
+prsStrictDrop = processAppLinesStrict
+  dciS'
+  dclS'
+  tpr
+  (Just $ MkLineProcessor
+    (\(MkLineAppTester x) ->
+      if x then DropLine else KeepLine "This line was false"
+    )
+    (fromEncoding . toEncoding . uncurry MkLine)
+  )
 
 prsLazy = processAppLinesLazy dciL' dclL' tpr Nothing
 
@@ -309,20 +323,32 @@ prop_nGroups x = do
 tests = testGroup
   "line processing logic"
   [ testGroup
-      "processing lines for application"
-      [ testCase "identifier failure caught"
-      $   show (prsStrict "[1, true]\n[bad]")
-      @?= "Left Line 2: failed to decode identifier"
-      , testCase "identifier failure caught"
-      $   show (prsStrict "[1, \"bad\"]\n[1, false]")
-      @?= "Left Line 1: failed to decode line"
-      , testGroup "processAppLinesStrict"
-        $ makeTests prsStrict appTestCasesStrict
-      , testGroup "processAppLinesLazy" $ makeTests prsLazy appTestCasesLazy
-      , testProperty
-        "number of groups determined by processAppLines is same as naive implementation"
-        prop_nGroups
-      ]
+    "filter lines application"
+    [ testCase "identifier failure caught"
+    $   show (prsStrict "[1, true]\n[bad]")
+    @?= "Left Line 2: failed to decode identifier"
+    , testCase "identifier failure caught"
+    $   show (prsStrict "[1, \"bad\"]\n[1, false]")
+    @?= "Left Line 1: failed to decode line"
+    , testGroup "processAppLinesStrict" $ makeTests prsStrict appTestCasesStrict
+    , testGroup "processAppLinesLazy" $ makeTests prsLazy appTestCasesLazy
+    , testProperty
+      "number of groups determined by processAppLines is same as naive implementation"
+      prop_nGroups
+    ]
+  , testGroup
+    "filter and process application - silly logic"
+    [ testCase "silly logic gives correct result on silly input"
+    $   prsStrictDrop "[1,false]\n[1,true]\n"
+    @?= Right "[1,\"This line was false\"]\n"
+    , testCase "order of true line doesn't matter for dummy logic"
+    $   prsStrictDrop "[1,false]\n[1,true]\n"
+    @?= prsStrictDrop "[1,true]\n[1,false]\n"
+    , testCase
+      "two false lines equal two true lines since true lines are dropped"
+    $   prsStrictDrop "[1,false]\n[1,false]\n"
+    @?= prsStrictDrop "[1,true]\n[1,true]\n"
+    ]
   ]
  where
   makeTests f = fmap

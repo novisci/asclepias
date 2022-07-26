@@ -30,8 +30,8 @@ INTERNAL
 The type of errors in a line processing application
 -}
 data LineAppError =
-    LineParseErrorA Int -- ^ indicates a failure of the `t -> Maybe a` function
-  | LineParseErrorID Int -- ^ indicates a failure of the `t -> Maybe id` function 
+    LineParseErrorA Int -- ^ indicates a failure of the @t -> Maybe a@ function
+  | LineParseErrorID Int -- ^ indicates a failure of the @t -> Maybe id@ function 
 
 instance Show LineAppError where
   show (LineParseErrorA i) = "Line " <> show i <> ": failed to decode line"
@@ -150,6 +150,17 @@ IMPORTANT
 All the lines for each group are assumed to be contiguous.
 
 See @'processAppLinesStrict'@ for a description of arguments.
+
+NOTE
+The algorithm's current implementation skips to the next group
+once the predicate is satisfied.
+However,
+since error handling was added in 
+https://gitlab.novisci.com/nsStat/asclepias/-/merge_requests/258
+this means that if the faulty line occurs before the predicate is satisfied
+then we get different behavior
+than if it occurs after the predicate is satisfied within a group.
+We may want to reconsider this in future iterations.
 -}
 processAppLinesInternal
   :: (Eq id, Show id, Num i, Monoid t)

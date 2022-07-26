@@ -178,8 +178,10 @@ the second function, the "builder",
 creates the line to be output 
 from the line identifer and the value of type @b@.
 -}
-data LineProcessor a b id = MkLineProcessor (a -> LineStatus b) -- ^ the transformer
-                                            ((id, b) -> Builder) -- ^ the builder
+data LineProcessor a b id = 
+    NoTransformation -- ^ Do not transform lines
+  | TransformWith (a -> LineStatus b) -- ^ the transformer
+                    ((id, b) -> Builder) -- ^ the builder
 
 {-|
 A type used to indicate whether to drop or keep a line
@@ -213,7 +215,7 @@ processAppLinesInternal
   -> (t -> Maybe id)
   -> (t -> Maybe a)
   -> (a -> Bool)
-  -> Maybe (LineProcessor a b id)
+  ->  LineProcessor a b id
   -> AppLines id i
   -> t
   -> LineAppMonad (AppLines id i)
@@ -309,9 +311,9 @@ processAppLinesInternal fs pri psl prd pro status x =
   -- The function that processes a line depends on whether the user
   -- provided a line processor argument.
   processLine x y = case pro of
-    Just (MkLineProcessor transformLine buildLine) ->
+    TransformWith transformLine buildLine ->
       fmap (\v -> buildLine (y, v)) (transformLine x)
-    Nothing -> DropLine
+    NoTransformation -> DropLine
 
   -- Cast a @LineStatus@ to a @Maybe@
   toAcc DropLine     = Nothing
@@ -320,7 +322,7 @@ processAppLinesInternal fs pri psl prd pro status x =
   -- A helper function to update the group accumulator,
   -- whose logic depends on whether a LineProcessor is provided.
   updateGrp status line grpId = case pro of
-    Just _ -> case processLine line grpId of
+    TransformWith _ _ -> case processLine line grpId of
       -- keep going if line is to be dropped
       DropLine    -> grpAcc status
       -- handle the case that the accumulator may be @Nothing@
@@ -328,15 +330,15 @@ processAppLinesInternal fs pri psl prd pro status x =
       KeepLine bu -> case grpAcc status of
         Nothing  -> Just bu
         Just acc -> Just (acc <> char8 '\n' <> bu)
-    Nothing -> Nothing
+    NoTransformation -> Nothing
 
   -- A helper function to update the main accumulator,
   -- whose logic depends on whether a LineProcessor is provided.
   updateAcc status i = case pro of
-    Just _ -> case grpAcc status of
+    TransformWith _ _-> case grpAcc status of
       Nothing  -> builderAcc status
       Just grp -> builderAcc status <> grp <> char8 '\n'
-    Nothing -> builderAcc status <> build
+    NoTransformation -> builderAcc status <> build
       fs
       (takeSubset fs x (grpStart status) (fmap (\z -> z - grpStart status) i))
 {-# INLINE processAppLinesInternal #-}
@@ -354,7 +356,7 @@ processAppLines
   -> (t -> Maybe id)
   -> (t -> Maybe a)
   -> (a -> Bool)
-  -> Maybe (LineProcessor a b id)
+  -> LineProcessor a b id
   -> t
   -> LineAppMonad t
 processAppLines fs pri psl prd pro x =
@@ -430,7 +432,7 @@ processAppLinesStrict
   => (BS.ByteString -> Maybe id) -- ^ parser of a group identifier from a line
   -> (BS.ByteString -> Maybe a) -- ^ parser of an @a@ from a line
   -> (a -> Bool) -- ^ predicate to apply to each line
-  -> Maybe (LineProcessor a b id) -- ^ an optional @'LineProcessor'@ 
+  -> LineProcessor a b id -- ^ an optional @'LineProcessor'@ 
   -> BS.ByteString -- ^ input string to be split into lines
   -> LineAppMonad BS.ByteString
 processAppLinesStrict = processAppLines lineFunctionsStrict
@@ -442,7 +444,7 @@ processAppLinesLazy
   => (BL.ByteString -> Maybe id)
   -> (BL.ByteString -> Maybe a)
   -> (a -> Bool)
-  -> Maybe (LineProcessor a b id)
+  -> LineProcessor a b id
   -> BL.ByteString
   -> LineAppMonad BL.ByteString
 processAppLinesLazy = processAppLines lineFunctionsLazy

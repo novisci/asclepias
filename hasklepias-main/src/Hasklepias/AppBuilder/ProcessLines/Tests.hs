@@ -270,7 +270,7 @@ appTestCasesLazy =
 Tester applications
 -}
 
-prsStrict = processAppLinesStrict dciS' dclS' tpr Nothing
+prsStrict = processAppLinesStrict dciS' dclS' tpr NoTransformation 
 
 
 -- This one converts the bool to a string when the bool is `False`.
@@ -285,14 +285,14 @@ prsStrictDrop = processAppLinesStrict
   dciS'
   dclS'
   tpr
-  (Just $ MkLineProcessor
+  (TransformWith
     (\(MkLineAppTester x) ->
       if x then DropLine else KeepLine "This line was false"
     )
     (fromEncoding . toEncoding . uncurry MkLine)
   )
 
-prsLazy = processAppLinesLazy dciL' dclL' tpr Nothing
+prsLazy = processAppLinesLazy dciL' dclL' tpr NoTransformation
 
 
 

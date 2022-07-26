@@ -7,6 +7,9 @@ module Hasklepias.AppBuilder.LineFilterApp
   , makeFilterEventLineApp
   ) where
 
+import           Colog.Core                     ( (<&)
+                                                , logStringStderr
+                                                )
 import           Data.Aeson                     ( decodeStrict' )
 import qualified Data.ByteString               as BS
 import qualified Data.ByteString.Lazy          as BL
@@ -14,7 +17,7 @@ import           EventDataTheory         hiding ( (<|>) )
 import           Hasklepias.AppBuilder.ProcessLines.Logic
 import           Hasklepias.AppUtilities
 import           Options.Applicative
-
+import           System.Exit
 
 -- Container for app options
 data LineFilterAppOpts = MkLineFilterAppOpts
@@ -69,10 +72,15 @@ makeLineFilterApp
 makeLineFilterApp name pid psl prd = do
   options <- execParser (makeAppArgs name)
   let inloc  = inputToLocation $ input options
-  let outloc = outputToLocation $ output options
-  dat <- readDataStrict inloc
+      outloc = outputToLocation $ output options
 
-  writeDataStrict outloc $ processAppLinesStrict pid psl prd dat
+  result <- processAppLinesStrict pid psl prd <$> readDataStrict inloc
+
+  case result of
+    Left lae -> do
+      logStringStderr <& show lae
+      exitWith (ExitFailure 1)
+    Right bs -> writeDataStrict outloc bs
 
 {-| 
 Create a application that filters event data with two arguments:

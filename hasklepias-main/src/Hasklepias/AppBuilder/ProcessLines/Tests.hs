@@ -152,7 +152,7 @@ appTestCasesStrict =
   [ ("no input", "", "")
   , ( "without newline at end of input"
     , "[1,false]\n[1,true]"
-    , "[1,false]\n[1,true]\n"
+    , "[1,false]\n[1,true]"
     )
   , ("1 group - 1 passing line"  , passLines 1 1 , passLines 1 1)
   , ("1 group -  2 passing lines", passLines 2 1 , passLines 2 1)
@@ -210,7 +210,7 @@ appTestCasesLazy =
   [ ("no input", "", "")
   , ( "without newline at end of input"
     , "[1,false]\n[1,true]"
-    , "[1,false]\n[1,true]\n"
+    , "[1,false]\n[1,true]"
     )
   , ("1 group - 1 passing line"  , passLinesL 1 1 , passLinesL 1 1)
   , ("1 group - 2 passing lines" , passLinesL 2 1 , passLinesL 2 1)
@@ -268,18 +268,9 @@ appTestCasesLazy =
 {-
 -}
 
-prsStrict = processAppLinesStrict
-  dciS'
-  dclS'
-  tpr
-  Just
-  (fromEncoding . toEncoding . uncurry MkLine)
+prsStrict = processAppLinesStrict dciS' dclS' tpr Nothing
 
-prsLazy = processAppLinesLazy dciL'
-                              dclL'
-                              tpr
-                              Just
-                              (fromEncoding . toEncoding . uncurry MkLine)
+prsLazy = processAppLinesLazy dciL' dclL' tpr Nothing
 
 
 

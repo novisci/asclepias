@@ -15,6 +15,7 @@ module Hasklepias.AppBuilder.ProcessLines.Logic
     -- $processAppLines
     processAppLinesStrict
   , processAppLinesLazy
+  , LineProcessor(..)
   ) where
 
 import qualified Data.ByteString               as BS
@@ -23,8 +24,11 @@ import qualified Data.ByteString.Char8         as BSC
 import qualified Data.ByteString.Lazy          as BL
 import qualified Data.ByteString.Lazy.Char8    as BLC
 import           Data.Int
+import           Data.Maybe
 import           GHC.Generics
 
+{-
+-}
 type LineAppMonad = Either LineAppError
 
 {- 
@@ -129,24 +133,24 @@ data AppLines id i = MkAppLines
   { lastLineID  :: Maybe id -- ^ the group ID at the previous line
   , grpStart    :: i -- ^  the index at which the current group started
   , grpStatus   :: Bool -- ^ the predicate status of a group
-  , grpAcc      :: Builder -- ^ group-level accumulator
+  , grpAcc      :: Maybe Builder -- ^ group-level accumulator
   , lastNewLine :: Maybe i -- ^ the index of the last new line
   , builderAcc  :: Builder -- ^ the accumulated results as a ByteString Builder
   , linelog     :: AppLinesLog
   }
 
 data AppLinesLog = MkAppLinesLog
-  { groupsProcessed :: Int -- ^ count of groups processed
-  , groupsDropped   :: Int -- ^ count of groups dropped
-  , linesProcessed  :: Int -- ^ count of lines processed
+  { groupsProcessed :: !Int -- ^ count of groups processed
+  , groupsKept      :: !Int -- ^ count of groups dropped
+  , linesProcessed  :: !Int -- ^ count of lines processed
   }
   deriving (Eq, Show, Generic)
 
 incrementGroupCount :: AppLinesLog -> AppLinesLog
 incrementGroupCount (MkAppLinesLog a b c) = MkAppLinesLog (a + 1) b c
 
-incrementGroupDropped :: AppLinesLog -> AppLinesLog
-incrementGroupDropped (MkAppLinesLog a b c) = MkAppLinesLog a (b + 1) c
+incrementGroupKept :: AppLinesLog -> AppLinesLog
+incrementGroupKept (MkAppLinesLog a b c) = MkAppLinesLog a (b + 1) c
 
 {-
 INTERNAL 
@@ -156,6 +160,12 @@ data GroupChange = SameGroup | NewGroup
 
 checkGroupChange :: (Eq id) => id -> id -> GroupChange
 checkGroupChange x y = if x == y then SameGroup else NewGroup
+
+{-|
+TODO
+-}
+data LineProcessor a b id = MkLineProcessor (a -> Maybe b) ((id, b) -> Builder)
+
 
 {-
 INTERNAL
@@ -171,38 +181,37 @@ See @'processAppLinesStrict'@ for a description of arguments.
 
 -}
 processAppLinesInternal
-  :: (Eq id, Show id, Num i, Monoid t)
+  :: (Eq id, Show id, Num i, Monoid t, Show t)
   => LineFunctions t i
   -> (t -> Maybe id)
   -> (t -> Maybe a)
   -> (a -> Bool)
-  -> (a -> Maybe b)
-  -> ((id, b) -> Builder)
+  -> Maybe (LineProcessor a b id)
   -> AppLines id i
   -> t
   -> LineAppMonad (AppLines id i)
-processAppLinesInternal fs pri psl prd tfm bld status x =
+processAppLinesInternal fs pri psl prd pro status x =
   case fmap (+ 1) (lastNewLine status) of
     -- If no new line then we're done!
     -- Simply update the accumulator for the last group.
     Nothing -> Right $ status
       { builderAcc = if grpStatus status
-                       then updateAcc status
+                       then updateAcc status Nothing
                        else builderAcc status
-      , linelog = if grpStatus status 
-                     then incrementGroupDropped (linelog status)
-                     else linelog status
+      , linelog    = if grpStatus status
+                       then incrementGroupKept (linelog status)
+                       else linelog status
       }
     -- Otherwise take the index immediately after the newline character as `i`
     Just i -> do
 
-      let getTail   = takeSubset fs x i
+      let getTail    = takeSubset fs x i
       -- Is there another newline character after `i`?
-          nl        = findNewLine fs (getTail Nothing)
-          thisLine  = getTail nl
+          nl         = findNewLine fs (getTail Nothing)
+          thisLine   = getTail nl
           lineCount = linesProcessed (linelog status) + 1
       -- always update the lastNewLine and count
-          newStatus = status
+          newStatus  = status
             { lastNewLine = fmap (i +) nl
             , linelog     = (linelog status) { linesProcessed = lineCount }
             }
@@ -216,8 +225,7 @@ processAppLinesInternal fs pri psl prd tfm bld status x =
         -- then process the group for the last ID
         -- and update the ID in the accumulator
         else case pri thisLine of
-          Nothing ->
-            Left (LineParseErrorID (linesProcessed $ linelog newStatus))
+          Nothing         -> Left (LineParseErrorID lineCount)
           Just thisLineID -> do
             case
                 ( checkGroupChange (Just thisLineID) (lastLineID status)
@@ -228,9 +236,7 @@ processAppLinesInternal fs pri psl prd tfm bld status x =
                 (SameGroup, True) ->
                   checkLine lineCount thisLine
                     >>= (\(x, _) -> go newStatus
-                          { grpAcc = grpAcc status
-                                     <> char8 '\n'
-                                     <> processLine x thisLineID
+                          { grpAcc = updateGrp status x thisLineID
                           }
                         )
                 -- ID hasn't changed, predicate not satisfied ==> 
@@ -239,9 +245,7 @@ processAppLinesInternal fs pri psl prd tfm bld status x =
                   checkLine lineCount thisLine
                     >>= (\(x, b) -> go newStatus
                           { grpStatus = b
-                          , grpAcc    = grpAcc status
-                                        <> char8 '\n'
-                                        <> processLine x thisLineID
+                          , grpAcc    = updateGrp status x thisLineID
                           }
                         )
                 -- ID has changed, predicate satisfied ==> 
@@ -250,11 +254,12 @@ processAppLinesInternal fs pri psl prd tfm bld status x =
                   checkLine lineCount thisLine
                     >>= (\(x, b) -> go newStatus
                           { lastLineID = Just thisLineID
-                          , grpStatus  = b
-                          , grpStart   = i
-                          , grpAcc     = processLine x thisLineID
-                          , builderAcc = updateAcc status
-                          , linelog    = incrementGroupCount (linelog status)
+                          , grpStatus = b
+                          , grpStart = i
+                          , grpAcc = processLine <$> Just x <*> Just thisLineID
+                          , builderAcc = updateAcc status (Just i)
+                          , linelog = (incrementGroupKept . incrementGroupCount)
+                                        (linelog newStatus)
                           }
                         )
 
@@ -266,17 +271,26 @@ processAppLinesInternal fs pri psl prd tfm bld status x =
                           { lastLineID = Just thisLineID
                           , grpStart   = i
                           , grpStatus  = b
-                          , grpAcc     = processLine x thisLineID
-                          , linelog    =
-                            (incrementGroupDropped . incrementGroupCount)
-                              (linelog status)
+                          , grpAcc = processLine <$> Just x <*> Just thisLineID
+                          , linelog    = incrementGroupCount (linelog newStatus)
                           }
                         )
  where
-  go = flip (processAppLinesInternal fs pri psl prd tfm bld) x
+  go = flip (processAppLinesInternal fs pri psl prd pro) x
   checkLine i x = handleLineParse i $ parseThenPredicate psl prd x
-  processLine x y = maybe mempty (\v -> bld (y, v)) (tfm x)
-  updateAcc status = builderAcc status <> grpAcc status <> char8 '\n'
+  processLine x y = case pro of
+    Just (MkLineProcessor transformLine buildLine) ->
+      maybe mempty (\v -> buildLine (y, v)) (transformLine x)
+    Nothing -> mempty
+  updateGrp status x y = case pro of
+    Just p  -> (<> char8 '\n' <> processLine x y) <$> grpAcc status
+    Nothing -> Nothing
+  updateAcc status i = case pro of
+    Just _ ->
+      builderAcc status <> fromMaybe mempty (grpAcc status) <> char8 '\n'
+    Nothing -> builderAcc status <> build
+      fs
+      (takeSubset fs x (grpStart status) (fmap (\z -> z - grpStart status) i))
 {-# INLINE processAppLinesInternal #-}
 
 {-
@@ -292,18 +306,16 @@ processAppLines
   -> (t -> Maybe id)
   -> (t -> Maybe a)
   -> (a -> Bool)
-  -> (a -> Maybe b)
-  -> ((id, b) -> Builder)
+  -> Maybe (LineProcessor a b id)
   -> t
   -> LineAppMonad t
-processAppLines fs pri psl prd tfm bld x =
+processAppLines fs pri psl prd pro x =
   let result = processAppLinesInternal
         fs
         pri
         psl
         prd
-        tfm
-        bld
+        pro
         (MkAppLines Nothing
                     0
                     False
@@ -314,7 +326,7 @@ processAppLines fs pri psl prd tfm bld x =
         )
         x
   in  runBuilder fs . builderAcc <$> result
-
+{-# INLINE processAppLines #-}
 
 {- $processAppLines
 
@@ -348,8 +360,7 @@ processAppLinesStrict
   => (BS.ByteString -> Maybe id) -- ^ parser of a group identifier from a line
   -> (BS.ByteString -> Maybe a) -- ^ parser of an @a@ from a line
   -> (a -> Bool) -- ^ predicate to apply to each line
-  -> (a -> Maybe b)
-  -> ((id, b) -> Builder)
+  -> Maybe (LineProcessor a b id)
   -> BS.ByteString -- ^ input string to be split into lines
   -> LineAppMonad BS.ByteString
 processAppLinesStrict = processAppLines lineFunctionsStrict
@@ -361,8 +372,7 @@ processAppLinesLazy
   => (BL.ByteString -> Maybe id)
   -> (BL.ByteString -> Maybe a)
   -> (a -> Bool)
-  -> (a -> Maybe b)
-  -> ((id, b) -> Builder)
+  -> Maybe (LineProcessor a b id)
   -> BL.ByteString
   -> LineAppMonad BL.ByteString
 processAppLinesLazy = processAppLines lineFunctionsLazy

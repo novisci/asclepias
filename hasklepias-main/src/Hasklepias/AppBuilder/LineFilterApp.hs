@@ -67,7 +67,7 @@ The rest are dropped.
 
 -}
 makeLineFilterApp
-  :: (Eq a, Eq i, Show i, ToJSON i, ToJSON a)
+  :: (Eq a, Eq i, Show i)
   => String -- ^ name of the app (e.g. a project's id)
   -> (BS.ByteString -> Maybe i) -- ^ parser for line identifier
   -> (BS.ByteString -> Maybe a) -- ^ parser
@@ -78,8 +78,7 @@ makeLineFilterApp name pid psl prd = do
   let inloc  = inputToLocation $ input options
       outloc = outputToLocation $ output options
 
-  result <- processAppLinesStrict pid psl prd Just (fromEncoding . toEncoding)
-    <$> readDataStrict inloc
+  result <- processAppLinesStrict pid psl prd Nothing <$> readDataStrict inloc
 
   case result of
     Left lae -> do
@@ -112,9 +111,6 @@ makeFilterEventLineApp
   :: ( Eventable t m a
      , EventLineAble t m a b
      , FromJSONEvent t m a
-     , ToJSON a
-     , ToJSON m
-     , ToJSON t
      )
   => String -- ^ name of the app (e.g. a project's id)
   -> (Event t m a -> Bool) -- ^ predicate to evaluate for each event

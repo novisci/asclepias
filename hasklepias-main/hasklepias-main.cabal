@@ -200,6 +200,8 @@ executable lineFilter-demo
     build-depends:
           base
         , hasklepias-main
+        , aeson
+        , vector
         , tasty
     hs-source-dirs:   lineFilter-demo
     default-language: Haskell2010

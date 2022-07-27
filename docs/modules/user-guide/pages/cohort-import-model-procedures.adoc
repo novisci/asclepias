@@ -11,14 +11,14 @@ add the `fact-models` dependency using the following code,
 replacing `YourCommitSHA`` with the SHA commit identified above.
 +
 [source,haskell]
----
+----
 source-repository-package
    type: git
    location: https://gitlab+deploy-token-ns-projects:glpat-7Z4w2JGrm2692Bshcqhd@gitlab.novisci.com/nsStat/event-data-model.git
    tag: YourCommitSHA
    subdir: 
     fact-models
----
+----
 +
 . Add `Models.YourModelType` to your module import declaration. 
 `YourModelType` is the model type name defined in the Model.dhall file.

@@ -5,20 +5,22 @@
 #Also If I tag the code with [source,haskell] it won't compile correctly#
 #Is it something about type definitions?#
 
-. If using the Event type, define your project event as follows:
+If using the Event type, define your project event as follows:
 
 [source]
 ----
 type YourEvent a = Event YourTags YourModel a
 ----
 a is the temporal unit
+
 YourTags is the type of your project's tags
+
 YourModel is the type of your project's model
 
 #TODO Do you need to have a tag type defined?#
 #If so - can it be empty and what would that look like?#
 
-. If not using the Event type, define your input data type
+If not using the Event type, define your input data type
 base on your project's requirements.
 
 In the example below,
@@ -27,6 +29,6 @@ the input data is a pair of values - one bool and one integer.
 ----
 type InputData = (Bool, Integer)
 ----
-Note that the subject identifier does not need to be defined.
 
+Note that the subject identifier does not need to be defined.
 #TODO - I'm still unclear how the subject identifier is created...#

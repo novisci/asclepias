@@ -1,0 +1,17 @@
+:description: The procedure for creating the CohortSpec type
+
+*Event Data Example*
+
+[source,haskell]
+----
+cohortSpecs :: CohortMapSpec (Es Day) Featureset (Interval Day)
+cohortSpecs = makeCohortSpecs [("main", index, critRunner, featureRunner)]
+----
+
+*Non-Event Data Example*
+
+[source,haskell]
+----
+minimalCohort :: CohortSpec InputData OutputData ()
+minimalCohort = specifyCohort emptyIndex sillyCriteria sillyOutput
+----

@@ -9,7 +9,7 @@ The `CohortSpec` type takes three inputs:
 * The shape of the output data
 * an IndexSet
 
-See below for details on creating these types:
+Instructions on creating a cohort follow.
 
 == a. Import Fact-Model
 include::cohort-import-model-procedures.adoc[leveloffset+=1]
@@ -18,8 +18,7 @@ include::cohort-import-model-procedures.adoc[leveloffset+=1]
 include::cohort-input-data-procedures.adoc[leveloffset+=1]
 
 == c. Defining Output Data Shape
-The output data is defined in the `Cohorts.hs` file,
-and should match the specifications for your project.
+include::cohort-output-data-procedures.adoc[leveloffset+=1]
 
 == d. Defining an IndexSet
 include::cohort-index-set-procedures.adoc[leveloffset+=1]
@@ -39,4 +38,5 @@ include::cohort-criteria-procedures.adoc[leveloffset=+1]
 include::cohort-features-procedures.adoc[leveloffset=+1]
 
 == h. Define Cohort Specification
+include::cohort-specification-procedures.adoc[leveloffset=+1]
 

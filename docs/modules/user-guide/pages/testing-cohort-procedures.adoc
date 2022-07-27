@@ -1,6 +1,164 @@
-:description: The procedure for testing the project cohort app
+:description: The procedure for generating data for cohort testing
 
-== a. Monarch
+## Unit Tests
+Unit tests examine minimal, 
+independent pieces of code to ensure correct functionality.
+The goal is to have 100% "coverage", 
+meaning every line of code is executed during unit testing.
+Positive test cases - where results are returned -
+and negative test cases - where errors are expected -
+should be written.
+Test cases should be written based on the project's specifications and requirements.
+
+### Guidelines
+
+. Pick a minimal, independent piece of code.
+. Review your project specifications for the expected functionality of that code.
+. Create negative test cases.
+  . Answer the following questions:
+    . When should your code fail? 
+    . What specifically will inputs that cause failure look like?
+    . How should the code fail (error, warning, silent failure)?
+  . For each expected failure, define a set of inputs that should result in this failure.
+  . For each expected failure, define a set of expected results.
+. Create positive test cases.
+  . Answer the following questions:
+    . When should your code succeed?
+    . What, specifically, will inputs that cause successful results look like?
+    . How do the successful results differ based on input values?/
+    What are the possible combinations of inputs that result in successful, but different results?
+  . For each expected success, define a set of inputs that should result in this success.
+  . For each expected success, define a set of expected results.
+. Put all test cases into a test plan.
+. Run the test plan using `cabal test`.
+
+#TODO - any setup needed, or can projects run cabal test right away?#
+
+### Example
+Below is the definition for an `index` function.
+
+[source, haskell]
+----
+index :: Es Day -> IndexSet (Interval Day)
+index events =
+  events
+    |> filterEvents (containsTag [MI_DISCHARGE])
+    |> combineIntervals
+    |> filter
+         (getPredicate
+           (Predicate ((> 1) . duration) &&& Predicate (concur studyPeriod))
+         )
+    |> fmap (endervalMoment . end)
+    |> into
+----
+The index for this study is specified as the last unit of any time interval
+that concurs with the study period, 
+and has duration greater than 1,
+and also contains the tag "MI_DISCHARGE".
+We wish to test that `index` meets these specifications.
+
+Below is the unit test for `index`.
+[source, haskell]
+----
+indexTests :: TestTree
+indexTests = testGroup
+  "Tests of the index function"
+  [ testCase "single mi discharge " $ index dummyEvents1 @?= makeIndexSet
+    [endervalMoment (date 2015 1 4)]
+  , testCase "multiple mi discharge: meeting intervals combine"
+  $   index dummyEvents2
+  @?= makeIndexSet [endervalMoment (date 2015 1 6)]
+  , testCase "multiple mi discharge: two indices "
+  $   index dummyEvents3
+  @?= makeIndexSet
+        [endervalMoment (date 2015 1 6), endervalMoment (date 2015 1 10)]
+  ]
+----
+
+The unit test is a `TestTree` type.
+The `testGroup` function creates the `TestTree`.
+`testGroup` takes in a label,
+in this case "Test of the index function",
+followed by a list of `testCase` statements.
+Each `testCase` takes in a label, 
+followed by `$`,
+followed by your function called with your input parameters,
+followed by `@?=`,
+followed by your expected result.
+
+For reference, the input data is defined below:
+[source,haskell]
+----
+dummyEvents1 :: Es Day
+dummyEvents1 =
+  [ event
+      (si (date 2015 1 1, date 2015 1 4))
+      (context (packConcepts [MI_DISCHARGE])
+               (Diagnosis $ mkMedFact "aa" ICD10 Inpatient)
+               Nothing
+      )
+  ]
+
+  dummyEvents2 :: Es Day
+dummyEvents2 =
+  [ event
+    (si (date 2015 1 1, date 2015 1 4))
+    (context (packConcepts [MI_DISCHARGE])
+             (Diagnosis $ mkMedFact "aa" ICD10 Inpatient)
+             Nothing
+    )
+  , event
+    (si (date 2015 1 4, date 2015 1 6))
+    (context (packConcepts [MI_DISCHARGE])
+             (Diagnosis $ mkMedFact "aa" ICD10 Inpatient)
+             Nothing
+    )
+  ]
+
+dummyEvents3 :: Es Day
+dummyEvents3 =
+  [ event
+    (si (date 2015 1 1, date 2015 1 4))
+    (context (packConcepts [MI_DISCHARGE])
+             (Diagnosis $ mkMedFact "aa" ICD10 Inpatient)
+             Nothing
+    )
+  , event
+    (si (date 2015 1 4, date 2015 1 6))
+    (context (packConcepts [MI_DISCHARGE])
+             (Diagnosis $ mkMedFact "aa" ICD10 Inpatient)
+             Nothing
+    )
+  , event
+    (si (date 2015 1 7, date 2015 1 10))
+    (context (packConcepts [MI_DISCHARGE])
+             (Diagnosis $ mkMedFact "aa" ICD10 Inpatient)
+             Nothing
+    )
+  ]
+----
+
+### Notes on Generate Input Data
+Data access is strictly managed,
+and so generating dummy data is encouraged.
+Further, marshalling data in to haskell requires parsers,
+which makes creating dummy data in a separate file difficult.
+We understand the difficulty of this process,
+and hope to provide utilities in the future to assist with this process.
+Feedback is welcome.
+
+## Integration Test
+An integration test examines the connection between units of code,
+within a single application - in this case aclepias.
+Again, positive and negative test cases should be considered.
+
+#Ying mentioned that they pulled a partion of data and ran it on the cohort to test#
+#But since data is restricted, I'm not sure what process I should dictate#
+#Do people need to run this on the stats server?#
 
 
-== b. cohort-collector ??
+## Other Tests
+
+#TODO - how are we testing the whole pipeline?#
+#TODO - Any UAT testing - what would that look like?#
+

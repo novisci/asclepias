@@ -1,5 +1,5 @@
 :description: The procedure for creating cohorts 
-Cohorts are creating in the `Cohorts.hs` file.
+Cohorts are created in the `Cohorts.hs` file.
 
 To define cohorts in asclepias,
 one must create a `CohortSpec` type.
@@ -11,29 +11,32 @@ The `CohortSpec` type takes three inputs:
 
 See below for details on creating these types:
 
-== a. Defining Input Data Shape
-include::input-data-procedures.adoc[leveloffset+=1]
+== a. Import Fact-Model
+include::cohort-import-model-procedures.adoc[leveloffset+=1]
 
-== b. Defining Output Data Shape
+== b. Defining Input Data Shape
+include::cohort-input-data-procedures.adoc[leveloffset+=1]
+
+== c. Defining Output Data Shape
 The output data is defined in the `Cohorts.hs` file,
 and should match the specifications for your project.
 
-== c. Defining an IndexSet
-include::index-set-procedures.adoc[leveloffset+=1]
+== d. Defining an IndexSet
+include::cohort-index-set-procedures.adoc[leveloffset+=1]
 
-== d. Define Tags
+== e. Define Tags
 
 *TODO in the asclepias-project-example we needed to do this,*
 *but I feel like if we use event-data-model, the tags are already defined*
 *in a "real" project, will tags need to be defined in code?*
 
-include::tags-procedures.adoc[leveloffset+=1]
+include::cohort-tags-procedures.adoc[leveloffset+=1]
 
-== e. Define Criteria
-include::criteria-procedures.adoc[leveloffset=+1]
+== f. Define Criteria
+include::cohort-criteria-procedures.adoc[leveloffset=+1]
 
-== f. Create Features
-include::features-procedures.adoc[leveloffset=+1]
+== g. Create Features
+include::cohort-features-procedures.adoc[leveloffset=+1]
 
-== g. Define Cohort Specification
+== h. Define Cohort Specification
 

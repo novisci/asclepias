@@ -21,8 +21,8 @@ include::getting-started.adoc[leveloffset=+1]
 
 == Instructions
 
-=== 1. Define Facts and Model
-include::model-procedures.adoc[leveloffset=+1]
+=== 1. Define Fact-Model
+include::fact-model-procedures.adoc[leveloffset=+1]
 
 === 2. Set Up ETL Process
 #TODO - link to Paul's documentation when ready#
@@ -34,10 +34,10 @@ include::initialize-new-project.adoc[leveloffset=+1]
 include::cohort-procedures.adoc[leveloffset=+2]
 
 === 5. Test Cohort Application
-include::test-cohort-procedures.adoc[leveloffset=+2]
+include::testing-cohort-procedures.adoc[leveloffset=+2]
 
 === 6. Run Cohort Application
-include::run-cohort-procedures.adoc[leveloffset+=2]
+include::running-cohort-procedures.adoc[leveloffset+=2]
 
 == Examples
 This section provides detailed examples of `asclepias` usage.

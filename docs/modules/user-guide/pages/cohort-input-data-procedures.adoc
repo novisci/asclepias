@@ -1,28 +1,32 @@
 :description: How to define the input data type
 
-*If using event-data-model:*
+#TODO - I think we need instructions on how to tag things#
+#I'm assuming that the tags will be in place already if using notionate?#
+#Also If I tag the code with [source,haskell] it won't compile correctly#
+#Is it something about type definitions?#
 
-. Go to the event-data-model repository.
-. Identify the SHA commit containing your model. 
-. After the last, `package` declaration in `cabal.project`,
-add the `fact-models` dependency using the following code,
-replacing `YourCommitSHA`` with the SHA commit identified above.
-+
-[source,haskell]
----
-source-repository-package
-   type: git
-   location: https://gitlab+deploy-token-ns-projects:glpat-7Z4w2JGrm2692Bshcqhd@gitlab.novisci.com/nsStat/event-data-model.git
-   tag: YourCommitSHA
-   subdir: 
-    fact-models
----
-+
-. Add `Models.YourModelType` to your module import declaration. 
-`YourModelType` is the model type name defined in the Model.dhall file.
-. Your model type can now be refereced in code using `YourModelType`.
+. If using the Event type, define your project event as follows:
 
-*If using a custom model*
+[source]
+----
+type YourEvent a = Event YourTags YourModel a
+----
+a is the temporal unit
+YourTags is the type of your project's tags
+YourModel is the type of your project's model
 
-Define the model type in your `Cohorts.hs` file,
-matching your project's specifications.
+#TODO Do you need to have a tag type defined?#
+#If so - can it be empty and what would that look like?#
+
+. If not using the Event type, define your input data type
+base on your project's requirements.
+
+In the example below,
+the input data is a pair of values - one bool and one integer.
+[source]
+----
+type InputData = (Bool, Integer)
+----
+Note that the subject identifier does not need to be defined.
+
+#TODO - I'm still unclear how the subject identifier is created...#

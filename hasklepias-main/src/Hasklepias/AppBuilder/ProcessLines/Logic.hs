@@ -10,7 +10,7 @@ of event lines for males.
 -}
 {-# LANGUAGE DeriveGeneric #-}
 module Hasklepias.AppBuilder.ProcessLines.Logic
-  ( -- * Processing new line delimited data
+  ( -- * Processing newline delimited data
     --
     -- $processAppLines
     processAppLinesStrict
@@ -28,6 +28,8 @@ import           Data.Int
 import           GHC.Generics
 
 {-
+INTERNAL
+The type used in the processAppLines* functions to handle errors
 -}
 type LineAppMonad = Either LineAppError
 

@@ -312,17 +312,20 @@ processAppLinesInternal fs pri psl prd pro status x =
 
   -- The function that processes a line depends on whether the user
   -- provided a line processor argument.
+  -- processLine :: a -> id -> LineStatus Builder 
   processLine x y = case pro of
     TransformWith transformLine buildLine ->
       fmap (\v -> buildLine (y, v)) (transformLine x)
     NoTransformation -> DropLine
 
   -- Cast a @LineStatus@ to a @Maybe@
+  toAcc :: LineStatus a -> Maybe a
   toAcc DropLine     = Nothing
   toAcc (KeepLine x) = Just x
 
   -- A helper function to update the group accumulator,
   -- whose logic depends on whether a LineProcessor is provided.
+  -- updateGrp :: AppLines id a -> a -> id1 ->  Maybe Builder
   updateGrp status line grpId = case pro of
     TransformWith _ _ -> case processLine line grpId of
       -- keep going if line is to be dropped
@@ -336,6 +339,7 @@ processAppLinesInternal fs pri psl prd pro status x =
 
   -- A helper function to update the main accumulator,
   -- whose logic depends on whether a LineProcessor is provided.
+  -- updateAcc :: AppLines id i -> Maybe i -> Builder
   updateAcc status i = case pro of
     TransformWith _ _ -> case grpAcc status of
       Nothing  -> builderAcc status

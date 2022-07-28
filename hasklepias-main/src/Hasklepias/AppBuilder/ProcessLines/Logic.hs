@@ -256,8 +256,8 @@ processAppLinesInternal fs pri psl prd pro status x =
         -- then process the group for the last ID
         -- and update the ID in the accumulator
         else case pri thisLine of
-          Nothing         -> Left (LineParseErrorID lineCount)
-          Just thisLineID -> do
+          Nothing -> Left (LineParseErrorID lineCount)
+          Just thisLineID ->
             case
                 ( checkGroupChange (Just thisLineID) (lastLineID status)
                 , grpStatus status

@@ -131,9 +131,9 @@ The 'event' function is a smart constructor for 'Event'.
 >>> :set -XOverloadedStrings
 >>> import IntervalAlgebra ( beginerval ) 
 
->>> data SomeDomain = A | B deriving (Eq, Ord, Show, Generic)
+>>> data SomeModel = A | B deriving (Eq, Ord, Show, Generic)
 >>>
->>> type MyEvent = Event T.Text SomeDomain Integer
+>>> type MyEvent = Event T.Text SomeModel Integer
 >>> let myEvent = event (beginerval 5 0) (context (packTagSet ["foo"]) A Nothing) :: MyEvent
 >>> show myEvent
 "MkEvent {(0, 5), Context {tagSet = TagSet (fromList [Tag \"foo\"]), facts = A, source = Nothing}}"
@@ -144,10 +144,10 @@ True
 >>> hasAllTags myEvent (["foo", "duck"] :: [T.Text])
 False
 
->>> data NewDomain = A T.Text | B Integer deriving (Eq, Ord, Show, Generic)
+>>> data NewModel = A T.Text | B Integer deriving (Eq, Ord, Show, Generic)
 >>> data MyTagSet = Foo | Bar | Baz deriving (Eq, Ord, Show, Generic) 
 >>>
->>> type NewEvent = Event MyTagSet NewDomain Integer
+>>> type NewEvent = Event MyTagSet NewModel Integer
 >>> let newEvent = event (beginerval 5 0) (context (packTagSet [Foo, Bar]) (A "cool") Nothing) :: NewEvent
 >>> show newEvent
 "MkEvent {(0, 5), Context {tagSet = TagSet (fromList [Tag Foo,Tag Bar]), facts = A \"cool\", source = Nothing}}"

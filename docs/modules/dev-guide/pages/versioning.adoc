@@ -9,22 +9,30 @@
 `asclepias` tries to follow
 https://semver.org/[semantic versioning 2.0.0].
 
-[NOTE]
-While each component package of `asclepias` has its own version,
-the primary version of `asclepias` is the version in `+hasklepias-main+`.
-That is, when we refer to the "version of `asclepias`",
-we mean the version number in `+hasklepias-main+`. 
+Each package in the `asclepias` project has the same version. Starting with
+version `v0.27.0`, `asclepias` adheres to the
+xref:nsBuild:usage-guides:page$git-usage.adoc[git usage guidelines]. In
+particular, this means versions are marked with tagged commits on the projects
+`origin/master` branch in GitLab, and work toward each release is tracked in
+GitLab milestones. Version tags should be in the format `vx.x.x`, as in
+`v0.27.0`.
 
-Starting with version `0.24.0`,
-release branches should be named by the version number starting with `v`
-and without the patch number.
-For example, `v0.24` is the release branch for the `0.24` line
-(`0.24.0`, `0.24.1`, etc).
+[NOTE]
+Version-changing edits to one package should bump the version in all packages.
+As of `0.27.0`, version numbers should be of the form `x.x.x`, wherever they
+are referenced or used, event if the final element is 0, meaning we write
+`0.27.0` not `0.27`.  Where appropriate, references to version numbers will
+start with `v` as they appear in the version-tagged commits, for example
+`v0.27.0`. One place where a `v` prefix is not appropriate is in the package
+`.cabal` files.
 
 [TIP]
 The `antora-playbook.yml` file in the
 https://gitlab.novisci.com/nsStat/noviverse-site[`noviverse-site` repository]
-determines which branches of `asclepias` are used for the documentation site.
+determines which commit references of `asclepias` are used for the
+documentation site. At present, these are the version-tagged commits beginning
+with `v0.27.0`. The `docs/antora.yml` file of the `asclepias` repo sets the
+version of this documentation based on the version tags.
 
 
 [CAUTION]

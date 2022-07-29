@@ -6,7 +6,7 @@ skip this step.
 
 . Go to the event-data-model repository.
 . Identify the SHA commit containing your model. 
-. After the last, `package` declaration in `cabal.project`,
+. After the last `package` declaration in `cabal.project`,
 add the `fact-models` dependency using the following code,
 replacing `YourCommitSHA`` with the SHA commit identified above.
 +

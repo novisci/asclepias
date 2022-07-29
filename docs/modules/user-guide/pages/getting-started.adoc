@@ -24,7 +24,7 @@ review the xref:nsBuild:usage-guides:index.adoc[Haskell usage guide] for best pr
 
 ## Data Requirements
 To access all the functionality of `asclepias`,
-the project data to be in a particular format.
+the project data has to be in a particular format.
 The data must be in JSON file, 
 and follow
 NoviSci's standard 
@@ -32,7 +32,7 @@ NoviSci's standard
 schema where http://ndjson.org/[each line]
 in the file is a valid `EventLine`.
 See the `+EventLine+` type in event-data-model for more details.
-Any project that uses the event-data-model package will meet these requirements.
+Any project that uses the standard ETL process will meet these requirements.
 
 If the project data is not in this format,
 `asclepias` may still be used,

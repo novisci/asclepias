@@ -11,11 +11,13 @@ If using the Event type, define your project event as follows:
 ----
 type YourEvent a = Event YourTags YourModel a
 ----
-a is the temporal unit
+where
 
-YourTags is the type of your project's tags
+`a` is the temporal unit
 
-YourModel is the type of your project's model
+`YourTags` is the type of your project's tags
+
+`YourModel` is the type of your project's model
 
 #TODO Do you need to have a tag type defined?#
 #If so - can it be empty and what would that look like?#
@@ -31,4 +33,41 @@ type InputData = (Bool, Integer)
 ----
 
 Note that the subject identifier does not need to be defined.
-#TODO - I'm still unclear how the subject identifier is created...#
+When using `Event` data, 
+the subject information is implicit in the structure.
+
+When using non-`Event` data, 
+the structure of the data still needs to meet certain requirements.
+When parsed, the data must match the `Population d` type,
+where `d` is the type of your input data.
+The `SubjID` and `Subject` type are included for reference,
+as is the `examplePopulation` definition.
+If your project is using non-`Event` data,
+contact the stats dev team for assistance.
+
+[source,haskell]
+----
+newtype Population d = MkPopulation [Subject d]
+    deriving (Eq, Show, Generic)
+
+newtype SubjID = MkSubjID Text
+  deriving (Eq, Show, Generic)
+
+newtype Subject d = MkSubject (SubjID, d)
+    deriving (Eq, Show, Generic)
+
+examplePopulation :: Population MyInputData
+examplePopulation =
+  from @[(Integer, MyInputData)]
+  [ (1, (False, 5))
+  , (2, (True, 0))
+  , (3, (False, 99))
+  , (4, (False, -1))
+  , (5, (True, -2))
+  , (6, (False, 42))
+  , (7, (True, 8))
+  , (8, (True, 123))
+  , (9, (False, 85))
+  , (10, (True, 42))
+  ]
+----

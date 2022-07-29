@@ -17,57 +17,19 @@ returns the opposite `Status` values.
 takes in the `IndexSet` and 
 the shape of the input data and
 returns the `Criteria`. 
-Instuctions on creating `Criteria` follow.
-
-The following instructions assumes that your IndexSet and 
-input data shape are already defined.
+Instructions on creating the criteria-producing function follow.
 
 . Review the SAP for the inclusion/exclusion criteria.
-. Create a function for each criterion that return a `Bool`.
+. (Recommended) Create a function for each criterion that returns a `Status`.
 . Define your criteria function.
     . Define your criteria function type,
     `a -> YourInputData -> Criteria`, where `a` is your IndexSet type and YourInputData is your input data type.
     . Apply the correct pattern matching for your input data.
     . Define the function output as `criteria [yourCriterionList]`
     where yourCriterionList is constructed as 
-    "`criterion` yourLabel (`includeIf`/`excludeIf` yourBoolFunction)".
+    "`criterion` yourLabel (yourCriterionFunction input)".
     If any of these `criterion` result in a `Status` of `Exclude`, 
     the subject will be excluded.
-
-*TODO It looks like all of the criteria functions actually*
-*produce features? But these features don't appear*
-*in the feature runner, so I'm not sure they*
-*actually appear in the output? if so, why*
-*make these features at all?*
-
-*Event Data Example*
-[source,haskell]
-----
-{-
-Include the subject if over 50; Exclude otherwise.
--}
-critOver50 :: Def (F "ageAtIndex" Integer -> F "isOver50" Status)
-critOver50 = define (includeIf . (>= 50))
-
-{- 
-Include a unit if:
-  * continuously enrolled during 365 days up to index with
-    gaps of <= 8 days.
--}
-critContEnrolled
-  :: Def
-       (  F "index" (Interval Day)
-       -> F "allEvents" (Es Day)
-       -> F "isOver50" Status
-       -> F "continuousEnrollment" Status
-       )
-critContEnrolled = buildContinuousEnrollment
-  (makeBaselineMeetsIndex 365) -- look during year up to index
-  (liftToEventPredicate isEnrollmentDomain) -- for enrollment events
-  8 -- allowable gap
-----
-
-*Non-Event Data Example*
 
 In the example below we define an empty index set, `YourIndex`,
 and a new type, `YourInputData` which represents the input data type.
@@ -84,11 +46,76 @@ type YourInputData = (Bool, Integer)
 yourIndex :: YourInputDataType -> IndexSet ()
 yourIndex _ = makeIndexSet [()]
 
+yourCriterion1 :: Bool -> Status
+yourCriterion1 b = incudeIf b
+
+yourCriterion2 :: Integer -> Status
+yourCriterion2 n = includeIf (n > 5)
+
 yourCriteria :: () -> YourInputData -> Criteria 
 yourCriteria myIndex (b, n) = 
     criteria 
-     [ criterion "include if b = True" (includeIf b)
-     , criterion "include if n > 5" (includeIf (n > 5))
+     [ criterion "include if b = True" (yourCriterion1 b)
+     , criterion "include if n > 5" (yourCriterion2 n)
      ]
 ----
 
+Using the `Event` type data allows the use of additional asclepias functionality.
+*TODO include an example with event data that does not use the feature-to-criteria coercion*
+
+Note that `Criteria` can also be created from the `Feature` type.
+You can use `into` to cast a `Feature n Status`.
+The instance if `into` is defined below.
+
+[source,haskell]
+----
+instance KnownSymbol n => From (Feature n Status) Criterion where
+  from x = MkCriterion
+    ( pack $ symbolVal (Proxy @n)
+    , case s of
+      Left  mr  -> Exclude
+      Right sta -> sta
+    )
+    where s = getData x
+----
+
+*TODO - add a little explanation of exactly what this into instance is doing*
+
+Below is an example of defining the criteria-producing function using this coercion.
+The input data has the standard `Event` type.
+For inclusion, a subject must be over 50 years old.
+`ageAtIndex` is defined separately because it is used for both the criteria
+and the features.
+
+[source,haskell]
+----
+type Es a = [Event YourProjectTags YourProjectModel a]
+
+ageAtIndex :: Interval Day -> Es Day -> F "ageAtIndex" Integer
+ageAtIndex i events =
+  events
+    |> viewBirthYears ( getFacts . getContext )
+    |> fmap (\y -> computeAgeAt (date y 1 7) (begin i))  -- Use July 1 YEAR as birthdate
+    |> headMay
+    |> \case
+         Nothing  -> makeFeature $ missingBecause InsufficientData
+         Just age -> pure age
+
+critOver50 :: Def (F "ageAtIndex" Integer -> F "isOver50" Status)
+critOver50 = define (includeIf . (>= 50))
+
+critRunner :: Interval Day -> Es Day -> Criteria
+critRunner i es =
+  let age = ageAtIndex i es
+  in  let crit1 = eval critOver50 (ageAtIndex i es)
+      in  criteria [into crit1]
+
+featureRunner :: Interval Day -> Es Day -> Featureset
+featureRunner i es = do
+  let ix        = pure i
+  let ev        = pure es
+
+  featureset
+    (  packFeature (eval (defineA ageAtIndex) ix ev)
+    )
+----

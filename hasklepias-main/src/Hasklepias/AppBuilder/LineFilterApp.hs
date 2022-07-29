@@ -11,6 +11,7 @@ import           Colog.Core                     ( (<&)
                                                 , logStringStderr
                                                 )
 import           Data.Aeson                     ( decodeStrict' )
+import           Data.ByteString.Builder
 import qualified Data.ByteString               as BS
 import qualified Data.ByteString.Lazy          as BL
 import           EventDataTheory         hiding ( (<|>) )
@@ -74,7 +75,7 @@ makeLineFilterApp name pid psl prd = do
   let inloc  = inputToLocation $ input options
       outloc = outputToLocation $ output options
 
-  result <- processAppLinesStrict pid psl prd NoTransformation
+  result <- processAppLinesStrict pid psl prd (NoTransformation (MkLineBuilder . byteString))
     <$> readDataStrict inloc
 
   case result of

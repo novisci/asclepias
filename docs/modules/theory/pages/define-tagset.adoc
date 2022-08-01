@@ -1,0 +1,11 @@
+A `TagSet` is a collection labels ("tags") that summarize the information in the data xref:event-data:models:page$define-models.adoc[`Model`], as given by the xref:event-data:models:page$define-facts.adoc[`Fact`] s of that model attached to a particular event. Each `Event` has an associated `TagSet`, which can contain multiple unique tags.
+
+A xref:event-data:models:page$define-facts.adoc[`Fact`] is a collection of metadata about an `Event`, which serves to classify for the purpose of building study cohorts and analyses. A xref:event-data:models:page$define-models.adoc[`Model`] for a given study defines which particular `Fact` s are allowed to bee used in that study.
+
+`Fact` s can contain a lot of information. For example a `Fact` to denote a medical insurance claim could contain procedure codes, cost information and provider information.
+
+The tags in a `TagSet` synthesize the `Fact` s associated with an `Event` to provide a kind of short-hand, useful when programming for or reasoning about the groups of `Event` s relevant a study. 
+ 
+For example, "diabetes_treatment" and "in_hospital" are possible tags that could be used to summarize a `Fact` with medical claim information. A tag might synthesize information across multiple `Fact` s in a single `Model` by, say, combining claims information with an `ICD9` code to label an `Event` as "diabetes_diagnosis".
+
+At present, tags are created by manually specifying how the `Fact` s of a `Model` should be summarized, typically using the helper functions in the `notionate` package in a project-specific `concepts.dhall` file.

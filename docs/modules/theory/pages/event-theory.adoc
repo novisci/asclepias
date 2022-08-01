@@ -2,7 +2,6 @@
 :description: Explanation and details of Event data theory
 :source-highlighter: highlightjs
 :toc: auto
-:interval-algebra-v: 1.3.0
 // TODO: update edm-path to non-sandbox URL
 :edm-path: https://docs.novisci.com/edm-sandbox/latest
 :lawvere-url: https://bartoszmilewski.com/2017/08/26/lawvere-theories/
@@ -21,73 +20,40 @@ actually is a universal algebra.
 
 == Definitions
 === Event
-An `+Event+` is a `Context` (what happened) with an associated time interval (when it happened).
-Concretely, an `+Event+` is a wrapper around the `+interval-algebra+` package's
-https://hackage.haskell.org/package/interval-algebra-{interval-algebra-v}/docs/IntervalAlgebra-PairedInterval.html[`PairedInterval` type]:
 
-[source,haskell]
-----
-include::ROOT:example$EventDataTheory/Core.hs[tag=eventType]
-----
+include::theory:define-event.adoc[]
 
 === Context
-A `Context` contains up to three types of information: 
 
-. A tag set (required)
-. Facts about the event (required)
-. Metadata on the source of the event (optional)
+include::theory:define-context.adoc[]
 
-A tag is a set of labels that give meaning to the events of interest.
-For example, "diabetes diagnosis", "birth day", "in hospital" are all possible tags,
-that together might define the study tag set.
+=== Tags
 
-An example of a context is below.
+include::theory:define-tagset.adoc[]
 
-[source,haskell]
-----
-include::ROOT:example$EventDataTheory/Core.hs[tag=contextType]
-----
-<1> a set of `+TagSet+`, or labels, 
-which can be used to identify events in a collection;
-<2> facts about the event whose shape and possible values
-are determined by the schema type `m`;
-<3> (optionally) data about the provenance of the event in a `+Source+` object.
+=== Facts and Model
+See the `event-data-model` documentation for a definition of xref:event-data:models:page$define-facts.adoc[`Facts`] and  xref:event-data:models:page$define-models.adoc[`Model`]. Note that `Fact` and `Model` defined there are types defined in the Dhall programming language. The programmer using `asclepias` must manually define in Haskell code a type `m` within the `Context c m` that corresponds to the `Model` for a given project.
 
-=== Facts
-Facts are the data of interest for a particular event.
-The schema of the facts data is dynamic
-and is passed to the object as a parameter.
-
-=== Source
-
-=== Event Model
-Passing in specific parameters `m` and `c` to `Context` creates a new event model.
-
-An example of an event model is below.
+=== Example
+Here is an example of an `Event`:
 
 [source,haskell]
 ----
 include::ROOT:example$EventDataTheory/TheoryTest.hs[tag=exampleEvent]
 ----
 
-The `+SillyEvent+` type is a synonym for an `Event` where
-the tag set is `Text`,
+The `+SillyEvent+` type is a project-specific synonym for an `Event` where
+the `TagSet` is `Text`.
 
-the facts are of shape `SillySchema`, 
-and the `Interval` type is any valid type `a`.
+`SillySchema` is the `Model`, a Haskell sum type, with a different `Fact` given by each of its possible value types
 
-The type parameter `m` provides
-a high degree of flexibility in defining new event models.
-The `m` type represents the schema, or shape, 
-of an event's data and
-can be a nearly arbitrary type
-composed of sum and product types.
-Often, the `m` type will be a sum type of "domains"
-where each domain is a group of facts relevant to a given domain.
-The schema of NoviSci's standard 
-{edm-path}/index.html[EDM]
-is organized around this idea.
+and the `Interval` type is any valid type `a`, such as `Int`.
 
+This structure provides a high degree of flexibility in defining new structures for study-specific cohort definitions and analysis.
+
+See the
+{edm-path}/index.html[`event-data-theory`]
+documentation for details.
 
 
 

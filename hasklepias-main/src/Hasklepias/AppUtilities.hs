@@ -363,15 +363,12 @@ s3Output =
 -- | Parser for @InputDecompression@
 inputDecompressionParser :: Parser InputDecompression
 inputDecompressionParser =
-  (Decompress <$ strOption
-      (long "decompress" <> short 'd' <> help "decompress gzipped input")
-    )
+  flag' Decompress
+        (long "decompress" <> short 'd' <> help "decompress gzipped input")
     <|> pure NoDecompress
 
 -- | Parser for @OutputDecompression@
 outputCompressionParser :: Parser OutputCompression
 outputCompressionParser =
-  (Compress <$ strOption
-      (long "gzip" <> short 'z' <> help "compress output using gzip")
-    )
+  flag' Compress (long "gzip" <> short 'z' <> help "compress output using gzip")
     <|> pure NoCompress

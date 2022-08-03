@@ -1,3 +1,7 @@
+{-|
+
+-}
+
 {-# LANGUAGE TypeApplications #-}
 module Main where
 

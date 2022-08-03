@@ -80,13 +80,13 @@ makeLineFilterApp name pid psl prd = do
 
   result <-
     processAppLinesStrict pid psl prd NoTransformation
-      <$> readDataStrict inloc NoDecompress
+      <$> readDataStrict inloc (inDecompress options)
 
   case result of
     Left lae -> do
       logStringStderr <& show lae
       exitWith (ExitFailure 1)
-    Right bs -> writeDataStrict outloc NoCompress bs
+    Right bs -> writeDataStrict outloc (outCompress options) bs
 
 {-| 
 Create a application that filters event data with two arguments:

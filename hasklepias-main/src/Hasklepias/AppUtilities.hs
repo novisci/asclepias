@@ -29,12 +29,14 @@ module Hasklepias.AppUtilities
   , OutputCompression(..)
 
   -- ** CLI option parsers
-  , stdInput
-  , fileInput
-  , s3Input
-  , stdOutput
-  , fileOutput
-  , s3Output
+  , inputParser
+  , stdInputParser
+  , fileInputParser
+  , s3InputParser
+  , outputParser
+  , stdOutputParser
+  , fileOutputParser
+  , s3OutputParser
   , inputDecompressionParser
   , outputCompressionParser
   ) where
@@ -302,16 +304,16 @@ outputToLocation (S3Output r b k) = S3 (fromString r) b k
 -}
 
 -- | Parser @StdInput@.
-stdInput :: Parser Input
-stdInput = pure StdInput
+stdInputParser :: Parser Input
+stdInputParser = pure StdInput
 
 -- | Parser @StdOutput@.
-stdOutput :: Parser Output
-stdOutput = pure StdOutput
+stdOutputParser :: Parser Output
+stdOutputParser = pure StdOutput
 
 -- | Parser for @FileInput@.
-fileInput :: Parser Input
-fileInput =
+fileInputParser :: Parser Input
+fileInputParser =
   FileInput
     <$> optional
           (strOption $ long "dir" <> short 'd' <> metavar "DIRECTORY" <> help
@@ -321,8 +323,8 @@ fileInput =
           (long "file" <> short 'f' <> metavar "INPUT" <> help "Input file")
 
 -- | Parser for @FileInput@.
-fileOutput :: Parser Output
-fileOutput =
+fileOutputParser :: Parser Output
+fileOutputParser =
   FileOutput
     <$> optional
           (strOption $ long "outdir" <> metavar "DIRECTORY" <> help
@@ -331,9 +333,13 @@ fileOutput =
     <*> strOption
           (long "output" <> short 'o' <> metavar "OUTPUT" <> help "Output file")
 
+-- | Parser for @Input@.
+inputParser :: Parser Input
+inputParser = fileInputParser <|> s3InputParser <|> stdInputParser
+
 -- | Parser for @S3Input@.
-s3Input :: Parser Input
-s3Input =
+s3InputParser :: Parser Input
+s3InputParser =
   S3Input
     <$> strOption
           (  long "region"
@@ -348,8 +354,8 @@ s3Input =
           (long "key" <> short 'k' <> metavar "KEY" <> help "S3 location")
 
 -- | Parser for @S3Output@.
-s3Output :: Parser Output
-s3Output =
+s3OutputParser :: Parser Output
+s3OutputParser =
   S3Output
     <$> strOption
           (long "outregion" <> metavar "OUTREGION" <> value "us-east-1" <> help
@@ -359,6 +365,10 @@ s3Output =
           (long "outbucket" <> metavar "OUTBUCKET" <> help "output S3 bucket")
     <*> strOption
           (long "outkey" <> metavar "OUTPUTKEY" <> help "output S3 location")
+
+-- | Parser for @Output@
+outputParser :: Parser Output
+outputParser = fileOutputParser <|> s3OutputParser <|> stdOutputParser
 
 -- | Parser for @InputDecompression@
 inputDecompressionParser :: Parser InputDecompression

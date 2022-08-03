@@ -43,8 +43,8 @@ desc =
 makeAppArgs :: String -> ParserInfo LineFilterAppOpts
 makeAppArgs name = Options.Applicative.info
   (    MkLineFilterAppOpts
-  <$>  (fileInput <|> s3Input <|> stdInput)
-  <*>  (fileOutput <|> s3Output <|> stdOutput)
+  <$>  inputParser
+  <*>  outputParser
   <*>  inputDecompressionParser
   <*>  outputCompressionParser
   -- <*>  switch (long "lazy" <> short 'l' <> help "Whether to process as lazy bytestring")

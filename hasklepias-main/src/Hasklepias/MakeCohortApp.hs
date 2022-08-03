@@ -90,8 +90,8 @@ The @Parser@ for @MakeCohort@ command line options
 makeCohortParser :: Parser MakeCohort
 makeCohortParser =
   MakeCohort
-    <$> (fileInput <|> s3Input <|> stdInput)
-    <*> (fileOutput <|> s3Output <|> stdOutput)
+    <$> inputParser
+    <*> outputParser
     <*> subjectSampleParser
     <*> evaluateFeaturesParser
     <*> inputDecompressionParser

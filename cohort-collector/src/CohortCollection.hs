@@ -32,7 +32,6 @@ import qualified Data.Text                     as T
                                                 ( pack )
 import           Hasklepias.AppUtilities       as H
                                          hiding ( Input(..)
-                                                , OutputCompression
                                                 , fileInput
                                                 )
 
@@ -102,14 +101,16 @@ data CollectorApp = CollectorApp
   { input       :: Input
   , output      :: H.Output
   , inDeompress :: H.InputDecompression
+  , outCompress :: H.OutputCompression
   }
 
 collector :: Parser CollectorApp
 collector =
   CollectorApp
     <$> (fileInput <|> s3input)
-    <*> (H.fileOutput <|> H.s3Output <|> H.stdOutput)
+    <*> H.outputParser
     <*> H.inputDecompressionParser
+    <*> H.outputCompressionParser
 
 desc =
   "Collects cohorts run on different input data. The cohorts must be derived \
@@ -139,4 +140,4 @@ collectorApp = do
   fs <- getLocations files
 
   r  <- runCollectionApp fs (inDeompress options)
-  H.writeData (H.outputToLocation $ output options) NoCompress r
+  H.writeData (H.outputToLocation $ output options) (outCompress options) r

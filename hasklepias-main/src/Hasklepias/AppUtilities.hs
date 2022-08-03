@@ -23,7 +23,7 @@ module Hasklepias.AppUtilities
   , getS3Object
   , inputToLocation
   , outputToLocation
-  
+
   -- ** Compression handling
   , InputDecompression(..)
   , OutputCompression(..)
@@ -39,7 +39,10 @@ module Hasklepias.AppUtilities
   , outputCompressionParser
   ) where
 
-import           Codec.Compression.GZip ( CompressionLevel, decompress, compress )
+import           Codec.Compression.GZip         ( CompressionLevel
+                                                , compress
+                                                , decompress
+                                                )
 import           Control.Monad
 import           Control.Monad.IO.Class
 import qualified Data.ByteString               as BS
@@ -51,7 +54,9 @@ import           Data.Either                    ( fromRight )
 import           Data.Generics.Product          ( HasField(field) )
 import           Data.String                    ( IsString(fromString) )
 import qualified Data.Text                     as T
-                                                ( pack, Text )
+                                                ( Text
+                                                , pack
+                                                )
 import qualified Data.Text.IO                  as T
                                                 ( putStrLn )
 import           Lens.Micro                     ( (<&>)
@@ -128,21 +133,20 @@ data OutputCompression = NoCompress | Compress deriving (Show)
 An internal helper function to handle @InputDecompression@
 for lazy Bytestrings. 
 -}
-handleInputDecompression :: InputDecompression -> BL.ByteString -> BL.ByteString
-handleInputDecompression d =
-  case d of
-    Decompress -> decompress
-    NoDecompress -> id
+handleInputDecompression
+  :: InputDecompression -> BL.ByteString -> BL.ByteString
+handleInputDecompression d = case d of
+  Decompress   -> decompress
+  NoDecompress -> id
 
 {-
 An internal helper function to handle @InputDecompression@
 for lazy Bytestrings. 
 -}
 handleOutputCompression :: OutputCompression -> BL.ByteString -> BL.ByteString
-handleOutputCompression d =
-  case d of
-    Compress -> compress
-    NoCompress -> id
+handleOutputCompression d = case d of
+  Compress   -> compress
+  NoCompress -> id
 
 
 {-
@@ -167,45 +171,48 @@ https://hackage.haskell.org/package/zlib-0.6.3.0/docs/Codec-Compression-Zlib-Int
     in O(1) time using concat . toChunks."
 
 -}
-handleInputDecompressionStrict :: InputDecompression -> BS.ByteString -> BS.ByteString
-handleInputDecompressionStrict d =
-  case d of
-    Decompress -> BL.toStrict . decompress . BL.fromStrict
-    NoDecompress -> id
+handleInputDecompressionStrict
+  :: InputDecompression -> BS.ByteString -> BS.ByteString
+handleInputDecompressionStrict d = case d of
+  Decompress   -> BL.toStrict . decompress . BL.fromStrict
+  NoDecompress -> id
 
 {-
 An internal helper function to handle @InputDecompression@
 for lazy Bytestrings. 
 -}
-handleOutputCompressionStrict :: OutputCompression -> BS.ByteString -> BS.ByteString
-handleOutputCompressionStrict d =
-  case d of
-    Compress -> BL.toStrict . compress . BL.fromStrict
-    NoCompress -> id
+handleOutputCompressionStrict
+  :: OutputCompression -> BS.ByteString -> BS.ByteString
+handleOutputCompressionStrict d = case d of
+  Compress   -> BL.toStrict . compress . BL.fromStrict
+  NoCompress -> id
 
 -- | Read data from a @Location@ to lazy @ByteString@
 readData :: Location -> InputDecompression -> IO BL.ByteString
-readData Std d      = handleInputDecompression d <$> BL.getContents
+readData Std        d = handleInputDecompression d <$> BL.getContents
 readData (Local x ) d = handleInputDecompression d <$> BL.readFile x
 readData (S3 r b k) d = handleInputDecompression d <$> getS3Object r b k
 
 -- | Write data from a @Location@ to lazy @ByteString@
 writeData :: Location -> OutputCompression -> BL.ByteString -> IO ()
 writeData Std        z x = BL.putStr (handleOutputCompression z x)
-writeData (Local f ) z x = BL.writeFile f (handleOutputCompression z x) 
+writeData (Local f ) z x = BL.writeFile f (handleOutputCompression z x)
 writeData (S3 r b k) z x = putS3Object r b k (handleOutputCompression z x)
 
 -- | Read data from a @Location@ to strict @ByteString@. 
 readDataStrict :: Location -> InputDecompression -> IO BS.ByteString
-readDataStrict Std  d      = handleInputDecompressionStrict d <$> BS.getContents
-readDataStrict (Local x ) d = handleInputDecompressionStrict d <$> BS.readFile x
-readDataStrict (S3 r b k) d = handleInputDecompressionStrict d <$> fmap BL.toStrict (getS3Object r b k)
+readDataStrict Std       d = handleInputDecompressionStrict d <$> BS.getContents
+readDataStrict (Local x) d = handleInputDecompressionStrict d <$> BS.readFile x
+readDataStrict (S3 r b k) d =
+  handleInputDecompressionStrict d <$> fmap BL.toStrict (getS3Object r b k)
 
 -- | Write data from a @Location@ to strict @ByteString@. 
 writeDataStrict :: Location -> OutputCompression -> BS.ByteString -> IO ()
-writeDataStrict Std        z x = BSC.putStrLn (handleOutputCompressionStrict z x) 
-writeDataStrict (Local f ) z x = BS.writeFile f (handleOutputCompressionStrict z x)  
-writeDataStrict (S3 r b k) z x = putS3Object r b k (handleOutputCompressionStrict z x) 
+writeDataStrict Std z x = BSC.putStrLn (handleOutputCompressionStrict z x)
+writeDataStrict (Local f) z x =
+  BS.writeFile f (handleOutputCompressionStrict z x)
+writeDataStrict (S3 r b k) z x =
+  putS3Object r b k (handleOutputCompressionStrict z x)
 
 -- | Get an object from S3. 
 getS3Object :: Region -> BucketName -> ObjectKey -> IO BL.ByteString
@@ -357,16 +364,14 @@ s3Output =
 inputDecompressionParser :: Parser InputDecompression
 inputDecompressionParser =
   (Decompress <$ strOption
-    (  long "decompress"
-    <> short 'd'
-    <> help "decompress gzipped input" ))
+      (long "decompress" <> short 'd' <> help "decompress gzipped input")
+    )
     <|> pure NoDecompress
 
 -- | Parser for @OutputDecompression@
-outputCompressionParser :: Parser OutputCompression 
+outputCompressionParser :: Parser OutputCompression
 outputCompressionParser =
   (Compress <$ strOption
-    (  long "gzip"
-    <> short 'z'
-    <> help "compress output using gzip" ))
+      (long "gzip" <> short 'z' <> help "compress output using gzip")
+    )
     <|> pure NoCompress

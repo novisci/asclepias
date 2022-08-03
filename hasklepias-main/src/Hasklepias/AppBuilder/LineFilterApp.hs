@@ -21,10 +21,10 @@ import           System.Exit
 
 -- Container for app options
 data LineFilterAppOpts = MkLineFilterAppOpts
-  { input  :: Input
-  , output :: Output
+  { input        :: Input
+  , output       :: Output
   , inDecompress :: InputDecompression
-  , outCompress :: OutputCompression
+  , outCompress  :: OutputCompression
   -- , lazy :: Bool
   }
 
@@ -78,8 +78,9 @@ makeLineFilterApp name pid psl prd = do
   let inloc  = inputToLocation $ input options
       outloc = outputToLocation $ output options
 
-  result <- processAppLinesStrict pid psl prd NoTransformation
-    <$> readDataStrict inloc NoDecompress
+  result <-
+    processAppLinesStrict pid psl prd NoTransformation
+      <$> readDataStrict inloc NoDecompress
 
   case result of
     Left lae -> do

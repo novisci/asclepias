@@ -79,9 +79,9 @@ data MakeCohort = MakeCohort
     -- | Sets the 'EvaluateFeatures' option for cohort evaluation.
   , evaluateFeaturesOpt :: !EvaluateFeatures
     -- | Decompress gzipped input
-  , inDecompress :: InputDecompression
+  , inDecompress        :: InputDecompression
     -- | Compress output using gzip
-  , outCompress :: OutputCompression
+  , outCompress         :: OutputCompression
   }
 
 {-| INTERNAL

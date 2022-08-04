@@ -1,10 +1,23 @@
 :description: The procedure for creating criteria
 
-A `Criteria` is a set of `criterion`.
-Each `criterion` is a tuple,
+A `Criteria` is a set of `Criterion`,
+paired with a natural number.
+
+[source,haskell]
+----
+newtype Criteria = MkCriteria [ (Natural, Criterion) ]
+  deriving (Eq, Show)
+----
+
+Each `Criterion` is a tuple,
 `(Text, Status)`,
 where the `Text` value represents a label
 and the `Status` is either `Include` or `Exclude`.
+
+[source,haskell]
+----
+newtype Criterion = MkCriterion ( Text, Status ) deriving (Eq, Show)
+----
 
 `excludeIf` and `includeIf` are helper function
 that take in a `Bool` and return a `Status`.
@@ -13,6 +26,17 @@ that take in a `Bool` and return a `Status`.
 `includeIf`, given the same inputs,
 returns the opposite `Status` values.
 
+[source,haskell]
+----
+includeIf :: Bool -> Status
+includeIf True  = Include
+includeIf False = Exclude
+
+excludeIf :: Bool -> Status
+excludeIf True  = Exclude
+excludeIf False = Include
+----
+
 `CohortSpec` requires a function that
 takes in the `IndexSet` and 
 the shape of the input data and
@@ -20,15 +44,15 @@ returns the `Criteria`.
 Instructions on creating the criteria-producing function follow.
 
 . Review the SAP for the inclusion/exclusion criteria.
-. (Recommended) Create a function for each criterion that returns a `Status`.
-. Define your criteria function.
-    . Define your criteria function type,
-    `a -> YourInputData -> Criteria`, where `a` is your IndexSet type and YourInputData is your input data type.
+. (Recommended) Create a function for each inclusion/exclusion in the SAP that returns a `Status`.
+. Define your criteria-producing function.
+    . Define your function type,
+    `a -> YourInputData -> Criteria`, where `a` is your `IndexSet` type and `YourInputData` is your input data type.
     . Apply the correct pattern matching for your input data.
     . Define the function output as `criteria [yourCriterionList]`
-    where yourCriterionList is constructed as 
-    "`criterion` yourLabel (yourCriterionFunction input)".
-    If any of these `criterion` result in a `Status` of `Exclude`, 
+    where `yourCriterionList` is constructed as 
+    `criterion yourLabel (yourCriterionFunction yourInput)`.
+    If any of these `criterion` statements result in a `Status` of `Exclude`, 
     the subject will be excluded.
 
 In the example below we define an empty index set, `YourIndex`,

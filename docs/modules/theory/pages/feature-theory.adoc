@@ -180,7 +180,7 @@ It is a `Left` because the value of `ex0a` is a `Left`;
 in other words, errors propogate along `Feature`.
 If a given `Feature` dependency is a `Left` then
 that `Feature` will also be `Left`.
-This propogation of `Left`s increases performance.
+This propogation of `Left` s often increases performance.
 In a sequence of computations,
 after the first `Left` occurs,
 no subsequent computations are needed.

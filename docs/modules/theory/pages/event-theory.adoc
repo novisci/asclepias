@@ -58,7 +58,7 @@ data Source = MkSource
 `row` is the row number of the source data.
 `table` is the name of the source data table.
 `database` refers to the name of the data source.
-For example "Optim" or "Medicaid"
+For example "Optum" or "Medicaid"
 
 === Example
 Here is an example of an `Event`:

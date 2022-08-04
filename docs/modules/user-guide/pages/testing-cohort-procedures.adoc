@@ -1,4 +1,5 @@
 :description: The procedure for generating data for cohort testing
+:remote-dev-url: https://code.visualstudio.com/docs/remote/remote-overview
 
 ## Unit Tests
 Unit tests examine minimal, 
@@ -151,11 +152,20 @@ Feedback is welcome.
 An integration test examines the connection between units of code,
 within a single application - in this case aclepias.
 Again, positive and negative test cases should be considered.
+Any integration test using actual data must be done on the stats server.
+If using VSCode, use of the IDE's {remote-dev-url}[remote development tools] is recommended.
+For instructions on installing these tools, see *TODO add link*.
+For ease of viewing the results, installing jq is recommended.
+*TODO add link to jq installation instructions*
 
-#Ying mentioned that they pulled a partion of data and ran it on the cohort to test#
-#But since data is restricted, I'm not sure what process I should dictate#
-#Do people need to run this on the stats server?#
-
+. Log on to the stats server using VSCode's remote tools if necessary.
+. Identify the file name of a partition of data to input into the application.
+. Open a terminal
+. If using a local file to test use the following command:
+. `PROJECT --dir DIR --file FILE.jsonl | jq`
+. If using S3 to test, use the following command:
+. *TODO*
+. Debug and repeat as needed until results are returned error-free.
 
 ## Other Tests
 

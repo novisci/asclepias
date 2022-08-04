@@ -2,8 +2,6 @@
 
 #TODO - I think we need instructions on how to tag things#
 #I'm assuming that the tags will be in place already if using notionate?#
-#Also If I tag the code with [source,haskell] it won't compile correctly#
-#Is it something about type definitions?#
 
 If using the Event type, define your project event as follows:
 
@@ -11,6 +9,7 @@ If using the Event type, define your project event as follows:
 ----
 type YourEvent a = Event YourTags YourModel a
 ----
+
 where
 
 `a` is the temporal unit
@@ -27,6 +26,7 @@ base on your project's requirements.
 
 In the example below,
 the input data is a pair of values - one bool and one integer.
+
 [source]
 ----
 type InputData = (Bool, Integer)
@@ -40,22 +40,18 @@ When using non-`Event` data,
 the structure of the data still needs to meet certain requirements.
 When parsed, the data must match the `Population d` type,
 where `d` is the type of your input data.
-The `SubjID` and `Subject` type are included for reference,
-as is the `examplePopulation` definition.
+The `Population` type can be interpreted as the subject identifier.
+Any type that is coercible to a `String` can be used for `Population`.
 If your project is using non-`Event` data,
 contact the stats dev team for assistance.
 
+The example below defines non-Event data.
+The `Population` has type `Integer`.
+The input data type `d` has type `MyInputData`,
+which is equivalent to `(Bool, Integer)`.
+
 [source,haskell]
 ----
-newtype Population d = MkPopulation [Subject d]
-    deriving (Eq, Show, Generic)
-
-newtype SubjID = MkSubjID Text
-  deriving (Eq, Show, Generic)
-
-newtype Subject d = MkSubject (SubjID, d)
-    deriving (Eq, Show, Generic)
-
 examplePopulation :: Population MyInputData
 examplePopulation =
   from @[(Integer, MyInputData)]
@@ -71,3 +67,8 @@ examplePopulation =
   , (10, (True, 42))
   ]
 ----
+
+Note `examplePopulation` is defined in code.
+To use non-Event flat files,
+additional structure will be needed.
+Please reach out to the stats dev team for assistance.

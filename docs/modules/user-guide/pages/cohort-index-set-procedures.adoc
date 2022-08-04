@@ -19,8 +19,8 @@ makeIndexSet = into
 *Creating an empty IndexSet*
 
 If no index is required for your project,
-no function need be defined explicitely.
-But, you could a function like that below:
+no function need be defined explicitly.
+But, you could create a function like that below:
 [source,haskell]
 ----
 emptyIndex :: YourInputDataType -> IndexSet ()
@@ -42,6 +42,9 @@ and creates an `IndexSet` where the index is defined as
 the last day that `YOUR_TAG` occurred for longer than 1 temporal unit (`a`)
 during `yourStudyPeriod`.
 
+*TODO - THIS EXAMPLE IS INCOMPLETE/INCORRECT AND WILL NOT COMPILE*
+*https://gitlab.novisci.com/nsStat/asclepias/-/merge_requests/254#note_40892*
+*https://gitlab.novisci.com/nsStat/asclepias/-/merge_requests/254#note_40893*
 [source,haskell]
 ----
 index :: [Event t m a] -> IndexSet (Interval a)
@@ -57,15 +60,13 @@ index events =
     |> into
 ----
 
-
-*TODO add an example of creating an index set with more than one date*
-
 *Creating an IndexSet from a list*
 
 Define a function with type `YourInputDataType -> IndexSet (Interval a)`,
 where `YourInputDataType` is the name of your input data type.
 
 *TODO - what restrictions are there when not using Event type?*
+*TODO finish instructions after getting more feedback on restrictions*
 
 
 

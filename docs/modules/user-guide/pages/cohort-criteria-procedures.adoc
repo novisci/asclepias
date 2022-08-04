@@ -89,7 +89,7 @@ Using the `Event` type data allows the use of additional asclepias functionality
 
 Note that `Criteria` can also be created from the `Feature` type.
 You can use `into` to cast a `Feature n Status`.
-The instance if `into` is defined below.
+The instance of `into` is defined below.
 
 [source,haskell]
 ----
@@ -102,14 +102,20 @@ instance KnownSymbol n => From (Feature n Status) Criterion where
     )
     where s = getData x
 ----
-
-*TODO - add a little explanation of exactly what this into instance is doing*
+The `Text` component of the `Criterion` tuple is taken from the `n` ame of the `Feature n Status`.
+The `Status` component of the `Criteria` tuple is set to `Exclude` for all `Left` values of `Feature n Status`. 
+`Right` values return the `Status` of the of the `Feature n Status` object,
+which can either be `Exclude` or `Include`.
+Note that the user defines how the `Left` values are constructed in the `Feature` itself.
 
 Below is an example of defining the criteria-producing function using this coercion.
 The input data has the standard `Event` type.
 For inclusion, a subject must be over 50 years old.
 `ageAtIndex` is defined separately because it is used for both the criteria
 and the features.
+
+*TODO - THIS EXAMPLE IS INCOMPLETE/INCORRECT AND WILL NOT COMPILE*
+*https://gitlab.novisci.com/nsStat/asclepias/-/merge_requests/254#note_40888*
 
 [source,haskell]
 ----

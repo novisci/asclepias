@@ -33,12 +33,10 @@ Test cases should be written based on the project's specifications and requireme
 . Put all test cases into a test plan.
 . Run the test plan using `cabal test`.
 
-#TODO - any setup needed, or can projects run cabal test right away?#
-
 ### Example
 Below is the definition for an `index` function.
 
-[source, haskell]
+[source,haskell]
 ----
 index :: Es Day -> IndexSet (Interval Day)
 index events =
@@ -52,6 +50,7 @@ index events =
     |> fmap (endervalMoment . end)
     |> into
 ----
+
 The index for this study is specified as the last unit of any time interval
 that concurs with the study period, 
 and has duration greater than 1,
@@ -59,7 +58,8 @@ and also contains the tag "MI_DISCHARGE".
 We wish to test that `index` meets these specifications.
 
 Below is the unit test for `index`.
-[source, haskell]
+
+[source,haskell]
 ----
 indexTests :: TestTree
 indexTests = testGroup
@@ -88,6 +88,7 @@ followed by `@?=`,
 followed by your expected result.
 
 For reference, the input data is defined below:
+
 [source,haskell]
 ----
 dummyEvents1 :: Es Day

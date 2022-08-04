@@ -109,7 +109,7 @@ which can either be `Exclude` or `Include`.
 Note that the user defines how the `Left` values are constructed in the `Feature` itself.
 
 Below is an example of defining the criteria-producing function using this coercion.
-The input data has the standard `Event` type.
+The input data have the standard `Event` type.
 For inclusion, a subject must be over 50 years old.
 `ageAtIndex` is defined separately because it is used for both the criteria
 and the features.

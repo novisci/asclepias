@@ -24,7 +24,7 @@ review the xref:nsBuild:usage-guides:index.adoc[Haskell usage guide] for best pr
 
 ## Data Requirements
 To access all the functionality of `asclepias`,
-the project data has to be in a particular format.
+the project data have to be in a particular format.
 The data must be in JSON file, 
 and follow
 NoviSci's standard 

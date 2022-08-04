@@ -36,12 +36,15 @@ Test cases should be written based on the project's specifications and requireme
 ### Example
 Below is the definition for an `index` function.
 
+*TODO - THIS EXAMPLE WILL NOT COMPILE*
+*SEE https://gitlab.novisci.com/nsStat/asclepias/-/merge_requests/254#note_40914*
+
 [source,haskell]
 ----
 index :: Es Day -> IndexSet (Interval Day)
 index events =
   events
-    |> filterEvents (containsTag [MI_DISCHARGE])
+    |> filterEvents (containsTag [YourTag])
     |> combineIntervals
     |> filter
          (getPredicate
@@ -54,11 +57,13 @@ index events =
 The index for this study is specified as the last unit of any time interval
 that concurs with the study period, 
 and has duration greater than 1,
-and also contains the tag "MI_DISCHARGE".
+and also contains the tag "YourTag".
 We wish to test that `index` meets these specifications.
 
 Below is the unit test for `index`.
 
+*TODO - THIS EXAMPLE WILL NOT COMPILE*
+*SEE https://gitlab.novisci.com/nsStat/asclepias/-/merge_requests/254#note_40914*
 [source,haskell]
 ----
 indexTests :: TestTree
@@ -88,6 +93,8 @@ followed by `@?=`,
 followed by your expected result.
 
 For reference, the input data is defined below:
+*TODO - THIS EXAMPLE WILL NOT COMPILE*
+*SEE https://gitlab.novisci.com/nsStat/asclepias/-/merge_requests/254#note_40914*
 
 [source,haskell]
 ----

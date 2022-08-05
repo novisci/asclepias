@@ -18,7 +18,7 @@ include::partial$package-dependencies.adoc[]
 
 We can choose which subset of projects to build, 
 including theentire `asclepias` project, 
-using the `cabal build` command as outlined in the {url-usage-guide}[Usage Guide]. 
+using the `cabal build` command as outlined in the xref:nsBuild:usage-guides:index.adoc[Usage Guide]. 
 
 [NOTE]
 ..Best Practice

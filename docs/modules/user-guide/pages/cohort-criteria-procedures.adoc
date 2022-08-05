@@ -1,0 +1,151 @@
+:description: The procedure for creating criteria
+
+A `Criteria` is a set of `Criterion`,
+paired with a natural number.
+
+[source,haskell]
+----
+newtype Criteria = MkCriteria [ (Natural, Criterion) ]
+  deriving (Eq, Show)
+----
+
+Each `Criterion` is a tuple,
+`(Text, Status)`,
+where the `Text` value represents a label
+and the `Status` is either `Include` or `Exclude`.
+
+[source,haskell]
+----
+newtype Criterion = MkCriterion ( Text, Status ) deriving (Eq, Show)
+----
+
+`excludeIf` and `includeIf` are helper function
+that take in a `Bool` and return a `Status`.
+`exludeIf False` returns `Include` and
+`excludeIf True` returns `Exclude`. 
+`includeIf`, given the same inputs,
+returns the opposite `Status` values.
+
+[source,haskell]
+----
+includeIf :: Bool -> Status
+includeIf True  = Include
+includeIf False = Exclude
+
+excludeIf :: Bool -> Status
+excludeIf True  = Exclude
+excludeIf False = Include
+----
+
+`CohortSpec` requires a function that
+takes in the `IndexSet` and 
+the shape of the input data and
+returns the `Criteria`. 
+Instructions on creating the criteria-producing function follow.
+
+. Review the SAP for the inclusion/exclusion criteria.
+. (Recommended) Create a function for each inclusion/exclusion in the SAP that returns a `Status`.
+. Define your criteria-producing function.
+    . Define your function type,
+    `a -> YourInputData -> Criteria`, where `a` is your `IndexSet` type and `YourInputData` is your input data type.
+    . Apply the correct pattern matching for your input data.
+    . Define the function output as `criteria [yourCriterionList]`
+    where `yourCriterionList` is constructed as 
+    `criterion yourLabel (yourCriterionFunction yourInput)`.
+    If any of these `criterion` statements result in a `Status` of `Exclude`, 
+    the subject will be excluded.
+
+In the example below we define an empty index set, `YourIndex`,
+and a new type, `YourInputData` which represents the input data type.
+We use these types to define `yourCriteria`,
+a function that returns the `Status` `Include` if the boolean value that
+is contained in `YourInputDataType` is `False`,
+and the integer in `YourInputDataType` is greater than 5.
+Otherwise `Exclude` is returned.
+
+[source,haskell]
+----
+type YourInputData = (Bool, Integer)
+
+yourIndex :: YourInputDataType -> IndexSet ()
+yourIndex _ = makeIndexSet [()]
+
+yourCriterion1 :: Bool -> Status
+yourCriterion1 b = incudeIf b
+
+yourCriterion2 :: Integer -> Status
+yourCriterion2 n = includeIf (n > 5)
+
+yourCriteria :: () -> YourInputData -> Criteria 
+yourCriteria myIndex (b, n) = 
+    criteria 
+     [ criterion "include if b = True" (yourCriterion1 b)
+     , criterion "include if n > 5" (yourCriterion2 n)
+     ]
+----
+
+Using the `Event` type data allows the use of additional asclepias functionality.
+*TODO include an example with event data that does not use the feature-to-criteria coercion*
+
+Note that `Criteria` can also be created from the `Feature` type.
+You can use `into` to cast a `Feature n Status`.
+The instance of `into` is defined below.
+
+[source,haskell]
+----
+instance KnownSymbol n => From (Feature n Status) Criterion where
+  from x = MkCriterion
+    ( pack $ symbolVal (Proxy @n)
+    , case s of
+      Left  mr  -> Exclude
+      Right sta -> sta
+    )
+    where s = getData x
+----
+The `Text` component of the `Criterion` tuple is taken from the `n` ame of the `Feature n Status`.
+The `Status` component of the `Criteria` tuple is set to `Exclude` for all `Left` values of `Feature n Status`. 
+`Right` values return the `Status` of the of the `Feature n Status` object,
+which can either be `Exclude` or `Include`.
+Note that the user defines how the `Left` values are constructed in the `Feature` itself.
+
+Below is an example of defining the criteria-producing function using this coercion.
+The input data have the standard `Event` type.
+For inclusion, a subject must be over 50 years old.
+`ageAtIndex` is defined separately because it is used for both the criteria
+and the features.
+
+*TODO - THIS EXAMPLE IS INCOMPLETE/INCORRECT AND WILL NOT COMPILE*
+*https://gitlab.novisci.com/nsStat/asclepias/-/merge_requests/254#note_40888*
+
+[source,haskell]
+----
+type Es a = [Event YourProjectTags YourProjectModel a]
+
+ageAtIndex :: Interval Day -> Es Day -> F "ageAtIndex" Integer
+ageAtIndex i events =
+  events
+    |> viewBirthYears ( getFacts . getContext )
+    |> fmap (\y -> computeAgeAt (date y 1 7) (begin i))  -- Use July 1 YEAR as birthdate
+    |> headMay
+    |> \case
+         Nothing  -> makeFeature $ missingBecause InsufficientData
+         Just age -> pure age
+
+critOver50 :: Def (F "ageAtIndex" Integer -> F "isOver50" Status)
+critOver50 = define (includeIf . (>= 50))
+
+critRunner :: Interval Day -> Es Day -> Criteria
+critRunner i es =
+  let age = ageAtIndex i es
+  in  let crit1 = eval critOver50 (ageAtIndex i es)
+      in  criteria [into crit1]
+
+featureRunner :: Interval Day -> Es Day -> Featureset
+featureRunner i es = do
+  let ix        = pure i
+  let ev        = pure es
+
+  featureset
+    (  packFeature (eval (defineA ageAtIndex) ix ev)
+    )
+----

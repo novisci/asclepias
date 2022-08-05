@@ -1,11 +1,19 @@
-:description: The procedure for creating tagSet objects
+:description: The procedure for creating TagSet objects
 
 *Best Practices*
+
 The `TagSet` type `t` should be a sum type object.
 Meaning, each possible tag should be enumerated in the type
 (`+data MyProjectTags = Diabetes | BirthDay | InHospital | ...+`).
 By defining the tag set as a sum type, type safety is ensured.
 One cannot misspell a tag or use an undefined tag, for example.
+This is in contrast to a common alternative to a sum type, 
+a `Text` type. 
+`Text` has no such guarantees on type safetly. 
+One can misspell a `Text` tag.
+One can also define a function checking the values of a `Text` tag
+that compiles, but does not produce correct output.
+Again, the recommendation is to use sum types for all `TagSet` definitions.
 
 The schema (`m`) type for an `Event` must be an instance of
 `Eq`, `Show`, `Generic`, and `FromJSON` typeclasses.

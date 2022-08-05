@@ -9,6 +9,10 @@ The output type for `Event` data should always be `Featureset`.
 #TODO - it's hard to see the "shape" of the output data based on this#
 #What will a Featureset look like?#
 #Also, I didn't think features were needed to create a cohort?#
+
+*THIS EXAMPLE IS INCOMPLETE/INCORRECT AND WILL NOT COMPILE*
+*SEE https://gitlab.novisci.com/nsStat/asclepias/-/merge_requests/254#note_40905*
+*AND https://gitlab.novisci.com/nsStat/asclepias/-/merge_requests/254#note_40906*
 [source,haskell]
 ----
 featureRunner :: Interval Day -> Es Day -> Featureset

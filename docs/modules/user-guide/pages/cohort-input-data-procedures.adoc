@@ -32,18 +32,15 @@ the input data is a pair of values - one bool and one integer.
 type InputData = (Bool, Integer)
 ----
 
-Note that the subject identifier does not need to be defined.
-When using `Event` data, 
-the subject information is implicit in the structure.
+*TODO add comment on subject identifier construction*
+*for both Event and non-Event data*
 
 When using non-`Event` data, 
 the structure of the data still needs to meet certain requirements.
 When parsed, the data must match the `Population d` type,
 where `d` is the type of your input data.
 The `Population` type can be interpreted as the subject identifier.
-Any type that is coercible to a `String` can be used for `Population`.
-If your project is using non-`Event` data,
-contact the stats dev team for assistance.
+Any type that is coercible to a `Text` can be used for `Population`.
 
 The example below defines non-Event data.
 The `Population` has type `Integer`.
@@ -71,4 +68,4 @@ examplePopulation =
 Note `examplePopulation` is defined in code.
 To use non-Event flat files,
 additional structure will be needed.
-Please reach out to the stats dev team for assistance.
+Contact the stats dev team for assistance.

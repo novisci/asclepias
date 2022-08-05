@@ -1,0 +1,15 @@
+:navtitle: Define a fact model
+:description: How to define a fact model
+:hasklepias-version: 0.2.5
+:edm-repo-url: https://gitlab.novisci.com/nsStat/event-data-model/-/tree/master/fact-models/src/Models
+
+If the project data does not meet the xref:user-guide:index.adoc#_data_requirements[Data Requirements],
+or the ETL process will not be run on your data,
+skip this step.
+
+. Search the {edm-repo-url}[event-data-model] project repo for existing models.
+. If one of the existing models matches your project's use case, select this model.
+. Else, create a new model, following the instructions in the
+xref:event-data:ROOT:add-new-model.adoc[event-data-model documentation] to construct a new model.
+Note that, to make a new model, you may also need to 
+xref:event-data:ROOT:add-new-fact.adoc[make new facts].

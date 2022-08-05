@@ -1,0 +1,36 @@
+:description: The procedure for defining the output data shape
+
+The output data is defined in the `Cohorts.hs` file,
+and should match the specifications for your project.
+
+Below is an example of an output type using `Event` format.
+The output type for `Event` data should always be `Featureset`.
+
+#TODO - it's hard to see the "shape" of the output data based on this#
+#What will a Featureset look like?#
+#Also, I didn't think features were needed to create a cohort?#
+
+*THIS EXAMPLE IS INCOMPLETE/INCORRECT AND WILL NOT COMPILE*
+*SEE https://gitlab.novisci.com/nsStat/asclepias/-/merge_requests/254#note_40905*
+*AND https://gitlab.novisci.com/nsStat/asclepias/-/merge_requests/254#note_40906*
+[source,haskell]
+----
+featureRunner :: Interval Day -> Es Day -> Featureset
+featureRunner i es = do
+  let ix        = pure i
+  let ev        = pure es
+  let flwevents = eval defFlwupEvents ix ev
+
+  featureset
+    (  packFeature (eval defAge ix ev)
+    :| [packFeature (eval defOutcome flwevents)]
+    <> statinCovariates ix ev
+    )
+----
+
+Below is an example of a custom output type.
+
+[source,haskell]
+----
+type OutputData = (Fanaticism, Maybe Integer)
+----

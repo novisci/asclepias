@@ -208,3 +208,45 @@ pass = eval f y
 
 In the example, `fail` does not compile because `"someInt"` is not `"age"`, 
 even though both the data type are `Natural`.
+
+If the `fail` line is uncommented, you will see a compiler error like this:
+
+[source]
+----
+    * Couldn't match type `"someInt"' with `"age"'
+      Expected type: Feature "age" Natural
+        Actual type: Feature "someInt" Natural
+    * In the second argument of `eval', namely `x'
+      In the expression: eval f x
+      In an equation for `fail': fail = eval f x
+----
+
+Commenting out `fail` will produce a `pass` value that looks like this when
+printed,
+
+[source]
+----
+"isOld": MkFeatureData {getFeatureData = Right True}
+----
+
+This safety mechanism breaks down when you allow the compiler to choose any
+name it wants by setting the name to be a type variable rather than an explicit
+string.
+
+For example, the following version compiles just fine, with `x, y` as above.
+
+[source,haskell]
+----
+f :: Definition (Feature n Natural -> Feature "isOld" Bool)
+f = define (>= 39)
+
+gotcha = eval f x 
+----
+
+The only difference is that `Feature n Natural` has a type variable `n` where
+`"age"` used to be. `gotcha` when printed produces
+
+[source]
+----
+"isOld": MkFeatureData {getFeatureData = Right True}
+----

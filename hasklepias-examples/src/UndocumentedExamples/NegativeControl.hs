@@ -15,10 +15,10 @@ import           Hasklepias
   Example Data and utilities to create such
 -}
 
-data AlternativeFacts = AlternativeFacts
+data AlternativeModel = AlternativeModel
   deriving (Eq, Show, Generic)
 
-type MyEvent a = Event Text AlternativeFacts a
+type MyEvent a = Event Text AlternativeModel a
 type Events a = [MyEvent a]
 
 type EventData a b = (b, a, Text)
@@ -35,7 +35,7 @@ toEvent
   => EventData a b
   -> MyEvent a
 toEvent x = event (beginerval (t1 x) (t2 x))
-                  (context (packTagSet [t3 x]) AlternativeFacts Nothing)
+                  (context (packTagSet [t3 x]) AlternativeModel Nothing)
 
 toEvents
   :: (Typeable a, Show a, IntervalSizeable a b, Integral b)

@@ -32,7 +32,7 @@ of the last event.
 <3> The first step in the function is to filter events 
 to those that contain at least one of the given tags
 and satisfies an interval relation relative to assessment interval.
-For this example, we use the `+enclose+` relation,
+For this example, we use the `+encloses+` relation,
 meaning the event must not overlap either end of the assessment interval.
 <4> The `+lastMay+` function returns the last element of a list,
 if the last is not empty.

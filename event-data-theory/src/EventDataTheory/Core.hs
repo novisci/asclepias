@@ -12,7 +12,7 @@ The To/FromJSON instances for types defined in this module are derived generical
 These can be useful for writing tests, for example, but
 they are not designed to encode/decode data in the new line delimited format
 defined in the 
-[event data model docs](https://docs.novisci.com/edm-sandbox/latest/index.html#_event_representation)
+[event data model docs](https://docs.novisci.com/event-data/3.0/index.html)
 See the neighboring EventLine module for types and To/FromJSON instances
 designed for the purpose of marshaling data from JSON lines.
 -}

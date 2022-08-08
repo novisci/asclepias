@@ -1,6 +1,6 @@
 :description: List of References
 // TODO: update edm-path to non-sandbox URL
-:edm-path: https://docs.novisci.com/edm-sandbox/latest
+:edm-path: https://docs.novisci.com/event-data/3.0/index.html
 :lawvere-url: https://bartoszmilewski.com/2017/08/26/lawvere-theories/
 :asclepias-url: https://gitlab.novisci.com/nsStat/asclepias
 

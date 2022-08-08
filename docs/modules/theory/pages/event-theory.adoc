@@ -3,7 +3,7 @@
 :source-highlighter: highlightjs
 :toc: auto
 // TODO: update edm-path to non-sandbox URL
-:edm-path: https://docs.novisci.com/event-data/3.0/index.html
+:edm-path: xref:event-data:ROOT:index.adoc
 :lawvere-url: https://bartoszmilewski.com/2017/08/26/lawvere-theories/
 
 = Event Data Theory

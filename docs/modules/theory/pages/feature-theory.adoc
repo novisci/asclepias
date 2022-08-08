@@ -233,7 +233,7 @@ printed,
 Make note of what the compiler error is telling you: The string `"age"` in
 the type signature of `f` is actually __part of the type__ of the input. The
 compiler says `Feature "age" Natural` is not the same type as `Feature
-"someInt" Natural` and therefor does not compile the program.
+"someInt" Natural` and therefore does not compile the program.
 
 In other words, if you correctly declare that the input type of `f` must be a
 `Feature "age" Natural` then you can __only__ give `f` some input that has that

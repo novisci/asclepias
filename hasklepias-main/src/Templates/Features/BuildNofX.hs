@@ -12,7 +12,7 @@ import           Templates.Features.BuildNofXBase
 
 {- tag::template0[] -}
 buildNofX
-  :: (Intervallic i a, Witherable container)
+  :: (Intervallic i, Witherable container)
   => (Bool -> outputType) -- ^ casting function
   -> Natural -- ^ minimum number of cases
   -> (i a -> AssessmentInterval a) -- ^ function to transform a 'Cohort.Index' to an 'Cohort.AssessmentInterval'
@@ -28,7 +28,7 @@ buildNofX f n = buildNofXBase id (\x -> length x >= naturalToInt n) (const f)
 
 {- tag::template1[] -}
 buildNofXBinary
-  :: (Intervallic i a, Witherable container)
+  :: (Intervallic i, Witherable container)
   => Natural
   -> (i a -> AssessmentInterval a)
   -> ComparativePredicateOf2 (AssessmentInterval a) (Event t m a)
@@ -43,7 +43,7 @@ buildNofXBinary = buildNofX fromBool
 
 {- tag::template2[] -}
 buildNofXBool
-  :: (Intervallic i a, Witherable container)
+  :: (Intervallic i, Witherable container)
   => Natural -- ^ minimum number of cases 
   -> (i a -> AssessmentInterval a) -- ^ function to transform a to an 'AssessmentInterval'
   -> ComparativePredicateOf2 (AssessmentInterval a) (Event t m a) -- ^ interval predicate
@@ -58,7 +58,7 @@ buildNofXBool = buildNofX id
 
 {- tag::template3[] -}
 buildNofXBinaryConcurBaseline
-  :: (Intervallic i0 a, Witherable t1, IntervalSizeable a b, Baseline i0 a)
+  :: (Intervallic i0, Witherable t1, IntervalSizeable a b, Baseline i0)
   => Natural -- ^ minimum number of events.
   -> b -- ^ duration of baseline (passed to 'makeBaselineMeetsIndex')
   -> Predicate (Event t m a)
@@ -73,12 +73,7 @@ buildNofXBinaryConcurBaseline n baselineDur =
 
 {- tag::template4[] -}
 buildNofTagSetBinaryConcurBaseline
-  :: ( Intervallic i0 a
-     , Witherable t1
-     , IntervalSizeable a b
-     , Baseline i0 a
-     , Ord t
-     )
+  :: (Intervallic i0, Witherable t1, IntervalSizeable a b, Baseline i0, Ord t)
   => Natural -- ^ minimum number of events. 
   -> b  -- ^ duration of baseline (passed to 'Cohort.makeBaselineMeetsIndex')
   -> [t] -- ^ list of 'EventData.Tag' passed to 'EventData.containsTag'

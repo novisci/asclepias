@@ -11,7 +11,7 @@ import           Templates.Features.BuildNofXBase
 
 {- tag::template0[] -}
 buildNofXWithGap
-  :: ( Intervallic i a
+  :: ( Intervallic i
      , IntervalSizeable a b
      , IntervalCombinable i a
      , Witherable container
@@ -46,7 +46,7 @@ buildNofXWithGap cast nGaps allowableGap = buildNofXBase
 
 {- tag::template1[] -}
 buildNofXWithGapBool
-  :: ( Intervallic i a
+  :: ( Intervallic i
      , IntervalSizeable a b
      , IntervalCombinable i a
      , Witherable container
@@ -66,7 +66,7 @@ buildNofXWithGapBool = buildNofXWithGap id
 
 {- tag::template2[] -}
 buildNofXWithGapBinary
-  :: ( Intervallic i a
+  :: ( Intervallic i
      , IntervalSizeable a b
      , IntervalCombinable i a
      , Witherable container

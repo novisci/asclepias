@@ -8,7 +8,8 @@ import           Templates.FeatureReqs         as F -- TODO: remove this import;
 
 {- tag::template0[] -}
 buildIsEnrolled
-  :: ( Intervallic i0 a
+  :: ( Intervallic i0
+     , Ord a
      , Monoid (container (Interval a))
      , Applicative container
      , Witherable container

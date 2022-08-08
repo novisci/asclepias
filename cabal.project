@@ -1,4 +1,4 @@
-index-state: 2022-05-27T15:12:55Z
+index-state: 2022-08-08T11:34:19Z
 
 with-compiler: ghc-8.10.7
 
@@ -7,6 +7,9 @@ packages: hasklepias-core
         , hasklepias-main
         , cohort-collector
         , event-data-theory
+
+allow-newer:
+  interval-algebra:time
 
 package event-data-theory
   haddock-options: --lib=../resources/haddock-api-resources/ --use-index=../doc-index.html --use-contents=../index.html 

@@ -161,10 +161,7 @@ washoutDuration = 7
 -- | Creates an interval *starting 7 days after the index* and 
 --   ending 'followupDuration' days later.
 makeFollowupInterval
-  :: (Integral b, Intervallic i a, IntervalSizeable a b)
-  => b
-  -> i a
-  -> Interval a
+  :: (Integral b, Intervallic i, IntervalSizeable a b) => b -> i a -> Interval a
 makeFollowupInterval dur index =
   beginerval dur (add washoutDuration (begin index))
 
@@ -179,9 +176,9 @@ followupInterval = makeFollowupInterval 365
 -}
 
 protocol
-  :: ( Intervallic i0 a
-     , Intervallic i1 a
-     , Intervallic i2 a
+  :: ( Intervallic i0
+     , Intervallic i1
+     , Intervallic i2
      , IntervalSizeable a b
      , Filterable container
      )
@@ -196,8 +193,8 @@ protocol g f i dat = f (g i) (filterConcur (g i) dat)
 
 compliantIfNone
   :: ( IntervalSizeable a b
-     , Intervallic i0 a
-     , Intervallic i1 a
+     , Intervallic i0
+     , Intervallic i1
      , Witherable container
      )
   => i0 a
@@ -210,8 +207,8 @@ compliantIfNone i x
 
 compliantIfSome
   :: ( IntervalSizeable a b
-     , Intervallic i0 a
-     , Intervallic i1 a
+     , Intervallic i0
+     , Intervallic i1
      , Witherable container
      )
   => i0 a
@@ -224,8 +221,8 @@ compliantIfSome i x
 protocolNoInit
   :: ( Integral b
      , IntervalSizeable a b
-     , Intervallic i0 a
-     , Intervallic i1 a
+     , Intervallic i0
+     , Intervallic i1
      , Witherable container
      )
   => i0 a
@@ -236,8 +233,8 @@ protocolNoInit = protocol (makeFollowupInterval 365) compliantIfNone
 protocols
   :: ( Integral b
      , IntervalSizeable a b
-     , Intervallic i0 a
-     , Intervallic i1 a
+     , Intervallic i0
+     , Intervallic i1
      , Witherable container
      )
   => i0 a

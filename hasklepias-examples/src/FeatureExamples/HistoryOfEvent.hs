@@ -22,7 +22,7 @@ makeHx
   -> Maybe (Interval a) -- <2>
 makeHx t i events =
   events
-    |> filterEvents (containsTag t &&& Predicate (enclose i)) -- <3>
+    |> filterEvents (containsTag t &&& Predicate (encloses i)) -- <3>
     |> lastMay -- <4>
     |> fmap getInterval -- <5>
 {- end::function[] -}

@@ -7,13 +7,11 @@ Maintainer  : bsaul@novisci.com
 -}
 
 -- {-# OPTIONS_HADDOCK hide #-}
-{-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
-
 
 module Hasklepias.AssessmentIntervals
   (
@@ -81,16 +79,9 @@ and instead perhaps use 'IntervalAlgebra.enclosedBy'.
   , makeFollowupAfterIndex
   ) where
 
-import           Data.Eq                        ( Eq )
-import           Data.Function                  ( ($) )
-import           Data.Functor                   ( Functor(fmap) )
-import           Data.Ord                       ( (<=)
-                                                , Ord
-                                                )
+
 import           EventDataTheory
 import           GHC.Generics                   ( Generic )
-import           GHC.Num                        ( Num((+)) )
-import           GHC.Show                       ( Show )
 import           Witch
 
 {-| A type to contain baseline intervals. See the 'Baseline' typeclass for methods

@@ -221,6 +221,7 @@ If the `fail` line is uncommented, you will see a compiler error like this:
       In an equation for `fail': fail = eval f x
 ----
 
+
 Commenting out `fail` will produce a `pass` value that looks like this when
 printed,
 
@@ -229,11 +230,26 @@ printed,
 "isOld": MkFeatureData {getFeatureData = Right True}
 ----
 
-This safety mechanism breaks down when you allow the compiler to choose any
-name it wants by setting the name to be a type variable rather than an explicit
-string.
+Make note of what the compiler error is telling you: The string `"age"` in
+the type signature of `f` is actually __part of the type__ of the input. The
+compiler says `Feature "age" Natural` is not the same type as `Feature
+"someInt" Natural` and therefor does not compile the program.
 
-For example, the following version compiles just fine, with `x, y` as above.
+In other words, if you correctly declare that the input type of `f` must be a
+`Feature "age" Natural` then you can __only__ give `f` some input that has that
+type, including the name `"age"`.
+
+Therefore, the name field of a `Feature` can serve as a tool to declare your
+intention about which inputs should be paired with which functions via their
+names.
+
+You can easily abuse this aspect of `Feature`.
+
+For example, this safety mechanism breaks down when you allow the compiler to
+choose any name it wants by setting the name to be a type variable rather than
+an explicit string.
+
+The following version compiles just fine, with `x, y` as above.
 
 [source,haskell]
 ----
@@ -250,3 +266,7 @@ The only difference is that `Feature n Natural` has a type variable `n` where
 ----
 "isOld": MkFeatureData {getFeatureData = Right True}
 ----
+
+If you do not wish to be intentional about using names as a means
+to specify __named__ inputs and outputs via the type system, it is likely not
+worth using `Feature` at all.

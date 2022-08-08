@@ -55,7 +55,7 @@ baselineInterval = makeBaselineMeetsIndex lookback455
 
 -- | Shifts an interval by a calendar amount
 shiftIntervalDay
-  :: (Intervallic i Day) => CalendarDiffDays -> i Day -> Interval Day
+  :: (Intervallic i) => CalendarDiffDays -> i Day -> Interval Day
 shiftIntervalDay cd i =
   beginerval (duration i) (addGregorianDurationClip cd (begin i))
 
@@ -68,7 +68,7 @@ followupInterval index = beginerval
 
 
 -- | A predicate function that determines if some interval is before index
-beforeIndex :: Intervallic i Day => Interval Day -> i Day -> Bool
+beforeIndex :: Intervallic i => Interval Day -> i Day -> Bool
 beforeIndex = before
 
 -- | Creates a filter for events to those that 'concur' with the baseline interval.

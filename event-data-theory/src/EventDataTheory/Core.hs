@@ -51,7 +51,6 @@ module EventDataTheory.Core
   , liftToEventPredicate
   , liftToEventFunction
   , liftToContextFunction
-  , trimapEvent
   , bimapContext
   , mapTagSet
   , dropSource
@@ -161,20 +160,13 @@ False
 -}
 
 {- tag::eventType[] -}
-newtype Event t m a = MkEvent ( PairedInterval (Context t m) a )
+newtype Event t m a= MkEvent ( PairedInterval (Context t m) a )
 {- end::eventType[] -}
   deriving (Eq, Show, Generic)
 
-instance (Ord a) => Intervallic (Event t m) a where
+instance Intervallic (Event t m)  where
   getInterval (MkEvent x) = getInterval x
   setInterval (MkEvent x) y = MkEvent $ setInterval x y
-
-instance Functor (Event t m) where
-  fmap f (MkEvent x) = MkEvent $ fmap f x
-
-instance Bifunctor (Event t) where
-  first f (MkEvent x) = MkEvent $ first (fmap f) x
-  second f (MkEvent x) = MkEvent $ second f x
 
 instance Ord t => HasTag (Event t m a) t where
   hasTag e = hasTag (getContext e)
@@ -232,24 +224,6 @@ getEvent (MkEvent x) = x
 -- | Get the 'Context' of an 'Event'. 
 getContext :: Event t m a -> Context t m
 getContext = getPairData . getEvent
-
-{-|
-Apply three functions to an 'Event':
-
-1. a function transforming the interval
-2. a function transforming the facts
-3. a function transforming the tagSet
-
-See also: 'bimapContext', 'mapTagSet'.
--}
-trimapEvent
-  :: (Ord t1, Ord t2)
-  => (a1 -> a2)
-  -> (t1 -> t2)
-  -> (d1 -> d2)
-  -> Event t1 d1 a1
-  -> Event t2 d2 a2
-trimapEvent g f h (MkEvent x) = MkEvent $ bimap (bimapContext f h) g x
 
 {- |
 A 'Context' contains information about what ocurred during an 'Event's interval.
@@ -475,7 +449,7 @@ A Tag Interval is simply a synonym for an 'Interval' paired with 'TagSet'.
 type TagSetInterval t a = PairedInterval (TagSet t) a
 
 instance From (Event t m a) (TagSetInterval t a) where
-  from = first getTagSet . getEvent
+  from x = makePairedInterval (getTagSet $ getContext x) (getInterval x)
 instance (Ord a) => From (TagSetInterval t a) (Interval a) where
   from = getInterval
 
@@ -554,16 +528,17 @@ class EventFunction f t t' m m'  a a' where
   liftToEventFunction :: (Ord t, Ord t') => f -> Event t m a -> Event t' m'  a'
 
 instance EventFunction (t -> t') t t' m m a a where
-  liftToEventFunction f = trimapEvent id f id
+  liftToEventFunction f x = MkEvent
+    $ makePairedInterval (bimapContext f id $ getContext x) (getInterval x)
 
 instance EventFunction (m -> m') t t m m' a a where
-  liftToEventFunction = trimapEvent id id
+  liftToEventFunction f x = MkEvent
+    $ makePairedInterval (bimapContext id f $ getContext x) (getInterval x)
 
 instance EventFunction (Context t m -> Context t' m' ) t t' m m'  a a where
-  liftToEventFunction f (MkEvent x) = MkEvent $ first f x
+  liftToEventFunction f x =
+    MkEvent $ makePairedInterval (f $ getContext x) (getInterval x)
 
-instance EventFunction (a -> a') t t m m a a' where
-  liftToEventFunction f = trimapEvent f id id
 
 {-|
 Provides a common interface to lift a function

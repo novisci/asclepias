@@ -11,7 +11,7 @@ import           Templates.Features.BuildNofXWithGap
 
 {- tag::template0[] -}
 buildNofXOrMofYWithGap
-  :: ( Intervallic i a
+  :: ( Intervallic i
      , IntervalSizeable a b
      , IntervalCombinable i a
      , Witherable container
@@ -42,7 +42,7 @@ buildNofXOrMofYWithGap f cast xCount xPred gapCount gapDuration yPred intervalPr
 
 {- tag::template1[] -}
 buildNofXOrMofYWithGapBool
-  :: ( Intervallic i a
+  :: ( Intervallic i
      , IntervalSizeable a b
      , IntervalCombinable i a
      , Witherable container
@@ -66,7 +66,7 @@ buildNofXOrMofYWithGapBool = buildNofXOrMofYWithGap (||) id
 
 {- tag::template2[] -}
 buildNofXOrMofYWithGapBinary
-  :: ( Intervallic i a
+  :: ( Intervallic i
      , IntervalSizeable a b
      , IntervalCombinable i a
      , Witherable container

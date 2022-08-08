@@ -12,8 +12,8 @@ N events satisying a predicate X.
 -}
 {- tag::template0[] -}
 buildNofXBase
-  :: ( Intervallic i0 a
-     , Intervallic i1 a
+  :: ( Intervallic i0
+     , Intervallic i1
      , Witherable container0
      , Witherable container1
      )

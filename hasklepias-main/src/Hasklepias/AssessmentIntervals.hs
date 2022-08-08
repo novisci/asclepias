@@ -99,10 +99,7 @@ to create values of this type.
 newtype BaselineInterval a = MkBaselineInterval (Interval a)
   deriving (Eq, Show, Generic)
 
-instance Functor BaselineInterval where
-  fmap f (MkBaselineInterval x) = MkBaselineInterval (fmap f x)
-
-instance (Ord a) => Intervallic BaselineInterval a where
+instance Intervallic BaselineInterval  where
   getInterval (MkBaselineInterval x) = getInterval x
   setInterval (MkBaselineInterval x) y = MkBaselineInterval (setInterval x y)
 
@@ -144,7 +141,7 @@ Meets
 MkBaselineInterval (4, 8)
 Before
 -}
-class Intervallic i a => Baseline i a where
+class Intervallic i  => Baseline i  where
   -- | Creates a 'BaselineInterval' of the given duration that 'IntervalAlgebra.Meets'
   -- the index interval.
   baselineMeets ::
@@ -175,7 +172,7 @@ class Intervallic i a => Baseline i a where
   baselineFinishedBy dur index =
     MkBaselineInterval (extenterval (enderval dur (begin  index)) (getInterval  index))
 
-instance (Ord a) => Baseline Interval a
+instance Baseline Interval
 
 {-| A type to contain followup intervals. See the 'Followup' typeclass for methods
 to create values of this type.
@@ -183,10 +180,7 @@ to create values of this type.
 newtype FollowupInterval a = MkFollowupInterval (Interval a)
   deriving (Eq, Show, Generic)
 
-instance Functor FollowupInterval where
-  fmap f (MkFollowupInterval x) = MkFollowupInterval (fmap f x)
-
-instance (Ord a) => Intervallic FollowupInterval a where
+instance  Intervallic FollowupInterval where
   getInterval (MkFollowupInterval x) = getInterval x
   setInterval (MkFollowupInterval x) y = MkFollowupInterval (setInterval x y)
 
@@ -250,10 +244,9 @@ MetBy
 MkFollowupInterval (12, 21)
 After
 -}
-class Intervallic i a => Followup i a where
-  followup ::
-    ( IntervalSizeable a b
-    , Intervallic i a) =>
+class (Intervallic i, Ord a)  => Followup i a where
+  followup :: ( IntervalSizeable a b
+    , Intervallic i) =>
       b -- ^ duration of followup
     -> i a -- ^ the index event
     -> FollowupInterval a
@@ -265,7 +258,7 @@ class Intervallic i a => Followup i a where
 
   followupMetBy ::
     ( IntervalSizeable a b
-    , Intervallic i a) =>
+    , Intervallic i) =>
       b -- ^ duration of followup
     -> i a -- ^ the index event
     -> FollowupInterval a
@@ -273,7 +266,7 @@ class Intervallic i a => Followup i a where
 
   followupAfter ::
     ( IntervalSizeable a b
-    , Intervallic i a) =>
+    , Intervallic i) =>
        b -- ^ duration add between the end of index and begin of followup
     -> b -- ^ duration of followup
     -> i a -- ^ the index event
@@ -290,16 +283,12 @@ data AssessmentInterval a =
     | Fl (FollowupInterval a) -- ^ holds a 'FollowupInterval'
     deriving (Eq, Show, Generic)
 
-instance (Ord a) => Intervallic AssessmentInterval a where
+instance Intervallic AssessmentInterval where
   getInterval (Bl x) = getInterval x
   getInterval (Fl x) = getInterval x
 
   setInterval (Bl x) y = Bl (setInterval x y)
   setInterval (Fl x) y = Fl (setInterval x y)
-
-instance Functor AssessmentInterval where
-  fmap f (Bl x) = Bl (fmap f x)
-  fmap f (Fl x) = Fl (fmap f x)
 
 -- | Creates an 'AssessmentInterval' using the 'baseline' function. 
 -- 
@@ -309,7 +298,7 @@ instance Functor AssessmentInterval where
 -- Bl (MkBaselineInterval (0, 10))
 --
 makeBaselineMeetsIndex
-  :: (Baseline i a, IntervalSizeable a b) => b -> i a -> AssessmentInterval a
+  :: (Baseline i, IntervalSizeable a b) => b -> i a -> AssessmentInterval a
 makeBaselineMeetsIndex dur index = Bl (baselineMeets dur index)
 
 -- | Creates an 'AssessmentInterval' using the 'baselineBefore' function. 
@@ -320,11 +309,7 @@ makeBaselineMeetsIndex dur index = Bl (baselineMeets dur index)
 -- Bl (MkBaselineInterval (-2, 8))
 --
 makeBaselineBeforeIndex
-  :: (Baseline i a, IntervalSizeable a b)
-  => b
-  -> b
-  -> i a
-  -> AssessmentInterval a
+  :: (Baseline i, IntervalSizeable a b) => b -> b -> i a -> AssessmentInterval a
 makeBaselineBeforeIndex shiftBy dur index =
   Bl (baselineBefore shiftBy dur index)
 
@@ -336,7 +321,7 @@ makeBaselineBeforeIndex shiftBy dur index =
 -- Bl (MkBaselineInterval (0, 11))
 --
 makeBaselineFinishedByIndex
-  :: (Baseline i a, IntervalSizeable a b) => b -> i a -> AssessmentInterval a
+  :: (Baseline i, IntervalSizeable a b) => b -> i a -> AssessmentInterval a
 makeBaselineFinishedByIndex dur index = Bl (baselineFinishedBy dur index)
 
 -- | Creates an 'AssessmentInterval' using the 'followup' function. 

@@ -141,7 +141,7 @@ Meets
 MkBaselineInterval (4, 8)
 Before
 -}
-class Intervallic i  => Baseline i  where
+class Intervallic i => Baseline i  where
   -- | Creates a 'BaselineInterval' of the given duration that 'IntervalAlgebra.Meets'
   -- the index interval.
   baselineMeets ::
@@ -244,7 +244,7 @@ MetBy
 MkFollowupInterval (12, 21)
 After
 -}
-class (Intervallic i, Ord a)  => Followup i a where
+class (Intervallic i)  => Followup i a where
   followup :: ( IntervalSizeable a b
     , Intervallic i) =>
       b -- ^ duration of followup
@@ -274,7 +274,7 @@ class (Intervallic i, Ord a)  => Followup i a where
   followupAfter shiftBy dur index =
     MkFollowupInterval $ beginerval dur (end (beginerval shiftBy (end  index)))
 
-instance (Ord a) => Followup Interval a
+instance Followup Interval a
 
 -- | A data type that contains variants of intervals during which assessment
 -- may occur.

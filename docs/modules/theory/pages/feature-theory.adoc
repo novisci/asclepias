@@ -207,7 +207,7 @@ pass = eval f y
 ----
 
 In the example, `fail` does not compile because `"someInt"` is not `"age"`, 
-even though both the data type are `Natural`.
+even though both the data types are `Natural`.
 
 If the `fail` line is uncommented, you will see a compiler error like this:
 

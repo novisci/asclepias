@@ -10,7 +10,7 @@ Maintainer  : bsaul@novisci.com
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TemplateHaskell #-}
+-- {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE QuasiQuotes #-}
 
 module Hasklepias.MakeCohortApp
@@ -129,8 +129,8 @@ makeCohortParserInfo name version = Options.Applicative.info
   )
  where
   gitinfo  = [i| (gitrev: #{githash})|]
-  githash  = pack $(gitHash)
-  dirtygit = $(gitDirty)
+  githash  = pack "foo" -- $(gitHash)
+  dirtygit = True -- $(gitDirty)
   gitdirty = if dirtygit
     then
       yellow

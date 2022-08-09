@@ -37,19 +37,19 @@ import           Witch.TryFrom
 -- there is nothing to do for hygeia to implement the TryFrom instances, since
 -- these alias the generic event, for which constraints are already
 -- implemented, and Integer, Text already implement the necessary conversions
-data TrueFacts = Awesome | NotAwesome Text deriving (Show, Eq, Generic)
-type ProjEvent = Event Text TrueFacts Integer
+data TrueModel = Awesome | NotAwesome Text deriving (Show, Eq, Generic)
+type ProjEvent = Event Text TrueModel Integer
 type Index = Interval Integer
 
 index :: Index
 index = beginervalMoment 0
 
 -- bootstrap conversion via dhall
-instance FromDhall TrueFacts
-instance ToDhall TrueFacts
+instance FromDhall TrueModel
+instance ToDhall TrueModel
 -- json instances required for Golden
-instance ToJSON TrueFacts
-instance FromJSON TrueFacts
+instance ToJSON TrueModel
+instance FromJSON TrueModel
 
 -- Outputs
 data SumminElse = WasBefore | WasAfter deriving (Show, Eq, Generic)
@@ -66,7 +66,6 @@ wasAfter :: Event a SumminElse b -> Bool
 wasAfter = (== WasAfter) . getFacts . getContext
 
 -- Cohort builder
--- Change Facts field
 cohortBuilderSingle :: Index -> ProjEvent -> ProjOccurrence
 cohortBuilderSingle idx e = event i (whatIsIt c)
  where
@@ -122,7 +121,7 @@ myMisspecRoutine = Golden
 
 -- Some data to play with in the repl
 
-f1, f2 :: TrueFacts
+f1, f2 :: TrueModel
 f1 = Awesome
 f2 = NotAwesome "ugh"
 

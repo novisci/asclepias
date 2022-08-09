@@ -78,7 +78,7 @@ At this time,
 simply wrapper types
 in order to create 'FromJSON' instances which can be used to marshal data from 
 [ndjson](http://ndjson.org/).
-See [event data model docs](https://docs.novisci.com/edm-sandbox/latest/index.html#_event_representation)
+See [event data model docs](https://docs.novisci.com/event-data/3.0/index.html)
 'ToJSON' instances are not provided, but may be in the future. 
 -}
 

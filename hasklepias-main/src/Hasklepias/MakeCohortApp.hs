@@ -129,8 +129,9 @@ makeCohortParserInfo name version = Options.Applicative.info
   )
  where
   gitinfo  = [i| (gitrev: #{githash})|]
-  githash  = pack "foo" -- $(gitHash)
-  dirtygit = True -- $(gitDirty)
+  githash  = pack $(gitHash)
+  dirtygit = -- $(gitDirty)
+    True -- $(gitDirty)
   gitdirty = if dirtygit
     then
       yellow

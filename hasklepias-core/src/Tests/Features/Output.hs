@@ -39,15 +39,15 @@ n n = "\"name\":" <> n
 t = "\"type\":\"Bool\""
 a derv ll sl =
   "\"attrs\":{\
-            \\"getShortLabel\":"
-    <> sl
+    \\"getDerivation\":"
+    <> derv
     <> ",\
-            \\"getPurpose\":{\"getRole\":[],\"getTags\":[]},\
             \\"getLongLabel\":"
     <> ll
     <> ",\
-            \\"getDerivation\":"
-    <> derv
+            \\"getPurpose\":{\"getRole\":[],\"getTags\":[]},\
+            \\"getShortLabel\":"
+    <> sl
     <> "\
             \}"
 o a d n t = "{" <> a <> "," <> d <> "," <> n <> "," <> t <> "}"

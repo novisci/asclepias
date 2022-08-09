@@ -29,6 +29,7 @@ cabal haddock \
   --haddock-option=--lib=../resources/haddock-api-resources/ \
   --haddock-option=--use-index=../doc-index.html \
   --haddock-option=--use-contents=../index.html \
+  --haddock-option='--base-url=..' \
   all > "${TEMP}"/haddock-output.txt
 
 # Get the paths to each documentation index.html in the haddock output

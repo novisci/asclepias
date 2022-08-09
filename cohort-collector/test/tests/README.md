@@ -16,6 +16,12 @@ cabal install cohort-collector
 cohort-collector -f cohort-collector/test/tests/manifestcw.txt -d cohort-collector
 ```
 
+Or run using `cabal run`
+
+```sh
+cabal run cohort-collector:exe:cohort-collector -- -f cohort-collector/test/tests/manifestcw.txt -d cohort-collector
+```
+
 ## Generating input test files
 
 Test files were produces in the following way:

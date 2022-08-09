@@ -1,46 +1,72 @@
 :navtitle: Initialize new project
 :description: How to initialize a new asclepias project
-:hasklepias-version: 0.2.5
 
 . Initialize a git repo for your project.
 . In your terminal, navigate to the project folder.
-. Execute the following code in the terminal,
+. Execute the following commands in the terminal,
 replacing `myProj` with your project name.
++
+[source,shell]
+----
+PROJID=myProj
+cabal init \
+    --libandexe \
+    --application-dir=apps \
+    --source-dir=plans \
+    --package-name=$PROJID \
+    --minimal \
+    --homepage https://gitlab.novisci.com/nsResearch/$PROJID \
+    --dependency hasklepias-main 
+cabal update
+mv plans/MyLib.hs plans/Cohort.hs
+----
++
+. Update `<myProj>.cabal`
+.. Change `exposed-modules` from `MyLib` to `Cohorts`.
+.. Add the following section to the `library` stanza:
++
+[source,config]
+----
+    default-extensions: 
+      NoImplicitPrelude
+      OverloadedStrings
+      LambdaCase
+      FlexibleContexts
+      FlexibleInstances
+      DeriveGeneric
+      MultiParamTypeClasses
+      DataKinds
+      TypeApplications
+----
+. Modify the first line `plans/Cohorts.hs` to:
 +
 [source,haskell]
 ----
-PROJID=myProj
-cabal init --libandexe --application-dir=apps --source-dir=plans --package-name=$PROJID -m -u https://gitlab.novisci.com/nsResearch/$PROJID -d hasklepias 
-cabal update
+module Cohorts (someFunc) where
 ----
+. Modify the `apps/Main.hs` to:
 +
-. Rename `MyLib.hs` to `Cohorts.hs`.
-. Update `myProj.cabal`
-.. expose all modules
-.. set `hasklepias` to a {hasklepias-version}
-.. set library default extensions:
-+
+[source,haskell]
 ----
- default-extensions: 
-   NoImplicitPrelude
-   OverloadedStrings
-   LambdaCase
-   FlexibleContexts
-   FlexibleInstances
-   DeriveGeneric
-   MultiParamTypeClasses
-   DataKinds
-   TypeApplications
+module Main where
+
+import  Cohorts
+
+main :: IO ()
+main = do
+  putStrLn "Hello, Haskell!"
 ----
-. add a `cabal.project` file with:
+. Add a `cabal.project` file with the following, 
+making sure to set the `tag` field to the commit hash
+containing the version of `asclepias` to use:
 +
 ----
 source-repository-package
   type: git
   location: https://github.com/novisci/asclepias.git
   tag: #SET TO DESIRED COMMIT#
-  subdir: hasklepias-core hasklepias-main hasklepias-templates stype event-data-theory
+  subdir: hasklepias-core hasklepias-main event-data-theory
 
-packages: ./myProj.cabal
+packages: ./<myProj>.cabal
 ----
-. Start coding.
+. Run `cabal build` to ensure the minimal project builds successfully.

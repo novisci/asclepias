@@ -58,7 +58,6 @@ module Hasklepias.Reexports
   , module Test.Tasty.HUnit
   , module Text.Pretty.Simple
   , module Witch
-  , naturalToInt
   ) where
 
 import           Control.Applicative            ( (<$>)
@@ -237,15 +236,4 @@ import           Test.Tasty.HUnit
 import           Text.Pretty.Simple             ( pPrint )
 
 import           Witch
-
--- FIXME:
--- There is not From Natural Int instance,
--- nor From Integer Int instance.
--- There are TryFrom instance, since the casts are unsafe.
--- For now, providing this utility,
--- even though it's not ideal.
--- Currently used itn hasklepias-templates.
-naturalToInt :: Natural -> Int
-naturalToInt = fromInteger . naturalToInteger
-
 

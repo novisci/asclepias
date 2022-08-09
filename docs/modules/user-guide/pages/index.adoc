@@ -1,7 +1,7 @@
 :navtitle: User Guide
 :description: Guide to using asclepias in projects
 :lawvere-url: https://bartoszmilewski.com/2017/08/26/lawvere-theories/
-:ghc: 8.10.7
+:ghc: 9.2.2 
 :cabal: 3.6.2.0
 :source-highlighter: highlightjs
 

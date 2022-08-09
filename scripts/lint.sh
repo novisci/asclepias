@@ -4,7 +4,7 @@
 # .hlint.yaml.
 set -e
 
-hlint  .
+hlint  . --ignore-glob=experiments/*
 
 shellcheck scripts/*.sh
 shellcheck ci/*.sh

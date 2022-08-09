@@ -135,7 +135,7 @@ makeCohortParserInfo name version = Options.Applicative.info
   --     yellow
   --       "**There were uncommitted files in the project repo when this application was built.**"
   --   else ""
-  versionInfo = version <> " " <> gitinfo
+  versionInfo = version -- <> " " <> gitinfo
   verisonOption =
     infoOption versionInfo (long "version" <> help "Show version")
   helpText =

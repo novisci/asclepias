@@ -50,7 +50,7 @@ a derv ll sl =
     <> derv
     <> "\
             \}"
-o a d n t = "{" <> n <> "," <> t <> "," <> a <> "," <> d <> "}"
+o a d n t = "{" <> a <> "," <> d <> "," <> n <> "," <> t <> "}"
 
 tests :: TestTree
 tests = testGroup

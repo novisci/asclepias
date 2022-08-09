@@ -36,7 +36,7 @@ check-source:
   image: registry.novisci.com/nsstat/nsbuild/haskell:$GHC
   script:
     - ./scripts/lint.sh
-    - ./ci/ci-check-format.sh
+    # - ./ci/ci-check-format.sh
 
 trigger-main-build:
   stage: build

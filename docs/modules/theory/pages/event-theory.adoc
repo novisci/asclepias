@@ -3,20 +3,13 @@
 :source-highlighter: highlightjs
 :toc: auto
 // TODO: update edm-path to non-sandbox URL
-:edm-path: https://docs.novisci.com/edm-sandbox/latest
+:edm-path: xref:event-data:ROOT:index.adoc
 :lawvere-url: https://bartoszmilewski.com/2017/08/26/lawvere-theories/
 
 = Event Data Theory
-`asclepias` provides the types and functions
-for defining *models* of event data.
-The terms "theory" and "model" are borrowed from the notion of a
-{lawvere-url}[Lawvere theory].
-footnote:lawvere[
-We use the terms informally
-to give the sense that a model of events is an instance of the theory.
-We have not checked that the event data theory
-actually is a universal algebra.
-]
+`asclepias` provides the types and functions for defining *models* of event
+data. The types and terminology are intended to be consistent with the
+{edm-path}[`event-data-model`] project.
 
 == Definitions
 === Event
@@ -78,7 +71,7 @@ and the `Interval` type is any valid type `a`, such as `Int`.
 This structure provides a high degree of flexibility in defining new structures for study-specific cohort definitions and analysis.
 
 See the
-{edm-path}/index.html[`event-data-theory`]
+{edm-path}/index.html[`event-data-model`]
 documentation for details.
 
 

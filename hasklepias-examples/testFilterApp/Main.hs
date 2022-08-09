@@ -193,7 +193,7 @@ appTest :: String -> String -> TestInputType -> IO ()
 appTest sessionId testId testInputType = do
   let outfilename = createFilenameForResults testId testInputType
   let cmd         = appTestCmd sessionId testId testInputType
-  pure cmd >>= callCommand
+  callCommand cmd
 
 {-
 Construct a string representing a shell command that runs one of the testing
@@ -231,7 +231,7 @@ localResultsFilepath = (localResultsDir ++)
 Copy test data to S3
 -}
 writeTestDataToS3 :: String -> String -> IO ()
-writeTestDataToS3 sessionId id = pure cmd >>= callCommand where
+writeTestDataToS3 sessionId id = callCommand cmd where
   from = createFilepathForTest id
   to   = createS3UriForTest sessionId id
   cmd  = "aws s3 cp " ++ from ++ " " ++ to

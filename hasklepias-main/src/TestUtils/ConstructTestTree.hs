@@ -46,7 +46,7 @@ appTest preCmdHook appTestCmd postCmdHook testScenario = do
 appTestCmd :: (a -> String) -> a -> IO ()
 appTestCmd appTestCmdString testScenario = do
   print $ "TEST COMMAND:  " ++ cmd
-  pure cmd >>= callCommand
+  callCommand cmd
   where cmd = appTestCmdString testScenario
 
 -- Construct a shell string that can be run as a command. The string is

@@ -21,8 +21,10 @@ import           System.Exit
 
 -- Container for app options
 data LineFilterAppOpts = MkLineFilterAppOpts
-  { input  :: Input
-  , output :: Output
+  { input        :: Input
+  , output       :: Output
+  , inDecompress :: InputDecompression
+  , outCompress  :: OutputCompression
   -- , lazy :: Bool
   }
 
@@ -41,8 +43,10 @@ desc =
 makeAppArgs :: String -> ParserInfo LineFilterAppOpts
 makeAppArgs name = Options.Applicative.info
   (    MkLineFilterAppOpts
-  <$>  (fileInput <|> s3Input <|> stdInput)
-  <*>  (fileOutput <|> s3Output <|> stdOutput)
+  <$>  inputParser
+  <*>  outputParser
+  <*>  inputDecompressionParser
+  <*>  outputCompressionParser
   -- <*>  switch (long "lazy" <> short 'l' <> help "Whether to process as lazy bytestring")
   <**> helper
   )
@@ -74,14 +78,15 @@ makeLineFilterApp name pid psl prd = do
   let inloc  = inputToLocation $ input options
       outloc = outputToLocation $ output options
 
-  result <- processAppLinesStrict pid psl prd NoTransformation
-    <$> readDataStrict inloc
+  result <-
+    processAppLinesStrict pid psl prd NoTransformation
+      <$> readDataStrict inloc (inDecompress options)
 
   case result of
     Left lae -> do
       logStringStderr <& show lae
       exitWith (ExitFailure 1)
-    Right bs -> writeDataStrict outloc bs
+    Right bs -> writeDataStrict outloc (outCompress options) bs
 
 {-| 
 Create a application that filters event data with two arguments:

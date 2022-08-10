@@ -21,7 +21,7 @@ cabal init \
     --homepage https://gitlab.novisci.com/nsResearch/$PROJID \
     --dependency hasklepias-main 
 cabal update
-mv plans/MyLib.hs plans/Cohort.hs
+mv plans/MyLib.hs plans/Cohorts.hs
 mv tests/MyLibTest.hs tests/Main.hs
 ----
 +

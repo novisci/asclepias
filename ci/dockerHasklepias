@@ -3,7 +3,7 @@
 # by dependent jobs.
 
 ARG BASE_IMAGE=haskell
-ARG GHC=
+ARG GHC
 
 FROM registry.novisci.com/nsstat/nsbuild/$BASE_IMAGE:$GHC
 

@@ -10,21 +10,16 @@ import           Test.Tasty.HUnit
 import           Witch
 
 f1 :: Status -> Criterion
-f1 = criterion "f1"
--- f1 s = int (makeFeature (featureDataR s) :: Feature "f1" Status)
+f1 = makeCriterion "f1"
 
 f2 :: Status -> Criterion
-f2 = criterion "f2"
--- f2 s = into @Criterion (makeFeature (featureDataR s) :: Feature "f2" Status)
+f2 = makeCriterion "f2"
 
 f3 :: Status -> Criterion
-f3 = criterion "f3"
--- f3 s = into @Criterion (makeFeature (featureDataR s) :: Feature "f3" Status)
+f3 = makeCriterion "f3"
 
 f4 :: Criterion
-f4 = criterion "f4" Exclude
--- f4 = into @Criterion 
---   (makeFeature (featureDataL $ Other "something") :: Feature "f4" Status)
+f4 = makeCriterion "f4" Exclude
 
 testAttr1 :: AttritionInfo
 testAttr1 = makeTestAttritionInfo
@@ -48,19 +43,25 @@ tests :: TestTree
 tests = testGroup
   "Unit tests on Cohort.Criteria"
   [ testCase "include f1"
-  $   checkCohortStatus (criteria $ pure (f1 Include))
+  $   checkCohortStatus (makeCriteriaPure $ pure (f1 Include))
   @?= Included
   , testCase "include f1, f2, f3"
-  $   checkCohortStatus (criteria $ f1 Include : [f2 Include, f3 Include])
+  $   checkCohortStatus
+        (makeCriteriaPure $ f1 Include : [f2 Include, f3 Include])
   @?= Included
   , testCase "exclude on f2"
-  $   checkCohortStatus (criteria $ f2 Exclude : [f3 Include])
+  $   checkCohortStatus (makeCriteriaPure $ f2 Exclude : [f3 Include])
   @?= ExcludedBy (1, "f2")
   , testCase "exclude on f2"
-  $   checkCohortStatus (criteria $ f1 Include : [f2 Exclude, f3 Include])
+  $   checkCohortStatus
+        (makeCriteriaPure $ f1 Include : [f2 Exclude, f3 Include])
   @?= ExcludedBy (2, "f2")
   , testCase "error on f4"
-  $   checkCohortStatus (criteria $ f1 Include : [f2 Include, f3 Include, f4])
+  $   checkCohortStatus
+        ( makeCriteriaPure
+        $ f1 Include
+        : [ f2 Include,  f3 Include, f4]
+        )
   @?= ExcludedBy (4, "f4")
   , testCase "semigroup: testAttr1 <> testAttr2"
   $   testAttr1

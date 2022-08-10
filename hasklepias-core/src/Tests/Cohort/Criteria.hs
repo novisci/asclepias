@@ -46,22 +46,17 @@ tests = testGroup
   $   checkCohortStatus (makeCriteriaPure $ pure (f1 Include))
   @?= Included
   , testCase "include f1, f2, f3"
-  $   checkCohortStatus
-        (makeCriteriaPure $ f1 Include : [f2 Include, f3 Include])
+  $ checkCohortStatus (makeCriteriaPure $ f1 Include : [f2 Include, f3 Include])
   @?= Included
   , testCase "exclude on f2"
   $   checkCohortStatus (makeCriteriaPure $ f2 Exclude : [f3 Include])
   @?= ExcludedBy (1, "f2")
   , testCase "exclude on f2"
-  $   checkCohortStatus
-        (makeCriteriaPure $ f1 Include : [f2 Exclude, f3 Include])
+  $ checkCohortStatus (makeCriteriaPure $ f1 Include : [f2 Exclude, f3 Include])
   @?= ExcludedBy (2, "f2")
   , testCase "error on f4"
   $   checkCohortStatus
-        ( makeCriteriaPure
-        $ f1 Include
-        : [ f2 Include,  f3 Include, f4]
-        )
+        (makeCriteriaPure $ f1 Include : [f2 Include, f3 Include, f4])
   @?= ExcludedBy (4, "f4")
   , testCase "semigroup: testAttr1 <> testAttr2"
   $   testAttr1

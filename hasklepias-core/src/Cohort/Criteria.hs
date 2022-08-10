@@ -17,6 +17,7 @@ Maintainer  : bsaul@novisci.com
 module Cohort.Criteria
   ( Criterion
   , CriterionThatCanFail
+  , CriterionFailure(..)
   , Criteria
   , Status(..)
   , CohortStatus(..)

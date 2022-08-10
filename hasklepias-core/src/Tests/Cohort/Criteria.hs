@@ -18,8 +18,8 @@ f2 = makeCriterion "f2"
 f3 :: Status -> Criterion
 f3 = makeCriterion "f3"
 
-f4 :: Criterion
-f4 = makeCriterion "f4" Exclude
+f4 :: CriterionThatCanFail
+f4 = Left $ MkCriterionFailure "bad"
 
 testAttr1 :: AttritionInfo
 testAttr1 = makeTestAttritionInfo
@@ -56,8 +56,31 @@ tests = testGroup
   @?= ExcludedBy (2, "f2")
   , testCase "error on f4"
   $   checkCohortStatus
-        (makeCriteriaPure $ f1 Include : [f2 Include, f3 Include, f4])
-  @?= ExcludedBy (4, "f4")
+        ( makeCriteria
+        $ pure (f1 Include)
+        : [pure $ f2 Include, pure $ f3 Include, f4]
+        )
+  @?= CriteriaFailure "bad"
+  , testCase "measuring attrition that includes a failure"
+  $   measureSubjectAttrition
+        (Just
+          ( makeCriteria
+          $ pure (f1 Include)
+          : [pure $ f2 Include, pure $ f3 Include, f4]
+          )
+        )
+        [ checkCohortStatus
+          ( makeCriteria
+          $ pure (f1 Include)
+          : [pure $ f2 Include, pure $ f3 Include, f4]
+          )
+        , checkCohortStatus
+          ( makeCriteria
+          $ pure (f1 Include)
+          : [pure $ f2 Include, pure $ f3 Include]
+          )
+        ]
+  @?= makeTestAttritionInfo 1 2 [(CriteriaFailure "bad", 1), (Included, 1)]
   , testCase "semigroup: testAttr1 <> testAttr2"
   $   testAttr1
   <>  testAttr2

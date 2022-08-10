@@ -1,7 +1,8 @@
 :navtitle: Initialize new project
 :description: How to initialize a new asclepias project
 
-. Initialize a git repo for your project.
+. Initialize a git repo for your project,
+using `nsProjects::initialize()` for example.
 . In your terminal, navigate to the project folder.
 . Execute the following commands in the terminal,
 replacing `myProj` with your project name.

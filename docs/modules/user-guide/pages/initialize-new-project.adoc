@@ -1,15 +1,11 @@
 :navtitle: Initialize new project
 :description: How to initialize a new asclepias project
 
-[IMPORTANT]
-Replace `myProj` with your project ID 
-wherever `myProj` or `<myProj>` appears in the instructions below.
-
 . Initialize a git repo for your project,
 using `nsProjects::initialize()` for example.
 . In your terminal, navigate to the project folder.
 . Execute the following commands in the terminal,
-replacing `myProj` with your project name.
+
 +
 [source,shell]
 ----
@@ -31,7 +27,7 @@ mv tests/MyLibTest.hs tests/Main.hs
 +
 You may see warnings about fields in the `.cabal` file. 
 You can safely ignore these.
-. Update `<myProj>.cabal`
+. Update `<myProj>.cabal`, replacing `<myProj>` with your project name.
 .. Change `exposed-modules` in the `library` stanza from `MyLib` to:
 +
 [source,config]
@@ -81,7 +77,8 @@ main :: IO ()
 main = do
   putStrLn "Hello, Haskell!"
 ----
-. Modify `tests/Main.hs` to:
+. Modify `tests/Main.hs` to,
+replacing `<myProj>` with your project name:
 +
 [source,haskell]
 ----
@@ -106,7 +103,8 @@ tests = testGroup "example" [testCase "true is true" (True @?= True) ]
 ----
 . Add a `cabal.project` file in the project's root directory with the following, 
 making sure to set the `tag` field to the commit hash
-containing the version of `asclepias` to use:
+containing the version of `asclepias` to use,
+replacing `<myProj>` with your project name:
 +
 ----
 source-repository-package

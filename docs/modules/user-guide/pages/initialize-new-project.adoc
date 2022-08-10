@@ -13,16 +13,26 @@ cabal init \
     --libandexe \
     --application-dir=apps \
     --source-dir=plans \
+    --tests \
+    --test-dir=tests \
     --package-name=$PROJID \
     --minimal \
     --homepage https://gitlab.novisci.com/nsResearch/$PROJID \
     --dependency hasklepias-main 
 cabal update
 mv plans/MyLib.hs plans/Cohort.hs
+mv tests/MyLibTest.hs tests/Main.hs
 ----
 +
 . Update `<myProj>.cabal`
-.. Change `exposed-modules` from `MyLib` to `Cohorts`.
+.. Change `exposed-modules` in the `library` stanza from `MyLib` to:
++
+[source,config]
+----
+    exposed-modules: 
+        Cohorts
+      , Tests
+----
 .. Add the following section to the `library` stanza:
 +
 [source,config]
@@ -38,13 +48,21 @@ mv plans/MyLib.hs plans/Cohort.hs
       DataKinds
       TypeApplications
 ----
-. Modify the first line `plans/Cohorts.hs` to:
+.. Change `main-is` in the `test-suite` stanza to:
++
+[source,config]
+----
+    main-is:          Main.hs
+----
+. Modify `plans/Cohorts.hs` to:
 +
 [source,haskell]
 ----
-module Cohorts (someFunc) where
+module Cohorts where
+
+import Hasklepias
 ----
-. Modify the `apps/Main.hs` to:
+. Modify `apps/Main.hs` to:
 +
 [source,haskell]
 ----
@@ -56,6 +74,29 @@ main :: IO ()
 main = do
   putStrLn "Hello, Haskell!"
 ----
+. Modify `tests/Main.hs` to:
++
+[source,haskell]
+----
+import           Hasklepias
+import           Tests
+
+main :: IO ()
+main = defaultMain (testGroup "<myProj> Tests" [tests])
+----
+. Add a file `Tests.hs` file in the `plans` directory with the following:
++
+[source,haskell]
+----
+module Tests where
+
+import           Hasklepias
+import           Cohorts
+
+
+tests :: TestTree
+tests = testGroup "example" [testCase "true is true" (True @?= True) ]
+----
 . Add a `cabal.project` file with the following, 
 making sure to set the `tag` field to the commit hash
 containing the version of `asclepias` to use:
@@ -64,9 +105,10 @@ containing the version of `asclepias` to use:
 source-repository-package
   type: git
   location: https://github.com/novisci/asclepias.git
-  tag: #SET TO DESIRED COMMIT#
+  tag: <SET TO DESIRED COMMIT>
   subdir: hasklepias-core hasklepias-main event-data-theory
 
 packages: ./<myProj>.cabal
 ----
+. Add `dist-newstyle*` to `.gitignore`.
 . Run `cabal build` to ensure the minimal project builds successfully.

@@ -6,7 +6,8 @@ module CohortCollectionTests
 import           CohortCollection               ( Location(..)
                                                 , runCollectionApp
                                                 )
-import qualified Data.ByteString.Lazy          as B
+import qualified Data.ByteString.Lazy          as BL
+import           Hasklepias.AppUtilities
 import           Test.Tasty                     ( TestTree
                                                 , defaultMain
                                                 , testGroup
@@ -20,7 +21,8 @@ appTestRw = do
     , Local "test/tests/testrw2.json"
     , Local "test/tests/testrw3.json"
     ]
-  B.writeFile "test/tests/testrw.json" r
+    NoDecompress
+  BL.writeFile "test/tests/testrw.json" r
 
 appTestCw :: IO ()
 appTestCw = do
@@ -29,7 +31,8 @@ appTestCw = do
     , Local "test/tests/testcw2.json"
     , Local "test/tests/testcw3.json"
     ]
-  B.writeFile "test/tests/testcw.json" r
+    NoDecompress
+  BL.writeFile "test/tests/testcw.json" r
 
 tests :: TestTree
 tests = testGroup

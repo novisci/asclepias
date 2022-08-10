@@ -37,13 +37,7 @@ import           Data.Aeson                     ( FromJSON
                                                 , encode
                                                 )
 import           Data.Bifunctor                 ( Bifunctor(second) )
-import qualified Data.ByteString.Char8         as CH
-import qualified Data.ByteString.Lazy          as B
-import qualified Data.ByteString.Lazy.Char8    as C
-                                                ( lines
-                                                , putStrLn
-                                                , toStrict
-                                                )
+import qualified Data.ByteString.Lazy          as BL
 import           Data.List                      ( sort )
 import           Data.Map.Strict                ( fromList
                                                 , toList
@@ -53,7 +47,6 @@ import qualified Data.Map.Strict               as M
                                                 , toList
                                                 )
 import           Data.Monoid                    ( Monoid(mconcat) )
-import           Data.Semigroup                 ( Semigroup((<>)) )
 import           Data.String.Interpolate        ( i )
 import           Data.Text                      ( Text
                                                 , pack
@@ -63,8 +56,6 @@ import           Development.GitRev             ( gitDirty
                                                 , gitHash
                                                 )
 import           EventDataTheory         hiding ( (<|>) )
-import           GHC.Generics                   ( Generic )
-import           GHC.Num                        ( Natural )
 import           Hasklepias.AppUtilities
 import           Options.Applicative
 import           Options.Applicative.Help
@@ -87,6 +78,10 @@ data MakeCohort = MakeCohort
   , subjectSampleOpt    :: !SubjectSample
     -- | Sets the 'EvaluateFeatures' option for cohort evaluation.
   , evaluateFeaturesOpt :: !EvaluateFeatures
+    -- | Decompress gzipped input
+  , inDecompress        :: InputDecompression
+    -- | Compress output using gzip
+  , outCompress         :: OutputCompression
   }
 
 {-| INTERNAL
@@ -95,10 +90,12 @@ The @Parser@ for @MakeCohort@ command line options
 makeCohortParser :: Parser MakeCohort
 makeCohortParser =
   MakeCohort
-    <$> (fileInput <|> s3Input <|> stdInput)
-    <*> (fileOutput <|> s3Output <|> stdOutput)
+    <$> inputParser
+    <*> outputParser
     <*> subjectSampleParser
     <*> evaluateFeaturesParser
+    <*> inputDecompressionParser
+    <*> outputCompressionParser
 
 ioDoc :: Doc
 ioDoc = dullblue (bold "== I/O options ==") <> linebreak <> [i|
@@ -259,7 +256,7 @@ makeCohortBuilder
      )
   => CohortEvalOptions
   -> CohortMapSpec [Event t m a] d0 i
-  -> B.ByteString
+  -> BL.ByteString
   -> f ([LineParseError], CohortMap d0 i)
 makeCohortBuilder opts specs x = do
   let doEvaluation = makeCohortSpecsEvaluator opts specs
@@ -294,7 +291,7 @@ The return type contains the `Output` location so that the application
 captures the output location from the cli arguments,
 but can also be overridden by (e.g.) `runAppWithLocation`.
 -}
-newtype CohortApp m = MkCohortApp { runCohortApp :: Maybe Location -> m (B.ByteString, Output) }
+newtype CohortApp m = MkCohortApp { runCohortApp :: Maybe Location -> m (BL.ByteString, (Output, OutputCompression)) }
 
 -- | Make a command line cohort building application.
 makeCohortApp
@@ -313,7 +310,6 @@ makeCohortApp name version shape spec = MkCohortApp $ \l -> do
   options <- execParser (makeCohortParserInfo name version)
   let errLog = logStringStderr
 
-
   errLog <& "Creating cohort builder..."
   let cohortEvalOpts = MkCohortEvalOptions (evaluateFeaturesOpt options)
                                            (subjectSampleOpt options)
@@ -326,26 +322,26 @@ makeCohortApp name version shape spec = MkCohortApp $ \l -> do
         Nothing -> inputToLocation $ input options
         Just x  -> x
 
-  dat <- readData loc
+  dat <- readData loc (inDecompress options)
 
   errLog <& "Bulding cohort..."
   res <- shapeOutput shape (app dat)
 
   logParseErrors (fst res)
 
-  errLog <& "Encoding cohort(s) output and writing to stdout..."
+  errLog <& "Encoding cohort(s) output and writing out..."
 
-  pure (encode (toJSON (snd res)), output options)
+  pure (encode (toJSON (snd res)), (output options, outCompress options))
 
 -- | Just run the thing.
 runApp :: CohortApp IO -> IO ()
 runApp x = do
   app <- runCohortApp x Nothing
-  writeData (outputToLocation $ snd app) (fst app)
+  writeData (outputToLocation $ fst $ snd app) (snd $ snd app) (fst app)
 
 
 -- | Just run the thing with a set location (e.g for testing).
-runAppWithLocation :: Location -> CohortApp IO -> IO B.ByteString
+runAppWithLocation :: Location -> CohortApp IO -> IO BL.ByteString
 runAppWithLocation l x = do
   app <- runCohortApp x (Just l)
   pure $ fst app

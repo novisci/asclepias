@@ -47,8 +47,8 @@ import           Network.AWS.S3
 -- import           Amazonka.Auth
 -- import           Amazonka.S3
 
-getCohortData :: Location -> IO (Maybe CohortMapJSON)
-getCohortData x = fmap decode (readData x)
+getCohortData :: Location -> InputDecompression -> IO (Maybe CohortMapJSON)
+getCohortData x d = fmap decode (readData x d)
 
 getLocations :: Input -> IO [Location]
 getLocations (FileInput d f) = fmap (fmap Local)
@@ -70,9 +70,9 @@ data Input =
    deriving (Show)
 
 -- | Run collection on a list of 'Location's
-runCollectionApp :: [Location] -> IO B.ByteString
-runCollectionApp fs = do
-  r <- runConduit $ yieldMany fs .| foldMapMC getCohortData
+runCollectionApp :: [Location] -> InputDecompression -> IO B.ByteString
+runCollectionApp fs d = do
+  r <- runConduit $ yieldMany fs .| foldMapMC (`getCohortData` d)
   let x = fmap encode r
   let z = fromMaybe B.empty x
   pure z
@@ -98,15 +98,19 @@ s3input =
           )
 
 data CollectorApp = CollectorApp
-  { input  :: Input
-  , output :: H.Output
+  { input       :: Input
+  , output      :: H.Output
+  , inDeompress :: H.InputDecompression
+  , outCompress :: H.OutputCompression
   }
 
 collector :: Parser CollectorApp
 collector =
   CollectorApp
     <$> (fileInput <|> s3input)
-    <*> (H.fileOutput <|> H.s3Output <|> H.stdOutput)
+    <*> H.outputParser
+    <*> H.inputDecompressionParser
+    <*> H.outputCompressionParser
 
 desc =
   "Collects cohorts run on different input data. The cohorts must be derived \
@@ -135,5 +139,5 @@ collectorApp = do
   let files = input options
   fs <- getLocations files
 
-  r  <- runCollectionApp fs
-  H.writeData (H.outputToLocation $ output options) r
+  r  <- runCollectionApp fs (inDeompress options)
+  H.writeData (H.outputToLocation $ output options) (outCompress options) r

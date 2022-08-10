@@ -25,6 +25,8 @@ mv plans/MyLib.hs plans/Cohort.hs
 mv tests/MyLibTest.hs tests/Main.hs
 ----
 +
+You may see warnings about fields in the `.cabal` file. 
+You can safely ignore these.
 . Update `<myProj>.cabal`
 .. Change `exposed-modules` in the `library` stanza from `MyLib` to:
 +
@@ -98,7 +100,7 @@ import           Cohorts
 tests :: TestTree
 tests = testGroup "example" [testCase "true is true" (True @?= True) ]
 ----
-. Add a `cabal.project` file with the following, 
+. Add a `cabal.project` file in the project's root directory with the following, 
 making sure to set the `tag` field to the commit hash
 containing the version of `asclepias` to use:
 +

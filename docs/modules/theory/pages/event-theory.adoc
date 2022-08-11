@@ -2,14 +2,11 @@
 :description: Explanation and details of Event data theory
 :source-highlighter: highlightjs
 :toc: auto
-// TODO: update edm-path to non-sandbox URL
-:edm-path: xref:event-data:ROOT:index.adoc
-:lawvere-url: https://bartoszmilewski.com/2017/08/26/lawvere-theories/
 
 = Event Data Theory
 `asclepias` provides the types and functions for defining *models* of event
 data. The types and terminology are intended to be consistent with the
-{edm-path}[`event-data-model`] project.
+xref:event-data:ROOT:index.adoc[`event-data-model`] project.
 
 == Definitions
 === Event
@@ -71,7 +68,7 @@ and the `Interval` type is any valid type `a`, such as `Int`.
 This structure provides a high degree of flexibility in defining new structures for study-specific cohort definitions and analysis.
 
 See the
-{edm-path}/index.html[`event-data-model`]
+xref:event-data:ROOT:index.adoc[`event-data-model`]
 documentation for details.
 
 

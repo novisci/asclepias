@@ -1,46 +1,139 @@
 :navtitle: Initialize new project
 :description: How to initialize a new asclepias project
-:hasklepias-version: 0.2.5
 
-. Initialize a git repo for your project.
+. Initialize a git repo for your project,
+using `nsProjects::initialize()` for example.
 . In your terminal, navigate to the project folder.
-. Execute the following code in the terminal,
-replacing `myProj` with your project name.
+. Execute the following commands in the terminal,
+
++
+[source,shell]
+----
+PROJID=myProj
+cabal init \
+    --libandexe \
+    --application-dir=apps \
+    --source-dir=plans \
+    --tests \
+    --test-dir=tests \
+    --package-name=$PROJID \
+    --minimal \
+    --homepage https://gitlab.novisci.com/nsResearch/$PROJID \
+    --dependency hasklepias-main 
+cabal update
+mv plans/MyLib.hs plans/Cohorts.hs
+mv tests/MyLibTest.hs tests/Main.hs
+----
++
+You may see warnings about fields in the `.cabal` file. 
+You can safely ignore these.
+. Update `<myProj>.cabal`, replacing `<myProj>` with your project name.
+.. Change `exposed-modules` in the `library` stanza from `MyLib` to:
++
+[source,config]
+----
+    exposed-modules: 
+        Cohorts
+      , Tests
+----
+.. Add the following section to the `library` stanza:
++
+[source,config]
+----
+    default-extensions: 
+      NoImplicitPrelude
+      OverloadedStrings
+      LambdaCase
+      FlexibleContexts
+      FlexibleInstances
+      DeriveGeneric
+      MultiParamTypeClasses
+      DataKinds
+      TypeApplications
+----
+.. Change `build-depends` in the `executable` stanza to:
++
+[source,config]
+----
+    build-depends:
+        base,
+        hasklepias-main,
+        <myProj>
+----
+Replacing `<myProj>` with your project name.
++
+.. Change `main-is` in the `test-suite` stanza to:
++
+[source,config]
+----
+    main-is:          Main.hs
+----
+. Modify `plans/Cohorts.hs` to:
 +
 [source,haskell]
 ----
-PROJID=myProj
-cabal init --libandexe --application-dir=apps --source-dir=plans --package-name=$PROJID -m -u https://gitlab.novisci.com/nsResearch/$PROJID -d hasklepias 
-cabal update
+module Cohorts where
+
+import Hasklepias
 ----
+. Modify `apps/Main.hs` to:
 +
-. Rename `MyLib.hs` to `Cohorts.hs`.
-. Update `myProj.cabal`
-.. expose all modules
-.. set `hasklepias` to a {hasklepias-version}
-.. set library default extensions:
+[source,haskell]
+----
+module Main where
+
+import  Cohorts
+
+main :: IO ()
+main = do
+  putStrLn "Hello, Haskell!"
+----
+. Modify `tests/Main.hs` to,
+replacing `<myProj>` with your project name:
 +
+[source,haskell]
 ----
- default-extensions: 
-   NoImplicitPrelude
-   OverloadedStrings
-   LambdaCase
-   FlexibleContexts
-   FlexibleInstances
-   DeriveGeneric
-   MultiParamTypeClasses
-   DataKinds
-   TypeApplications
+import           Hasklepias
+import           Tests
+
+main :: IO ()
+main = defaultMain (testGroup "<myProj> Tests" [tests])
 ----
-. add a `cabal.project` file with:
+. Add a file `Tests.hs` file in the `plans` directory with the following:
++
+[source,haskell]
+----
+module Tests where
+
+import           Hasklepias
+import           Cohorts
+
+
+tests :: TestTree
+tests = testGroup "example" [testCase "true is true" (True @?= True) ]
+----
+. Add a `cabal.project` file in the project's root directory with the following, 
+making sure to set the `tag` field to the
+https://gitlab.novisci.com/nsStat/asclepias/-/tags[git tag of the `asclepias` version]
+to use.
+Replace `<myProj>` with your project name.
 +
 ----
 source-repository-package
   type: git
   location: https://github.com/novisci/asclepias.git
-  tag: #SET TO DESIRED COMMIT#
-  subdir: hasklepias-core hasklepias-main hasklepias-templates stype event-data-theory
+  tag: <SET TO DESIRED VERSION TAG, e.g. v0.27.0>
+  subdir: hasklepias-core hasklepias-main event-data-theory
 
-packages: ./myProj.cabal
+packages: ./<myProj>.cabal
 ----
-. Start coding.
+. Add the following entries to `.gitignore`,
+adding a `.gitignore` file in the project root if necessary:
++
+[source,config]
+----
+dist-newstyle*
+*.tix
+----
++
+. Run `cabal build` to ensure the minimal project builds successfully.

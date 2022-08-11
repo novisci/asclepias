@@ -15,9 +15,13 @@ module Hasklepias.AppBuilder.ProcessLines.Logic
     -- $processAppLines
     processAppLinesStrict
   , processAppLinesLazy
+  , processAppLinesStrict2List
   , LineProcessor(..)
   , LineStatus(..)
   , LineBuilder(..)
+
+  , noLineTransformStrict
+  , noLineTransformLazy
   ) where
 
 import qualified Data.ByteString               as BS
@@ -63,9 +67,8 @@ The `Int` input is the line number passed in the case of an error.
 -}
 handleLineParse :: Int -> Maybe (a, Bool) -> LineAppMonad (a, Bool)
 handleLineParse i x = case x of
-  Nothing     -> Left $ LineParseErrorA i
-  Just x      -> Right x
-
+  Nothing -> Left $ LineParseErrorA i
+  Just x  -> Right x
 
 {-
 INTERNAL
@@ -80,23 +83,27 @@ Hence we run into the issue of needing
 functions specific to each string type.
 I (BS) could not find a typeclass
 that provides the functionality needed.
+
+* @t@ is the input @t@ext type (e.g. ByteString)
+* @i@ is the @i@ndex type for the @t@ type
+* @acc@ is the type of accumulator
+* @o@ is the @o@utput type
 -}
-data LineFunctions t i acc out = MkLineFunctions
+data LineFunctions t i acc o = MkLineFunctions
   { isEmpty     :: t -> Bool
   , findNewLine :: t -> Maybe i
   , takeSubset  :: t -> i -> Maybe i -> t
-  -- , build       :: t -> acc
-  , runBuilder  :: acc -> out
+  , runBuilder  :: acc -> o
   }
 
-lineFunctionsStrict :: LineFunctions BS.ByteString Int LineBuilder BS.ByteString
+lineFunctionsStrict
+  :: LineFunctions BS.ByteString Int LineBuilder BS.ByteString
 lineFunctionsStrict = MkLineFunctions
   { isEmpty     = BS.null
   , takeSubset  = \x i n -> case n of
                     Nothing -> BS.drop i x
                     Just j  -> BS.take j (BS.drop i x)
   , findNewLine = BSC.elemIndex '\n'
-  -- , build       = MkLineBuilder . byteString
   , runBuilder  = BL.toStrict . toLazyByteString . (\(MkLineBuilder x) -> x)
   }
 
@@ -107,24 +114,23 @@ lineFunctionsStrictList = MkLineFunctions
                     Nothing -> BS.drop i x
                     Just j  -> BS.take j (BS.drop i x)
   , findNewLine = BSC.elemIndex '\n'
-  -- , build       = pure 
   , runBuilder  = id
   }
 
-lineFunctionsLazy :: LineFunctions BL.ByteString Int64 LineBuilder BL.ByteString
+lineFunctionsLazy
+  :: LineFunctions BL.ByteString Int64 LineBuilder BL.ByteString
 lineFunctionsLazy = MkLineFunctions
   { isEmpty     = BL.null
   , takeSubset  = \x i n -> case n of
                     Nothing -> BL.drop i x
                     Just j  -> BL.take j (BL.drop i x)
   , findNewLine = BLC.elemIndex '\n'
-  -- , build       = MkLineBuilder . lazyByteString
   , runBuilder  = toLazyByteString . (\(MkLineBuilder x) -> x)
   }
 
 newtype LineBuilder = MkLineBuilder Builder
 
-instance Semigroup LineBuilder where 
+instance Semigroup LineBuilder where
   (<>) (MkLineBuilder x) (MkLineBuilder y) = MkLineBuilder (x <> char8 '\n' <> y)
 
 instance Monoid LineBuilder where
@@ -156,7 +162,7 @@ data AppLines id i acc = MkAppLines
   , lastNewLine :: Maybe i -- ^ the index of the last new line
   , grpStart    :: i -- ^  the index at which the current group started
   , grpStatus   :: Bool -- ^ the predicate status of a group
-  , grpAcc      :: Maybe acc -- ^ group-level accumulator
+  , grpAcc      :: acc -- ^ group-level accumulator
   , mainAcc     :: acc -- ^ the main accumulator 
   , lineLog     :: AppLinesLog -- ^ a logger
   }
@@ -231,7 +237,7 @@ See @'processAppLinesStrict'@ for a description of arguments.
 
 -}
 processAppLinesInternal
-  :: (Eq id, Show id, Num i, Monoid t, Show t, Semigroup acc)
+  :: (Eq id, Show id, Num i, Monoid t, Show t, Semigroup acc, Monoid acc)
   => LineFunctions t i acc out
   -> (t -> Maybe id)
   -> (t -> Maybe a)
@@ -246,11 +252,11 @@ processAppLinesInternal fs pri psl prd pro status x =
     -- Simply update the accumulator for the last group.
     Nothing -> Right $ status
       { mainAcc = if grpStatus status
-                       then updateAcc status Nothing
-                       else mainAcc status
-      , lineLog    = if grpStatus status
-                       then incrementGroupKept (lineLog status)
-                       else lineLog status
+                    then mainAcc status <> grpAcc status
+                    else mainAcc status
+      , lineLog = if grpStatus status
+                    then incrementGroupKept (lineLog status)
+                    else lineLog status
       }
     -- Otherwise take the index immediately after the newline character as `i`
     Just i -> do
@@ -304,10 +310,10 @@ processAppLinesInternal fs pri psl prd pro status x =
                   checkLine lineCount thisLine
                     >>= (\(x, b) -> go newStatus
                           { lastLineID = Just thisLineID
-                          , grpStatus  = b
-                          , grpStart   = i
-                          , grpAcc     = toAcc $ processLine thisLine x thisLineID
-                          , mainAcc = updateAcc status (Just i)
+                          , grpStatus = b
+                          , grpStart = i
+                          , grpAcc = toAcc $ processLine thisLine x thisLineID
+                          , mainAcc = mainAcc status <> grpAcc status
                           , lineLog = (incrementGroupKept . incrementGroupCount)
                                         (lineLog newStatus)
                           }
@@ -321,7 +327,7 @@ processAppLinesInternal fs pri psl prd pro status x =
                           { lastLineID = Just thisLineID
                           , grpStart   = i
                           , grpStatus  = b
-                          , grpAcc     = toAcc $ processLine thisLine x thisLineID
+                          , grpAcc = toAcc $ processLine thisLine x thisLineID
                           , lineLog    = incrementGroupCount (lineLog newStatus)
                           }
                         )
@@ -331,34 +337,20 @@ processAppLinesInternal fs pri psl prd pro status x =
 
   -- The function that processes a line depends on whether the user
   -- provided a line processor argument.
-  -- processLine :: a -> id -> LineStatus acc 
-  processLine t x y = case pro of
+  -- processLine :: t -> a -> id -> LineStatus acc 
+  processLine t x grpId = case pro of
     TransformWith transformLine buildLine ->
-      fmap (\v -> buildLine (y, v)) (transformLine x)
-    -- NoTransformation -> DropLine
+      fmap (\v -> buildLine (grpId, v)) (transformLine x)
     NoTransformation build -> KeepLine $ build t
 
-  -- Cast a @LineStatus@ to a @Maybe@
-  toAcc :: LineStatus a -> Maybe a
-  toAcc DropLine     = Nothing
-  toAcc (KeepLine x) = Just x
+  -- toAcc :: LineStatus acc -> acc
+  toAcc DropLine     = mempty
+  toAcc (KeepLine x) = x
 
-
-  updateGrp status line x grpId = 
-    case processLine line x grpId of
-      -- keep going if line is to be dropped
-      DropLine    -> grpAcc status
-      -- handle the case that the accumulator may be @Nothing@
-      -- and needs to be initialized
-      KeepLine bu -> case grpAcc status of
-        Nothing  -> Just bu
-        Just acc -> Just (acc <> bu)
-
-  updateAcc status i = 
-   case grpAcc status of
-      Nothing  -> mainAcc status
-      Just grp -> mainAcc status <> grp
-
+  -- AppLines id i acc -> t -> a -> id -> acc
+  updateGrp status line x grpId = case processLine line x grpId of
+    DropLine    -> grpAcc status
+    KeepLine bu -> grpAcc status <> bu
 {-# INLINE processAppLinesInternal #-}
 
 {-
@@ -468,7 +460,7 @@ processAppLinesLazy
 processAppLinesLazy = processAppLines lineFunctionsLazy
 
 -- | Process a strict 'BS.ByteString'.
-processAppLinesStrict2
+processAppLinesStrict2List
   :: (Eq id, Show id)
   => (BS.ByteString -> Maybe id) -- ^ parser of a group identifier from a line
   -> (BS.ByteString -> Maybe a) -- ^ parser of an @a@ from a line
@@ -476,4 +468,13 @@ processAppLinesStrict2
   -> LineProcessor BS.ByteString a b id [b] -- ^ an optional @'LineProcessor'@ 
   -> BS.ByteString -- ^ input string to be split into lines
   -> LineAppMonad [b]
-processAppLinesStrict2 = processAppLines lineFunctionsStrictList
+processAppLinesStrict2List = processAppLines lineFunctionsStrictList
+
+
+-- | TODO 
+noLineTransformStrict :: LineProcessor BSC.ByteString a b id LineBuilder
+noLineTransformStrict = NoTransformation (MkLineBuilder . byteString)
+
+-- | TODO
+noLineTransformLazy :: LineProcessor BLC.ByteString a b id LineBuilder
+noLineTransformLazy =  NoTransformation (MkLineBuilder . lazyByteString)

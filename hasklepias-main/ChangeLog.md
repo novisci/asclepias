@@ -1,5 +1,14 @@
 # Changelog for hasklepias-main
 
+## 0.28.0
+
+* updates supported compiler to GHC 9.2.2
+* adds ability to compress/decompress gzipped data from applications
+built using `AppUtilities` functions.
+For example, see the `--decompress` and `--gzip` arguments in
+`cabal run lineFilter-demo -- --help` or
+`cabal run cohort-collector:exe:cohort-collector -- --help`
+
 ## 0.27.0
 
 * Adds a benchmarking application and some benchmarking routines to `Tests.Hasklepias` for `Hasklepias.AppBuilder.LineFilterApp`.

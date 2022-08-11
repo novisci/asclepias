@@ -1,6 +1,6 @@
 :navtitle: Getting Started
 :description: Instructions on getting started with asclepias
-:ghc: 8.10.7
+:ghc: 9.2.2 
 :cabal: 3.6.2.0
 // TODO: update edm-path to non-sandbox URL
 :edm-path: https://docs.novisci.com/edm-sandbox/latest

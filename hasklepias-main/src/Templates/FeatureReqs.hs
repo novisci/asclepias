@@ -28,9 +28,7 @@ import           Data.Time                      ( Day )
 import           EventDataTheory
 import           Features
 import           Flow                           ( (.>) )
-import           GHC.Natural                    ( Natural
-                                                , naturalToInt
-                                                )
+import           GHC.Natural                    ( Natural )
 import           Hasklepias.AssessmentIntervals
 import           Stype
 import           Templates.TestUtilities

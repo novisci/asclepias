@@ -1,27 +1,32 @@
-index-state: 2022-08-08T11:34:19Z
+index-state: 2022-08-11T11:35:57Z
 
-with-compiler: ghc-8.10.7
+with-compiler: ghc-9.2.2
 
 packages: hasklepias-core
         , hasklepias-examples
         , hasklepias-main
         , cohort-collector
         , event-data-theory
-
-allow-newer:
-  interval-algebra:time
+  
+-- For amazonka
+-- Multiple subdirs in a single `source-repository-package` stanza are supported by cabal-install >= 3.2.0.0.
+source-repository-package
+    type: git
+    location: https://github.com/novisci/amazonka
+    tag: 0bf8bfd95915fe09c56474e6eca7c0bac58c1daa
+    subdir: lib/amazonka lib/amazonka-core lib/services/amazonka-sso lib/services/amazonka-sts lib/services/amazonka-s3
 
 package event-data-theory
-  haddock-options: --lib=../resources/haddock-api-resources/ --use-index=../doc-index.html --use-contents=../index.html 
+  haddock-options: --quickjump --lib=../resources/haddock-api-resources/ --use-index=../doc-index.html --use-contents=../index.html --base-url=..
 
 package hasklepias-core
-  haddock-options: --lib=../resources/haddock-api-resources/ --use-index=../doc-index.html --use-contents=../index.html 
+  haddock-options: --quickjump --lib=../resources/haddock-api-resources/ --use-index=../doc-index.html --use-contents=../index.html --base-url=.. 
 
 package hasklepias-main
-  haddock-options: --lib=../resources/haddock-api-resources --use-index=../doc-index.html --use-contents=../index.html 
+  haddock-options: --quickjump --lib=../resources/haddock-api-resources --use-index=../doc-index.html --use-contents=../index.html --base-url=..
 
 package hasklepias-examples
-  haddock-options: --lib=../resources/haddock-api-resources/ --use-index=../doc-index.html --use-contents=../index.html 
+  haddock-options: --quickjump --lib=../resources/haddock-api-resources/ --use-index=../doc-index.html --use-contents=../index.html --base-url=..
 
 package cohort-collector
-  haddock-options: --lib=../resources/haddock-api-resources/ --use-index=../doc-index.html --use-contents=../index.html 
+  haddock-options: --quickjump --lib=../resources/haddock-api-resources/ --use-index=../doc-index.html --use-contents=../index.html --base-url=..

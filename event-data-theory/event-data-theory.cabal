@@ -31,7 +31,7 @@ library
   hs-source-dirs:
       src
   build-depends:
-      base >=4.14 && <4.15
+      base >=4.14 && <5
     , aeson
     , binary
     , bytestring
@@ -39,7 +39,7 @@ library
     , dhall
     , deepseq
     , filepath
-    , interval-algebra >= 2.1
+    , interval-algebra >= 2.1.1
     , QuickCheck
     , safe
     , scientific

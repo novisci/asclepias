@@ -11,4 +11,4 @@ nav:
 start_page: introduction.adoc
 asciidoc: 
   attributes:
-    ghc: '8.10.7'
+    ghc: '9.2.2'

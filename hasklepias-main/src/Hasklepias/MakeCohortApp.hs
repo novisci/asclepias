@@ -10,8 +10,8 @@ Maintainer  : bsaul@novisci.com
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE QuasiQuotes #-}
+-- {-# LANGUAGE TemplateHaskell #-}
 
 module Hasklepias.MakeCohortApp
   ( CohortApp(..)
@@ -116,27 +116,26 @@ makeCohortParserInfo
 makeCohortParserInfo name version = Options.Applicative.info
   (makeCohortParser <**> (helper <*> verisonOption))
   (fullDesc <> header (name <> " " <> versionInfo) <> progDescDoc
-    (Just
-      ([i| 
-  Create cohorts for #{ name } 
-  based on code from gitrev: #{ githash }.
+    (Just 
+      ([i| Create cohorts for #{ name } |]
+  -- based on code from gitrev: #{ githash }.
   
-  #{ gitdirty }
-  |]
+  -- #{ gitdirty }
+  -- |]
       <> helpText
       )
     )
   )
  where
-  gitinfo  = [i| (gitrev: #{githash})|]
-  githash  = pack $(gitHash)
-  dirtygit = $(gitDirty)
-  gitdirty = if dirtygit
-    then
-      yellow
-        "**There were uncommitted files in the project repo when this application was built.**"
-    else ""
-  versionInfo = version <> " " <> gitinfo
+  -- gitinfo  = [i| (gitrev: #{githash})|]
+  -- githash  = pack $(gitHash)
+  -- dirtygit = $(gitDirty)
+  -- gitdirty = if dirtygit
+  --   then
+  --     yellow
+  --       "**There were uncommitted files in the project repo when this application was built.**"
+  --   else ""
+  versionInfo = version -- <> " " <> gitinfo
   verisonOption =
     infoOption versionInfo (long "version" <> help "Show version")
   helpText =

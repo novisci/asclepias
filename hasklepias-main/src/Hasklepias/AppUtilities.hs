@@ -205,7 +205,7 @@ writeDataStrict (S3 r b k) z x =
   putS3Object r b k (handleOutputCompressionStrict z x)
 
 -- | Get an object from S3. 
-getS3Object :: Region -> BucketName -> ObjectKey -> IO B.ByteString
+getS3Object :: Region -> BucketName -> ObjectKey -> IO BL.ByteString
 getS3Object r b k = do
   lgr <- newLogger Debug stderr
   env <-

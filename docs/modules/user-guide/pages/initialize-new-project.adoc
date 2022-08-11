@@ -51,6 +51,17 @@ You can safely ignore these.
       DataKinds
       TypeApplications
 ----
+.. Change `build-depends` in the `executable` stanza to:
++
+[source,config]
+----
+    build-depends:
+        base,
+        hasklepias-main,
+        <myProj>
+----
+Replacing `<myProj>` with your project name.
++
 .. Change `main-is` in the `test-suite` stanza to:
 +
 [source,config]

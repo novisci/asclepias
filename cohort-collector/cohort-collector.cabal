@@ -1,6 +1,6 @@
 cabal-version:  2.2
 name:           cohort-collector
-version:        0.27.0
+version:        0.28.0
 description:    Please see the README on GitHub at <https://github.com/novisci/asclepias#readme>
 homepage:       https://github.com/novisci/asclepias/#readme
 bug-reports:    https://github.com/novisci/asclepias/issues

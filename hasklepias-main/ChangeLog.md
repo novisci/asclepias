@@ -1,5 +1,19 @@
 # Changelog for hasklepias-main
 
+## 0.28.0
+
+* updates supported compiler to GHC 9.2.2.
+* adds ability to compress/decompress gzipped data from applications
+built using `AppUtilities` functions.
+For example, see the `--decompress` and `--gzip` arguments in
+`cabal run lineFilter-demo -- --help` or
+`cabal run cohort-collector:exe:cohort-collector -- --help`.
+* Updates the line processing logic:
+  * Adds error handling. Parse failures now throw an error.
+  * Adds ability to modify a line and build a new output line.
+  This functionality puts us one step closer to migrating `concipio`
+  functionality to `asclepias`.
+
 ## 0.27.0
 
 * Adds a benchmarking application and some benchmarking routines to `Tests.Hasklepias` for `Hasklepias.AppBuilder.LineFilterApp`.
@@ -10,9 +24,8 @@ for Haskell data types that have a Show instance."
 * Adds explicit dependency bounds in `asclepias` project `package.cabal` files for `interval-algebra` and `time` instead of providing the bounds solely in `cabal.project`, to ensure downstream discoverability of those bounds.
 * Removes `interval-algebra` dependency for `hasklepias-main`, importing that functionality from `event-data-theory`.
 * Package reorganization, in which the following are moved to `hasklepias-main`:
-	* `stype`, `monarch`, `hasklepias-templates` and `hasklepias-appBuilder` packages,
-	* `AssessmentIntervals` module from `haskelpias-core`.
-
+  * `stype`, `monarch`, `hasklepias-templates` and `hasklepias-appBuilder` packages,
+  * `AssessmentIntervals` module from `haskelpias-core`.
 
 ## 0.26.0
 

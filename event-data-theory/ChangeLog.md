@@ -1,5 +1,9 @@
 # Changelog for event-data-theory
 
+## 0.28.0
+
+* updates `interval-algebra` to 2.1.1.
+
 ## 0.27.0
 * Fix compiler warning about `Arbitrary Event` instance after update to interval-algebra 2.0.
 

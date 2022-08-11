@@ -4,7 +4,8 @@ Usage: cohort-collector ([-d|--dir DIRECTORY] (-f|--file INPUT) |
                           (-b|--bucket Bucket) (-m|--manifest KEY)) 
                         [[--outdir DIRECTORY] (-o|--output OUTPUT) | 
                           [--outregion OUTREGION] --outbucket OUTBUCKET
-                          --outkey OUTPUTKEY]
+                          --outkey OUTPUTKEY] [-d|--decompress] [-z|--gzip]
+
   Collects cohorts run on different input data. The cohorts must be derived from
   the same cohort specification or results may be weird. Supports reading data
   from a local directory or from S3. In either case the input is a path to a
@@ -23,4 +24,6 @@ Available options:
   --outregion OUTREGION    output AWS Region
   --outbucket OUTBUCKET    output S3 bucket
   --outkey OUTPUTKEY       output S3 location
+  -d,--decompress          decompress gzipped input
+  -z,--gzip                compress output using gzip
   -h,--help                Show this help text

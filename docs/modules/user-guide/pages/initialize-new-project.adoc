@@ -126,6 +126,13 @@ source-repository-package
 
 packages: ./<myProj>.cabal
 ----
-. Add `dist-newstyle*` to `.gitignore`,
-adding a `.gitignore` if necessary.
+. Add the following entries to `.gitignore`,
+adding a `.gitignore` file in the project root if necessary:
++
+[source,config]
+----
+dist-newstyle*
+*.tix
+----
++
 . Run `cabal build` to ensure the minimal project builds successfully.

@@ -1,4 +1,4 @@
-index-state: 2022-08-08T11:34:19Z
+index-state: 2022-08-11T11:35:57Z
 
 with-compiler: ghc-9.2.2
 
@@ -7,9 +7,6 @@ packages: hasklepias-core
         , hasklepias-main
         , cohort-collector
         , event-data-theory
-
-allow-newer:
-  interval-algebra:time
   
 -- For amazonka
 -- Multiple subdirs in a single `source-repository-package` stanza are supported by cabal-install >= 3.2.0.0.

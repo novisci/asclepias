@@ -69,12 +69,12 @@ See @'checkCohortStatus'@ for evaluating a @'Criteria'@
 to determine @CohortStatus@.
 -}
 data CohortStatus =
-  -- | Indicates that a @'CriterionThatCanFail'@ reached a @Left@ (failed) state.
-  --  This status is only reachable when a user provides @'CriterionThatCanFail'@.
-    CriteriaFailure Text
   -- | Indicates that a subject had no indices from which to derive
   --   observational units.
-  | SubjectHasNoIndex
+    SubjectHasNoIndex
+  -- | Indicates that a @'CriterionThatCanFail'@ reached a @Left@ (failed) state.
+  --  This status is only reachable when a user provides @'CriterionThatCanFail'@.
+  | CriteriaFailure Text
   -- | Indicates that a unit is excluded in a cohort.
   --  The reason for exclusion is given by the @Text@ field.
   | ExcludedBy (Natural, Text)
@@ -96,8 +96,8 @@ instance Ord CohortStatus where
   compare (CriteriaFailure x) (CriteriaFailure y) = compare x y
   compare (CriteriaFailure _) Included            = LT
   compare Included            (CriteriaFailure _) = GT
-  compare (CriteriaFailure _) SubjectHasNoIndex   = LT
-  compare SubjectHasNoIndex   (CriteriaFailure _) = GT
+  compare (CriteriaFailure _) SubjectHasNoIndex   = GT
+  compare SubjectHasNoIndex   (CriteriaFailure _) = LT
   compare (CriteriaFailure _) (ExcludedBy      _) = LT
   compare (ExcludedBy      _) (CriteriaFailure _) = GT
   compare Included            (ExcludedBy      _) = GT

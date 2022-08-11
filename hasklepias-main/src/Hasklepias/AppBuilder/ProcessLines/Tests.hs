@@ -23,6 +23,7 @@ import           Data.Aeson                     ( FromJSON(parseJSON)
                                                 , toEncoding
                                                 , withArray
                                                 )
+import           Data.ByteString.Builder
 import qualified Data.ByteString.Char8         as BS
 import qualified Data.ByteString.Lazy.Char8    as BL
 import           Data.Either
@@ -270,7 +271,7 @@ appTestCasesLazy =
 Tester applications
 -}
 
-prsStrict = processAppLinesStrict dciS' dclS' tpr NoTransformation
+prsStrict = processAppLinesStrict dciS' dclS' tpr (NoTransformation (MkLineBuilder . byteString))
 
 
 -- This one converts the bool to a string when the bool is `False`.
@@ -289,10 +290,10 @@ prsStrictDrop = processAppLinesStrict
     (\(MkLineAppTester x) ->
       if x then DropLine else KeepLine "This line was false"
     )
-    (fromEncoding . toEncoding . uncurry MkLine)
+    (MkLineBuilder . fromEncoding . toEncoding . uncurry MkLine)
   )
 
-prsLazy = processAppLinesLazy dciL' dclL' tpr NoTransformation
+prsLazy = processAppLinesLazy dciL' dclL' tpr (NoTransformation (MkLineBuilder . lazyByteString))
 
 
 

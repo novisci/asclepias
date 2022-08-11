@@ -17,6 +17,7 @@ module Hasklepias.AppBuilder.ProcessLines.Logic
   , processAppLinesLazy
   , LineProcessor(..)
   , LineStatus(..)
+  , LineBuilder(..)
   ) where
 
 import qualified Data.ByteString               as BS
@@ -63,7 +64,7 @@ The `Int` input is the line number passed in the case of an error.
 handleLineParse :: Int -> Maybe (a, Bool) -> LineAppMonad (a, Bool)
 handleLineParse i x = case x of
   Nothing     -> Left $ LineParseErrorA i
-  Just (x, b) -> Right (x, b)
+  Just x      -> Right x
 
 
 {-
@@ -80,36 +81,54 @@ functions specific to each string type.
 I (BS) could not find a typeclass
 that provides the functionality needed.
 -}
-data LineFunctions t i = MkLineFunctions
+data LineFunctions t i acc out = MkLineFunctions
   { isEmpty     :: t -> Bool
   , findNewLine :: t -> Maybe i
   , takeSubset  :: t -> i -> Maybe i -> t
-  , build       :: t -> Builder
-  , runBuilder  :: Builder -> t
+  -- , build       :: t -> acc
+  , runBuilder  :: acc -> out
   }
 
-lineFunctionsStrict :: LineFunctions BS.ByteString Int
+lineFunctionsStrict :: LineFunctions BS.ByteString Int LineBuilder BS.ByteString
 lineFunctionsStrict = MkLineFunctions
   { isEmpty     = BS.null
   , takeSubset  = \x i n -> case n of
                     Nothing -> BS.drop i x
                     Just j  -> BS.take j (BS.drop i x)
   , findNewLine = BSC.elemIndex '\n'
-  , build       = byteString
-  , runBuilder  = BL.toStrict . toLazyByteString
+  -- , build       = MkLineBuilder . byteString
+  , runBuilder  = BL.toStrict . toLazyByteString . (\(MkLineBuilder x) -> x)
   }
 
-lineFunctionsLazy :: LineFunctions BL.ByteString Int64
+lineFunctionsStrictList :: LineFunctions BS.ByteString Int [b] [b]
+lineFunctionsStrictList = MkLineFunctions
+  { isEmpty     = BS.null
+  , takeSubset  = \x i n -> case n of
+                    Nothing -> BS.drop i x
+                    Just j  -> BS.take j (BS.drop i x)
+  , findNewLine = BSC.elemIndex '\n'
+  -- , build       = pure 
+  , runBuilder  = id
+  }
+
+lineFunctionsLazy :: LineFunctions BL.ByteString Int64 LineBuilder BL.ByteString
 lineFunctionsLazy = MkLineFunctions
   { isEmpty     = BL.null
   , takeSubset  = \x i n -> case n of
                     Nothing -> BL.drop i x
                     Just j  -> BL.take j (BL.drop i x)
   , findNewLine = BLC.elemIndex '\n'
-  , build       = lazyByteString
-  , runBuilder  = toLazyByteString
+  -- , build       = MkLineBuilder . lazyByteString
+  , runBuilder  = toLazyByteString . (\(MkLineBuilder x) -> x)
   }
 
+newtype LineBuilder = MkLineBuilder Builder
+
+instance Semigroup LineBuilder where 
+  (<>) (MkLineBuilder x) (MkLineBuilder y) = MkLineBuilder (x <> char8 '\n' <> y)
+
+instance Monoid LineBuilder where
+  mempty = MkLineBuilder mempty
 {-------------------------------------------------------------------------------
    Across-group fold ("application") logic
 
@@ -132,13 +151,13 @@ The `Maybe` of the `lastLineID` is used in two senses of `Nothing`:
 * as the the "start" of processing
 * as an error in the parsing of a group identifier from a line
 -}
-data AppLines id i = MkAppLines
+data AppLines id i acc = MkAppLines
   { lastLineID  :: Maybe id -- ^ the group ID at the previous line
+  , lastNewLine :: Maybe i -- ^ the index of the last new line
   , grpStart    :: i -- ^  the index at which the current group started
   , grpStatus   :: Bool -- ^ the predicate status of a group
-  , grpAcc      :: Maybe Builder -- ^ group-level accumulator
-  , lastNewLine :: Maybe i -- ^ the index of the last new line
-  , builderAcc  :: Builder -- ^ the accumulated results as a ByteString Builder
+  , grpAcc      :: Maybe acc -- ^ group-level accumulator
+  , mainAcc     :: acc -- ^ the main accumulator 
   , lineLog     :: AppLinesLog -- ^ a logger
   }
 
@@ -180,10 +199,10 @@ the second function, the "builder",
 creates the line to be output 
 from the line identifer and the value of type @b@.
 -}
-data LineProcessor a b id =
-    NoTransformation -- ^ Do not transform lines
+data LineProcessor t a b id acc =
+    NoTransformation (t -> acc) -- ^ Do not transform lines
   | TransformWith (a -> LineStatus b) -- ^ the transformer
-                    ((id, b) -> Builder) -- ^ the builder
+                    ((id, b) -> acc) -- ^ the builder
 
 {-|
 A type used to indicate whether to drop or keep a line
@@ -212,23 +231,23 @@ See @'processAppLinesStrict'@ for a description of arguments.
 
 -}
 processAppLinesInternal
-  :: (Eq id, Show id, Num i, Monoid t, Show t)
-  => LineFunctions t i
+  :: (Eq id, Show id, Num i, Monoid t, Show t, Semigroup acc)
+  => LineFunctions t i acc out
   -> (t -> Maybe id)
   -> (t -> Maybe a)
   -> (a -> Bool)
-  -> LineProcessor a b id
-  -> AppLines id i
+  -> LineProcessor t a b id acc
+  -> AppLines id i acc
   -> t
-  -> LineAppMonad (AppLines id i)
+  -> LineAppMonad (AppLines id i acc)
 processAppLinesInternal fs pri psl prd pro status x =
   case fmap (+ 1) (lastNewLine status) of
     -- If no new line then we're done!
     -- Simply update the accumulator for the last group.
     Nothing -> Right $ status
-      { builderAcc = if grpStatus status
+      { mainAcc = if grpStatus status
                        then updateAcc status Nothing
-                       else builderAcc status
+                       else mainAcc status
       , lineLog    = if grpStatus status
                        then incrementGroupKept (lineLog status)
                        else lineLog status
@@ -267,7 +286,7 @@ processAppLinesInternal fs pri psl prd pro status x =
                 (SameGroup, True) ->
                   checkLine lineCount thisLine
                     >>= (\(x, _) -> go newStatus
-                          { grpAcc = updateGrp status x thisLineID
+                          { grpAcc = updateGrp status thisLine x thisLineID
                           }
                         )
                 -- ID hasn't changed, predicate not satisfied ==> 
@@ -276,7 +295,7 @@ processAppLinesInternal fs pri psl prd pro status x =
                   checkLine lineCount thisLine
                     >>= (\(x, b) -> go newStatus
                           { grpStatus = b
-                          , grpAcc    = updateGrp status x thisLineID
+                          , grpAcc    = updateGrp status thisLine x thisLineID
                           }
                         )
                 -- ID has changed, predicate satisfied ==> 
@@ -287,8 +306,8 @@ processAppLinesInternal fs pri psl prd pro status x =
                           { lastLineID = Just thisLineID
                           , grpStatus  = b
                           , grpStart   = i
-                          , grpAcc     = toAcc $ processLine x thisLineID
-                          , builderAcc = updateAcc status (Just i)
+                          , grpAcc     = toAcc $ processLine thisLine x thisLineID
+                          , mainAcc = updateAcc status (Just i)
                           , lineLog = (incrementGroupKept . incrementGroupCount)
                                         (lineLog newStatus)
                           }
@@ -302,7 +321,7 @@ processAppLinesInternal fs pri psl prd pro status x =
                           { lastLineID = Just thisLineID
                           , grpStart   = i
                           , grpStatus  = b
-                          , grpAcc     = toAcc $ processLine x thisLineID
+                          , grpAcc     = toAcc $ processLine thisLine x thisLineID
                           , lineLog    = incrementGroupCount (lineLog newStatus)
                           }
                         )
@@ -312,41 +331,34 @@ processAppLinesInternal fs pri psl prd pro status x =
 
   -- The function that processes a line depends on whether the user
   -- provided a line processor argument.
-  -- processLine :: a -> id -> LineStatus Builder 
-  processLine x y = case pro of
+  -- processLine :: a -> id -> LineStatus acc 
+  processLine t x y = case pro of
     TransformWith transformLine buildLine ->
       fmap (\v -> buildLine (y, v)) (transformLine x)
-    NoTransformation -> DropLine
+    -- NoTransformation -> DropLine
+    NoTransformation build -> KeepLine $ build t
 
   -- Cast a @LineStatus@ to a @Maybe@
   toAcc :: LineStatus a -> Maybe a
   toAcc DropLine     = Nothing
   toAcc (KeepLine x) = Just x
 
-  -- A helper function to update the group accumulator,
-  -- whose logic depends on whether a LineProcessor is provided.
-  -- updateGrp :: AppLines id a -> a -> id1 ->  Maybe Builder
-  updateGrp status line grpId = case pro of
-    TransformWith _ _ -> case processLine line grpId of
+
+  updateGrp status line x grpId = 
+    case processLine line x grpId of
       -- keep going if line is to be dropped
       DropLine    -> grpAcc status
       -- handle the case that the accumulator may be @Nothing@
       -- and needs to be initialized
       KeepLine bu -> case grpAcc status of
         Nothing  -> Just bu
-        Just acc -> Just (acc <> char8 '\n' <> bu)
-    NoTransformation -> Nothing
+        Just acc -> Just (acc <> bu)
 
-  -- A helper function to update the main accumulator,
-  -- whose logic depends on whether a LineProcessor is provided.
-  -- updateAcc :: AppLines id i -> Maybe i -> Builder
-  updateAcc status i = case pro of
-    TransformWith _ _ -> case grpAcc status of
-      Nothing  -> builderAcc status
-      Just grp -> builderAcc status <> grp <> char8 '\n'
-    NoTransformation -> builderAcc status <> build
-      fs
-      (takeSubset fs x (grpStart status) (fmap (\z -> z - grpStart status) i))
+  updateAcc status i = 
+   case grpAcc status of
+      Nothing  -> mainAcc status
+      Just grp -> mainAcc status <> grp
+
 {-# INLINE processAppLinesInternal #-}
 
 {-
@@ -357,14 +369,14 @@ targeted for a specific type.
 See @'processAppLinesStrict'@ for a description of arguments.
 -}
 processAppLines
-  :: (Eq id, Show id, Num i, Monoid t, Show i, Show t)
-  => LineFunctions t i
+  :: (Eq id, Show id, Num i, Monoid t, Show i, Show t, Monoid acc)
+  => LineFunctions t i acc out
   -> (t -> Maybe id)
   -> (t -> Maybe a)
   -> (a -> Bool)
-  -> LineProcessor a b id
+  -> LineProcessor t a b id acc
   -> t
-  -> LineAppMonad t
+  -> LineAppMonad out
 processAppLines fs pri psl prd pro x =
   let result = processAppLinesInternal
         fs
@@ -373,15 +385,15 @@ processAppLines fs pri psl prd pro x =
         prd
         pro
         (MkAppLines Nothing
+                    (Just (-1))
                     0
                     False
                     mempty
-                    (Just (-1))
                     mempty
                     (MkAppLinesLog 0 0 0)
         )
         x
-  in  runBuilder fs . builderAcc <$> result
+  in  runBuilder fs . mainAcc <$> result
 {-# INLINE processAppLines #-}
 
 {- $processAppLines
@@ -438,7 +450,7 @@ processAppLinesStrict
   => (BS.ByteString -> Maybe id) -- ^ parser of a group identifier from a line
   -> (BS.ByteString -> Maybe a) -- ^ parser of an @a@ from a line
   -> (a -> Bool) -- ^ predicate to apply to each line
-  -> LineProcessor a b id -- ^ an optional @'LineProcessor'@ 
+  -> LineProcessor BS.ByteString a b id LineBuilder -- ^ an optional @'LineProcessor'@ 
   -> BS.ByteString -- ^ input string to be split into lines
   -> LineAppMonad BS.ByteString
 processAppLinesStrict = processAppLines lineFunctionsStrict
@@ -450,7 +462,18 @@ processAppLinesLazy
   => (BL.ByteString -> Maybe id)
   -> (BL.ByteString -> Maybe a)
   -> (a -> Bool)
-  -> LineProcessor a b id
+  -> LineProcessor BL.ByteString a b id LineBuilder
   -> BL.ByteString
   -> LineAppMonad BL.ByteString
 processAppLinesLazy = processAppLines lineFunctionsLazy
+
+-- | Process a strict 'BS.ByteString'.
+processAppLinesStrict2
+  :: (Eq id, Show id)
+  => (BS.ByteString -> Maybe id) -- ^ parser of a group identifier from a line
+  -> (BS.ByteString -> Maybe a) -- ^ parser of an @a@ from a line
+  -> (a -> Bool) -- ^ predicate to apply to each line
+  -> LineProcessor BS.ByteString a b id [b] -- ^ an optional @'LineProcessor'@ 
+  -> BS.ByteString -- ^ input string to be split into lines
+  -> LineAppMonad [b]
+processAppLinesStrict2 = processAppLines lineFunctionsStrictList

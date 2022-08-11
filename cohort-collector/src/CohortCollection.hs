@@ -37,13 +37,6 @@ import           Hasklepias.AppUtilities       as H
 
 import           Options.Applicative
 import           System.IO                      ( stderr )
-
-
--- imports for amazonka >= 2
--- import           Network.AWS
--- import           Network.AWS.S3
-
--- imports for amazonka < 2 
 import           Amazonka.Auth
 import           Amazonka.S3
 

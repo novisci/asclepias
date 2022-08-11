@@ -18,7 +18,6 @@ module Templates.FeatureReqs
   , module Templates.TestUtilities
   , module Test.Tasty
   , module W
-  , naturalToInt
   ) where
 
 import           Cohort
@@ -29,10 +28,7 @@ import           Data.Time                      ( Day )
 import           EventDataTheory
 import           Features
 import           Flow                           ( (.>) )
-import           GHC.Natural                    ( Natural
-                                                , naturalToInteger
-                                                -- , naturalToInt
-                                                )
+import           GHC.Natural                    ( Natural )
 import           Hasklepias.AssessmentIntervals
 import           Stype
 import           Templates.TestUtilities
@@ -42,12 +38,3 @@ import           Witherable                    as W
                                                 , filter
                                                 )
 
--- FIXME:
--- There is not From Natural Int instance,
--- nor From Integer Int instance.
--- There are TryFrom instance, since the casts are unsafe.
--- For now, providing this utility,
--- even though it's not ideal.
--- Currently used itn hasklepias-templates.
-naturalToInt :: Natural -> Int
-naturalToInt = fromInteger . naturalToInteger

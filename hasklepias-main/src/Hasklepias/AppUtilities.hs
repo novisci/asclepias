@@ -73,11 +73,8 @@ import           Data.Either                    ( fromRight )
 import           Data.Text                      ( Text
                                                 , pack
                                                 )
--- IMPORTS for amazonka 2.0
 import           System.IO                      ( stderr )
-import           Amazonka                       ( 
-  -- Credentials(Discover)
-                                                  LogLevel(Debug, Error)
+import           Amazonka                       ( LogLevel(Debug, Error)
                                                 , Region
                                                 , ToBody(..)
                                                 , newEnv

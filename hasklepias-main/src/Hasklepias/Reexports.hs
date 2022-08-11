@@ -228,9 +228,7 @@ import           Data.Generics.Sum             as Lens
                                                 ( AsAny(_As) )
 import           GHC.Exts                       ( IsList(fromList) )
 import           GHC.IO                         ( IO(..) )
-import           GHC.Natural                    ( Natural
-                                                , naturalToInteger
-                                                )
+import           GHC.Natural                    ( Natural )
 import           Test.Tasty              hiding ( after )
 import           Test.Tasty.HUnit
 import           Text.Pretty.Simple             ( pPrint )

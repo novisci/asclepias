@@ -54,7 +54,6 @@ import qualified Data.ByteString.Char8         as BSC
 import qualified Data.ByteString.Lazy          as BL
                                          hiding ( putStrLn )
 import           Data.Conduit.Binary            ( sinkLbs )
-import           Data.Either                    ( fromRight )
 import           Data.Generics.Product          ( HasField(field) )
 import           Data.String                    ( IsString(fromString) )
 import qualified Data.Text                     as T
@@ -69,10 +68,6 @@ import           Lens.Micro                     ( (<&>)
                                                 )
 import           Lens.Micro.Extras              ( view )
 import           Options.Applicative
-import           Data.Either                    ( fromRight )
-import           Data.Text                      ( Text
-                                                , pack
-                                                )
 import           System.IO                      ( stderr )
 import           Amazonka                       ( LogLevel(Debug, Error)
                                                 , Region

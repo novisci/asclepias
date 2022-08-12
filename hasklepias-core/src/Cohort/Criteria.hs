@@ -143,7 +143,8 @@ excludeIf False = Include
 -- | Represents failures in a @'CriterionThatCanFail'@.
 newtype CriterionFailure = MkCriterionFailure Text deriving (Eq, Show)
 
-{- |
+{-|
+TODO
 -}
 type CriterionThatCanFail = Either CriterionFailure Criterion
 
@@ -192,33 +193,6 @@ makeCriteriaPure l = pure $ criteriaI l
 makeCriteria :: [CriterionThatCanFail] -> Criteria
 makeCriteria l = fmap criteriaI (sequenceA l)
 
-{-
-INTERNAL
-Converts a subject's @'Criteria'@ into a list of triples of 
-(order of criterion, label, status).
--}
-getStatuses :: CriteriaI -> [(Natural, Text, Status)]
-getStatuses (MkCriteriaI x) =
-  fmap (\c -> (fst c, (getReason . snd) c, (getStatus . snd) c)) x
-
-{-
-INTERNAL
-An internal function used to @'Data.List.find'@ excluded statuses. 
-Used in 'checkCohortStatus'.
--}
-findExclude :: CriteriaI -> Maybe (Natural, Text, Status)
-findExclude x = find (\(_, _, z) -> z == Exclude) (getStatuses x)
-
-{-
-INTERNAL
-Initializes a container of @'CohortStatus'@ from a @'Criteria'@. 
-This can be used to generate all the possible Exclusion/Inclusion reasons.
--}
-initStatusInfo :: CriteriaI -> [CohortStatus]
-initStatusInfo x =
-  fmap (ExcludedBy . Data.Bifunctor.second getReason) (getCriteria x)
-    <> pure Included
-
 {- |
 A type which collects the counts of subjects included or excluded.
 -}
@@ -252,13 +226,6 @@ instance Monoid AttritionInfo where
   mempty =
     MkAttritionInfo 0 0 (fromList [(SubjectHasNoIndex, 0), (Included, 0)])
 
--- Initializes @AttritionInfo@ from a @'Criteria'@.
-initAttritionInfo :: Criteria -> Map.Map CohortStatus Natural
-initAttritionInfo = \case
-  Left (MkCriterionFailure x) -> fromList [(CriteriaFailure x, 0)]
-  Right x ->
-    fromList $ zip (initStatusInfo x) (replicate (length $ getCriteria x) 0)
-
 {- |
 Converts a unit's @'Criteria'@ to a @'CohortStatus'@.
 The status is set to @'Included'@
@@ -268,6 +235,28 @@ checkCohortStatus :: Criteria -> CohortStatus
 checkCohortStatus = \case
   Left (MkCriterionFailure cf) -> CriteriaFailure cf
   Right x -> maybe Included (\(i, n, _) -> ExcludedBy (i, n)) (findExclude x)
+  where 
+    -- find excluded statuses. 
+    findExclude :: CriteriaI -> Maybe (Natural, Text, Status)
+    findExclude x = find (\(_, _, z) -> z == Exclude) (getStatuses x)
+    -- converts a Criteria into a list of (order of criterion, label, status)
+    getStatuses :: CriteriaI -> [(Natural, Text, Status)]
+    getStatuses (MkCriteriaI x) =
+      fmap (\c -> (fst c, (getReason . snd) c, (getStatus . snd) c)) x
+
+-- Initializes @AttritionInfo@ from a @'Criteria'@.
+initAttritionInfo :: Criteria -> Map.Map CohortStatus Natural
+initAttritionInfo = \case
+  Left (MkCriterionFailure x) -> fromList [(CriteriaFailure x, 0)]
+  Right x ->
+    fromList $ zip (initStatusInfo x) (replicate (length $ getCriteria x) 0)
+  where 
+    -- Initializes a container of @'CohortStatus'@ from a @'CriteriaI'@,
+    --in order to generate all the possible Exclusion/Inclusion.
+    initStatusInfo :: CriteriaI -> [CohortStatus]
+    initStatusInfo x =
+      fmap (ExcludedBy . Data.Bifunctor.second getReason) (getCriteria x)
+        <> pure Included
 
 {-|
 Measures @'AttritionInfo'@ from a @'Criteria'@ and a list of @'CohortStatus'@

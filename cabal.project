@@ -15,6 +15,7 @@ source-repository-package
     location: https://github.com/novisci/amazonka
     tag: 0bf8bfd95915fe09c56474e6eca7c0bac58c1daa
     subdir: lib/amazonka lib/amazonka-core lib/services/amazonka-sso lib/services/amazonka-sts lib/services/amazonka-s3
+    --sha256: 0av7w7kiijp1c3bilnqrnbb6m2xig2lh1nl4hj1rda319ky4jvfi
 
 package event-data-theory
   haddock-options: --quickjump --lib=../resources/haddock-api-resources/ --use-index=../doc-index.html --use-contents=../index.html --base-url=..

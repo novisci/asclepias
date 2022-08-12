@@ -15,6 +15,9 @@ cradle:
     - path: "event-data-theory/test"
       component: "event-data-theory:test:tests"
 
+    - path: "event-data-theory/test"
+      component: "event-data-theory:test:doctests"
+
     - path: "hasklepias-core/src"
       component: "lib:hasklepias-core"
 

@@ -135,7 +135,7 @@ The 'event' function is a smart constructor for 'Event'.
 >>> type MyEvent = Event T.Text SomeModel Integer
 >>> let myEvent = event (beginerval 5 0) (context (packTagSet ["foo"]) A Nothing) :: MyEvent
 >>> show myEvent
-"MkEvent {(0, 5), Context {tagSet = TagSet (fromList [Tag \"foo\"]), facts = A, source = Nothing}}"
+"MkEvent {(0, 5), MkContext {getTagSet = MkTagSet (fromList [MkTag \"foo\"]), getFacts = A, getSource = Nothing}}"
 
 >>> hasAnyTag myEvent (["foo", "duck"] :: [T.Text])
 True
@@ -149,17 +149,16 @@ False
 >>> type NewEvent = Event MyTagSet NewModel Integer
 >>> let newEvent = event (beginerval 5 0) (context (packTagSet [Foo, Bar]) (A "cool") Nothing) :: NewEvent
 >>> show newEvent
-"MkEvent {(0, 5), Context {tagSet = TagSet (fromList [Tag Foo,Tag Bar]), facts = A \"cool\", source = Nothing}}"
+"MkEvent {(0, 5), MkContext {getTagSet = MkTagSet (fromList [MkTag Foo,MkTag Bar]), getFacts = A \"cool\", getSource = Nothing}}"
 
 >>> hasTag newEvent Foo
 True
 
 >>> hasTag newEvent Baz
 False
-
 -}
 
-{- tag::eventType[] -}
+
 newtype Event t m a= MkEvent ( PairedInterval (Context t m) a )
 {- end::eventType[] -}
   deriving (Eq, Show, Generic)

@@ -1,5 +1,5 @@
 {-|
-Module      : Functions and types for creating tests for templates 
+Module      : Functions and types for creating tests for templates
 Description : Misc types and functions useful in Hasklepias.
 Copyright   : (c) NoviSci, Inc 2020
 License     : BSD3
@@ -14,22 +14,15 @@ module Templates.Tests
   ) where
 
 
-import           Templates.Features.BuildContinuousEnrollment
-                                                ( buildContinuousEnrollmentTests
-                                                )
-import           Templates.Features.BuildIsEnrolled
-                                                ( buildIsEnrolledTests )
-import           Templates.Features.BuildNofUniqueBegins
-                                                ( buildNofUniqueBeginsTests )
-import           Templates.Features.BuildNofX   ( buildNofXTests )
-import           Templates.Features.BuildNofXOrMofYWithGap
-                                                ( buildNofXOrMofYWithGapTests )
-import           Templates.Features.BuildNofXWithGap
-                                                ( buildNofXWithGapTests )
-import           Test.Tasty                     ( TestTree
-                                                , defaultMain
-                                                , testGroup
-                                                )
+import           Templates.Features.BuildContinuousEnrollment (buildContinuousEnrollmentTests)
+import           Templates.Features.BuildIsEnrolled           (buildIsEnrolledTests)
+import           Templates.Features.BuildNofUniqueBegins      (buildNofUniqueBeginsTests)
+import           Templates.Features.BuildNofX                 (buildNofXTests)
+import           Templates.Features.BuildNofXOrMofYWithGap    (buildNofXOrMofYWithGapTests)
+import           Templates.Features.BuildNofXWithGap          (buildNofXWithGapTests)
+import           Test.Tasty                                   (TestTree,
+                                                               defaultMain,
+                                                               testGroup)
 
 templateTests :: TestTree
 templateTests = testGroup

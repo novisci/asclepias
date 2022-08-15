@@ -6,12 +6,12 @@ License     : BSD3
 Maintainer  : bsaul@novisci.com
 -}
 -- {-# OPTIONS_HADDOCK hide #-}
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE TupleSections #-}
+{-# LANGUAGE DeriveGeneric         #-}
+{-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE TypeApplications #-}
-{-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE ScopedTypeVariables   #-}
+{-# LANGUAGE TupleSections         #-}
+{-# LANGUAGE TypeApplications      #-}
 
 module Cohort.Criteria
   ( Criterion
@@ -28,36 +28,21 @@ module Cohort.Criteria
   , makeTestAttritionInfo
   ) where
 
-import           Data.Aeson                     ( (.=)
-                                                , FromJSON(..)
-                                                , FromJSONKey(..)
-                                                , ToJSON(..)
-                                                , ToJSONKey(..)
-                                                , object
-                                                )
-import           Data.Bifunctor                 ( Bifunctor(second) )
+import           Data.Aeson      (FromJSON (..), FromJSONKey (..), ToJSON (..),
+                                  ToJSONKey (..), object, (.=))
+import           Data.Bifunctor  (Bifunctor (second))
 import           Data.Binary
-import           Data.List                      ( find )
-import           Data.Map.Strict               as Map
-                                                ( Map
-                                                , fromListWith
-                                                , unionsWith
-                                                )
-import           Data.Proxy                     ( Proxy(..) )
-import           Data.Text                      ( Text
-                                                , pack
-                                                )
-import           Features.Core                  ( Feature
-                                                , getData
-                                                )
-import           GHC.Exts                       ( IsList(..) )
-import           GHC.Generics                   ( Generic )
-import           GHC.Num                        ( Natural )
-import           GHC.TypeLits                   ( KnownSymbol
-                                                , symbolVal
-                                                )
-import           Witch                          ( From(..) )
--- | Defines the return type for @'Criterion'@ indicating whether to include or 
+import           Data.List       (find)
+import           Data.Map.Strict as Map (Map, fromListWith, unionsWith)
+import           Data.Proxy      (Proxy (..))
+import           Data.Text       (Text, pack)
+import           Features.Core   (Feature, getData)
+import           GHC.Exts        (IsList (..))
+import           GHC.Generics    (Generic)
+import           GHC.Num         (Natural)
+import           GHC.TypeLits    (KnownSymbol, symbolVal)
+import           Witch           (From (..))
+-- | Defines the return type for @'Criterion'@ indicating whether to include or
 -- exclude a subject.
 data Status = Include | Exclude deriving (Eq, Show, Generic)
 
@@ -76,7 +61,7 @@ instance ToJSONKey CohortStatus
 instance FromJSONKey CohortStatus
 instance Binary CohortStatus
 
--- Defines an ordering to put @SubjectHasNoIndex@ first and @Included@ last. 
+-- Defines an ordering to put @SubjectHasNoIndex@ first and @Included@ last.
 -- The @'ExcludedBy'@ are ordered by their number value.
 instance Ord CohortStatus where
   compare Included            Included            = EQ
@@ -90,7 +75,7 @@ instance Ord CohortStatus where
   compare (ExcludedBy (i, _)) (ExcludedBy (j, _)) = compare i j
 
 -- | Helper to convert a @Bool@ to a @'Status'@
--- 
+--
 -- >>> includeIf True
 -- >>> includeIf False
 -- Include
@@ -100,7 +85,7 @@ includeIf True  = Include
 includeIf False = Exclude
 
 -- | Helper to convert a @Bool@ to a @'Status'@
--- 
+--
 -- >>> excludeIf True
 -- >>> excludeIf False
 -- Exclude
@@ -129,7 +114,7 @@ getReason (MkCriterion (r, _)) = r
 {-|
 Converts a @Feature n Status@ to a @Criterion@.
 In the case that the value of the @'Features.Core.FeatureData'@ is @Left@,
-the status is set to @'Exclude'@. 
+the status is set to @'Exclude'@.
 -}
 instance KnownSymbol n => From (Feature n Status) Criterion where
   from x = MkCriterion
@@ -153,14 +138,14 @@ getCriteria (MkCriteria x) = x
 criteria :: [Criterion] -> Criteria
 criteria l = MkCriteria $ zip [1 ..] l
 
--- | Converts a subject's @'Criteria'@ into a list of triples of 
+-- | Converts a subject's @'Criteria'@ into a list of triples of
 -- (order of criterion, label, status).
 getStatuses :: Criteria -> [(Natural, Text, Status)]
 getStatuses (MkCriteria x) =
   fmap (\c -> (fst c, (getReason . snd) c, (getStatus . snd) c)) x
 
 {-|
-An internal function used to @'Data.List.find'@ excluded statuses. 
+An internal function used to @'Data.List.find'@ excluded statuses.
 Used in 'checkCohortStatus'
 -}
 findExclude :: Criteria -> Maybe (Natural, Text, Status)
@@ -176,7 +161,7 @@ checkCohortStatus x =
   maybe Included (\(i, n, _) -> ExcludedBy (i, n)) (findExclude x)
 
 {-|
-Initializes a container of @'CohortStatus'@ from a @'Criteria'@. 
+Initializes a container of @'CohortStatus'@ from a @'Criteria'@.
 This can be used to generate all the possible Exclusion/Inclusion reasons.
 -}
 initStatusInfo :: Criteria -> [CohortStatus]
@@ -207,7 +192,7 @@ When all @AttritionInfo@ have been created
 using 'initAttritionInfo' from the same set of 'Criteria'
 (i.e. the criteria contain the same exclusions),
 then @AttritionInfo@ can be safely combined.
-This will be the case within a cohort. 
+This will be the case within a cohort.
 -}
 instance Semigroup AttritionInfo where
   (<>) (MkAttritionInfo s1 u1 i1) (MkAttritionInfo s2 u2 i2) =
@@ -229,8 +214,8 @@ The 'AttritionInfo' across subjects can obtains by summing
 a list of 'AttritionInfo'.
 
 A note on why this function takes 'Maybe Criteria' as input:
-A subject may not have an 'Criteria' 
-if their only 'CohortStatus'is 'SubjectHasNoIndex. 
+A subject may not have an 'Criteria'
+if their only 'CohortStatus'is 'SubjectHasNoIndex.
 However, a 'Criteria' is needed to initialize a 'Map.Map CohortStatus Natural'
 with 'initAttritionInfo'.
 -}
@@ -238,9 +223,9 @@ measureSubjectAttrition :: Maybe Criteria -> [CohortStatus] -> AttritionInfo
 measureSubjectAttrition mcriteria statuses = MkAttritionInfo
     -- again, function is meant to be used on a single subject, so one
   1
-    -- number of units is number of statuses not equal to SubjectHasNoIndex 
+    -- number of units is number of statuses not equal to SubjectHasNoIndex
   (length $ filter (/= SubjectHasNoIndex) statuses)
-    -- attritionInfo is formed by unioning via a Map in order to 
+    -- attritionInfo is formed by unioning via a Map in order to
     -- sum within each CohortStatus
   (unionsWith
     (+)
@@ -256,7 +241,7 @@ Do not use unless you know what you're doing.
 -}
 makeTestAttritionInfo
   :: Int -- ^ count of subjects
-  -> Int -- ^ count of units 
-  -> [(CohortStatus, Natural)] -- ^ list of statuses with counts 
+  -> Int -- ^ count of units
+  -> [(CohortStatus, Natural)] -- ^ list of statuses with counts
   -> AttritionInfo
 makeTestAttritionInfo x y z = MkAttritionInfo x y $ fromList z

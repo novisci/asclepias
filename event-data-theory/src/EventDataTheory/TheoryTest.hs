@@ -1,48 +1,37 @@
 {-|
 Module      : event data theory tests
-Description : An internal module for testing event data theory functions 
+Description : An internal module for testing event data theory functions
               on a dummy event data model
 -}
 
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE TypeApplications #-}
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE DeriveDataTypeable  #-}
+{-# LANGUAGE DeriveGeneric       #-}
+{-# LANGUAGE OverloadedStrings   #-}
 {-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE DeriveDataTypeable #-}
+{-# LANGUAGE TypeApplications    #-}
 module EventDataTheory.TheoryTest
   ( theoryTests
   ) where
 
 import           Data.Aeson
-import qualified Data.ByteString.Lazy          as B
+import qualified Data.ByteString.Lazy       as B
 import           Data.Data
-import           Data.Functor.Contravariant     ( Predicate(..) )
-import           Data.List                      ( sort )
-import           Data.Maybe                     ( isNothing )
-import           Data.Text                      ( Text )
-import           Data.Time                      ( Day
-                                                , fromGregorian
-                                                )
+import           Data.Functor.Contravariant (Predicate (..))
+import           Data.List                  (sort)
+import           Data.Maybe                 (isNothing)
+import           Data.Text                  (Text)
+import           Data.Time                  (Day, fromGregorian)
 import           EventDataTheory.Core
 import           EventDataTheory.EventLines
 import           EventDataTheory.Test
 import           EventDataTheory.Utilities
-import           GHC.Generics                   ( Generic )
-import           GHC.Num                        ( Natural )
-import           IntervalAlgebra                ( beginerval
-                                                , filterContains
-                                                , meets
-                                                , metBy
-                                                , overlaps
-                                                )
-import           Test.Tasty                     ( TestTree
-                                                , defaultMain
-                                                , testGroup
-                                                )
+import           GHC.Generics               (Generic)
+import           GHC.Num                    (Natural)
+import           IntervalAlgebra            (beginerval, filterContains, meets,
+                                             metBy, overlaps)
+import           Test.Tasty                 (TestTree, defaultMain, testGroup)
 import           Test.Tasty.HUnit
-import           Witch                          ( from
-                                                , into
-                                                )
+import           Witch                      (from, into)
 
 -- | Just a dummy type with which to define an event
 {- tag::exampleEvent[] -}

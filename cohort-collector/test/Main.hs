@@ -7,19 +7,13 @@ module Main
 
 import           CohortCollectionTests
 import           ConstructPaths
-import           Control.Exception              ( catch
-                                                , throwIO
-                                                )
-import           System.Directory               ( createDirectoryIfMissing
-                                                , removeDirectoryRecursive
-                                                , removePathForcibly
-                                                )
-import           System.Exit                    ( ExitCode )
-import           System.IO.Temp                 ( writeSystemTempFile )
-import           Test.Tasty                     ( TestTree
-                                                , defaultMain
-                                                , testGroup
-                                                )
+import           Control.Exception           (catch, throwIO)
+import           System.Directory            (createDirectoryIfMissing,
+                                              removeDirectoryRecursive,
+                                              removePathForcibly)
+import           System.Exit                 (ExitCode)
+import           System.IO.Temp              (writeSystemTempFile)
+import           Test.Tasty                  (TestTree, defaultMain, testGroup)
 import           TestUtils.ConstructTestTree
 import           TestUtils.S3Utils
 import           TestUtils.SessionId
@@ -29,7 +23,7 @@ main = testsMain
 
 
 -- FIXME:
--- 2022-04-14 - BS - 
+-- 2022-04-14 - BS -
 -- This is test suite is commented out for now
 -- as the test execution is failing on in the CI
 -- due to errors such as:

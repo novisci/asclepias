@@ -15,9 +15,9 @@ module Stype.Numeric
   , module Stype.Numeric.Censored
   ) where
 
-import safe      Stype.Numeric.Censored
-import safe      Stype.Numeric.Continuous
-import safe      Stype.Numeric.Count
+import safe           Stype.Numeric.Censored
+import safe           Stype.Numeric.Continuous
+import safe           Stype.Numeric.Count
 
 instance Censorable Double where
 instance (Ord a, Show a) => Censorable (EventTime a) where

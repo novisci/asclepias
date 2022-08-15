@@ -1,20 +1,16 @@
-{-# LANGUAGE TypeApplications #-}
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE DeriveGeneric         #-}
+{-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE OverloadedStrings     #-}
+{-# LANGUAGE TypeApplications      #-}
 module Examples.Simple where
 
-import           Data.Aeson                     ( FromJSON
-                                                , ToJSON
-                                                )
-import           Data.Bifunctor                 ( first )
+import           Data.Aeson            (FromJSON, ToJSON)
+import           Data.Bifunctor        (first)
 -- NOTE dhall imports are just for this example and not needed for a typical
 -- project
-import           Data.Text                      ( Text )
-import           Dhall                          ( FromDhall
-                                                , ToDhall
-                                                )
+import           Data.Text             (Text)
+import           Dhall                 (FromDhall, ToDhall)
 import           EventDataTheory
 import           GHC.Generics
 import           GHC.Natural
@@ -146,7 +142,7 @@ c1'' = first (const "bad") $ tryFrom @TestVal @(TagSet Text) c1'
 
 
   {- ------
-    KICK THE TIRES EXERCISES 
+    KICK THE TIRES EXERCISES
 
     Write monarch test Routines for the following input/output types. Some
     exercises have defined functions to test, some leave that to you.
@@ -158,7 +154,7 @@ c1'' = first (const "bad") $ tryFrom @TestVal @(TagSet Text) c1'
     * create the schema dhall files
     * create the input/output csv files
     * add the tests to the TestTree runner in Main.hs
-    
+
     Some are chosen specifically because BB thinks they will cause problems.
     ------ -}
 

@@ -13,8 +13,8 @@ module ConstructPaths
   , s3TestDataDir
   ) where
 
-import           TestUtils.BuildLargeTestData   ( largeInputSize )
-import           TestUtils.TestCases            ( TestInputType(..) )
+import           TestUtils.BuildLargeTestData (largeInputSize)
+import           TestUtils.TestCases          (TestInputType (..))
 
 -- Data constants --------------------------------------------------------------
 

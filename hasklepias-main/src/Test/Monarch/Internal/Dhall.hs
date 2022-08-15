@@ -1,4 +1,4 @@
-{-| 
+{-|
 Module      : Test.Monarch.Internal.Dhall
 Description : Internal module providing parsers and Dhall decoders needed to
 marshall csv input to a `TestMap`.
@@ -10,13 +10,13 @@ Maintainer  : bbrown@targetrwe.com
 
 module Test.Monarch.Internal.Dhall where
 
-import qualified Data.ByteString               as BS
-import qualified Data.Text                     as T
-import           Data.Text.Encoding             ( decodeUtf8' )
-import           Data.Void                      ( Void )
+import qualified Data.ByteString           as BS
+import qualified Data.Text                 as T
+import           Data.Text.Encoding        (decodeUtf8')
+import           Data.Void                 (Void)
 import qualified Dhall
+import           Dhall.Core                (Expr (..))
 import qualified Dhall.Core
-import           Dhall.Core                     ( Expr(..) )
 import qualified Dhall.Map
 import           Dhall.Src
 import           Test.Monarch.Internal.Map
@@ -74,7 +74,7 @@ tryParseRawInput = Dhall.rawInput
 
   {- MAP -}
 
-  {- Map v Decoders 
+  {- Map v Decoders
 
       NOTES:
       * Map v intentionally is not an instance of FromDhall. It differs from
@@ -118,7 +118,7 @@ decodeMap = decodeMapWith Dhall.auto
 mapInput :: (Dhall.FromDhall v) => [T.Text] -> T.Text -> IO (Map v)
 mapInput names = Dhall.input (decodeMap names)
 
--- |  Build a @Decoder (Map v)@ using a provided decoder for @v@. Unlike 
+-- |  Build a @Decoder (Map v)@ using a provided decoder for @v@. Unlike
 -- @decodeMapWith@, the map key names are provided in a Dhall record schema.
 -- This custom decoder is necessary because Dhall by default decodes to @Map@
 -- for Dhall lists of records with `mapKey` and `mapValue` fields, which is
@@ -130,11 +130,11 @@ mapInput names = Dhall.input (decodeMap names)
 -- of an @Expr@. Therefore we write a custom Decoder to a @Map@ from a Dhall
 -- @Record@.
 --
--- This is intended to be used with @v@ as @TestVal@. 
--- In that case, the types of the fields provided in the schema 
+-- This is intended to be used with @v@ as @TestVal@.
+-- In that case, the types of the fields provided in the schema
 -- should be the Dhall types corresponding to the @TestVal@ variants.
 -- For example, @Atomic (TText)@ should be specified in the schema as @Text@,
--- and @Union@ types should be specified using the Dhall sum-type syntax. 
+-- and @Union@ types should be specified using the Dhall sum-type syntax.
 decodeMapSchema :: Dhall.Decoder v -> DhallExpr -> Dhall.Decoder (Map v)
 decodeMapSchema decodeVal schema = Dhall.Decoder extractOut expectedOut
  where

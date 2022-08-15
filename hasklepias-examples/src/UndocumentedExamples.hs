@@ -4,10 +4,8 @@ that are currently undocumented.
 -}
 module UndocumentedExamples where
 
-import           UndocumentedExamples.CalendarCohort
-                                               as CC
-import           UndocumentedExamples.NegativeControl
-                                               as NC
+import           UndocumentedExamples.CalendarCohort  as CC
+import           UndocumentedExamples.NegativeControl as NC
 
 import           Hasklepias
 

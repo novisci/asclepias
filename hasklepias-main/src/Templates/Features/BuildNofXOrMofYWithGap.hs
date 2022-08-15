@@ -19,10 +19,10 @@ buildNofXOrMofYWithGap
   => (outputType -> outputType -> outputType)
   -> (Bool -> outputType)
   -> Int -- ^ count passed to 'buildNofX'
-  -> Predicate (Event t m a) -- ^ predicate for 'buildNofX' 
+  -> Predicate (Event t m a) -- ^ predicate for 'buildNofX'
   -> Int -- ^ the minimum number of gaps passed to 'buildNofXWithGap'
   -> b -- ^ the minimum duration of a gap passed to 'buildNofXWithGap'
-  -> Predicate (Event t m a) -- ^ predicate for 'buildNofXWithGap' 
+  -> Predicate (Event t m a) -- ^ predicate for 'buildNofXWithGap'
   -> ComparativePredicateOf2
        (AssessmentInterval a)
        (Event t m a)
@@ -127,7 +127,7 @@ buildNofXOrMofYWithGapTestCases =
       {-
                    -          <- Index
          ----------           <- Baseline
-                              
+
         |--------------|
       -}
   , f
@@ -223,7 +223,7 @@ buildNofXOrMofYWithGapTestCases =
                    -          <- Index
          ----------           <- Baseline
           -                   <- ["C", "A"]
-                 -            <- ["A", "B"] 
+                 -            <- ["A", "B"]
         |--------------|
       -}
   , f
@@ -263,7 +263,7 @@ buildNofXOrMofYWithGapTestCases =
          ----------           <- Baseline
           -                   <- ["C", "A"]
               -               <- ["D", "E"]
-                 -            <- ["A", "B"] 
+                 -            <- ["A", "B"]
         |--------------|
       -}
   , f

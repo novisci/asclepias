@@ -12,9 +12,7 @@ module TestUtils.TestCases
   , createTestsCartesian
   ) where
 
-import           Test.Tasty                     ( TestTree
-                                                , testGroup
-                                                )
+import           Test.Tasty        (TestTree, testGroup)
 import           TestUtils.S3Utils
 
 -- Enumeration of test applications

@@ -1,8 +1,8 @@
-{-| 
+{-|
    @Test.Tasty@ tree-builders for @Monarch@. The main exported type is a
    @Routine@, an existential type that holds a test configuration with a
    variant for each test framework within which the test should be run. At the
-   moment, only golden tests via `tasty-silver` are supported. 
+   moment, only golden tests via `tasty-silver` are supported.
 
    @monarchTest@ is the primary exported tree-builder, which takes a @Routine@
    and builds the a @TestTree@ using the appropriate framework.
@@ -14,11 +14,11 @@
    @ToOutput@, against which the csv-provided output is compared.
   -}
 
-{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE ConstraintKinds           #-}
 {-# LANGUAGE ExistentialQuantification #-}
-{-# LANGUAGE TypeApplications #-}
-{-# LANGUAGE ConstraintKinds #-}
-{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE FlexibleContexts          #-}
+{-# LANGUAGE ScopedTypeVariables       #-}
+{-# LANGUAGE TypeApplications          #-}
 
 module Test.Tasty.Monarch
   ( RoutineContext
@@ -31,27 +31,18 @@ import           Test.Monarch.MonarchException
 import           Test.Monarch.Parse
 import           Test.Monarch.TestMap
 import           Test.Monarch.ToOutput
-import           Test.Tasty.Providers           ( TestName
-                                                , TestTree
-                                                )
+import           Test.Tasty.Providers          (TestName, TestTree)
 
-import           Test.Tasty.Silver.Internal     ( GDiff(..)
-                                                , GShow(..)
-                                                )
+import           Test.Tasty.Silver.Internal    (GDiff (..), GShow (..))
 
-import           Data.Aeson                     ( ToJSON(..)
-                                                , encode
-                                                , encodeFile
-                                                )
+import           Data.Aeson                    (ToJSON (..), encode, encodeFile)
 import qualified Data.ByteString               as BS
 import qualified Data.ByteString.Lazy          as B
 import qualified Data.Text                     as T
-import           Data.Text.Encoding             ( decodeUtf8'
-                                                , encodeUtf8
-                                                )
-import           Data.Text.Encoding.Error       ( UnicodeException )
-import           System.FilePath                ( replaceExtension )
-import           Test.Tasty.Silver.Advanced     ( goldenTest1 )
+import           Data.Text.Encoding            (decodeUtf8', encodeUtf8)
+import           Data.Text.Encoding.Error      (UnicodeException)
+import           System.FilePath               (replaceExtension)
+import           Test.Tasty.Silver.Advanced    (goldenTest1)
 import           Witch.TryFrom
 
   {- Test constructors and types -}

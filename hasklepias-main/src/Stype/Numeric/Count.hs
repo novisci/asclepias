@@ -7,16 +7,16 @@ Maintainer  : bsaul@novisci.com
 
 -}
 
-{-# LANGUAGE Safe #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE Safe          #-}
 
 module Stype.Numeric.Count
   ( Count(..)
   ) where
 
-import safe      Data.Semiring                  ( Semiring(..) )
-import safe      GHC.Generics                   ( Generic )
-import safe      GHC.Num                        ( Natural )
+import safe           Data.Semiring (Semiring (..))
+import safe           GHC.Generics  (Generic)
+import safe           GHC.Num       (Natural)
 
 {- | Just a type holding a 'GHC.Num.Natural' value.
 -}

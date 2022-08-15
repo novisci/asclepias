@@ -7,14 +7,14 @@ Maintainer  : bsaul@novisci.com
 
 -}
 
-{-# LANGUAGE Safe #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE Safe          #-}
 
 module Stype.Categorical.Nominal
   ( Nominal(..)
   ) where
 
-import           GHC.Generics                   ( Generic )
+import           GHC.Generics (Generic)
 
 {- | a placeholder for a future nominal type -}
 newtype Nominal a = Nominal a deriving ( Eq, Show, Ord, Generic )

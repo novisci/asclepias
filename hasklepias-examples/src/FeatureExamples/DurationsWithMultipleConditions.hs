@@ -6,7 +6,7 @@ module FeatureExamples.DurationsWithMultipleConditions
   ( example
   ) where
 
-import           ExampleEvents                  ( exampleEvents4 )
+import           ExampleEvents (exampleEvents4)
 import           Hasklepias
 
 {- tag::function[] -}

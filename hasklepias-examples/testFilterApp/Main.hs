@@ -10,28 +10,22 @@ module Main
 import           AppExamples.FilterApp
 import           ConstructPaths
 import           Control.Concurrent
-import           Control.Exception              ( catch
-                                                , throwIO
-                                                )
-import qualified Data.ByteString.Char8         as B
+import           Control.Exception            (catch, throwIO)
+import qualified Data.ByteString.Char8        as B
 import           Hasklepias
-import           System.Directory               ( createDirectoryIfMissing
-                                                , removeDirectoryRecursive
-                                                , removePathForcibly
-                                                )
-import           System.Exit                    ( ExitCode )
+import           System.Directory             (createDirectoryIfMissing,
+                                               removeDirectoryRecursive,
+                                               removePathForcibly)
+import           System.Exit                  (ExitCode)
 import           System.IO
 import           System.IO.Silently
-import           System.Process                 ( callCommand )
-import           Test.Tasty                     ( TestTree
-                                                , defaultMain
-                                                , testGroup
-                                                )
+import           System.Process               (callCommand)
+import           Test.Tasty                   (TestTree, defaultMain, testGroup)
 import           Test.Tasty.Silver
 import           TestUtils.BuildLargeTestData
 import           TestUtils.S3Utils
 import           TestUtils.SessionId
-import           TestUtils.TestCases            ( TestInputType(..) )
+import           TestUtils.TestCases          (TestInputType (..))
 import           Text.Printf
 
 {-

@@ -1,6 +1,6 @@
-{-| 
+{-|
 Module      : Test.Monarch.Internal.Csv
-Description : Internal module to parse csv to dhall to TestMap. 
+Description : Internal module to parse csv to dhall to TestMap.
 Copyright   : (c) NoviSci, Inc 2022
 License     : BSD3
 Maintainer  : bbrown@targetrwe.com
@@ -8,14 +8,14 @@ Maintainer  : bbrown@targetrwe.com
 {-# LANGUAGE OverloadedStrings #-}
 module Test.Monarch.Internal.Csv where
 
-import           Data.Csv                       ( NamedRecord )
+import           Data.Csv                      (NamedRecord)
 import qualified Data.Text                     as T
-import qualified Data.Text.IO                   ( readFile )
+import qualified Data.Text.IO                  (readFile)
 import qualified Dhall
-import           Dhall.Core                     ( Expr(..) )
+import           Dhall.Core                    (Expr (..))
 import           Dhall.Csv.Util
 import           Dhall.CsvToDhall
-import qualified GHC.Exts                       ( IsList(..) )
+import qualified GHC.Exts                      (IsList (..))
 import           Test.Monarch.Internal.Dhall
 import           Test.Monarch.MonarchException
 
@@ -74,7 +74,7 @@ toCsv hasHeader file = do
 -- records, ie `List { ... }`, with field names corresponding to the column
 -- names of the csv. The decoder usually would be parsed with
 -- @parseDhallFile@ or
--- @parseDhallFileWith@. 
+-- @parseDhallFileWith@.
 tryParseRecordsCsv
   :: Dhall.Decoder a -> FilePath -> IO (Either MonarchException [a])
 tryParseRecordsCsv d = fmap (tryParseRecords d) . toCsv True

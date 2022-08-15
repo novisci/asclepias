@@ -1,5 +1,5 @@
 {-|
-Module      : Misc utilities useful in working with events 
+Module      : Misc utilities useful in working with events
 -}
 
 module EventDataTheory.Utilities
@@ -22,17 +22,13 @@ module EventDataTheory.Utilities
   , tallyEvents
   ) where
 
-import           Data.Foldable                  ( length
-                                                , toList
-                                                )
-import           Data.Functor.Contravariant     ( Predicate(..) )
+import           Data.Foldable              (length, toList)
+import           Data.Functor.Contravariant (Predicate (..))
 import           Data.Semigroup
 import           EventDataTheory.Core
 import           IntervalAlgebra
-import           Safe                           ( headMay
-                                                , lastMay
-                                                )
-import qualified Witherable                    as W
+import           Safe                       (headMay, lastMay)
+import qualified Witherable                 as W
 
 -- | Combine two 'Predicate's by "or".
 (|||) :: Predicate a -> Predicate a -> Predicate a
@@ -44,7 +40,7 @@ import qualified Witherable                    as W
 (&&&) f g =
   Predicate (\x -> getAll (All (getPredicate f x) <> All (getPredicate g x)))
 
-{-| 
+{-|
 Creates a predicate to check that an 'Event' contains
 any of a given list of tags.
 -}
@@ -62,10 +58,10 @@ filterEvents
 filterEvents p = W.filter (getPredicate p)
 
 {-|
-Filter a container of 'Event's 
+Filter a container of 'Event's
 to a single @'Maybe' 'Event'@,
 based on a provided function,
-with the provided tag set. 
+with the provided tag set.
 
 For example,
 see 'firstOccurrenceOfTag' and
@@ -100,8 +96,8 @@ lastOccurrenceOfTag x =
   findOccurrenceOfEvent (lastMay . toList) (containsTag x)
 
 {-|
-Split a container of @'Event'@s 
-into a pair of @'Event'@s. 
+Split a container of @'Event'@s
+into a pair of @'Event'@s.
 The first element contains
 events have any of the tags in the first argument,
 similarly for the second element.

@@ -21,20 +21,17 @@ module Templates.FeatureReqs
   ) where
 
 import           Cohort
-import           Data.Foldable                  ( toList )
-import           Data.Maybe                     ( catMaybes )
-import           Data.Text                      ( Text )
-import           Data.Time                      ( Day )
+import           Data.Foldable                  (toList)
+import           Data.Maybe                     (catMaybes)
+import           Data.Text                      (Text)
+import           Data.Time                      (Day)
 import           EventDataTheory
 import           Features
-import           Flow                           ( (.>) )
-import           GHC.Natural                    ( Natural )
+import           Flow                           ((.>))
+import           GHC.Natural                    (Natural)
 import           Hasklepias.AssessmentIntervals
 import           Stype
 import           Templates.TestUtilities
-import           Test.Tasty                     ( TestTree )
-import           Witherable                    as W
-                                                ( Witherable
-                                                , filter
-                                                )
+import           Test.Tasty                     (TestTree)
+import           Witherable                     as W (Witherable, filter)
 

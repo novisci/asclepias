@@ -2,13 +2,13 @@ module Templates.Features.BuildNofXBase
   ( buildNofXBase
   ) where
 
-import           EventDataTheory.Utilities      ( (&&&) )
+import           EventDataTheory.Utilities ((&&&))
 import           Templates.FeatureReqs
 
 
 {- |
 The basis of definition templates that answer a question about
-N events satisying a predicate X. 
+N events satisying a predicate X.
 -}
 {- tag::template0[] -}
 buildNofXBase

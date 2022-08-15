@@ -3,15 +3,10 @@ module CohortCollectionTests
   , testsMain
   ) where
 
-import           CohortCollection               ( Location(..)
-                                                , runCollectionApp
-                                                )
-import qualified Data.ByteString.Lazy          as BL
+import           CohortCollection        (Location (..), runCollectionApp)
+import qualified Data.ByteString.Lazy    as BL
 import           Hasklepias.AppUtilities
-import           Test.Tasty                     ( TestTree
-                                                , defaultMain
-                                                , testGroup
-                                                )
+import           Test.Tasty              (TestTree, defaultMain, testGroup)
 import           Test.Tasty.Silver
 
 appTestRw :: IO ()

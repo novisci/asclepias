@@ -1,18 +1,15 @@
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE DataKinds           #-}
+{-# LANGUAGE FlexibleContexts    #-}
+{-# LANGUAGE OverloadedStrings   #-}
 {-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE TypeApplications    #-}
 
 module Tests.Cohort.Core
   ( tests
   ) where
 
 import           Cohort
-import           Data.Set                       ( empty
-                                                , fromList
-                                                , singleton
-                                                )
+import           Data.Set         (empty, fromList, singleton)
 import           Data.Text
 import           Features
 import           GHC.Natural

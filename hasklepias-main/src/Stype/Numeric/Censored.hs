@@ -7,10 +7,10 @@ Maintainer  : bsaul@novisci.com
 
 -}
 
-{-# LANGUAGE Safe #-}
-{-# LANGUAGE GADTs #-}
+{-# LANGUAGE DeriveGeneric     #-}
+{-# LANGUAGE GADTs             #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE Safe              #-}
 
 module Stype.Numeric.Censored
   ( Censorable(..)
@@ -18,9 +18,9 @@ module Stype.Numeric.Censored
   , ParseIntervalError(..)
   ) where
 
-import safe      Data.Text
+import safe           Data.Text
   -- ( Text, pack, unpack )
-import safe      GHC.Generics                   ( Generic )
+import safe           GHC.Generics (Generic)
 
 -- | Data for censored data
 data MaybeCensored a where

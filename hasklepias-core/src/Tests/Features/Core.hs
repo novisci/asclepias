@@ -1,5 +1,5 @@
+{-# LANGUAGE DataKinds         #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE DataKinds #-}
 module Tests.Features.Core
   ( tests
   ) where

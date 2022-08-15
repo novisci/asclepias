@@ -5,7 +5,7 @@ module TestUtils.S3Utils
   , s3RecursiveRm
   ) where
 
-import           System.Process                 ( callCommand )
+import           System.Process (callCommand)
 
 -- Copy a file, possibly from and/or to S3
 s3Copy :: String -> String -> IO ()

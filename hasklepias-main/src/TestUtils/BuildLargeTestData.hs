@@ -6,9 +6,7 @@ module TestUtils.BuildLargeTestData
   , largeInputSize
   ) where
 
-import           Data.List                      ( intercalate
-                                                , sort
-                                                )
+import           Data.List   (intercalate, sort)
 import           Text.Printf
 import           Text.Regex
 

@@ -2,12 +2,12 @@
 Module      : Hasklepias Event Tests
 Description : Provides test making functions for event models
 -}
-{-# LANGUAGE AllowAmbiguousTypes #-}
-{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE AllowAmbiguousTypes   #-}
+{-# LANGUAGE FlexibleContexts      #-}
+{-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE ScopedTypeVariables   #-}
+{-# LANGUAGE TypeApplications      #-}
 
 module EventDataTheory.Test
   ( eventDecodeTests
@@ -16,47 +16,28 @@ module EventDataTheory.Test
   , eventLineModifyTests
   ) where
 
-import           Data.Aeson                     ( FromJSON
-                                                , ToJSON
-                                                , decode
-                                                , decode'
-                                                , eitherDecode
-                                                , encode
-                                                )
-import qualified Data.ByteString.Lazy          as B
-import qualified Data.ByteString.Lazy.Char8    as B
+import           Data.Aeson                 (FromJSON, ToJSON, decode, decode',
+                                             eitherDecode, encode)
+import qualified Data.ByteString.Lazy       as B
+import qualified Data.ByteString.Lazy.Char8 as B
 import           Data.Data
-import           Data.Either                    ( fromLeft
-                                                , isLeft
-                                                , isRight
-                                                )
-import           Data.Text                      ( Text )
-import           Data.Time                      ( Day )
-import           EventDataTheory.Core           ( Event
-                                                , Eventable
-                                                , FromJSONEvent
-                                                , SubjectID
-                                                , ToJSONEvent
-                                                )
+import           Data.Either                (fromLeft, isLeft, isRight)
+import           Data.Text                  (Text)
+import           Data.Time                  (Day)
+import           EventDataTheory.Core       (Event, Eventable, FromJSONEvent,
+                                             SubjectID, ToJSONEvent)
 import           EventDataTheory.EventLines
-import           GHC.Generics                   ( Generic )
-import           IntervalAlgebra                ( Interval
-                                                , IntervalSizeable
-                                                )
-import           System.FilePath                ( FilePath
-                                                , takeBaseName
-                                                )
-import           Test.Tasty                     ( TestName
-                                                , TestTree
-                                                , testGroup
-                                                )
+import           GHC.Generics               (Generic)
+import           IntervalAlgebra            (Interval, IntervalSizeable)
+import           System.FilePath            (FilePath, takeBaseName)
+import           Test.Tasty                 (TestName, TestTree, testGroup)
 import           Test.Tasty.HUnit
-import           Test.Tasty.Silver              ( findByExtension )
-import           Type.Reflection                ( Typeable )
+import           Test.Tasty.Silver          (findByExtension)
+import           Type.Reflection            (Typeable)
 
 {-|
 Creates a single test case
-which decodes the contents of a file 
+which decodes the contents of a file
 into @Either String a@.
 The test passes if the decoding results in a @Right a@ value.
 -}
@@ -73,9 +54,9 @@ createDecodeSmokeTest testf decoder testFile = do
   pure $ testCase (takeBaseName testFile) res
 
 {-|
-Creates a group of tests 
+Creates a group of tests
 using 'createDecodeSmokeTest'
-from all the files 
+from all the files
 in given directory
 with given file extensions.
 Each test passes if the decoding results in a @Right a@ value.
@@ -95,16 +76,16 @@ createDecodeSmokeTestGroup n testf decoder exts dir = do
   testGroup n <$> tests
 
 {-|
-Creates a group of tests 
-from all the files 
+Creates a group of tests
+from all the files
 in given directory
 for all files ending in '.jsonl'.
 Each file should contain 1 line containing 1 event.
 Each test passes if the decoding results in a @Right a@ value.
 
 The test group is meant as a smoke test
-to check that events you think should parse 
-do in fact parse. 
+to check that events you think should parse
+do in fact parse.
 -}
 eventDecodeTests
   :: forall m t a b
@@ -119,16 +100,16 @@ eventDecodeTests dir = createDecodeSmokeTestGroup
   dir
 
 {-|
-Creates a group of tests 
-from all the files 
+Creates a group of tests
+from all the files
 in given directory
 for all files ending in '.jsonl'.
 Each file should contain 1 line containing 1 event.
 Each test passes if the decoding results in a @Left String@ value.
 
 The test group is meant as a smoke test
-to check that events you think should _not_ parse 
-do not in fact parse. 
+to check that events you think should _not_ parse
+do not in fact parse.
 -}
 eventDecodeFailTests
   :: forall m t a b
@@ -145,7 +126,7 @@ eventDecodeFailTests dir = createDecodeSmokeTestGroup
 {-|
 Creates a single test case
 which decodes the contents of a file.
-The test passes if the decoding 
+The test passes if the decoding
 then encoding and decoding again
 results in the same value.
 -}
@@ -164,9 +145,9 @@ createJSONRoundtripSmokeTest testFile = do
   pure $ testCase (takeBaseName testFile) assert
 
 {-|
-Creates a group of tests 
+Creates a group of tests
 using 'createJSONRoundtripSmokeTest'
-from all the files 
+from all the files
 in given directory
 with given file extensions.
 -}
@@ -183,16 +164,16 @@ createJSONRoundtripSmokeTestGroup n exts dir = do
   testGroup n <$> tests
 
 {-|
-Creates a group of tests 
-from all the files 
+Creates a group of tests
+from all the files
 in given directory
 for all files ending in '.jsonl'.
 Each file should contain 1 line containing 1 event.
 Each test passes if the decoding results in a @Right a@ value.
 
 The test group is meant as a smoke test
-to check that events you think should parse 
-do in fact parse. 
+to check that events you think should parse
+do in fact parse.
 -}
 eventLineRoundTripTests
   :: forall m t a b
@@ -248,9 +229,9 @@ createModifyEventLineTest testFile = do
 
 
 {-|
-Creates a group of tests 
+Creates a group of tests
 using 'createModifyEventLineTest'
-from all the files 
+from all the files
 in given directory
 with given file extensions.
 -}
@@ -267,8 +248,8 @@ createModifyEventLineTestGroup n exts dir = do
   testGroup n <$> tests
 
 {-|
-Creates a group of tests 
-from all the files 
+Creates a group of tests
+from all the files
 in given directory
 for all files ending in '.jsonl'.
 Each file should contain 1 line containing 1 event.
@@ -278,9 +259,9 @@ Tests pass if:
   * the result can be passed through 'modifyEventLineWithContext'
     using the identity function without modifying the result.
 
-NOTE: 
+NOTE:
 Tags need to be ordered within the JSON files.
-The underlying type of @TagSet@ is @Set@, 
+The underlying type of @TagSet@ is @Set@,
 thus elements will be ordered by their @Ord@ instance
 in the result.
 -}

@@ -1,17 +1,17 @@
 {-# OPTIONS_HADDOCK hide #-}
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE DataKinds             #-}
+{-# LANGUAGE FlexibleContexts      #-}
+{-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE OverloadedStrings     #-}
+{-# LANGUAGE TemplateHaskell       #-}
 
 module Tests.Features.Output
   ( tests
   ) where
 
-import           Data.Aeson                     ( encode )
-import qualified Data.ByteString.Lazy          as B
+import           Data.Aeson           (encode)
+import qualified Data.ByteString.Lazy as B
 import           Data.Maybe
 import           Features
 import           Test.Tasty
@@ -30,7 +30,7 @@ setManyAttributes
 
 {-
 NOTE:
-The following functions may need to modified depending on the version 
+The following functions may need to modified depending on the version
 of Aeson being used.
 -}
 

@@ -8,8 +8,8 @@ module Tests
   ) where
 
 import           Test.Tasty
-import qualified Tests.Cohort                  as C
-import qualified Tests.Features                as F
+import qualified Tests.Cohort   as C
+import qualified Tests.Features as F
 
 -- | All the tests of hasklepias-core
 coreTests :: IO ()

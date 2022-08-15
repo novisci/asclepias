@@ -1,29 +1,29 @@
 {-|
 Module      : Hasklepias Event Type
-Description : Defines the Event type and its component types, constructors, 
+Description : Defines the Event type and its component types, constructors,
               and class instance
 Copyright   : (c) NoviSci, Inc 2020
 License     : BSD3
 Maintainer  : bsaul@novisci.com
 
-NOTE: The types herein are how events are represently internally. 
+NOTE: The types herein are how events are represently internally.
 Events may be represented in different structures for transferring or storing data, for example.
 The To/FromJSON instances for types defined in this module are derived generically.
 These can be useful for writing tests, for example, but
 they are not designed to encode/decode data in the new line delimited format
-defined in the 
+defined in the
 [event data model docs](https://docs.novisci.com/event-data/3.0/index.html)
 See the neighboring EventLine module for types and To/FromJSON instances
 designed for the purpose of marshaling data from JSON lines.
 -}
-{-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE TypeApplications #-}
-{-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE ConstraintKinds       #-}
+{-# LANGUAGE DeriveGeneric         #-}
 {-# LANGUAGE DuplicateRecordFields #-}
-{-# LANGUAGE ConstraintKinds #-}
+{-# LANGUAGE FlexibleContexts      #-}
+{-# LANGUAGE FlexibleInstances     #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE ScopedTypeVariables   #-}
+{-# LANGUAGE TypeApplications      #-}
 
 module EventDataTheory.Core
   ( Event
@@ -63,63 +63,45 @@ module EventDataTheory.Core
   , ToJSONEvent
   ) where
 
-import           Control.DeepSeq                ( NFData )
-import           Control.Monad                  ( liftM2
-                                                , liftM3
-                                                )
-import           Data.Aeson                     ( FromJSON
-                                                , ToJSON
-                                                , Value(Number, String)
-                                                )
-import           Data.Binary                    ( Binary )
-import           Data.Functor.Contravariant     ( Contravariant(contramap)
-                                                , Predicate(..)
-                                                )
-import           Data.Set                       ( Set
-                                                , fromList
-                                                , map
-                                                , member
-                                                , toList
-                                                )
-import qualified Data.Text                     as T
-import           Dhall                          ( FromDhall
-                                                , ToDhall
-                                                )
-import           GHC.Generics                   ( Generic )
-import           IntervalAlgebra                ( Interval
-                                                , Intervallic(..)
-                                                , PairedInterval
-                                                , getPairData
-                                                , makePairedInterval
-                                                )
-import           Test.QuickCheck                ( Arbitrary(arbitrary) )
-import           Type.Reflection                ( Typeable )
-import           Witch                          ( From(..)
-                                                , into
-                                                , via
-                                                )
+import           Control.DeepSeq            (NFData)
+import           Control.Monad              (liftM2, liftM3)
+import           Data.Aeson                 (FromJSON, ToJSON,
+                                             Value (Number, String))
+import           Data.Binary                (Binary)
+import           Data.Functor.Contravariant (Contravariant (contramap),
+                                             Predicate (..))
+import           Data.Set                   (Set, fromList, map, member, toList)
+import qualified Data.Text                  as T
+import           Dhall                      (FromDhall, ToDhall)
+import           GHC.Generics               (Generic)
+import           IntervalAlgebra            (Interval, Intervallic (..),
+                                             PairedInterval, getPairData,
+                                             makePairedInterval)
+import           Test.QuickCheck            (Arbitrary (arbitrary))
+import           Type.Reflection            (Typeable)
+import           Witch                      (From (..), into, via)
 
 import           Data.Bifunctor
 
 {- |
 The 'Event' type puts a certain amount of structure on
-temporally organized data, 
+temporally organized data,
 while being flexible in the details.
 An 'Event t m a' contains information about
 when something occurred (the 'Interval a')
 and what occurred (the 'Context m t').
-The type parameters @m@, @t@, and @a@ allow to specify 
+The type parameters @m@, @t@, and @a@ allow to specify
 the types for the 'Context's @m@odel and @t@agSet
 and for the type of the 'Interval' end points.
 
 The 'Event' type parameters are ordered from changing the least often to most often.
 A @m@odel tends to be shared across projects.
-For example, multiple projects use data from insurance claims, 
-and thus share a single model. 
-A project often defines its own @t@agSet, 
+For example, multiple projects use data from insurance claims,
+and thus share a single model.
+A project often defines its own @t@agSet,
 though tag sets can be shared across projects.
 Within a project, multiple 'Interval' types may used.
-Data may be imported as 'Interval Day', 
+Data may be imported as 'Interval Day',
 but then modified to 'Interval Integer' based on some reference point.
 
 The contents of a 'Context' are explained in a separate section,
@@ -128,7 +110,7 @@ but we give a couple examples of using events here.
 The 'event' function is a smart constructor for 'Event'.
 
 >>> :set -XOverloadedStrings
->>> import IntervalAlgebra ( beginerval ) 
+>>> import IntervalAlgebra ( beginerval )
 
 >>> data SomeModel = A | B deriving (Eq, Ord, Show, Generic)
 >>>
@@ -144,7 +126,7 @@ True
 False
 
 >>> data NewModel = A T.Text | B Integer deriving (Eq, Ord, Show, Generic)
->>> data MyTagSet = Foo | Bar | Baz deriving (Eq, Ord, Show, Generic) 
+>>> data MyTagSet = Foo | Bar | Baz deriving (Eq, Ord, Show, Generic)
 >>>
 >>> type NewEvent = Event MyTagSet NewModel Integer
 >>> let newEvent = event (beginerval 5 0) (context (packTagSet [Foo, Bar]) (A "cool") Nothing) :: NewEvent
@@ -174,7 +156,7 @@ instance Ord t => HasTag (Event t m a) t where
 instance (Ord a, Ord t, Eq m) => Ord (Event t m a) where
   {-|
   Events are first ordered by their intervals.
-  In the case two intervals are equal, 
+  In the case two intervals are equal,
   the event are ordered by their tagSet.
   -}
   compare x y = case ic of
@@ -221,7 +203,7 @@ event i t = MkEvent (makePairedInterval t i)
 getEvent :: Event t m a -> PairedInterval (Context t m) a
 getEvent (MkEvent x) = x
 
--- | Get the 'Context' of an 'Event'. 
+-- | Get the 'Context' of an 'Event'.
 getContext :: Event t m a -> Context t m
 getContext = getPairData . getEvent
 
@@ -231,16 +213,16 @@ This information is carried in context's @tagSet@ and/or @facts@.
 'TagSet' are set of tags that can be used to identify and filter events
 using the 'hasTag' function
 or the related 'hasAnyTag' and 'hasAllTags' functions.
-The @facts@ field contains data of type @m@. 
-The @m@ stands for @m@odel, 
+The @facts@ field contains data of type @m@.
+The @m@ stands for @m@odel,
 meaning the scope and shape of facts
 relevant to a particular scientific line of work.
 For example, some studies using health care claims data may be sufficiently different
 in scope, semanitcs, and aims to warrant having a different collection of facts
-from, say, electronic medical records data. 
+from, say, electronic medical records data.
 However, one could create a collection of facts that includes both claims and EHR data.
 By having a 'Context' parametrized by the shape of a model,
-users are free to define the structure of their facts as needed. 
+users are free to define the structure of their facts as needed.
 
 A context also has a @source@ field,
 possibly containing a 'Source',
@@ -251,7 +233,7 @@ which carries information about the provenance of the data.
 data Context t m = MkContext
   { -- | the 'TagSet' of a @Context@
     getTagSet :: TagSet t -- <1>
-    -- | the facts of a @Context@.  
+    -- | the facts of a @Context@.
   , getFacts  :: m -- <2>
     -- | the 'Source' of @Context@
   , getSource :: Maybe Source -- <3>
@@ -289,7 +271,7 @@ Apply a two functions to a 'Context':
 This function is simiilar in flavor to 'Data.Bifunctor.bimap'.
 But @Context@ is not a 'Data.Bifunctor.Bifunctor'.
 The underlying type of @TagSet@ is 'Data.Set.Set',
-which is not a 'Functor' 
+which is not a 'Functor'
 due to the @Set@ 'Ord' constraints.
 -}
 bimapContext
@@ -309,7 +291,7 @@ dropSource (MkContext tSet fcts _) = MkContext tSet fcts Nothing
 
 {-|
 A @Source@ may be used to record the source of an event from a database.
-This data is sometimes useful for debugging. 
+This data is sometimes useful for debugging.
 We generally discourage using @Source@ information in defining features.
 -}
 data Source = MkSource
@@ -349,7 +331,7 @@ packTag = into
 unpackTag :: Tag t -> t
 unpackTag = into
 
-{- |  
+{- |
 @TagSet t@ is a 'Set' of 'Tag t's.
 TagSet inherit the monoidal properties of 'Set', by 'Data.Set.union'.
 -}
@@ -408,16 +390,16 @@ addTagSet x tSet = into x <> tSet
 Apply a function to each 'Tag'
 within a 'TagSet' set.
 
-NOTE: 
+NOTE:
 @TagSet@ are not a 'Functor'.
 The underlying type of @TagSet@ is 'Data.Set.Set',
-which is not a 'Functor' 
+which is not a 'Functor'
 due to the @Set@ 'Ord' constraints.
 -}
 mapTagSet :: (Ord t1, Ord t2) => (t1 -> t2) -> TagSet t1 -> TagSet t2
 mapTagSet f (MkTagSet x) = MkTagSet (Data.Set.map (fmap f) x)
 
-{-| 
+{-|
 The 'HasTag' typeclass provides predicate functions
 for determining whether an @a@ contains a tag.
 
@@ -482,7 +464,7 @@ instance From T.Text SubjectID where
 Provides a common interface to lift a 'Predicate' on some component
 of an 'Event' to a 'Predicate (Event t m a)'.
 For example, if @x@ is a 'Predicate' on some 'Context m t',
-@liftToEventPredicate x@ yields a @Predicate (Event t m a)@, 
+@liftToEventPredicate x@ yields a @Predicate (Event t m a)@,
 thus the predicate then also be applied to @Event@s.
 
 This class is only used in this 'EventDataTheory.Core' module
@@ -514,7 +496,7 @@ instance (Ord a) => EventPredicate (Interval a) t m a where
 {-|
 Provides a common interface to lift a function
 operating on some component of an 'Event'
-into a function on an 'Event'. 
+into a function on an 'Event'.
 
 This class is only used in this 'EventDataTheory.Core' module
 for the purposes of having a single @liftToEventFunction@ function
@@ -543,7 +525,7 @@ instance EventFunction (Context t m -> Context t' m' ) t t' m m'  a a where
 {-|
 Provides a common interface to lift a function
 operating on some component of an 'Context'
-into a function on an 'Context'. 
+into a function on an 'Context'.
 
 This class is only used in this 'EventDataTheory.Core' module
 for the purposes of having a single @liftToEventFunction@ function

@@ -1,13 +1,11 @@
 {-|
 Description : Demostrates how to define a calendar cohort using Hasklepias
 -}
-{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE DataKinds        #-}
 {-# LANGUAGE TypeApplications #-}
 module CohortExamples.CalendarCohort where
 
-import           ExampleEvents                  ( Demographic(..)
-                                                , ExampleModel(..)
-                                                )
+import           ExampleEvents (Demographic (..), ExampleModel (..))
 import           Hasklepias
 
 {-------------------------------------------------------------------------------
@@ -30,7 +28,7 @@ indices = map (\(y, m) -> beginervalMoment (fromGregorian y m 1))
 {- end::indices[] -}
 
 {-------------------------------------------------------------------------------
-  Inclusion/Exclusion features 
+  Inclusion/Exclusion features
 -------------------------------------------------------------------------------}
 
 {- tag::enrollPredicate[] -}

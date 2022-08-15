@@ -19,11 +19,11 @@ module Hasklepias.AppBuilder.ProcessLines.Logic
   , LineStatus(..)
   ) where
 
-import qualified Data.ByteString               as BS
+import qualified Data.ByteString            as BS
 import           Data.ByteString.Builder
-import qualified Data.ByteString.Char8         as BSC
-import qualified Data.ByteString.Lazy          as BL
-import qualified Data.ByteString.Lazy.Char8    as BLC
+import qualified Data.ByteString.Char8      as BSC
+import qualified Data.ByteString.Lazy       as BL
+import qualified Data.ByteString.Lazy.Char8 as BLC
 import           Data.Int
 import           GHC.Generics
 
@@ -33,7 +33,7 @@ The type used in the processAppLines* functions to handle errors
 -}
 type LineAppMonad = Either LineAppError
 
-{- 
+{-
 INTERNAL
 The type of errors in a line processing application
 -}
@@ -49,7 +49,7 @@ instance Show LineAppError where
 
 {-
 INTERNAL
-Run a parser then a predicate, 
+Run a parser then a predicate,
 returning `Nothing` if the parsing failed.
 -}
 parseThenPredicate :: (t -> Maybe a) -> (a -> Bool) -> t -> Maybe (a, Bool)
@@ -115,19 +115,19 @@ lineFunctionsLazy = MkLineFunctions
 
 This application processes streams of newline delimited text at two levels:
 
-(1) Groups of lines defined by a parser. 
+(1) Groups of lines defined by a parser.
 For example, if the input is event lines data,
-the application groups the input events by subject ID. 
+the application groups the input events by subject ID.
 
 (2) Processing each group
 
 -------------------------------------------------------------------------------}
 
-{- 
+{-
 INTERNAL
 Data tracking the state of the application.
 
-NOTE: 
+NOTE:
 The `Maybe` of the `lastLineID` is used in two senses of `Nothing`:
 * as the the "start" of processing
 * as an error in the parsing of a group identifier from a line
@@ -152,17 +152,17 @@ data AppLinesLog = MkAppLinesLog
   }
   deriving (Eq, Show, Generic)
 
--- INTERNAL 
+-- INTERNAL
 incrementGroupCount :: AppLinesLog -> AppLinesLog
 incrementGroupCount (MkAppLinesLog a b c) = MkAppLinesLog (a + 1) b c
 
--- INTERNAL 
+-- INTERNAL
 incrementGroupKept :: AppLinesLog -> AppLinesLog
 incrementGroupKept (MkAppLinesLog a b c) = MkAppLinesLog a (b + 1) c
 
 {-
-INTERNAL 
-A type to avoid boolean blindness in processAppLinesInternal 
+INTERNAL
+A type to avoid boolean blindness in processAppLinesInternal
 -}
 data GroupChange = SameGroup | NewGroup
 
@@ -172,12 +172,12 @@ checkGroupChange x y = if x == y then SameGroup else NewGroup
 {-|
 This type's two functions are used in the @processAppLines*@ functions
 to allow a developer to specify the logic of how to tranform lines.
-The first function is the "transformer" which defines how to tranform the 
+The first function is the "transformer" which defines how to tranform the
 @a@ into the output @b@ type,
 allowing to specify whether to drop or keep a line using the @`LineStatus`@ type.
 In the case the line is to be kept,
 the second function, the "builder",
-creates the line to be output 
+creates the line to be output
 from the line identifer and the value of type @b@.
 -}
 data LineProcessor a b id =
@@ -201,7 +201,7 @@ instance Functor LineStatus where
 {-
 INTERNAL
 The core recursive logic of processing the lines across groups.
-The function "rolls" over the *single string* of new line delimited data 
+The function "rolls" over the *single string* of new line delimited data
 updating an `AppLines` value as it encounters new line characters
 within that string.
 
@@ -250,7 +250,7 @@ processAppLinesInternal fs pri psl prd pro status x =
       if isEmpty fs thisLine
         then go newStatus
 
-        -- When the ID has not changed, 
+        -- When the ID has not changed,
         -- just update the index of the last newline.
         -- When the ID does change,
         -- then process the group for the last ID
@@ -270,7 +270,7 @@ processAppLinesInternal fs pri psl prd pro status x =
                           { grpAcc = updateGrp status x thisLineID
                           }
                         )
-                -- ID hasn't changed, predicate not satisfied ==> 
+                -- ID hasn't changed, predicate not satisfied ==>
                 -- update status with this line
                 (SameGroup, False) ->
                   checkLine lineCount thisLine
@@ -279,7 +279,7 @@ processAppLinesInternal fs pri psl prd pro status x =
                           , grpAcc    = updateGrp status x thisLineID
                           }
                         )
-                -- ID has changed, predicate satisfied ==> 
+                -- ID has changed, predicate satisfied ==>
                 -- add last group to builder and update
                 (NewGroup, True) ->
                   checkLine lineCount thisLine
@@ -294,7 +294,7 @@ processAppLinesInternal fs pri psl prd pro status x =
                           }
                         )
 
-                -- ID has changed, predicate not satisfied ==> 
+                -- ID has changed, predicate not satisfied ==>
                 -- reset group accumulator and update
                 (NewGroup, False) ->
                   checkLine lineCount thisLine
@@ -312,7 +312,7 @@ processAppLinesInternal fs pri psl prd pro status x =
 
   -- The function that processes a line depends on whether the user
   -- provided a line processor argument.
-  -- processLine :: a -> id -> LineStatus Builder 
+  -- processLine :: a -> id -> LineStatus Builder
   processLine x y = case pro of
     TransformWith transformLine buildLine ->
       fmap (\v -> buildLine (y, v)) (transformLine x)
@@ -386,48 +386,48 @@ processAppLines fs pri psl prd pro x =
 
 {- $processAppLines
 
-The @processAppLines*@ functions conceptually splits a string 
-into groups identified by an indentifier parsed from each line, 
+The @processAppLines*@ functions conceptually splits a string
+into groups identified by an indentifier parsed from each line,
 and then check whether any line
-within a group satisfies a predicate condition 
+within a group satisfies a predicate condition
 and (optionally) transforms and possibly drops each line.
 When no @'LineProcessor'@ logic is supplied,
-a single string is returned 
+a single string is returned
 containing the lines from all groups
 for which the predicate is satisfied.
 If @'LineProcessor'@ logic is supplied,
-then a single string is returned 
+then a single string is returned
 containing the lines from all groups
-for which the predicate is satisfied 
+for which the predicate is satisfied
 AND those lines set to be kept by the @'LineProcessor'@ logic.
 
-IMPORTANT: 
+IMPORTANT:
 All the lines for each group should be contiguous in the input.
 
 Two variants of @processAppLines*@ are available:
 
-* 'processAppLinesStrict' works on strict 'BS.ByteString'. 
-This version is generally faster, 
+* 'processAppLinesStrict' works on strict 'BS.ByteString'.
+This version is generally faster,
 but requires that the entire input be loaded into memory.
 * 'processAppLinesLazy' works on lazy 'BL.ByteString'.
 
 These functions are difficult to demostrate succinctly.
-For a complete example, 
+For a complete example,
 see the source code in @Hasklepias.AppBuilder.ProcessLines.Tests@.
 
 The logic of the @'LineProcessor'@ works in conjunction with the filtering logic
 supplied as an argument.
 For example, a group that has no line satisfying the given predicate
-will have no output, 
+will have no output,
 even if the status of all the groups lines is @KeepLine@.
-On the other hand, 
+On the other hand,
 the logic of the tranformer function could specify to drop
 lines that satisfy the predicate,
 In short, developers can flexibly specify the logic of their application.
 
 Related functions include:
 
-* @'Hasklepias.AppBuilder.LineFilterApp.makeLineFilterApp'@: 
+* @'Hasklepias.AppBuilder.LineFilterApp.makeLineFilterApp'@:
 exposes the filtering logic of @'processAppLinesStrict'@ as an @IO ()@.
 
 -}
@@ -438,12 +438,12 @@ processAppLinesStrict
   => (BS.ByteString -> Maybe id) -- ^ parser of a group identifier from a line
   -> (BS.ByteString -> Maybe a) -- ^ parser of an @a@ from a line
   -> (a -> Bool) -- ^ predicate to apply to each line
-  -> LineProcessor a b id -- ^ an optional @'LineProcessor'@ 
+  -> LineProcessor a b id -- ^ an optional @'LineProcessor'@
   -> BS.ByteString -- ^ input string to be split into lines
   -> LineAppMonad BS.ByteString
 processAppLinesStrict = processAppLines lineFunctionsStrict
 
--- | Process a lazy 'BL.ByteString'. 
+-- | Process a lazy 'BL.ByteString'.
 -- See @'processAppLinesStrict'@ for a description of arguments.
 processAppLinesLazy
   :: (Eq id, Show id)

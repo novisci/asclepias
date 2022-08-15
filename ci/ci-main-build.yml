@@ -73,8 +73,11 @@ upload-haddock-docs:
       optional: false
       artifacts: true
   rules:
-    # run only if commit message matches -build
-    - if: '$CI_COMMIT_MESSAGE !~ /-build/'
+    # run only if the pipeline is a tag pipeline, and the tag begins with v.
+    # intended to catch version tagged commits on master.
+    # NOTE the matched expression is unrestrictive to avoid annoying no-builds
+    # in case, e.g., we change our version numbering format.
+    - if: '$CI_COMMIT_TAG !~ /^v/'
       when: never
     # if it does, run according to main-build rules
     - !reference [.rules-main-build, rules]

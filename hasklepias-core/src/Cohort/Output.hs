@@ -6,12 +6,12 @@ License     : BSD3
 Maintainer  : bsaul@novisci.com
 -}
 -- {-# OPTIONS_HADDOCK hide #-}
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE GADTs #-}
-{-# LANGUAGE StandaloneDeriving #-}
+{-# LANGUAGE DeriveGeneric         #-}
 {-# LANGUAGE DuplicateRecordFields #-}
+{-# LANGUAGE FlexibleInstances     #-}
+{-# LANGUAGE GADTs                 #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE StandaloneDeriving    #-}
 
 module Cohort.Output
   ( CohortJSON
@@ -24,55 +24,26 @@ module Cohort.Output
   , toJSONCohortDataShape
   ) where
 
-import           Cohort.Core                    ( Cohort(..)
-                                                , CohortData
-                                                , CohortMap
-                                                , ObsID
-                                                , ObsUnit
-                                                , getCohortData
-                                                , getCohortDataData
-                                                , getCohortDataIDs
-                                                , getCohortIDs
-                                                )
-import           Cohort.Criteria                ( AttritionInfo
-                                                , CohortStatus
-                                                )
-import           Data.Aeson                     ( (.=)
-                                                , FromJSON
-                                                , ToJSON(..)
-                                                , Value
-                                                , object
-                                                )
-import           Data.Aeson.Types               ( FromJSON )
-import           Data.List.NonEmpty            as NE
-                                                ( NonEmpty(..)
-                                                , head
-                                                , nonEmpty
-                                                , toList
-                                                )
-import           Data.Map.Strict               as Data.Map
-                                                ( Map
-                                                , unionWith
-                                                )
-import           Data.Maybe                     ( fromMaybe )
-import           Data.Text                      ( Text )
-import           Features.Featureset            ( Featureset
-                                                , FeaturesetList
-                                                  ( MkFeaturesetList
-                                                  )
-                                                , getFeatureset
-                                                , getFeaturesetList
-                                                , tpose
-                                                )
-import           Features.Output                ( OutputShape
-                                                , ShapeOutput
-                                                  ( dataOnly
-                                                  , nameAttr
-                                                  )
-                                                )
-import           GHC.Generics                   ( Generic )
-import           GHC.Types                      ( Type )
-import           Safe                           ( headMay )
+import           Cohort.Core         (Cohort (..), CohortData, CohortMap, ObsID,
+                                      ObsUnit, getCohortData, getCohortDataData,
+                                      getCohortDataIDs, getCohortIDs)
+import           Cohort.Criteria     (AttritionInfo, CohortStatus)
+import           Data.Aeson          (FromJSON, ToJSON (..), Value, object,
+                                      (.=))
+import           Data.Aeson.Types    (FromJSON)
+import           Data.List.NonEmpty  as NE (NonEmpty (..), head, nonEmpty,
+                                            toList)
+import           Data.Map.Strict     as Data.Map (Map, unionWith)
+import           Data.Maybe          (fromMaybe)
+import           Data.Text           (Text)
+import           Features.Featureset (Featureset,
+                                      FeaturesetList (MkFeaturesetList),
+                                      getFeatureset, getFeaturesetList, tpose)
+import           Features.Output     (OutputShape,
+                                      ShapeOutput (dataOnly, nameAttr))
+import           GHC.Generics        (Generic)
+import           GHC.Types           (Type)
+import           Safe                (headMay)
 
 
 instance (ToJSON i) => ToJSON (ObsID i) where
@@ -87,12 +58,12 @@ data CohortDataShape d where
 
 deriving instance Show d => Show (CohortDataShape d)
 
--- | Maps CohortDataShape into an Aeson Value. 
+-- | Maps CohortDataShape into an Aeson Value.
 toJSONCohortDataShape :: CohortDataShape shape -> Value
 toJSONCohortDataShape (ColumnWise x) = toJSON x
 toJSONCohortDataShape (RowWise    x) = toJSON x
 
-{- | 
+{- |
 A type containing all the information of a 'Cohort' but where the 'CohortData'
 has been reshaped to a 'CohortDataShapeJSON'.
 -}
@@ -105,7 +76,7 @@ instance FromJSON CohortJSON
 instance Semigroup CohortJSON where
   (<>) (MkCohortJSON x) (MkCohortJSON y) = MkCohortJSON (x <> y)
 
-{- | 
+{- |
 Similar to 'CohortMap', but where the 'Cohort's have been mapped to a 'CohortJSON'.
 -}
 newtype CohortMapJSON = MkCohortMapJSON (Map Text CohortJSON)
@@ -143,7 +114,7 @@ instance (ToJSON i ) => ShapeCohort Featureset i where
   rowWise (MkCohort (a, d)) =
     MkCohortJSON (a, RW $ rowWiseJson (shapeRowWise d))
 
----- ColumnWise ---- 
+---- ColumnWise ----
 
 data ColumnWise i = MkColumnWise [OutputShape Type] -- attributes
                                  [ObsID i] -- ids
@@ -181,7 +152,7 @@ shapeColumnWise x = MkColumnWise (fromMaybe [] attr)
   attr = fmap (toList . fmap (nameAttr . NE.head . getFeatureset)) feat
   dat  = fmap (toList . fmap (toList . (fmap dataOnly . getFeatureset))) feat
 
----- Rowwise ---- 
+---- Rowwise ----
 
 newtype IDRow i = MkIDRow (ObsID i, [OutputShape Type])
   deriving ( Show, Generic )

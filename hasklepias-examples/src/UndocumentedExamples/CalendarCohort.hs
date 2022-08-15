@@ -9,15 +9,13 @@ so that either this example can be reworked
 or parts can be recycled into other examples.
 
 -}
-{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE DataKinds        #-}
 {-# LANGUAGE TypeApplications #-}
 module UndocumentedExamples.CalendarCohort
   ( example
   ) where
 
-import           ExampleEvents                  ( Demographic(..)
-                                                , ExampleModel(..)
-                                                )
+import           ExampleEvents (Demographic (..), ExampleModel (..))
 import           Hasklepias
 
 
@@ -46,7 +44,7 @@ indices = map (\(y, m) -> beginerval 0 (fromGregorian y m 1))
               (allPairs [2017] [1, 4, 7, 10])
 
 {-------------------------------------------------------------------------------
-  Utilities 
+  Utilities
 -------------------------------------------------------------------------------}
 
 -- | Creates a baseline interval from index
@@ -59,7 +57,7 @@ shiftIntervalDay
 shiftIntervalDay cd i =
   beginerval (duration i) (addGregorianDurationClip cd (begin i))
 
--- | Creates an interval *beginning the same day as the index* and 
+-- | Creates an interval *beginning the same day as the index* and
 --   ending 'followupDuration' days later.
 followupInterval :: Interval Day -> Interval Day
 followupInterval index = beginerval
@@ -76,7 +74,7 @@ getBaselineConcur :: Interval Day -> [Evnt Day] -> [Evnt Day]
 getBaselineConcur index = filterConcur (baselineInterval index)
 
 {-------------------------------------------------------------------------------
-  Feature patterns: functions for defining features by a given pattern 
+  Feature patterns: functions for defining features by a given pattern
 -------------------------------------------------------------------------------}
 
 -- | Defines a feature that returns 'True' ('False' otherwise) if either:
@@ -100,9 +98,9 @@ twoOutOneIn tag1 tag2 = buildNofXOrMofYWithGapBool 1
                                                    baselineInterval
 
 -- | Defines a feature that returns 'True' ('False' otherwise) if either:
---   * any events concuring with baseline with tags in 'tag' have a 
+--   * any events concuring with baseline with tags in 'tag' have a
 --     duration >= 90 days
---   * at least 2 events with tags in 'tag' have the same interval 
+--   * at least 2 events with tags in 'tag' have the same interval
 medHx
   :: [Text]
   -> Definition
@@ -183,7 +181,7 @@ deathDay = define
   )
 
 {-------------------------------------------------------------------------------
-  Inclusion/Exclusion features 
+  Inclusion/Exclusion features
 -------------------------------------------------------------------------------}
 
 -- | Include the subject if female; Exclude otherwise
@@ -218,7 +216,7 @@ critEnrolled = buildIsEnrolled isEnrollmentEvent
 
 -- | Include the subject if both:
 --     * she is enrolled on index ('critEnrolled')
---     * she all the gaps between the (combined) enrolled intervals within baseline 
+--     * she all the gaps between the (combined) enrolled intervals within baseline
 --       are less than 30 days
 critEnrolled455
   :: Definition

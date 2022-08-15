@@ -1,6 +1,6 @@
 {-|
-Module      : Define and evaluate Features 
-Description : Defines the Feature type and its component types, constructors, 
+Module      : Define and evaluate Features
+Description : Defines the Feature type and its component types, constructors,
               and class instances
 Copyright   : (c) NoviSci, Inc 2020
 License     : BSD3
@@ -9,14 +9,14 @@ Maintainer  : bsaul@novisci.com
 -}
 -- {-# OPTIONS_HADDOCK hide #-}
 
-{-# LANGUAGE Safe #-}
-{-# LANGUAGE NoImplicitPrelude #-}
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE TypeApplications #-}
-{-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE GADTs #-}
+{-# LANGUAGE DeriveGeneric          #-}
+{-# LANGUAGE FlexibleInstances      #-}
 {-# LANGUAGE FunctionalDependencies #-}
+{-# LANGUAGE GADTs                  #-}
+{-# LANGUAGE NoImplicitPrelude      #-}
+{-# LANGUAGE Safe                   #-}
+{-# LANGUAGE ScopedTypeVariables    #-}
+{-# LANGUAGE TypeApplications       #-}
 
 module Features.Core
   (
@@ -43,44 +43,21 @@ module Features.Core
   , eval
   ) where
 
-import safe      Control.Applicative            ( (<$>)
-                                                , Applicative(..)
-                                                , liftA3
-                                                )
-import safe      Control.Monad                  ( (=<<)
-                                                , Functor(..)
-                                                , Monad(..)
-                                                , join
-                                                , liftM
-                                                , liftM2
-                                                , liftM3
-                                                , liftM4
-                                                , liftM5
-                                                )
-import safe      Data.Either                    ( Either(..) )
-import safe      Data.Eq                        ( Eq(..) )
-import safe      Data.Foldable                  ( Foldable(foldr)
-                                                , fold
-                                                )
-import safe      Data.Function                  ( ($)
-                                                , (.)
-                                                , id
-                                                )
-import safe      Data.List                      ( (++)
-                                                , concat
-                                                , transpose
-                                                )
-import safe      Data.Proxy                     ( Proxy(..) )
-import safe      Data.Text                      ( Text
-                                                , pack
-                                                )
-import safe      Data.Traversable               ( Traversable(..) )
-import safe      GHC.Generics                   ( Generic )
-import safe      GHC.Show                       ( Show(show) )
-import safe      GHC.TypeLits                   ( KnownSymbol
-                                                , Symbol
-                                                , symbolVal
-                                                )
+import safe           Control.Applicative (Applicative (..), liftA3, (<$>))
+import safe           Control.Monad       (Functor (..), Monad (..), join,
+                                           liftM, liftM2, liftM3, liftM4,
+                                           liftM5, (=<<))
+import safe           Data.Either         (Either (..))
+import safe           Data.Eq             (Eq (..))
+import safe           Data.Foldable       (Foldable (foldr), fold)
+import safe           Data.Function       (id, ($), (.))
+import safe           Data.List           (concat, transpose, (++))
+import safe           Data.Proxy          (Proxy (..))
+import safe           Data.Text           (Text, pack)
+import safe           Data.Traversable    (Traversable (..))
+import safe           GHC.Generics        (Generic)
+import safe           GHC.Show            (Show (show))
+import safe           GHC.TypeLits        (KnownSymbol, Symbol, symbolVal)
 
 -- | Type synonym for 'Feature'.
 type F n a = Feature n a
@@ -88,10 +65,10 @@ type F n a = Feature n a
 -- | Type synonym for 'Definition'.
 type Def d = Definition d
 
-{- | 
+{- |
 Defines the reasons that a @'FeatureData'@ value may be missing. Can be used to
 indicate the reason that a @'Feature'@'s data was unable to be derived or does
-not need to be derived. 
+not need to be derived.
 -}
 {- tag::missingReason[] -}
 data MissingReason =
@@ -100,12 +77,12 @@ data MissingReason =
 {- end::missingReason[] -}
   deriving (Eq, Show, Generic)
 
-{- | 
+{- |
 The @FeatureData@ type is a container for an (almost) arbitrary type @d@ that can
-have a "failed" or "missing" state. The failure is represented by the @'Left'@ of 
+have a "failed" or "missing" state. The failure is represented by the @'Left'@ of
 an @'Either'@, while the data @d@ is contained in the @'Either'@'s @'Right'@.
 
-To construct a successful value, use @'featureDataR'@. A missing value can be 
+To construct a successful value, use @'featureDataR'@. A missing value can be
 constructed with @'featureDataL'@ or its synonym @'missingBecause'@.
 
 -}
@@ -118,12 +95,12 @@ newtype FeatureData d = MkFeatureData {
 
 -- | Creates a non-missing 'FeatureData'. Since @'FeatureData'@ is an instance of
 -- @'Applicative'@, @'pure'@ is also a synonym of for @'featureDataR'@.
--- 
+--
 -- >>> featureDataR "aString"
 -- MkFeatureData (Right "aString")
 -- >>> featureDataR (1 :: P.Int)
 -- MkFeatureData (Right 1)
--- 
+--
 -- >>> featureDataR ("aString", (1 :: P.Int))
 -- MkFeatureData (Right ("aString",1))
 --
@@ -131,7 +108,7 @@ featureDataR :: d -> FeatureData d
 featureDataR = MkFeatureData . Right
 
 -- | Creates a missing 'FeatureData'.
--- 
+--
 -- >>> featureDataL (Other "no good reason") :: FeatureData P.Int
 -- MkFeatureData (Left (Other "no good reason"))
 --
@@ -154,14 +131,14 @@ missingBecause = featureDataL
 -- >>> :type ( fmap show x )
 -- x :: FeatureData Int
 -- ( fmap show x ) :: FeatureData String
--- 
+--
 -- Note that 'Left' values are carried along while the type changes:
 --
 -- >>> x = ( featureDataL InsufficientData ) :: FeatureData P.Int
 -- >>> :type x
 -- >>> x
 -- >>> :type ( fmap show x )
--- >>> fmap show x 
+-- >>> fmap show x
 -- x :: FeatureData Int
 -- MkFeatureData {getFeatureData = Left InsufficientData}
 -- ( fmap show x ) :: FeatureData String
@@ -185,7 +162,7 @@ instance Foldable FeatureData where
 instance Traversable FeatureData where
   traverse f (MkFeatureData z) = MkFeatureData <$> traverse f z
 
-{- | 
+{- |
 The @'Feature'@ is an abstraction for @name@d @d@ata, where the @name@ is a
 *type*. Essentially, it is a container for @'FeatureData'@ that assigns a @name@
 to the data.
@@ -249,7 +226,7 @@ For example, here we take @f@ and lift to to a function of @Feature@s.
 
 @
 f :: Int -> String -> Bool
-f i s 
+f i s
   | 1 "yes" = True
   | otherwise = FALSE
 
@@ -257,7 +234,7 @@ myFeature :: Definition (Feature "A" Int -> Feature "B" String -> Feature "C" Bo
 myFeature = define f
 @
 
-See @'eval'@ for evaluating @Defintions@. 
+See @'eval'@ for evaluating @Defintions@.
 
 -}
 
@@ -299,13 +276,13 @@ data Definition d  where
           -> Definition (F n5 f -> F n4 e -> F n3 d -> F n2 c -> F n1 b -> F n0 a )
 
 
-{- | Define (and @'DefineA@) provide a means to create new @'Definition'@s via 
-@'define'@ (@'defineA'@). The @'define'@ function takes a single function input 
+{- | Define (and @'DefineA@) provide a means to create new @'Definition'@s via
+@'define'@ (@'defineA'@). The @'define'@ function takes a single function input
 and returns a lifted function. For example,
 
 @
 f :: Int -> String -> Bool
-f i s 
+f i s
   | 1 "yes" = True
   | otherwise = FALSE
 
@@ -314,12 +291,12 @@ myFeature = define f
 @
 
 The @'defineA'@ function is similar, except that the return type of the input
-function is already lifted. In the example below, an input of @Nothing@ is 
-considered a missing state: 
+function is already lifted. In the example below, an input of @Nothing@ is
+considered a missing state:
 
 @
 f :: Int -> Maybe String -> Feature "C" Bool
-f i s 
+f i s
   | 1 (Just "yes")   = pure True
   | _ (Just _ )      = pure False -- False for any Int and any (Just String)
   | otherwise        = pure $ missingBecause InsufficientData -- missing if no string
@@ -365,7 +342,7 @@ is a *tuple* of inputs. For example,
 
 @
 f :: Int -> String -> Bool
-f i s 
+f i s
   | 1 "yes" = True
   | otherwise = FALSE
 

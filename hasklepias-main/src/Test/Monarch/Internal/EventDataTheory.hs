@@ -1,4 +1,4 @@
-{-| 
+{-|
 Module      : Test.Monarch.Internal.EventDataTheory
 Description : Pre-made conversions for @EventDataTheory.Core@ types, to
 simplify testing implementation for routines using these types. You should
@@ -7,20 +7,20 @@ Copyright   : (c) NoviSci, Inc 2022
 License     : BSD3
 Maintainer  : bbrown@targetrwe.com
   -}
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE FlexibleContexts      #-}
+{-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE TypeApplications #-}
-{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE OverloadedStrings     #-}
+{-# LANGUAGE ScopedTypeVariables   #-}
+{-# LANGUAGE TypeApplications      #-}
 
 module Test.Monarch.Internal.EventDataTheory where
 
 import           Control.Applicative
-import           Data.Bifunctor                 ( first )
-import           Dhall                          ( FromDhall )
+import           Data.Bifunctor                  (first)
+import           Dhall                           (FromDhall)
 import           EventDataTheory
-import           Prelude                 hiding ( lookup )
+import           Prelude                         hiding (lookup)
 import           Test.Monarch.Internal.Atomic
 import           Test.Monarch.Internal.Map
 import           Test.Monarch.Internal.Utilities

@@ -1,6 +1,6 @@
 #!/usr/bin/env cabal
 {- cabal:
-build-depends:    
+build-depends:
     base ^>=4.14.3.0
     , aeson
     , acc
@@ -16,19 +16,19 @@ build-depends:
     , text
     , vector
 -}
-{-# LANGUAGE BangPatterns #-}
+{-# LANGUAGE BangPatterns      #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TypeApplications #-}
-{-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE QuasiQuotes       #-}
+{-# LANGUAGE TypeApplications  #-}
 {- HLINT ignore "Use camelCase" -}
 {-|
 Core logic of Filter Application
 
 This application processes streams of text at two levels:
 
-(1) A means of grouping the stream. 
+(1) A means of grouping the stream.
 For example, if the input is event lines data,
-the application groups the input events by subject ID. 
+the application groups the input events by subject ID.
 
 (2) A means of deciding whether include a group in the output
 and returning a group's data unchanged if it is to be output.
@@ -51,41 +51,31 @@ module Main where
 
 import           Acc
 import           Conduit
-import           Control.DeepSeq                ( NFData
-                                                , force
-                                                )
-import           Control.Exception              ( evaluate )
-import qualified Control.Foldl                 as L
+import           Control.DeepSeq            (NFData, force)
+import           Control.Exception          (evaluate)
+import qualified Control.Foldl              as L
 import           Data.Aeson
 import           Data.ByteString.Builder
-import qualified Data.ByteString.Char8         as BS
-import qualified Data.ByteString.Lazy          as BL
-import qualified Data.ByteString.Lazy.Char8    as BL
-import           Data.Conduit.Combinators      as CC
-                                                ( filter
-                                                , linesUnboundedAscii
-                                                , unlinesAscii
-                                                )
-import           Data.Conduit.List             as CL
-                                                ( groupBy )
+import qualified Data.ByteString.Char8      as BS
+import qualified Data.ByteString.Lazy       as BL
+import qualified Data.ByteString.Lazy.Char8 as BL
+import           Data.Conduit.Combinators   as CC (filter, linesUnboundedAscii,
+                                                   unlinesAscii)
+import           Data.Conduit.List          as CL (groupBy)
 import           Data.Maybe
-import           Data.Sequence           hiding ( fromList
-                                                , null
-                                                )
-import           Data.String                    ( IsString )
-import           Data.String.Interpolate        ( i )
-import           Data.Text                      ( Text )
-import           Data.Vector                    ( (!) )
+import           Data.Sequence              hiding (fromList, null)
+import           Data.String                (IsString)
+import           Data.String.Interpolate    (i)
+import           Data.Text                  (Text)
+import           Data.Vector                ((!))
 import           Debug.Trace
-import           GHC.Exts                       ( IsList(fromList)
-                                                , IsString
-                                                )
+import           GHC.Exts                   (IsList (fromList), IsString)
 import           Test.Tasty
 import           Test.Tasty.Bench
 import           Test.Tasty.HUnit
 
 -- INTERNAL
--- Run a parser then a predicate, 
+-- Run a parser then a predicate,
 -- returning `False` if the parsing failed.
 parseThenPredicate :: (t -> Maybe a) -> (a -> Bool) -> t -> Bool
 parseThenPredicate psl prd = maybe False prd . psl
@@ -100,7 +90,7 @@ unline x y = x <> "\n" <> y
 -------------------------------------------------------------------------------}
 
 {-
-  Group Option A: 
+  Group Option A:
   Directly specify begin, step, done for a fold.
 -}
 
@@ -326,7 +316,7 @@ processLinesApp_OptionA
   :: (Eq i, Semigroup t, IsString t, Eq t)
   => (t -> i) -- ^ identifier parser
   -> (t -> Maybe a) -- ^ parsing function
-  -> (a -> Bool) -- ^ predicate 
+  -> (a -> Bool) -- ^ predicate
   -> L.Fold t t
 processLinesApp_OptionA pid psl prd = L.Fold step begin done
  where
@@ -341,7 +331,7 @@ runProcessLinesApp_OptionA f g h =
 
 {-
   Application Option B
-  
+
   Line processing fold logic
   Defines the fold for a stream (across groups)
   for use in a context where IO can be done.
@@ -470,7 +460,7 @@ processLinesApp_OptionD psi prl prd = L.foldMap
 
 {-
   App Option E:
-  Similar to option D 
+  Similar to option D
   but directly writing fold logic,
   making use of parts of group option B
 -}
@@ -510,7 +500,7 @@ processLinesApp_OptionE
   :: (Eq i, Semigroup t, IsString t, Eq t)
   => (t -> i) -- ^ identifier parser
   -> (t -> Maybe a) -- ^ parsing function
-  -> (a -> Bool) -- ^ predicate 
+  -> (a -> Bool) -- ^ predicate
   -> L.Fold t t
 processLinesApp_OptionE pid psl prd = L.Fold step begin done
  where
@@ -559,7 +549,7 @@ processLinesApp_OptionFInternal pri psl prd status x
       Just n ->
           -- Identify the groupID in the subset of x
           -- in the interval [i + 1, i + n].
-          -- When the ID has not changed, 
+          -- When the ID has not changed,
           -- just update the index of the last newline.
           -- When the ID does change,
           -- then process the group for the last ID
@@ -580,7 +570,7 @@ processLinesApp_OptionFInternal pri psl prd status x
               )
       Nothing ->
           -- The following is similar to the logic above,
-          -- except it handles the case of 
+          -- except it handles the case of
           -- no further newlines to process.
         let currentID = pri (takeEnd i)
         in  if Just currentID == lastID status
@@ -593,7 +583,7 @@ processLinesApp_OptionFInternal pri psl prd status x
                 <> byteString (processGroup (BS.drop (groupStart status) x))
                 )
 
- where -- the recursion 
+ where -- the recursion
   go           = flip (processLinesApp_OptionFInternal pri psl prd) x
   processGroup = processGroup_OptionD psl prd
   takeEnd n = BS.drop (BS.length x - n) x
@@ -833,7 +823,7 @@ makeAppBenchInputs =
 appBenchCounts = [(10000, 10), (1000, 100), (100, 1000), (10, 10000)]
 
 -- appBenchCounts =
---     [ 
+--     [
 --       (1000, 10)
 --     , (100, 100)
 --     , (10, 1000)
@@ -876,9 +866,9 @@ benches =
       ++ Prelude.concatMap runGroupExperiment2 [10000, 100000]
       )
     :
-      --  : 
+      --  :
       --  runAppExperiment1
-  --      : 
+  --      :
       [bgroup "app experiments" runAppExperiment1]
 
 -- These files were created in a ghci session for benchmarking externally,

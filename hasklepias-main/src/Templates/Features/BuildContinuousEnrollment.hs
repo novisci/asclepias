@@ -3,10 +3,10 @@ module Templates.Features.BuildContinuousEnrollment
   , buildContinuousEnrollmentTests
   ) where
 
-import           EventDataTheory                ( makeGapsWithinPredicate )
-import           Templates.FeatureReqs         as F
+import           EventDataTheory       (makeGapsWithinPredicate)
+import           Templates.FeatureReqs as F
 
-{- | 
+{- |
 TODO
 -}
 {- tag::template0[] -}
@@ -46,7 +46,7 @@ buildContinuousEnrollment makeAssessmentInterval predicate allowableGap =
 
 
 {- tag::example0[] -}
--- f = buildContinuousEnrollment myMapper myPred 8 
+-- f = buildContinuousEnrollment myMapper myPred 8
 {- end::example0[] -}
 
 
@@ -79,7 +79,7 @@ buildContinuousEnrollmentTestCases =
       (makeBaselineMeetsIndex 10   , isEnrollmentEvent         , 3)
       (pure $ safeInterval (10, 11), pure [g (1, 4), g (9, 12)], pure Include)
       Exclude
-      {- 
+      {-
                   -           <- Index
          ----------           <- Baseline
          ---     ---          <- Enrollment

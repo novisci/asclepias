@@ -4,8 +4,7 @@ module FeatureExamples.DrugDiscontinuation
   ) where
 
 
-import           CohortExamples.CreateAssessmentInterval
-                                                ( flwup )
+import           CohortExamples.CreateAssessmentInterval (flwup)
 import           ExampleEvents
 import           Hasklepias
 -- | time of distcontinuation of antibiotics

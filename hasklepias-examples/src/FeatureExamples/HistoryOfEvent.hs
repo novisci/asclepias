@@ -1,10 +1,9 @@
-{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE DataKinds         #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module FeatureExamples.HistoryOfEvent where
 
-import           CohortExamples.CreateAssessmentInterval
-                                                ( flwup )
+import           CohortExamples.CreateAssessmentInterval (flwup)
 import           ExampleEvents
 import           Hasklepias
 

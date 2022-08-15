@@ -15,17 +15,10 @@ module Stype.Aeson
 
 import           Data.Aeson
 import           Data.Text
-import           Stype.Categorical              ( Binary
-                                                , Nominal
-                                                , toBool
-                                                )
--- ( ToJSON(..)) 
-import           Stype.Numeric                  ( Continuous(..)
-                                                , Count
-                                                , EventTime(..)
-                                                , MaybeCensored
-                                                , NonnegContinuous(..)
-                                                )
+import           Stype.Categorical (Binary, Nominal, toBool)
+-- ( ToJSON(..))
+import           Stype.Numeric     (Continuous (..), Count, EventTime (..),
+                                    MaybeCensored, NonnegContinuous (..))
 
 instance ToJSON Count where
 

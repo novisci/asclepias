@@ -2,13 +2,13 @@ module TestUtils.SessionId
   ( getSessionId
   ) where
 
-import           Control.Exception              ( tryJust )
-import           Control.Monad                  ( guard )
-import           Data.Time                      ( getCurrentTime )
-import           Data.Time.Clock                ( nominalDiffTimeToSeconds )
-import           Data.Time.Clock.POSIX          ( utcTimeToPOSIXSeconds )
-import           System.Environment             ( getEnv )
-import           System.IO.Error                ( isDoesNotExistError )
+import           Control.Exception     (tryJust)
+import           Control.Monad         (guard)
+import           Data.Time             (getCurrentTime)
+import           Data.Time.Clock       (nominalDiffTimeToSeconds)
+import           Data.Time.Clock.POSIX (utcTimeToPOSIXSeconds)
+import           System.Environment    (getEnv)
+import           System.IO.Error       (isDoesNotExistError)
 
 -- Create a unique ID based on the GitLab environmental variable $CI_PIPELINE_ID
 -- if one is defined, otherwise the computation fails with `isDoesNotExistError`

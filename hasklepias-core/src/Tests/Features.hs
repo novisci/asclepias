@@ -3,8 +3,8 @@ module Tests.Features
   ) where
 
 import           Test.Tasty
-import qualified Tests.Features.Core           as C
-import qualified Tests.Features.Output         as O
+import qualified Tests.Features.Core   as C
+import qualified Tests.Features.Output as O
 
 tests :: TestTree
 tests = testGroup "Features module(s) tests" [C.tests, O.tests]

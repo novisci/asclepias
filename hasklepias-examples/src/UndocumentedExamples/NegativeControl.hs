@@ -8,7 +8,7 @@ module UndocumentedExamples.NegativeControl
   ( example
   ) where
 
-import           ExampleEvents                  ( exampleEvents4 )
+import           ExampleEvents (exampleEvents4)
 import           Hasklepias
 
 {-
@@ -74,7 +74,7 @@ p5Events = toEvents [(1, 1, "index")]
 
 data CensorReason =
   -- The order matters here in that if two censoring events occur on the same
-  -- day then the reason for censoring will be chosen based on the following 
+  -- day then the reason for censoring will be chosen based on the following
   -- ordering.
     DeathCensor
   | Disenrollment
@@ -158,14 +158,14 @@ followupDuration = 365
 washoutDuration :: Integral b => b
 washoutDuration = 7
 
--- | Creates an interval *starting 7 days after the index* and 
+-- | Creates an interval *starting 7 days after the index* and
 --   ending 'followupDuration' days later.
 makeFollowupInterval
   :: (Integral b, Intervallic i, IntervalSizeable a b) => b -> i a -> Interval a
 makeFollowupInterval dur index =
   beginerval dur (add washoutDuration (begin index))
 
--- | Creates an interval *starting 7 days after the index* and 
+-- | Creates an interval *starting 7 days after the index* and
 --   ending 'followupDuration' days later.
 followupInterval
   :: (Integral b, IntervalSizeable a b) => Interval a -> Interval a
@@ -377,7 +377,7 @@ censorTime = define
     )
   )
 
-{- 
+{-
   Exposure Definitions
 -}
 
@@ -452,7 +452,7 @@ o1 = makeOutcomeDefinition ["wellness"] Wellness
 o2 :: (Integral b, IntervalSizeable a b) => Def (OutcomeFeature "accident" a b)
 o2 = makeOutcomeDefinition ["accident"] Accident
 
-{- 
+{-
    Tests of protocols
 -}
 
@@ -501,7 +501,7 @@ p5Protocols = pure $ MkProtocols Compliant
                                  (NonCompliant (mkEventTime (Just 180)))
                                  (NonCompliant (mkEventTime (Just 365)))
 
-{- 
+{-
    Tests of outcomes
 -}
 

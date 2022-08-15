@@ -1,36 +1,32 @@
-{-| 
+{-|
 Module      : Test.Monarch.Internal.Atomic
 Description : Internal representation of a testable value type to be used in
-Map. 
+Map.
 Copyright   : (c) NoviSci, Inc 2022
 License     : BSD3
 Maintainer  : bbrown@targetrwe.com
   -}
-{-# LANGUAGE ConstraintKinds #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE ConstraintKinds       #-}
+{-# LANGUAGE DeriveGeneric         #-}
+{-# LANGUAGE FlexibleContexts      #-}
+{-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE OverloadedStrings     #-}
+{-# LANGUAGE TypeApplications      #-}
 
 module Test.Monarch.Internal.Atomic where
 
-import           Data.Text                      ( Text )
+import           Data.Text              (Text)
 import           Data.Void
+import           Dhall                  (auto, rawInput)
 import qualified Dhall
-import           Dhall                          ( auto
-                                                , rawInput
-                                                )
-import qualified Dhall.Core                    as DC
-import qualified Dhall.Map                     as DM
-import qualified Dhall.Marshal.Decode          as DD
-import           Dhall.Src                      ( Src )
-import           GHC.Exts                       ( fromList
-                                                , toList
-                                                )
-import           GHC.Generics                   ( Generic )
-import           GHC.Natural                    ( Natural )
+import qualified Dhall.Core             as DC
+import qualified Dhall.Map              as DM
+import qualified Dhall.Marshal.Decode   as DD
+import           Dhall.Src              (Src)
+import           GHC.Exts               (fromList, toList)
+import           GHC.Generics           (Generic)
+import           GHC.Natural            (Natural)
 import           Witch.From
 import           Witch.TryFrom
 import           Witch.TryFromException
@@ -77,7 +73,7 @@ data TestVal = Atomic TestAtomic
 
 -- | Constraint synonym for types that can be converted to and from @TestVal@.
 -- Since intentionally @TestVal@ supports only a handful of types, conversions
--- from @TestVal@ are fallible. 
+-- from @TestVal@ are fallible.
 type Atomizable v = (TryFrom TestVal v)
 
   {- To/FromDhall Conversions -}

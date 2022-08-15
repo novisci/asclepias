@@ -1,5 +1,5 @@
 {-|
-Module      : FilePath functions 
+Module      : FilePath functions
 Description : Few helpers for manipulating file paths
 Copyright   : (c) NoviSci, Inc 2020
 License     : BSD3
@@ -16,36 +16,23 @@ module Hasklepias.FilePathUtilities
   ( updatePartitionPath
   ) where
 
-import           Control.Arrow                  ( (&&&) )
-import           Control.Monad                  ( Monad((>>=)) )
-import           Data.Bool                      ( (&&)
-                                                , (||)
-                                                )
-import           Data.Function                  ( ($)
-                                                , (.)
-                                                , flip
-                                                )
-import           Data.List.Split                ( splitOn )
-import           Data.Maybe                     ( Maybe(..) )
-import           Data.Ord                       ( Ord(..) )
-import           Data.Semigroup                 ( Semigroup((<>)) )
-import           Data.String                    ( String )
-import           Formatting                     ( Buildable
-                                                , Format
-                                                , formatToString
-                                                , left
-                                                )
-import           GHC.IO                         ( FilePath
-                                                , IO
-                                                )
-import           GHC.Int                        ( Int )
-import           GHC.Num                        ( Num((-)) )
-import           GHC.Real                       ( (^) )
-import           GHC.Show                       ( Show(..) )
-import           Safe                           ( atMay
-                                                , headMay
-                                                )
-import           Text.Read                      ( readMaybe )
+import           Control.Arrow   ((&&&))
+import           Control.Monad   (Monad ((>>=)))
+import           Data.Bool       ((&&), (||))
+import           Data.Function   (flip, ($), (.))
+import           Data.List.Split (splitOn)
+import           Data.Maybe      (Maybe (..))
+import           Data.Ord        (Ord (..))
+import           Data.Semigroup  (Semigroup ((<>)))
+import           Data.String     (String)
+import           Formatting      (Buildable, Format, formatToString, left)
+import           GHC.Int         (Int)
+import           GHC.IO          (FilePath, IO)
+import           GHC.Num         (Num ((-)))
+import           GHC.Real        ((^))
+import           GHC.Show        (Show (..))
+import           Safe            (atMay, headMay)
+import           Text.Read       (readMaybe)
 
 data MaybePartitionFile =
     NOutOfBounds

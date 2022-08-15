@@ -1,4 +1,4 @@
-{-| 
+{-|
 Module      : Test.Monarch.Parse
 Description : Helpers for marshalling csv text input to `TestMap` via
 `dhall-csv`.
@@ -14,9 +14,8 @@ module Test.Monarch.Parse
   , parseDhallFileWith
   ) where
 
-import           Test.Monarch.Internal.Csv      ( tryParseRecordsCsv )
-import           Test.Monarch.Internal.Dhall    ( decodeMapSchema
-                                                , decodeMapSchemaAuto
-                                                , parseDhallFile
-                                                , parseDhallFileWith
-                                                )
+import           Test.Monarch.Internal.Csv   (tryParseRecordsCsv)
+import           Test.Monarch.Internal.Dhall (decodeMapSchema,
+                                              decodeMapSchemaAuto,
+                                              parseDhallFile,
+                                              parseDhallFileWith)

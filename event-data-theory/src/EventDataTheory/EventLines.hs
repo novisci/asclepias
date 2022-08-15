@@ -4,17 +4,17 @@ Description : Defines FromJSON instances for Events.
 License     : BSD3
 Maintainer  : bsaul@novisci.com
 -}
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TypeApplications #-}
-{-# LANGUAGE UndecidableInstances #-}
-{-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE ConstraintKinds       #-}
+{-# LANGUAGE DeriveGeneric         #-}
 {-# LANGUAGE DuplicateRecordFields #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE LambdaCase #-}
-{-# LANGUAGE ConstraintKinds #-}
+{-# LANGUAGE FlexibleContexts      #-}
+{-# LANGUAGE FlexibleInstances     #-}
+{-# LANGUAGE LambdaCase            #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE OverloadedStrings     #-}
+{-# LANGUAGE ScopedTypeVariables   #-}
+{-# LANGUAGE TypeApplications      #-}
+{-# LANGUAGE UndecidableInstances  #-}
 
 module EventDataTheory.EventLines
   ( EventLine
@@ -32,7 +32,7 @@ module EventDataTheory.EventLines
   , defaultParseEventLineOption
   , modifyEventLineWithContext
 
-  -- for internal use; 
+  -- for internal use;
   , SubjectIDLine
   , FactsLine
   , TimeLine
@@ -41,45 +41,31 @@ module EventDataTheory.EventLines
 import           Control.Exception
 import           Data.Aeson
 import           Data.Bifunctor
-import qualified Data.ByteString.Char8         as C
-import qualified Data.ByteString.Lazy          as B
-import qualified Data.ByteString.Lazy.Char8    as B
+import qualified Data.ByteString.Char8      as C
+import qualified Data.ByteString.Lazy       as B
+import qualified Data.ByteString.Lazy.Char8 as B
 import           Data.Data
-import           Data.Either                    ( Either(..)
-                                                , partitionEithers
-                                                )
-import           Data.Scientific                ( floatingOrInteger )
-import           Data.Text                      ( Text
-                                                , pack
-                                                )
+import           Data.Either                (Either (..), partitionEithers)
+import           Data.Scientific            (floatingOrInteger)
+import           Data.Text                  (Text, pack)
 import           EventDataTheory.Core
-import           GHC.Generics                   ( Generic )
-import           GHC.Num                        ( Integer
-                                                , Natural
-                                                )
-import           IntervalAlgebra                ( Interval
-                                                , IntervalSizeable
-                                                  ( add
-                                                  , diff
-                                                  , moment
-                                                  )
-                                                , ParseErrorInterval
-                                                , begin
-                                                , beginerval
-                                                , end
-                                                , getInterval
-                                                , parseInterval
-                                                )
-import           Type.Reflection                ( Typeable )
+import           GHC.Generics               (Generic)
+import           GHC.Num                    (Integer, Natural)
+import           IntervalAlgebra            (Interval,
+                                             IntervalSizeable (add, diff, moment),
+                                             ParseErrorInterval, begin,
+                                             beginerval, end, getInterval,
+                                             parseInterval)
+import           Type.Reflection            (Typeable)
 import           Witch
 {-|
-At this time, 
+At this time,
 'EventLine', 'FactsLine', 'SubjectIDLine', and 'TimeLine' are
 simply wrapper types
-in order to create 'FromJSON' instances which can be used to marshal data from 
+in order to create 'FromJSON' instances which can be used to marshal data from
 [ndjson](http://ndjson.org/).
 See [event data model docs](https://docs.novisci.com/event-data/3.0/index.html)
-'ToJSON' instances are not provided, but may be in the future. 
+'ToJSON' instances are not provided, but may be in the future.
 -}
 
 data EventLine t m a = MkEventLine Value Value Value Value [t] (FactsLine m a)
@@ -130,7 +116,7 @@ instance Exception ParseErrorInterval
 
 {-|
 Try to parse an @'EventLine'@ into an @'Event'@,
-given an 'ParseEventLineOption'. 
+given an 'ParseEventLineOption'.
 -}
 instance ( Eventable t m a, EventLineAble t m a b ) =>
   TryFrom (EventLine t m a, ParseEventLineOption) (Event t m a) where
@@ -222,7 +208,7 @@ Decode a bytestring corresponding to an 'EventLine' into
 where the @String@ is an error message on failure
 and @(SubjectID, Event t m a)@ is the success case.
 
-NOTE: See https://hackage.haskell.org/package/aeson-2.0.3.0/docs/Data-Aeson.html#g:22 
+NOTE: See https://hackage.haskell.org/package/aeson-2.0.3.0/docs/Data-Aeson.html#g:22
 for discusson of json vs json'.
 -}
 eitherDecodeEvent, eitherDecodeEvent'
@@ -240,7 +226,7 @@ Decode a bytestring corresponding to an 'EventLine' into
 where the value is @Nothing@ on failure
 and @Just (SubjectID, Event t m a)@ on success.
 
-NOTE: See https://hackage.haskell.org/package/aeson-2.0.3.0/docs/Data-Aeson.html#g:22 
+NOTE: See https://hackage.haskell.org/package/aeson-2.0.3.0/docs/Data-Aeson.html#g:22
 for discusson of json vs json'.
 -}
 decodeEvent, decodeEvent'
@@ -258,7 +244,7 @@ Decode a strict bytestring corresponding to an 'EventLine' into
 where the value is @Nothing@ on failure
 and @Just (SubjectID, Event t m a)@ on success.
 
-NOTE: See https://hackage.haskell.org/package/aeson-2.0.3.0/docs/Data-Aeson.html#g:22 
+NOTE: See https://hackage.haskell.org/package/aeson-2.0.3.0/docs/Data-Aeson.html#g:22
 for discusson of json vs json'.
 -}
 decodeEventStrict, decodeEventStrict'
@@ -305,7 +291,7 @@ rightToMaybe :: Either b a -> Maybe a
 rightToMaybe (Left  _) = Nothing
 rightToMaybe (Right x) = Just x
 
-{-| 
+{-|
 Contains the line number and error message of any parsing errors.
 -}
 newtype LineParseError = MkLineParseError (Natural, String)
@@ -326,12 +312,12 @@ makeLineParser f l = partitionEithers $ zipWith
   (B.lines l)
   [1 ..]
 
-{-| 
+{-|
 Parse @Event t m a@ from new-line delimited JSON.
 
 Per the [aeson docs](https://hackage.haskell.org/package/aeson-2.0.3.0/docs/Data-Aeson.html#g:22),
-when using this version: 
-This is a strict version of json which avoids building up thunks during parsing; 
+when using this version:
+This is a strict version of json which avoids building up thunks during parsing;
 it performs all conversions immediately.
 Prefer this version if most of the JSON data needs to be accessed.
 
@@ -417,8 +403,8 @@ updateEventLineFromEvent (MkEventLine _ _ _ _ _ f) x =
 {-
 INTERNAL
 
-Transforms an Eventline via a function 
-that operates on the Context 
+Transforms an Eventline via a function
+that operates on the Context
 within the Event corresponding to the EventLine.
 -}
 eitherModifyEventLineFromContext
@@ -470,13 +456,13 @@ that corresponds to an 'Event' 'Context'
 using the supplied function
 
 The function may fail and return an error message
-if either the JSON parsing fails 
+if either the JSON parsing fails
 or the 'EventLine' -> 'Event' tranformation fails.
 
 This function does not modify the time information in the 'EventLine',
 nor any of the first four elements of the 'EventLine'.
 
-See 'modifyEventLineWithEvent' for a function that can also modify the interval. 
+See 'modifyEventLineWithEvent' for a function that can also modify the interval.
 -}
 modifyEventLineWithContext
   :: forall m m' t t' a b
@@ -506,7 +492,7 @@ that corresponds to an 'Event'
 using the supplied function
 
 The function may fail and return an error message
-if either the JSON parsing fails 
+if either the JSON parsing fails
 or the 'EventLine' -> 'Event' tranformation fails.
 
 This function may modify time information in the 'EventLine',

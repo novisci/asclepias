@@ -37,14 +37,8 @@ import           Test.Monarch.TestMap
 import           Test.Monarch.ToOutput
 import           Test.Tasty.Monarch
 
-import           Data.Aeson                     ( FromJSON
-                                                , ToJSON
-                                                )
-import           Dhall                          ( FromDhall
-                                                , ToDhall
-                                                )
-import           GHC.Generics                   ( Generic )
-import           Test.Tasty                     ( TestTree
-                                                , defaultMain
-                                                , testGroup
-                                                )
+import           Data.Aeson                    (FromJSON, ToJSON)
+import           Dhall                         (FromDhall, ToDhall)
+import           GHC.Generics                  (Generic)
+import           Test.Tasty                    (TestTree, defaultMain,
+                                                testGroup)

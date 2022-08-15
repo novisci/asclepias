@@ -6,43 +6,29 @@ License     : BSD3
 Maintainer  : bsaul@novisci.com
 -}
 -- {-# OPTIONS_HADDOCK hide #-}
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE DeriveGeneric       #-}
+{-# LANGUAGE FlexibleContexts    #-}
+{-# LANGUAGE FlexibleInstances   #-}
+{-# LANGUAGE GADTs               #-}
+{-# LANGUAGE OverloadedStrings   #-}
 {-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE GADTs #-}
+{-# LANGUAGE TypeApplications    #-}
 
 module Features.Output
   ( ShapeOutput(..)
   , OutputShape
   ) where
 
-import           Data.Aeson                     ( KeyValue((.=))
-                                                , ToJSON(toJSON)
-                                                , Value
-                                                , object
-                                                )
-import           Data.Proxy                     ( Proxy(Proxy) )
-import           Data.Typeable                  ( Typeable
-                                                , typeRep
-                                                )
-import           Features.Attributes            ( Attributes
-                                                , HasAttributes(..)
-                                                , Purpose
-                                                , Role
-                                                )
-import           Features.Core                  ( Feature
-                                                , FeatureData
-                                                , MissingReason
-                                                , getFData
-                                                , getFeatureData
-                                                )
-import           GHC.Generics                   ( Generic )
-import           GHC.TypeLits                   ( KnownSymbol
-                                                , symbolVal
-                                                )
+import           Data.Aeson          (KeyValue ((.=)), ToJSON (toJSON), Value,
+                                      object)
+import           Data.Proxy          (Proxy (Proxy))
+import           Data.Typeable       (Typeable, typeRep)
+import           Features.Attributes (Attributes, HasAttributes (..), Purpose,
+                                      Role)
+import           Features.Core       (Feature, FeatureData, MissingReason,
+                                      getFData, getFeatureData)
+import           GHC.Generics        (Generic)
+import           GHC.TypeLits        (KnownSymbol, symbolVal)
 instance ToJSON MissingReason
 
 instance (ToJSON d) => ToJSON (FeatureData d) where

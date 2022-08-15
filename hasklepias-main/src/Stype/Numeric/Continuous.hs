@@ -7,8 +7,8 @@ Maintainer  : bsaul@novisci.com
 
 -}
 
-{-# LANGUAGE Safe #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE Safe          #-}
 
 module Stype.Numeric.Continuous
   ( Continuous(..)
@@ -17,8 +17,8 @@ module Stype.Numeric.Continuous
   , mkEventTime
   ) where
 
-import safe      Control.Applicative            ( Applicative(liftA2) )
-import safe      GHC.Generics                   ( Generic )
+import safe           Control.Applicative (Applicative (liftA2))
+import safe           GHC.Generics        (Generic)
 
 -- | Data type for continuous numbers.
 data Continuous a = NegContInf | Cont a | ContInf

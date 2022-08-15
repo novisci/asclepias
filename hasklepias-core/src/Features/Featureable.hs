@@ -6,10 +6,10 @@ License     : BSD3
 Maintainer  : bsaul@novisci.com
 -}
 {-# LANGUAGE ExistentialQuantification #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE TypeApplications #-}
-{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE FlexibleContexts          #-}
+{-# LANGUAGE FlexibleInstances         #-}
+{-# LANGUAGE ScopedTypeVariables       #-}
+{-# LANGUAGE TypeApplications          #-}
 
 module Features.Featureable
   ( Featureable(..)
@@ -17,18 +17,12 @@ module Features.Featureable
   , getFeatureableAttrs
   ) where
 
-import           Data.Aeson                     ( ToJSON(toJSON) )
-import           Data.Typeable                  ( Typeable )
-import           Features.Attributes            ( Attributes
-                                                , HasAttributes(..)
-                                                )
-import           Features.Core                  ( Feature
-                                                , makeFeature
-                                                )
-import           Features.Output                ( OutputShape
-                                                , ShapeOutput(..)
-                                                )
-import           GHC.TypeLits                   ( KnownSymbol )
+import           Data.Aeson          (ToJSON (toJSON))
+import           Data.Typeable       (Typeable)
+import           Features.Attributes (Attributes, HasAttributes (..))
+import           Features.Core       (Feature, makeFeature)
+import           Features.Output     (OutputShape, ShapeOutput (..))
+import           GHC.TypeLits        (KnownSymbol)
 
 {- | Existential type to hold features, which allows for Features to be put
 into a homogeneous list.

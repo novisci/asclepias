@@ -1,5 +1,5 @@
 {-|
-Module      : Cohort Index 
+Module      : Cohort Index
 Description : Defines the Index and related types and functions
 Copyright   : (c) NoviSci, Inc 2020
 License     : BSD3
@@ -7,11 +7,11 @@ Maintainer  : bsaul@novisci.com
 -}
 
 -- {-# OPTIONS_HADDOCK hide #-}
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE DeriveGeneric         #-}
+{-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE TypeApplications #-}
-{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE ScopedTypeVariables   #-}
+{-# LANGUAGE TypeApplications      #-}
 
 module Hasklepias.AssessmentIntervals
   (
@@ -25,19 +25,19 @@ The assessment intervals provided are:
   For example, one feature may use a baseline interval of 365 days prior to
   index, while another uses a baseline interval of 90 days before index up
   to 30 days before index.
-* `Followup`: an interval which is 'IntervalAlgebra.startedBy', 
+* `Followup`: an interval which is 'IntervalAlgebra.startedBy',
   'IntervalAlgebra.metBy', or 'IntervalAlgebra.after' an index. Outcomes
   are typically assessed during followup intervals. Similar to 'Baseline',
-    a cohort's specification may include multiple followup intervals, 
-    as different features may require different followup intervals. 
+    a cohort's specification may include multiple followup intervals,
+    as different features may require different followup intervals.
 
 In future versions, one subject may have multiple values for an index
-corresponding to unique 'Cohort.Core.ObsUnit'. That is, there is a 1-to-1 map between 
-index values and observational units, but there may be a 1-to-many map from 
+corresponding to unique 'Cohort.Core.ObsUnit'. That is, there is a 1-to-1 map between
+index values and observational units, but there may be a 1-to-many map from
 subjects to indices.
 
 While users are protected from forming invalid assessment intervals, they still
-need to carefully consider how to filter events based on the assessment interval. 
+need to carefully consider how to filter events based on the assessment interval.
 Consider the following data:
 
 @
@@ -60,8 +60,8 @@ then the events concuring (i.e. not disjoint) with Baseline are C-G.  While C-F
 probably make sense to use in deriving some covariate, what about G? The event G
 begins during baseline but ends after index. If you want, for example, to know
 how many events started during baseline, then you’d want to include G in your
-filter (using 'IntervalAlgebra.concur'). But if you wanted to know the durations 
-of events enclosed by baseline, then you wouldn’t want to filter using concur 
+filter (using 'IntervalAlgebra.concur'). But if you wanted to know the durations
+of events enclosed by baseline, then you wouldn’t want to filter using concur
 and instead perhaps use 'IntervalAlgebra.enclosedBy'.
 
 
@@ -81,7 +81,7 @@ and instead perhaps use 'IntervalAlgebra.enclosedBy'.
 
 
 import           EventDataTheory
-import           GHC.Generics                   ( Generic )
+import           GHC.Generics    (Generic)
 import           Witch
 
 {-| A type to contain baseline intervals. See the 'Baseline' typeclass for methods
@@ -94,8 +94,8 @@ instance Intervallic BaselineInterval  where
   getInterval (MkBaselineInterval x) = getInterval x
   setInterval (MkBaselineInterval x) y = MkBaselineInterval (setInterval x y)
 
-{-| 
-Provides functions for creating a 'BaselineInterval' from an index. The 
+{-|
+Provides functions for creating a 'BaselineInterval' from an index. The
 'baselineMeets' function should satify:
 
 [Meets]
@@ -105,13 +105,13 @@ Provides functions for creating a 'BaselineInterval' from an index. The
 The 'baselineBefore' function should satisfy:
 
 [Before]
-  
+
   @'IntervalAlgebra.relate' ('baselineBefore' s d i) i = 'IntervalAlgebra.Before'@
 
 The 'baselineFinishedBy' function should satisfy:
 
 [FinishedBy]
-  
+
   @'IntervalAlgebra.relate' ('baselineFinishedBy' s d i) i = 'IntervalAlgebra.FinishedBy'@
 
 >>> import Cohort.Index
@@ -143,10 +143,10 @@ class Intervallic i => Baseline i  where
   baselineMeets dur index = MkBaselineInterval (enderval dur (begin index))
 
   -- | Creates a 'BaselineInterval' of the given duration that 'IntervalAlgebra.precedes'
-  -- the index interval. 
+  -- the index interval.
   baselineBefore ::
     ( IntervalSizeable a b) =>
-       b -- ^ duration to shift back 
+       b -- ^ duration to shift back
     -> b -- ^ duration of baseline
     -> i a -- ^ the index event
     -> BaselineInterval a
@@ -154,7 +154,7 @@ class Intervallic i => Baseline i  where
     MkBaselineInterval $ enderval dur (begin (enderval shiftBy (begin  index)))
 
   -- | Creates a 'BaselineInterval' of the given duration that 'IntervalAlgebra.FinishedBy'
-  -- the index interval. 
+  -- the index interval.
   baselineFinishedBy ::
     ( IntervalSizeable a b ) =>
        b -- ^ duration of baseline - not including the duration of index
@@ -175,8 +175,8 @@ instance  Intervallic FollowupInterval where
   getInterval (MkFollowupInterval x) = getInterval x
   setInterval (MkFollowupInterval x) y = MkFollowupInterval (setInterval x y)
 
-{-| 
-Provides functions for creating a 'FollowupInterval' from an index. The 
+{-|
+Provides functions for creating a 'FollowupInterval' from an index. The
 'followup' function should satify:
 
 [StartedBy]
@@ -186,7 +186,7 @@ Provides functions for creating a 'FollowupInterval' from an index. The
 The 'followupMetBy' function should satisfy:
 
 [MetBy]
-  
+
   @'IntervalAlgebra.relate' ('followupMetBy' d i) i = 'IntervalAlgebra.MetBy'@
 
 The 'followupAfter' function should satisfy:
@@ -204,8 +204,8 @@ The 'followupAfter' function should satisfy:
 MkFollowupInterval (10, 20)
 StartedBy
 
-Note the consequence of providing a duration less than or equal to the duration 
-of the index: a 'IntervalAlgebra.moment is added to the duration, so that the 
+Note the consequence of providing a duration less than or equal to the duration
+of the index: a 'IntervalAlgebra.moment is added to the duration, so that the
 end of the 'FollowupInterval' is greater than the end of the index.
 
 >>> import Cohort.Index
@@ -281,8 +281,8 @@ instance Intervallic AssessmentInterval where
   setInterval (Bl x) y = Bl (setInterval x y)
   setInterval (Fl x) y = Fl (setInterval x y)
 
--- | Creates an 'AssessmentInterval' using the 'baseline' function. 
--- 
+-- | Creates an 'AssessmentInterval' using the 'baseline' function.
+--
 -- >>> import Cohort.Index
 -- >>> x = $ beginerval 1 10
 -- >>> makeBaselineMeetsIndex 10 x
@@ -292,8 +292,8 @@ makeBaselineMeetsIndex
   :: (Baseline i, IntervalSizeable a b) => b -> i a -> AssessmentInterval a
 makeBaselineMeetsIndex dur index = Bl (baselineMeets dur index)
 
--- | Creates an 'AssessmentInterval' using the 'baselineBefore' function. 
--- 
+-- | Creates an 'AssessmentInterval' using the 'baselineBefore' function.
+--
 -- >>> import Cohort.Index
 -- >>> x = $ beginerval 1 10
 -- >>> makeBaselineBeforeIndex 2 10 x
@@ -304,8 +304,8 @@ makeBaselineBeforeIndex
 makeBaselineBeforeIndex shiftBy dur index =
   Bl (baselineBefore shiftBy dur index)
 
--- | Creates an 'AssessmentInterval' using the 'baselineFinishedBy' function. 
--- 
+-- | Creates an 'AssessmentInterval' using the 'baselineFinishedBy' function.
+--
 -- >>> import Cohort.Index
 -- >>> x = $ beginerval 1 10
 -- >>> makeBaselineFinishedByndex 10 x
@@ -315,8 +315,8 @@ makeBaselineFinishedByIndex
   :: (Baseline i, IntervalSizeable a b) => b -> i a -> AssessmentInterval a
 makeBaselineFinishedByIndex dur index = Bl (baselineFinishedBy dur index)
 
--- | Creates an 'AssessmentInterval' using the 'followup' function. 
--- 
+-- | Creates an 'AssessmentInterval' using the 'followup' function.
+--
 -- >>> import Cohort.Index
 -- >>> x = $ beginerval 1 10
 -- >>> makeFollowupStartedByIndex 10 x
@@ -326,8 +326,8 @@ makeFollowupStartedByIndex
   :: (Followup i a, IntervalSizeable a b) => b -> i a -> AssessmentInterval a
 makeFollowupStartedByIndex dur index = Fl (followup dur index)
 
--- | Creates an 'AssessmentInterval' using the 'followupMetBy' function. 
--- 
+-- | Creates an 'AssessmentInterval' using the 'followupMetBy' function.
+--
 -- >>> import Cohort.Index
 -- >>> x = $ beginerval 1 10
 -- >>> makeFollowupMetByIndex 10 x
@@ -337,8 +337,8 @@ makeFollowupMetByIndex
   :: (Followup i a, IntervalSizeable a b) => b -> i a -> AssessmentInterval a
 makeFollowupMetByIndex dur index = Fl (followupMetBy dur index)
 
--- | Creates an 'AssessmentInterval' using the 'followupAfter' function. 
--- 
+-- | Creates an 'AssessmentInterval' using the 'followupAfter' function.
+--
 -- >>> import Cohort.Index
 -- >>> x = $ beginerval 1 10
 -- >>> makeFollowupAfterIndex 10 10 x

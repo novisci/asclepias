@@ -1,5 +1,5 @@
 {-|
-Module      : Misc types and functions 
+Module      : Misc types and functions
 Description : Misc types and functions useful in Hasklepias.
 Copyright   : (c) NoviSci, Inc 2020
 License     : BSD3
@@ -8,10 +8,10 @@ Maintainer  : bsaul@novisci.com
 These functions may be moved to more appropriate modules in future versions.
 -}
 -- {-# LANGUAGE NoImplicitPrelude #-}
+{-# LANGUAGE DataKinds         #-}
+{-# LANGUAGE GADTs             #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE GADTs #-}
-{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE TypeApplications  #-}
 
 
 module Hasklepias.AppUtilities
@@ -43,50 +43,28 @@ module Hasklepias.AppUtilities
   , outputCompressionParser
   ) where
 
-import           Codec.Compression.GZip         ( CompressionLevel
-                                                , compress
-                                                , decompress
-                                                )
+import           Amazonka               (LogLevel (Debug, Error), Region,
+                                         ToBody (..), discover, newEnv,
+                                         newLogger, runResourceT, send,
+                                         sinkBody)
+import           Amazonka.S3            (BucketName,
+                                         ObjectCannedACL (ObjectCannedACL_Bucket_owner_full_control),
+                                         ObjectKey, newGetObject, newPutObject)
+import           Codec.Compression.GZip (CompressionLevel, compress, decompress)
 import           Control.Monad
 import           Control.Monad.IO.Class
-import qualified Data.ByteString               as BS
-import qualified Data.ByteString.Char8         as BSC
-import qualified Data.ByteString.Lazy          as BL
-                                         hiding ( putStrLn )
-import           Data.Conduit.Binary            ( sinkLbs )
-import           Data.Generics.Product          ( HasField(field) )
-import           Data.String                    ( IsString(fromString) )
-import qualified Data.Text                     as T
-                                                ( Text
-                                                , pack
-                                                )
-import qualified Data.Text.IO                  as T
-                                                ( putStrLn )
-import           Lens.Micro                     ( (<&>)
-                                                , (^.)
-                                                , set
-                                                )
-import           Lens.Micro.Extras              ( view )
+import qualified Data.ByteString        as BS
+import qualified Data.ByteString.Char8  as BSC
+import qualified Data.ByteString.Lazy   as BL hiding (putStrLn)
+import           Data.Conduit.Binary    (sinkLbs)
+import           Data.Generics.Product  (HasField (field))
+import           Data.String            (IsString (fromString))
+import qualified Data.Text              as T (Text, pack)
+import qualified Data.Text.IO           as T (putStrLn)
+import           Lens.Micro             (set, (<&>), (^.))
+import           Lens.Micro.Extras      (view)
 import           Options.Applicative
-import           System.IO                      ( stderr )
-import           Amazonka                       ( LogLevel(Debug, Error)
-                                                , Region
-                                                , ToBody(..)
-                                                , newEnv
-                                                , discover
-                                                , newLogger
-                                                , runResourceT
-                                                , send
-                                                , sinkBody
-                                                )
-import           Amazonka.S3                    ( BucketName
-                                                , ObjectCannedACL
-                                                  ( ObjectCannedACL_Bucket_owner_full_control
-                                                  )
-                                                , ObjectKey
-                                                , newGetObject
-                                                , newPutObject
-                                                )
+import           System.IO              (stderr)
 
 -- | Type representing locations that data can be read from
 data Location where
@@ -95,14 +73,14 @@ data Location where
   S3    ::Region -> BucketName -> ObjectKey -> Location
   deriving (Show)
 
--- | Type to hold input information. Either from file or from S3. 
+-- | Type to hold input information. Either from file or from S3.
 data Input =
      StdInput
    | FileInput (Maybe FilePath) FilePath
    | S3Input  String BucketName ObjectKey
    deriving (Show)
 
--- | Type to hold input information. Either from file or from S3. 
+-- | Type to hold input information. Either from file or from S3.
 data Output =
      StdOutput
    | FileOutput (Maybe FilePath) FilePath
@@ -117,7 +95,7 @@ data OutputCompression = NoCompress | Compress deriving (Show)
 
 {-
 An internal helper function to handle @InputDecompression@
-for lazy Bytestrings. 
+for lazy Bytestrings.
 -}
 handleInputDecompression
   :: InputDecompression -> BL.ByteString -> BL.ByteString
@@ -127,7 +105,7 @@ handleInputDecompression d = case d of
 
 {-
 An internal helper function to handle @InputDecompression@
-for lazy Bytestrings. 
+for lazy Bytestrings.
 -}
 handleOutputCompression :: OutputCompression -> BL.ByteString -> BL.ByteString
 handleOutputCompression d = case d of
@@ -136,9 +114,9 @@ handleOutputCompression d = case d of
 
 {-
 An internal helper function to handle @InputDecompression@
-for strict Bytestrings. 
+for strict Bytestrings.
 
-NOTE: zlib operates on Lazy Bytestrings so this function goes 
+NOTE: zlib operates on Lazy Bytestrings so this function goes
 from Strict to Lazy and back to Strict.
 This is likely to be inefficient.
 
@@ -164,7 +142,7 @@ handleInputDecompressionStrict d = case d of
 
 {-
 An internal helper function to handle @InputDecompression@
-for lazy Bytestrings. 
+for lazy Bytestrings.
 -}
 handleOutputCompressionStrict
   :: OutputCompression -> BS.ByteString -> BS.ByteString
@@ -184,14 +162,14 @@ writeData Std        z x = BL.putStr (handleOutputCompression z x)
 writeData (Local f ) z x = BL.writeFile f (handleOutputCompression z x)
 writeData (S3 r b k) z x = putS3Object r b k (handleOutputCompression z x)
 
--- | Read data from a @Location@ to strict @ByteString@. 
+-- | Read data from a @Location@ to strict @ByteString@.
 readDataStrict :: Location -> InputDecompression -> IO BS.ByteString
 readDataStrict Std       d = handleInputDecompressionStrict d <$> BS.getContents
 readDataStrict (Local x) d = handleInputDecompressionStrict d <$> BS.readFile x
 readDataStrict (S3 r b k) d =
   handleInputDecompressionStrict d <$> fmap BL.toStrict (getS3Object r b k)
 
--- | Write data from a @Location@ to strict @ByteString@. 
+-- | Write data from a @Location@ to strict @ByteString@.
 writeDataStrict :: Location -> OutputCompression -> BS.ByteString -> IO ()
 writeDataStrict Std z x = BSC.putStrLn (handleOutputCompressionStrict z x)
 writeDataStrict (Local f) z x =
@@ -199,7 +177,7 @@ writeDataStrict (Local f) z x =
 writeDataStrict (S3 r b k) z x =
   putS3Object r b k (handleOutputCompressionStrict z x)
 
--- | Get an object from S3. 
+-- | Get an object from S3.
 getS3Object :: Region -> BucketName -> ObjectKey -> IO BL.ByteString
 getS3Object r b k = do
   lgr <- newLogger Debug stderr
@@ -211,11 +189,11 @@ getS3Object r b k = do
     result <- send env (newGetObject b k)
     view (field @"body") result `sinkBody` sinkLbs
 
--- | Put an object on S3. 
+-- | Put an object on S3.
 --
--- NOTE: the put request uses the bucket-owner-full-control 
+-- NOTE: the put request uses the bucket-owner-full-control
 -- <https://docs.aws.amazon.com/AmazonS3/latest/userguide/about-object-ownership.html canned ACL>.
--- 
+--
 class (ToBody a) => PutS3 a where
   putS3Object :: Region -> BucketName -> ObjectKey -> a -> IO ()
   putS3Object r b k o = do

@@ -9,20 +9,15 @@ module Main
 
 import           AppExamples.CohortApp
 import           ConstructPaths
-import           Control.Exception              ( catch
-                                                , throwIO
-                                                )
-import qualified Data.ByteString.Lazy          as B
+import           Control.Exception            (catch, throwIO)
+import qualified Data.ByteString.Lazy         as B
 import           Hasklepias
-import           Hasklepias.MakeCohortApp       ( runApp )
-import           System.Directory               ( createDirectoryIfMissing
-                                                , removeDirectoryRecursive
-                                                , removePathForcibly
-                                                )
-import           System.Exit                    ( ExitCode )
-import           Test.Tasty                     ( TestTree
-                                                , defaultMain
-                                                )
+import           Hasklepias.MakeCohortApp     (runApp)
+import           System.Directory             (createDirectoryIfMissing,
+                                               removeDirectoryRecursive,
+                                               removePathForcibly)
+import           System.Exit                  (ExitCode)
+import           Test.Tasty                   (TestTree, defaultMain)
 import           TestUtils.BuildLargeTestData
 import           TestUtils.ConstructTestTree
 import           TestUtils.S3Utils

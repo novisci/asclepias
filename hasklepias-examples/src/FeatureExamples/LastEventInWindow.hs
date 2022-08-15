@@ -2,9 +2,9 @@
 Description : Demostrates how to define features using Hasklepias
 -}
 
-{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE DataKinds           #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeApplications    #-}
 
 module FeatureExamples.LastEventInWindow
   ( example

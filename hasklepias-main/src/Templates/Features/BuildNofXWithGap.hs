@@ -5,8 +5,8 @@ module Templates.Features.BuildNofXWithGap
   , buildNofXWithGapTests
   ) where
 
-import           EventDataTheory                ( pairGaps )
-import           Templates.FeatureReqs         as F
+import           EventDataTheory                  (pairGaps)
+import           Templates.FeatureReqs            as F
 import           Templates.Features.BuildNofXBase
 
 {- tag::template0[] -}
@@ -28,7 +28,7 @@ buildNofXWithGap
        -> Feature varName outputType
        )
 buildNofXWithGap cast nGaps allowableGap = buildNofXBase
-  (-- just need the intervals  
+  (-- just need the intervals
    fmap getInterval
    -- pairGaps needs List input as the container type
                     .> toList)
@@ -168,7 +168,7 @@ buildNofXWithGapTestCases =
                    -          <- Index
          ----------           <- Baseline
           -                   <- ["C", "A"]
-                 -            <- ["A", "B"] 
+                 -            <- ["A", "B"]
         |--------------|
       -}
   , f "True if 1 gap satisfy gap condition "
@@ -181,7 +181,7 @@ buildNofXWithGapTestCases =
          ----------           <- Baseline
           -                   <- ["C", "A"]
               -               <- ["D", "E"]
-                 -            <- ["A", "B"] 
+                 -            <- ["A", "B"]
         |--------------|
       -}
   , f

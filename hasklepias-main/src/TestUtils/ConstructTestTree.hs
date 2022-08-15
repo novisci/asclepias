@@ -11,11 +11,11 @@ module TestUtils.ConstructTestTree
   , postCmdHookS3
   ) where
 
-import           Control.Monad                  ( when )
-import           System.IO                      ( FilePath )
-import           System.Process                 ( callCommand )
-import           Test.Tasty                     ( TestTree )
-import           Test.Tasty.Silver              ( goldenVsFile )
+import           Control.Monad       (when)
+import           System.IO           (FilePath)
+import           System.Process      (callCommand)
+import           Test.Tasty          (TestTree)
+import           Test.Tasty.Silver   (goldenVsFile)
 import           TestUtils.S3Utils
 import           TestUtils.TestCases
 

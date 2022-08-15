@@ -1,11 +1,10 @@
-{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE DataKinds        #-}
 {-# LANGUAGE TypeApplications #-}
 module FeatureExamples.TwoOutOneIn
   ( example
   ) where
 
-import           CohortExamples.CreateAssessmentInterval
-                                                ( bline )
+import           CohortExamples.CreateAssessmentInterval (bline)
 import           ExampleEvents
 import           Hasklepias
 
@@ -18,7 +17,7 @@ import           Hasklepias
 twoOutOneIn
   :: (IntervalSizeable a b)
   => [Text] -- ^ inpatientTags
-  -> [Text] -- ^ outpatientTags 
+  -> [Text] -- ^ outpatientTags
   -> Definition -- <1>
        (  Feature "index" (Interval a)
        -> Feature "allEvents" [Event Text ExampleModel a]

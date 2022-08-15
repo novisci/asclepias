@@ -1,11 +1,9 @@
-{-# LANGUAGE GADTs #-}
+{-# LANGUAGE GADTs                 #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 module Test.Monarch.MonarchException where
 
 import           Control.Exception
-import           Data.Text                      ( Text
-                                                , unpack
-                                                )
+import           Data.Text              (Text, unpack)
 import           Witch.TryFromException
 
 -- | Catch-all exception for failures at various points in the decoding

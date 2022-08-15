@@ -3,14 +3,7 @@
 # formatter (https://hackage.haskell.org/package/stylish-haskell)
 set -e 
 
-cabal install stylish-haskell
-
 stylish-haskell --version
 
 find . -name "*.hs" -not -path './dist-newstyle/*' -print0 |
-  xargs -0 stylish-haskell --recursive --config ci/ci-stylish-haskell.yaml
-
-
-# curl -sL https://raw.github.com/haskell/stylish-haskell/master/scripts/latest.sh | sh -s . 
-
-# --recursive --config ci/ci-stylish-haskell.yaml 
+  xargs -0 stylish-haskell --config ci/ci-stylish-haskell.yaml

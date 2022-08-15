@@ -1,5 +1,5 @@
 {-|
-Module      : Stype 
+Module      : Stype
 Description : Statistical types
 Copyright   : (c) NoviSci, Inc 2020
 License     : BSD3

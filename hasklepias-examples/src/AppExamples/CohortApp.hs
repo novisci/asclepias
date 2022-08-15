@@ -1,15 +1,15 @@
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE NoImplicitPrelude #-}
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE DataKinds             #-}
+{-# LANGUAGE FlexibleContexts      #-}
+{-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE NoImplicitPrelude     #-}
+{-# LANGUAGE OverloadedStrings     #-}
+{-# LANGUAGE TypeApplications      #-}
 module AppExamples.CohortApp
   ( exampleAppRW
   , exampleAppCW
   ) where
-import           ExampleEvents                  ( ExampleModel )
+import           ExampleEvents (ExampleModel)
 import           Hasklepias
 {-------------------------------------------------------------------------------
   Features used by inclusion/exclusion (and possibly other places too)
@@ -60,7 +60,7 @@ instance HasAttributes "myVar2" Bool where
   Cohort Specifications and evaluation
 -------------------------------------------------------------------------------}
 
--- | 
+-- |
 makeIndexRunner :: [Event Text ExampleModel Day] -> IndexSet (Interval Day)
 makeIndexRunner _ = makeIndexSet [beginerval 1 (fromGregorian 2010 7 6)]
 

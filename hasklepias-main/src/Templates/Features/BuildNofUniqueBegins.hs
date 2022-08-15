@@ -3,12 +3,8 @@ module Templates.Features.BuildNofUniqueBegins
   , buildNofUniqueBeginsTests
   ) where
 
-import           Data.Map.Strict               as M
-                                                ( Map
-                                                , fromList
-                                                , toList
-                                                )
-import           Templates.FeatureReqs         as F
+import           Data.Map.Strict                  as M (Map, fromList, toList)
+import           Templates.FeatureReqs            as F
 import           Templates.Features.BuildNofXBase
 
 {- tag::template0[] -}
@@ -76,7 +72,7 @@ buildNofUniqueBeginsTestCases =
       [(2, 1), (4, 2)]
       {-
          -                    <- Index
-         ----------           <- Followup 
+         ----------           <- Followup
            -                  <- "A"
            ---                <- "A"
              -                <- "A"
@@ -89,7 +85,7 @@ buildNofUniqueBeginsTestCases =
       [(4, 1)]
       {-
          -                    <- Index
-         ----------           <- Followup 
+         ----------           <- Followup
            -                  <- "B"
            ---                <- "B"
              -                <- "A"

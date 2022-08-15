@@ -6,8 +6,8 @@ module Stype.Tests
   ( stypeTests
   ) where
 
-import qualified Stype.Tests.Aeson             as A
-import qualified Stype.Tests.Censored          as C
+import qualified Stype.Tests.Aeson    as A
+import qualified Stype.Tests.Censored as C
 import           Test.Tasty
 
 -- | All the tests of stype

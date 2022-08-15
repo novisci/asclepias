@@ -16,7 +16,7 @@
    there would need to be some additional configuration to allow
    non-programmers to specify the transformation. Such a configuration could
    have details that are difficult to resolve and difficult for those who did
-   not write the code to reason about. 
+   not write the code to reason about.
 
    Of course, if needed programmers could circumvent this intentional
    limitation by defining newtype wrappers around existing types.
@@ -26,11 +26,11 @@
    internal flat csv-like representation, @[TestMap]@, and to be instances of
    @ToOutput@.
      -}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE AllowAmbiguousTypes   #-}
 {-# LANGUAGE ConstraintKinds       #-}
+{-# LANGUAGE FlexibleContexts      #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE AllowAmbiguousTypes #-}
+{-# LANGUAGE ScopedTypeVariables   #-}
 
 module Test.Monarch.ToOutput
   ( Testable
@@ -48,7 +48,7 @@ class ToOutput input output where
 -- | Context synonym for an @input@ and @output@ pair that can be constructed
 -- from the general flat TestMap and run through @toOutput@. @input@ is a Haskell
 -- representation of a type serving as input to a function to be tested, given
--- in @toOutput@, and @ouput@ is the resulting type of the conversion. 
+-- in @toOutput@, and @ouput@ is the resulting type of the conversion.
 --
 -- The @TryFrom@ instances allow @input@ and @output@ to be constructed from
 -- textual input via @[TestMap]@, rather than having the Haskell programmer

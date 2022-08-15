@@ -1,5 +1,5 @@
+{-# LANGUAGE DataKinds         #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE DataKinds #-}
 module Tests.Cohort.Criteria
   ( tests
   ) where
@@ -23,7 +23,7 @@ f3 = criterion "f3"
 
 f4 :: Criterion
 f4 = criterion "f4" Exclude
--- f4 = into @Criterion 
+-- f4 = into @Criterion
 --   (makeFeature (featureDataL $ Other "something") :: Feature "f4" Status)
 
 testAttr1 :: AttritionInfo

@@ -3,9 +3,7 @@ module Main
   ( main
   ) where
 
-import           Examples.Simple                ( ProjEvent
-                                                , ProjOccurrence
-                                                )
+import           Examples.Simple (ProjEvent, ProjOccurrence)
 import           Monarch
 import           System.FilePath
 

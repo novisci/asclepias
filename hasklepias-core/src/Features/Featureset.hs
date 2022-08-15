@@ -6,9 +6,9 @@ License     : BSD3
 Maintainer  : bsaul@novisci.com
 -}
 -- {-# OPTIONS_HADDOCK hide #-}
+{-# LANGUAGE DataKinds         #-}
+{-# LANGUAGE GADTs             #-}
 {-# LANGUAGE NoImplicitPrelude #-}
-{-# LANGUAGE GADTs #-}
-{-# LANGUAGE DataKinds #-}
 
 module Features.Featureset
   ( Featureset
@@ -20,23 +20,14 @@ module Features.Featureset
   , tpose
   ) where
 
-import           Data.Aeson                     ( (.=)
-                                                , ToJSON(toJSON)
-                                                , object
-                                                )
-import           Data.Function                  ( (.) )
-import           Data.Functor                   ( Functor(fmap) )
-import           Data.List.NonEmpty            as NE
-                                                ( NonEmpty(..)
-                                                , head
-                                                , transpose
-                                                )
-import           Features.Attributes            ( Attributes )
-import           Features.Featureable           ( Featureable
-                                                , getFeatureableAttrs
-                                                )
-import           GHC.Generics                   ( Generic )
-import           GHC.Show                       ( Show )
+import           Data.Aeson           (ToJSON (toJSON), object, (.=))
+import           Data.Function        ((.))
+import           Data.Functor         (Functor (fmap))
+import           Data.List.NonEmpty   as NE (NonEmpty (..), head, transpose)
+import           Features.Attributes  (Attributes)
+import           Features.Featureable (Featureable, getFeatureableAttrs)
+import           GHC.Generics         (Generic)
+import           GHC.Show             (Show)
 
 -- | A Featureset is a (non-empty) list of @Featureable@.
 newtype Featureset = MkFeatureset (NE.NonEmpty Featureable)

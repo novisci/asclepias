@@ -1,6 +1,6 @@
+{-# LANGUAGE DataKinds         #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE TypeApplications  #-}
 
 module Tests.Cohort.Output
   ( tests
@@ -9,10 +9,9 @@ module Tests.Cohort.Output
 import           Cohort
 -- import           Cohort.Attrition
 import           Data.Aeson
-import qualified Data.ByteString.Lazy          as B
-                                                ( ByteString )
-import           Features                       ( emptyAttributes )
-import           GHC.Exts                       ( IsList(..) )
+import qualified Data.ByteString.Lazy as B (ByteString)
+import           Features             (emptyAttributes)
+import           GHC.Exts             (IsList (..))
 import           Test.Tasty
 import           Test.Tasty.HUnit
 

@@ -1,5 +1,5 @@
-{-| 
-Module      : Functions and types for creating tests for templates 
+{-|
+Module      : Functions and types for creating tests for templates
 Description : Misc types and functions useful in Hasklepias.
 Copyright   : (c) NoviSci, Inc 2020
 License     : BSD3
@@ -8,9 +8,9 @@ Maintainer  : bsaul@novisci.com
 These functions may be moved to more appropriate modules in future versions.
 -}
 -- {-# OPTIONS_HADDOCK hide #-}
-{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE DeriveGeneric         #-}
+{-# LANGUAGE FlexibleContexts      #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 module Templates.TestUtilities
   ( TestCase(..)
@@ -25,7 +25,7 @@ module Templates.TestUtilities
   ) where
 
 -- #endif
-import           Data.Text                      ( Text )
+import           Data.Text        (Text)
 import           Data.Tuple.Curry
 -- TODO: find a better way to handle this import and/or figure out how use
 --       gcc on a mac on the haskell c-preprocessor without phutzing with a lot
@@ -37,16 +37,12 @@ import           Data.Tuple.Curry
 -- #else
 import           Data.Tuple.Solo
 import           EventDataTheory
-import           Features.Core                  ( Define(..)
-                                                , Definition(..)
-                                                , F
-                                                , Feature
-                                                , eval
-                                                )
+import           Features.Core    (Define (..), Definition (..), F, Feature,
+                                   eval)
 import           GHC.Generics
 import           Test.Tasty
 import           Test.Tasty.HUnit
-import           Type.Reflection                ( Typeable )
+import           Type.Reflection  (Typeable)
 
 data TestSchema = Enrollment | NotEnrollment deriving (Show, Eq, Generic)
 

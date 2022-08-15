@@ -1,5 +1,5 @@
 {-|
-Module      : Stype binary 
+Module      : Stype binary
 Description : Statistical types
 Copyright   : (c) NoviSci, Inc 2020
 License     : BSD3
@@ -7,8 +7,8 @@ Maintainer  : bsaul@novisci.com
 
 -}
 
-{-# LANGUAGE Safe #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE Safe          #-}
 
 module Stype.Categorical.Binary
   ( Binary(..)
@@ -17,7 +17,7 @@ module Stype.Categorical.Binary
   , fromBool
   ) where
 
-import           GHC.Generics                   ( Generic )
+import           GHC.Generics (Generic)
 
 {- | Binary Type -}
 data Binary = Zero | One  deriving ( Eq, Ord, Generic )
@@ -37,7 +37,7 @@ toInt :: Binary -> Int
 toInt Zero = 0
 toInt One  = 1
 
--- | Create a @Binary@ from a @Bool@. 
+-- | Create a @Binary@ from a @Bool@.
 fromBool :: Bool -> Binary
 fromBool True  = One
 fromBool False = Zero

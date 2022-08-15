@@ -5,12 +5,12 @@ Copyright   : (c) NoviSci, Inc 2020
 License     : BSD3
 Maintainer  : bsaul@novisci.com
 -}
-{-# LANGUAGE GADTs #-}
-{-# LANGUAGE BlockArguments #-}
-{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE BlockArguments      #-}
+{-# LANGUAGE GADTs               #-}
+{-# LANGUAGE OverloadedStrings   #-}
+{-# LANGUAGE QuasiQuotes         #-}
 {-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE TypeApplications    #-}
 -- {-# LANGUAGE TemplateHaskell #-}
 
 module Hasklepias.MakeCohortApp
@@ -23,45 +23,27 @@ module Hasklepias.MakeCohortApp
 
 
 import           Cohort
-import           Colog.Core                     ( (<&)
-                                                , HasLog(..)
-                                                , LogAction(..)
-                                                , logPrint
-                                                , logPrintStderr
-                                                , logStringStderr
-                                                , logStringStdout
-                                                )
-import           Data.Aeson                     ( FromJSON
-                                                , ToJSON(..)
-                                                , decode
-                                                , encode
-                                                )
-import           Data.Bifunctor                 ( Bifunctor(second) )
-import qualified Data.ByteString.Lazy          as BL
-import           Data.List                      ( sort )
-import           Data.Map.Strict                ( fromList
-                                                , toList
-                                                )
-import qualified Data.Map.Strict               as M
-                                                ( fromListWith
-                                                , toList
-                                                )
-import           Data.Monoid                    ( Monoid(mconcat) )
-import           Data.String.Interpolate        ( i )
-import           Data.Text                      ( Text
-                                                , pack
-                                                , splitOn
-                                                )
-import           Development.GitRev             ( gitDirty
-                                                , gitHash
-                                                )
-import           EventDataTheory         hiding ( (<|>) )
+import           Colog.Core               (HasLog (..), LogAction (..),
+                                           logPrint, logPrintStderr,
+                                           logStringStderr, logStringStdout,
+                                           (<&))
+import           Data.Aeson               (FromJSON, ToJSON (..), decode,
+                                           encode)
+import           Data.Bifunctor           (Bifunctor (second))
+import qualified Data.ByteString.Lazy     as BL
+import           Data.List                (sort)
+import           Data.Map.Strict          (fromList, toList)
+import qualified Data.Map.Strict          as M (fromListWith, toList)
+import           Data.Monoid              (Monoid (mconcat))
+import           Data.String.Interpolate  (i)
+import           Data.Text                (Text, pack, splitOn)
+import           Development.GitRev       (gitDirty, gitHash)
+import           EventDataTheory          hiding ((<|>))
 import           Hasklepias.AppUtilities
 import           Options.Applicative
-import           Options.Applicative.Help
-                                         hiding ( fullDesc )
-import           Type.Reflection                ( Typeable )
-import           Witch                          ( into )
+import           Options.Applicative.Help hiding (fullDesc)
+import           Type.Reflection          (Typeable)
+import           Witch                    (into)
 
 {-| INTERNAL
 A type which contains the evaluation options of a cohort application.
@@ -116,10 +98,10 @@ makeCohortParserInfo
 makeCohortParserInfo name version = Options.Applicative.info
   (makeCohortParser <**> (helper <*> verisonOption))
   (fullDesc <> header (name <> " " <> versionInfo) <> progDescDoc
-    (Just 
+    (Just
       ([i| Create cohorts for #{ name } |]
   -- based on code from gitrev: #{ githash }.
-  
+
   -- #{ gitdirty }
   -- |]
       <> helpText
@@ -192,7 +174,7 @@ subjectSampleDoc =
     <> line
     <> [i|
   By default, all subjects in the input population are evaluated for cohort
-  inclusion. Several options are available to filter the population to 
+  inclusion. Several options are available to filter the population to
   particular subjects. For example, the --first-n-subjects option processes
   the first N subjects in the input data. This can be useful to "kick the tires"
   of the cohort application and limit the amount of data to process.
@@ -220,10 +202,10 @@ evaluateFeaturesParser =
 evaluateFeaturesDoc :: Doc
 evaluateFeaturesDoc =
   dullblue (bold "== Feature Evalution Options ==") <> linebreak <> [i|
-  By default, features defined in the cohort are only evaluated for 
-  observational units included in the cohort. The application has two 
+  By default, features defined in the cohort are only evaluated for
+  observational units included in the cohort. The application has two
   option flags to change this behavior: skip-features and features-on-all-units.
-  See Available options. 
+  See Available options.
   |]
 
 {-| INTERNAL
@@ -286,7 +268,7 @@ logParseErrors x = mconcat $ fmap (parseErrorL <&) x
 Type containing a cohort app.
 The @Maybe Location@ argument can be used to set a location of input data
 for (e.g.) usage in tests.
-The return type contains the `Output` location so that the application 
+The return type contains the `Output` location so that the application
 captures the output location from the cli arguments,
 but can also be overridden by (e.g.) `runAppWithLocation`.
 -}

@@ -5,13 +5,13 @@ Copyright   : (c) NoviSci, Inc 2020
 License     : BSD3
 Maintainer  : bsaul@novisci.com
 -}
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE TypeApplications #-}
-{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE DeriveGeneric         #-}
+{-# LANGUAGE FlexibleContexts      #-}
+{-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE TupleSections #-}
-{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE ScopedTypeVariables   #-}
+{-# LANGUAGE TupleSections         #-}
+{-# LANGUAGE TypeApplications      #-}
 
 module Cohort.Core
   ( SubjID
@@ -40,47 +40,30 @@ module Cohort.Core
   , defaultCohortEvalOptions
   ) where
 
-import           Cohort.Criteria                ( AttritionInfo
-                                                , CohortStatus(..)
-                                                , Criteria
-                                                , checkCohortStatus
-                                                , measureSubjectAttrition
-                                                )
+import           Cohort.Criteria     (AttritionInfo, CohortStatus (..),
+                                      Criteria, checkCohortStatus,
+                                      measureSubjectAttrition)
 import           Cohort.IndexSet
-import           Control.Applicative            ( liftA2 )
-import           Control.Monad                  ( replicateM )
-import           Data.Aeson                     ( FromJSON
-                                                , ToJSON(..)
-                                                )
+import           Control.Applicative (liftA2)
+import           Control.Monad       (replicateM)
+import           Data.Aeson          (FromJSON, ToJSON (..))
 import           Data.Bifunctor
 import           Data.Binary
-import qualified Data.List.NonEmpty            as NE
-import           Data.Map.Strict               as Map
-                                                ( Map
-                                                , elems
-                                                , keys
-                                                )
-import           Data.Semigroup                 ( sconcat )
-import qualified Data.Set                      as Set
-                                                ( Set )
-import           Data.Text                      ( Text
-                                                , pack
-                                                )
-import           GHC.Exts                       ( IsList(..) )
-import           GHC.Generics                   ( Generic )
-import           Safe                           ( headMay )
-import           Test.QuickCheck                ( Arbitrary(arbitrary)
-                                                , arbitraryASCIIChar
-                                                )
-import           Text.Printf                    ( printf )
-import           Witch                          ( From(..)
-                                                , into
-                                                , via
-                                                )
-import qualified Witherable                    as W
+import qualified Data.List.NonEmpty  as NE
+import           Data.Map.Strict     as Map (Map, elems, keys)
+import           Data.Semigroup      (sconcat)
+import qualified Data.Set            as Set (Set)
+import           Data.Text           (Text, pack)
+import           GHC.Exts            (IsList (..))
+import           GHC.Generics        (Generic)
+import           Safe                (headMay)
+import           Test.QuickCheck     (Arbitrary (arbitrary), arbitraryASCIIChar)
+import           Text.Printf         (printf)
+import           Witch               (From (..), into, via)
+import qualified Witherable          as W
 
 
-{-| 
+{-|
 -}
 newtype SubjID = MkSubjID Text
   deriving (Eq, Show, Generic)
@@ -94,7 +77,7 @@ instance Arbitrary SubjID where
   arbitrary = into . pack <$> replicateM 10 arbitraryASCIIChar
 
 -- These instances might ideally part of the Witch package,
--- but they're here for casting common ID types 
+-- but they're here for casting common ID types
 -- (Int/Integer for now) to Text.
 instance From Int Text where
   from = pack . printf "%d"
@@ -114,7 +97,7 @@ https://hackage.haskell.org/package/base-4.16.1.0/docs/Text-Printf.html#g:2
 -}
 makeSubjID = MkSubjID . into
 
-{-| 
+{-|
 A subject is just a pair of a 'Text' ID and data.
 -}
 newtype Subject d = MkSubject (SubjID, d)
@@ -160,7 +143,7 @@ instance (Arbitrary d) => Arbitrary (Population d) where
   arbitrary = MkPopulation <$> arbitrary
 
 {-|
-An observational unit identifier. 
+An observational unit identifier.
 The textual representation of a Subject ID,
 plus the index of the unit,
 where 'index' is in the temporal sense of epidemiological studies
@@ -192,7 +175,7 @@ instance From (ObsID i, d) (ObsUnit d i) where
   from (x, y) = MkObsUnit x y
 instance (Binary d, Binary i) => Binary (ObsUnit d i)
 
-{-| 
+{-|
 A container for CohortData
 -}
 newtype CohortData d i = MkCohortData [ObsUnit d i]
@@ -201,8 +184,8 @@ newtype CohortData d i = MkCohortData [ObsUnit d i]
 instance From [ObsUnit d i] (CohortData d i) where
 instance (Binary d, Binary i) => Binary (CohortData d i)
 
-{-| 
-A cohort is a list of observational units along with @'AttritionInfo'@ 
+{-|
+A cohort is a list of observational units along with @'AttritionInfo'@
 regarding the number of subjects excluded by the @'Criteria'@..
 -}
 newtype Cohort d i = MkCohort (AttritionInfo, CohortData d i)
@@ -231,31 +214,31 @@ getCohortDataData (MkCohortData x) = fmap obsData x
 getCohortData :: Cohort d i -> [d]
 getCohortData (MkCohort (_, dat)) = getCohortDataData dat
 
-{-| 
-A cohort specification consist of three functions: 
+{-|
+A cohort specification consist of three functions:
 
-[@runIndices@]: 
+[@runIndices@]:
 A function which maps a 'Subject's input data,
 for example a list of events,
 into zero or more indices
 in the form of an 'IndexSet'.
 
-[@runCriteria@]: 
-A function which maps each an index and 'Subject's input data 
+[@runCriteria@]:
+A function which maps each an index and 'Subject's input data
 into 'Criteria'.
 
-[@runFeatures@]: 
-A function which maps each an index and 'Subject's input data 
+[@runFeatures@]:
+A function which maps each an index and 'Subject's input data
 into the output data,
 for example a list of 'Features.Core.Feature's
 (as 'Features.Featureable's).
 
-The evaluation of this specification is executed 
+The evaluation of this specification is executed
 for a single 'Subject' by 'makeSubjectEvaluator' and
 for a whole 'Population' by 'makeCohortEvaluator'.
 The evaluation process can be modified
 by certain options within a 'CohortEvalOptions',
-such as 'EvaluateFeatures'. 
+such as 'EvaluateFeatures'.
 See 'CohortEvalOptions' for more details.
 -}
 data CohortSpec d1 d0 i = MkCohortSpec
@@ -311,14 +294,14 @@ data SubjectSample =
   deriving (Show, Eq)
 
 {- (internal)
-NOTE: 
+NOTE:
 in future versions of this module,
 we will want to generalize the underlying type of a Population
 to something other than a list.
-When that time comes, 
+When that time comes,
 we'll want/need the Witherable module,
 so I'm (BS) am going ahead an included the dependency,
-It's not strictly needed at the moment. 
+It's not strictly needed at the moment.
 -}
 filterPopulation :: SubjectSample -> Population d -> Population d
 filterPopulation AllSubjects x = x
@@ -359,15 +342,15 @@ defaultCohortEvalOptions = MkCohortEvalOptions OnlyOnIncluded AllSubjects
 {-
 *INTERNAL*
 
-A type used in 'makeSubjectEvaluator' 
+A type used in 'makeSubjectEvaluator'
 to contain a subject's processed data
 before converting the result to observational units for output.
 -}
 data EvaluatedSubject d i =
     SNoIndex Text CohortStatus
   -- SUnits contains a list of data for each unit of a subject
-  -- where the data are 
-  --  (unit id, status of the unit, (maybe) units evaluated data) 
+  -- where the data are
+  --  (unit id, status of the unit, (maybe) units evaluated data)
   | SUnits [ (ObsID i, CohortStatus, Maybe d) ]
 
 instance From (ObsID i, CohortStatus, Maybe d ) (Maybe (ObsUnit d i)) where
@@ -397,7 +380,7 @@ makeSubjectEvaluator opts spec subj = do
   let sid = getSubjectID subj
   let sdt = getSubjectData subj
 
-  -- Evaluate indices; 
+  -- Evaluate indices;
   -- convert any indices in set to list
   let inx = into @(Maybe [i]) $ runIndices spec sdt
 
@@ -430,7 +413,7 @@ makeSubjectEvaluator opts spec subj = do
       -- to the statusIndices and returns the desired result type
       let doFeatures g = pure (attrition, SUnits $ fmap g statusIndices)
 
-      -- A function which takes an index and runs the 
+      -- A function which takes an index and runs the
       -- features given the cohort spec and subject's data.
       let featureRunner i = runFeatures spec i sdt
 
@@ -455,7 +438,7 @@ makeSubjectEvaluator opts spec subj = do
             )
   where tackOn z (x, y) = (x, y, z)
 
-{- 
+{-
 *INTERNAL*
 
 This functions processes each 'Subject' in a 'Population'
@@ -496,19 +479,19 @@ makeCohortEvaluator opts spec pop =
           ePop
       )
 
-{-| 
+{-|
 A container hold multiple cohorts of the same type.
 The key is the name of the cohort; value is a cohort.
 -}
 type CohortMap d i = Map Text (Cohort d i)
 
-{-| 
-Key/value pairs of 'CohortSpec's. 
+{-|
+Key/value pairs of 'CohortSpec's.
 The keys are the names of the cohorts.
 -}
 type CohortMapSpec d1 d0 i = Map Text (CohortSpec d1 d0 i)
 
-{-| 
+{-|
 Make a set of 'CohortSpec's from list input.
 -}
 makeCohortSpecs

@@ -9,36 +9,22 @@ module CohortCollection
   ) where
 
 
-import           Cohort.Output                  ( CohortMapJSON )
-import           Conduit                        ( (.|)
-                                                , foldMapMC
-                                                , runConduit
-                                                , runResourceT
-                                                , yieldMany
-                                                )
-import           Data.Aeson                     ( decode
-                                                , encode
-                                                )
-import qualified Data.ByteString.Char8         as CH
-import qualified Data.ByteString.Lazy          as B
-import qualified Data.ByteString.Lazy.Char8    as C
-                                                ( lines
-                                                , putStrLn
-                                                , toStrict
-                                                )
-import qualified Data.Conduit.List             as CL
-import           Data.Maybe                     ( fromMaybe )
-import qualified Data.Text                     as T
-                                                ( pack )
-import           Hasklepias.AppUtilities       as H
-                                         hiding ( Input(..)
-                                                , fileInput
-                                                )
+import           Cohort.Output              (CohortMapJSON)
+import           Conduit                    (foldMapMC, runConduit,
+                                             runResourceT, yieldMany, (.|))
+import           Data.Aeson                 (decode, encode)
+import qualified Data.ByteString.Char8      as CH
+import qualified Data.ByteString.Lazy       as B
+import qualified Data.ByteString.Lazy.Char8 as C (lines, putStrLn, toStrict)
+import qualified Data.Conduit.List          as CL
+import           Data.Maybe                 (fromMaybe)
+import qualified Data.Text                  as T (pack)
+import           Hasklepias.AppUtilities    as H hiding (Input (..), fileInput)
 
-import           Options.Applicative
-import           System.IO                      ( stderr )
 import           Amazonka.Auth
 import           Amazonka.S3
+import           Options.Applicative
+import           System.IO                  (stderr)
 
 getCohortData :: Location -> InputDecompression -> IO (Maybe CohortMapJSON)
 getCohortData x d = fmap decode (readData x d)
@@ -56,7 +42,7 @@ getLocations (S3Input b k) =
     .   C.lines
     <$> getS3Object NorthVirginia b k
 
--- | Type to hold input information. Either from file or from S3. 
+-- | Type to hold input information. Either from file or from S3.
 data Input =
      FileInput (Maybe FilePath) FilePath
    | S3Input BucketName ObjectKey

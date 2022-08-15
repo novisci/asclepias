@@ -1,5 +1,5 @@
 {-|
-Module      : Misc types and functions 
+Module      : Misc types and functions
 Description : Misc types and functions useful in Hasklepias.
 Copyright   : (c) NoviSci, Inc 2020
 License     : BSD3
@@ -39,13 +39,11 @@ import           Control.Applicative
 import           Data.Time
 -- import           IntervalAlgebra
 import           EventDataTheory
-import           Features.Core                  ( Definition
-                                                , Feature
-                                                )
-import           GHC.Generics                   ( Generic )
-import           Stype.Numeric.Censored         ( MaybeCensored(..) )
-import           Stype.Numeric.Continuous       ( EventTime )
-import qualified Witherable                    as W
+import           Features.Core            (Definition, Feature)
+import           GHC.Generics             (Generic)
+import           Stype.Numeric.Censored   (MaybeCensored (..))
+import           Stype.Numeric.Continuous (EventTime)
+import qualified Witherable               as W
 
 -- | A simple typeclass for making a type a "reason" for an event.
 class (Ord a, Show a) => OccurrenceReason a where

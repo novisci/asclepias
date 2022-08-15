@@ -1,6 +1,6 @@
 {-|
 Module      : Features
-Description : Defines the Feature type and its component types, constructors, 
+Description : Defines the Feature type and its component types, constructors,
               and class instances
 Copyright   : (c) NoviSci, Inc 2020
 License     : BSD3

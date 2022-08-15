@@ -44,7 +44,7 @@ buildNofXBinary = buildNofX fromBool
 {- tag::template2[] -}
 buildNofXBool
   :: (Intervallic i, Witherable container)
-  => Int -- ^ minimum number of cases 
+  => Int -- ^ minimum number of cases
   -> (i a -> AssessmentInterval a) -- ^ function to transform a to an 'AssessmentInterval'
   -> ComparativePredicateOf2 (AssessmentInterval a) (Event t m a) -- ^ interval predicate
   -> Predicate (Event t m a) -- ^ a predicate on events
@@ -74,7 +74,7 @@ buildNofXBinaryConcurBaseline n baselineDur =
 {- tag::template4[] -}
 buildNofTagSetBinaryConcurBaseline
   :: (Intervallic i0, Witherable t1, IntervalSizeable a b, Baseline i0, Ord t)
-  => Int -- ^ minimum number of events. 
+  => Int -- ^ minimum number of events.
   -> b  -- ^ duration of baseline (passed to 'Cohort.makeBaselineMeetsIndex')
   -> [t] -- ^ list of 'EventData.Tag' passed to 'EventData.containsTag'
   -> Definition

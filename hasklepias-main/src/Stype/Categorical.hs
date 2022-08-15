@@ -14,5 +14,5 @@ module Stype.Categorical
   , module Stype.Categorical.Binary
   ) where
 
-import safe      Stype.Categorical.Binary
-import safe      Stype.Categorical.Nominal
+import safe           Stype.Categorical.Binary
+import safe           Stype.Categorical.Nominal

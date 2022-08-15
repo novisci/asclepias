@@ -6,8 +6,8 @@ Maintainer  : bsaul@novisci.com
 -}
 
 -- {-# OPTIONS_HADDOCK hide #-}
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE DeriveGeneric         #-}
+{-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 
 module Cohort.IndexSet
@@ -15,22 +15,12 @@ module Cohort.IndexSet
   , makeIndexSet
   ) where
 
-import qualified Data.List.NonEmpty            as NEL
-                                                ( nonEmpty
-                                                , toList
-                                                )
-import qualified Data.Set.NonEmpty             as Set
-                                                ( NESet
-                                                , fromList
-                                                , singleton
-                                                , toList
-                                                )
-import           GHC.Generics                   ( Generic )
-import           Witch                          ( From(..)
-                                                , into
-                                                )
+import qualified Data.List.NonEmpty as NEL (nonEmpty, toList)
+import qualified Data.Set.NonEmpty  as Set (NESet, fromList, singleton, toList)
+import           GHC.Generics       (Generic)
+import           Witch              (From (..), into)
 
-{-| 
+{-|
 A type containing (maybe) a @Data.Set.NonEmpty.NESet@ (nonempty) of type @i@,
 values of which serve as indices when defining cohorts.
 In cohort terminology,
@@ -39,9 +29,9 @@ can be assessed whether it meets the criteria for inclusion in the cohort.
 For example, when @i@ is @Interval Day@,
 then index events are days.
 
-A reason for using @Data.Set.NonEmpty.NESet@ as the underlying type 
-is that indices must be unique within a subject. 
-a subject cannot have multiple observational units for a given index. 
+A reason for using @Data.Set.NonEmpty.NESet@ as the underlying type
+is that indices must be unique within a subject.
+a subject cannot have multiple observational units for a given index.
 
 Use the 'makeIndexSet' function for creating an @IndexSet@.
 -}

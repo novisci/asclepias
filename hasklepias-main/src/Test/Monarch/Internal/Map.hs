@@ -1,4 +1,4 @@
-{-| 
+{-|
 Module      : Monarch.Internal.Map
 Description : Flat structure for decoding csv to Dhall to Haskell
 Copyright   : (c) NoviSci, Inc 2022
@@ -6,17 +6,17 @@ License     : BSD3
 Maintainer  : bbrown@targetrwe.com
   -}
 
+{-# LANGUAGE FlexibleContexts      #-}
+{-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE ScopedTypeVariables   #-}
+{-# LANGUAGE TypeApplications      #-}
 
 module Test.Monarch.Internal.Map where
 
-import           Data.Bifunctor                 ( first )
-import qualified Data.Map.Strict               as SMap
-import           Data.Text                      ( Text )
+import           Data.Bifunctor               (first)
+import qualified Data.Map.Strict              as SMap
+import           Data.Text                    (Text)
 import qualified Dhall.Map
 import           Test.Monarch.Internal.Atomic
 import           Witch.From
@@ -63,7 +63,7 @@ instance (Traversable t, TryFrom (Map v) a) => TryFrom (t (Map v)) (t a) where
 
   {- UTILS and SYNONYMS -}
 -- | The primary flat structure housing values to be tested and providing the
--- glue between text input and internal types to be tested. 
+-- glue between text input and internal types to be tested.
 type TestMap = Map TestVal
 
 fromList :: [(Text, v)] -> Map v

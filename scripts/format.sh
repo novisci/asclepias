@@ -8,4 +8,4 @@ if ! [ -x "$(command -v stylish-haskell)" ]; then
   echo 'Use the command '\''cabal install stylish-haskell'\'' to install the application'  >&2
   exit 1
 fi
-find . -name "*.hs" -not -path './dist-newstyle/*' -exec sh -c 'stylish-haskell "$1" --i./scnplace' shell {} \;
+find . -name "*.hs" -not -path './dist-newstyle/*' -exec sh -c 'stylish-haskell "$1" --inplace' shell {} \;

@@ -9,4 +9,6 @@ set -e
 #   xargs -0 stylish-haskell --recursive --config ci/ci-stylish-haskell.yaml
 
 
-curl -sL https://raw.github.com/haskell/stylish-haskell/master/scripts/latest.sh | sh -s --recursive --config ci/ci-stylish-haskell.yaml 
+curl -sL https://raw.github.com/haskell/stylish-haskell/master/scripts/latest.sh | sh -s . 
+
+# --recursive --config ci/ci-stylish-haskell.yaml 

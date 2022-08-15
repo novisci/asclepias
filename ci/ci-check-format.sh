@@ -3,5 +3,7 @@
 # formatter (https://hackage.haskell.org/package/stylish-haskell)
 set -e 
 
+stylish-haskell --version
+
 find . -name "*.hs" -not -path './dist-newstyle/*' -print0 |
-  xargs -0 stylish-haskell -r --config ci/ci-stylish-haskell.yaml
+  xargs -0 stylish-haskell --recursive --config ci/ci-stylish-haskell.yaml

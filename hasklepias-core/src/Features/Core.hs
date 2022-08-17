@@ -152,9 +152,7 @@ instance Applicative FeatureData where
   liftA2 f (MkFeatureData x) (MkFeatureData y) = MkFeatureData (liftA2 f x y)
 
 instance Monad FeatureData where
-  (MkFeatureData x) >>= f = case fmap f x of
-    Left  l -> MkFeatureData $ Left l
-    Right v -> v
+  (MkFeatureData x) >>= f = MkFeatureData $ x >>= getFeatureData . f
 
 instance Foldable FeatureData where
   foldr f x (MkFeatureData z) = foldr f x z
@@ -213,9 +211,7 @@ instance Traversable (Feature name) where
   traverse f (MkFeature x) = MkFeature <$> traverse f x
 
 instance Monad (Feature name) where
-  (MkFeature x) >>= f = case fmap f x of
-    MkFeatureData (Left  l) -> MkFeature $ MkFeatureData (Left l)
-    MkFeatureData (Right r) -> r
+  (MkFeature x) >>= f = MkFeature $ x >>= getFData . f
 
 
 {- | A @Definition@ can be thought of as a lifted function. Specifically, the

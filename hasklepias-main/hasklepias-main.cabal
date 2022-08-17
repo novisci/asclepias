@@ -32,6 +32,7 @@ library
       Hasklepias.MakeCohortApp
       Hasklepias.AppBuilder.LineFilterApp
       Hasklepias.AppBuilder.ProcessLines.Tests
+      Hasklepias.Initialize
       
       Hasklepias.Misc
       Hasklepias.Reexports
@@ -113,8 +114,10 @@ library
     , containers
     , conduit-extra
     , deepseq
+    , directory
     , dhall
     , dhall-csv
+    , file-embed
     , filepath
     , flow
     , generic-lens
@@ -128,6 +131,7 @@ library
     , regex-compat
     , safe
     , semiring-simple
+    , stache
     , string-interpolate
     , tasty
     , tasty-bench

@@ -1,0 +1,42 @@
+index-state: 2022-08-11T11:35:57Z
+
+with-compiler: ghc-9.2.2
+
+packages: ./P0000.cabal
+
+package *
+  coverage: True
+  library-coverage: True
+
+package attoparsec
+  coverage: False
+  library-coverage: False
+
+source-repository-package
+  type: git
+  location: https://gitlab+deploy-token-ns-projects:glpat-LCmSwKeZSLheZCTVMEkA@gitlab.novisci.com/nsStat/asclepias.git
+  tag: 0aa105b37c7afa18f1f8e99c9fef24e03f9ff458
+  subdir: 
+      hasklepias-core
+      hasklepias-main
+      event-data-theory
+
+source-repository-package
+   type: git
+   location: https://gitlab+deploy-token-ns-projects:glpat-7Z4w2JGrm2692Bshcqhd@gitlab.novisci.com/nsStat/event-data-model.git
+   tag: b194e74bebcb32ffdcbebc5bb00c07f680b7bada
+   subdir: 
+      fact-models
+
+-- For amazonka
+source-repository-package
+    type: git
+    location: https://github.com/novisci/amazonka
+    tag: 0bf8bfd95915fe09c56474e6eca7c0bac58c1daa
+    subdir: 
+        lib/amazonka 
+        lib/amazonka-core 
+        lib/services/amazonka-sso 
+        lib/services/amazonka-sts 
+        lib/services/amazonka-s3
+

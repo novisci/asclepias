@@ -1,0 +1,48 @@
+cabal-version:      2.4
+name:               {{prjId}} 
+version:            0.1.0
+homepage:           https://gitlab.novisci.com/nsResearch/{{prjId}}
+extra-source-files:
+    README.adoc
+
+library
+    exposed-modules:
+         Cohort
+       , Tests 
+    build-depends:    
+        hasklepias-main 
+      , fact-models 
+    hs-source-dirs:   plans
+    default-language: Haskell2010
+    default-extensions: 
+        NoImplicitPrelude
+        OverloadedStrings
+        LambdaCase
+        FlexibleContexts
+        FlexibleInstances
+        DeriveGeneric
+        DuplicateRecordFields
+        MultiParamTypeClasses
+        TupleSections
+        TypeApplications
+        DataKinds
+        TemplateHaskell
+
+executable {{prjId}} 
+    main-is:          Main.hs
+    build-depends:
+          base
+        , hasklepias-main
+        , {{prjId}}
+    hs-source-dirs:   apps
+    default-language: Haskell2010
+
+test-suite {{prjId}}-test
+    default-language: Haskell2010
+    type:             exitcode-stdio-1.0
+    hs-source-dirs:   apps
+    main-is:          TestMain.hs
+    build-depends: 
+          base
+        , hasklepias-main
+        , {{prjId}} 

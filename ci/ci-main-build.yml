@@ -4,6 +4,11 @@ stages:
   - build
   - deploy
 
+# Tag all jobs with nsstat so that the nsstat runner is used:
+# https://gitlab.com/groups/TargetRWE/epistats/-/runners/16673355
+default: 
+  tags: ["nsstat"]
+
 # Rules for main-build and dependencies
 .rules-main-build:
   rules:
@@ -52,7 +57,7 @@ main-build:
       optional: true
   rules:
     - !reference [.rules-main-build, rules]
-  image: registry.novisci.com/nsstat/asclepias/hasklepias-build:${MAINVERSION}
+  image: registry.gitlab.com/targetrwe/epistats/nsstat/asclepias/hasklepias-build:${MAINVERSION}
   script:
      - ./ci/ci-cabal-build-all.sh
   artifacts:
@@ -64,7 +69,7 @@ main-build:
 # Upload docs to S3
 # TODO: change to a lighterweight aws image when available in nsBuild
 upload-haddock-docs:
-  image: registry.novisci.com/nsstat/nsbuild/ubuntu:latest
+  image: registry.gitlab.com/targetrwe/epistats/nsstat/nsbuild/ubuntu:latest
   needs:
     - pipeline: $PARENT_PIPELINE_ID
       job: build_vars

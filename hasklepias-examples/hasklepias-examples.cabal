@@ -142,7 +142,7 @@ executable exampleFilterApp
 -- due to errors such as:
 --   exampleFilterApp: MissingFileError "/root/.aws/credentials"
 -- punting this to resolve another day.
--- see: https://gitlab.novisci.com/nsStat/asclepias/-/issues/205
+-- see: https://gitlab.com/targetrwe/epistats/nsstat/asclepias/-/issues/205
 
 -- test-suite testFilterApp
 --   type: exitcode-stdio-1.0

@@ -12,6 +12,11 @@ variables:
   GHC: "9.2.2"
   DOCKER: "20.10.11"
 
+# Tag all jobs with nsstat so that the nsstat runner is used:
+# https://gitlab.com/groups/TargetRWE/epistats/-/runners/16673355
+default: 
+  tags: ["nsstat"]
+
 stages:
   - prep
   - build
@@ -33,7 +38,7 @@ build_vars:
 
 check-source:
   stage: prep
-  image: registry.novisci.com/nsstat/nsbuild/haskell:$GHC
+  image: registry.gitlab.com/targetrwe/epistats/nsstat/nsbuild/haskell:$GHC
   script:
     - ./scripts/lint.sh
     - ./ci/ci-check-format.sh
@@ -68,7 +73,7 @@ trigger-doc-site:
 # # succeeds, the coverage is shown in the merge request widget and in the jobs
 # # table. The coverage is expected to written as an artifact to
 # # `coverage-report.txt` in the form produced by Hpc.
-# # * https://gitlab.novisci.com/help/ci/pipelines/settings#test-coverage-parsing
+# # * https://gitlab.com/help/ci/pipelines/settings#test-coverage-parsing
 # # * https://docs.gitlab.com/13.12/ee/ci/yaml/README.html#coverage
 # coverage-report:
 #   stage: coverage

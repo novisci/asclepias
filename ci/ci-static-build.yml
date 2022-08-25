@@ -7,6 +7,11 @@ stages:
   - checks
   - deploy
 
+# Tag all jobs with nsstat so that the nsstat runner is used:
+# https://gitlab.com/groups/TargetRWE/epistats/-/runners/16673355
+default: 
+  tags: ["nsstat"]
+
 # Baseline set of rules for build-cohort-collector-static job and dependencies
 # This should guarantee dependent jobs run only when the upstream job is run
 # I (bbrown) have not specifically checked that the rules here are consistent
@@ -76,7 +81,7 @@ build-cohort-collector-static:
       optional: true
   rules:
     - !reference [.rules-build-cohort-collector-static, rules]
-  image: registry.novisci.com/nsstat/asclepias/hasklepias-build-musl:${MAINVERSION}
+  image: registry.gitlab.com/targetrwe/epistats/nsstat/asclepias/hasklepias-build-musl:${MAINVERSION}
   artifacts:
     name: "${CI_JOB_NAME}-${CI_COMMIT_SHORT_SHA}"
     paths:
@@ -91,7 +96,7 @@ check-docs:
   # install directory
   stage: checks
   needs: ["build-cohort-collector-static"]
-  image: registry.novisci.com/nsstat/asclepias/hasklepias-build:latest
+  image: registry.gitlab.com/targetrwe/epistats/nsstat/asclepias/hasklepias-build:latest
   script: 
     - ./ci/ci-docs-check.sh
   rules:
@@ -102,7 +107,7 @@ check-docs:
 deploy-aws-cohort-collector-static:
   stage: deploy
   needs: ["build-cohort-collector-static"]
-  image: registry.novisci.com/nsstat/nsbuild/ubuntu:20.04
+  image: registry.gitlab.com/targetrwe/epistats/nsstat/nsbuild/ubuntu:20.04
   script:
     - export BUNDLE=$(< install/cohort-collector.bundle)
     - | 

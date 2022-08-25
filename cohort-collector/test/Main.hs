@@ -29,7 +29,7 @@ main = testsMain
 -- due to errors such as:
 --   exampleFilterApp: MissingFileError "/root/.aws/credentials"
 -- punting this to resolve another day.
--- see: https://gitlab.novisci.com/nsStat/asclepias/-/issues/205
+-- see: https://gitlab.com/targetrwe/epistats/nsstat/asclepias/-/issues/205
 
 -- main :: IO ()
 -- main = do

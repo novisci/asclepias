@@ -8,9 +8,9 @@ and the files in this repo are organized
 https://docs.antora.org/antora/latest/organize-content-files/[following Antora guidelines].
 
 The asclepias doc pages are built as part of the
-https://gitlab.novisci.com/nsStat/noviverse-site[noviverse-site].
+https://gitlab.com/targetrwe/epistats/nsstat/noviverse-site[noviverse-site].
 See the 
-https://gitlab.novisci.com/nsStat/noviverse-site/-/blob/master/antora-playbook.yml[`antora-playbook.yml`]
+https://gitlab.com/targetrwe/epistats/nsstat/noviverse-site/-/blob/master/antora-playbook.yml[`antora-playbook.yml`]
 file therein for
 which branches of the asclepias repo are included in the noviverse site.
 

@@ -2,7 +2,7 @@
 // TODO: update edm-path to non-sandbox URL
 :edm-path: xref:event-data:ROOT:index.adoc
 :lawvere-url: https://bartoszmilewski.com/2017/08/26/lawvere-theories/
-:asclepias-url: https://gitlab.novisci.com/nsStat/asclepias
+:asclepias-url: https://gitlab.com/targetrwe/epistats/nsstat/asclepias
 
 Lawvere Theory: {lawvere-url}
 

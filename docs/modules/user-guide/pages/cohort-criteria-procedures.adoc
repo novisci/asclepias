@@ -115,7 +115,7 @@ For inclusion, a subject must be over 50 years old.
 and the features.
 
 *TODO - THIS EXAMPLE IS INCOMPLETE/INCORRECT AND WILL NOT COMPILE*
-*https://gitlab.novisci.com/nsStat/asclepias/-/merge_requests/254#note_40888*
+*https://gitlab.com/targetrwe/epistats/nsstat/asclepias/-/merge_requests/254#note_40888*
 
 [source,haskell]
 ----

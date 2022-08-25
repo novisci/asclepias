@@ -18,7 +18,7 @@ cabal init \
     --test-dir=tests \
     --package-name=$PROJID \
     --minimal \
-    --homepage https://gitlab.novisci.com/nsResearch/$PROJID \
+    --homepage https://gitlab.com/targetrwe/epistats/nsresearch/$PROJID \
     --dependency hasklepias-main 
 cabal update
 mv plans/MyLib.hs plans/Cohorts.hs
@@ -114,7 +114,7 @@ tests = testGroup "example" [testCase "true is true" (True @?= True) ]
 ----
 . Add a `cabal.project` file in the project's root directory with the following, 
 making sure to set the `tag` field to the
-https://gitlab.novisci.com/nsStat/asclepias/-/tags[git tag of the `asclepias` version]
+https://gitlab.com/targetrwe/epistats/nsstat/asclepias/-/tags[git tag of the `asclepias` version]
 to use.
 Replace `<myProj>` with your project name.
 +

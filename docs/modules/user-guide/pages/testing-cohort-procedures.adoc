@@ -37,7 +37,7 @@ Test cases should be written based on the project's specifications and requireme
 Below is the definition for an `index` function.
 
 *TODO - THIS EXAMPLE WILL NOT COMPILE*
-*SEE https://gitlab.novisci.com/nsStat/asclepias/-/merge_requests/254#note_40914*
+*SEE https://gitlab.com/targetrwe/epistats/nsstat/asclepias/-/merge_requests/254#note_40914*
 
 [source,haskell]
 ----
@@ -63,7 +63,7 @@ We wish to test that `index` meets these specifications.
 Below is the unit test for `index`.
 
 *TODO - THIS EXAMPLE WILL NOT COMPILE*
-*SEE https://gitlab.novisci.com/nsStat/asclepias/-/merge_requests/254#note_40914*
+*SEE https://gitlab.com/targetrwe/epistats/nsstat/asclepias/-/merge_requests/254#note_40914*
 [source,haskell]
 ----
 indexTests :: TestTree
@@ -94,7 +94,7 @@ followed by your expected result.
 
 For reference, the input data is defined below:
 *TODO - THIS EXAMPLE WILL NOT COMPILE*
-*SEE https://gitlab.novisci.com/nsStat/asclepias/-/merge_requests/254#note_40914*
+*SEE https://gitlab.com/targetrwe/epistats/nsstat/asclepias/-/merge_requests/254#note_40914*
 
 [source,haskell]
 ----

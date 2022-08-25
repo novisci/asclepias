@@ -55,7 +55,7 @@ In short, the `Event` type is much more flexible.
 * Documentation for `asclepias` has been added to the
 [noviverse](https://docs.novisci.com/noviverse/index.html)
 * Many other updates which are tracked
-[on GitLab](https://gitlab.novisci.com/nsStat/asclepias/-/milestones/1#tab-issues)
+[on GitLab](https://gitlab.com/targetrwe/epistats/nsstat/asclepias/-/milestones/1#tab-issues)
 
 ## 0.22.5
 

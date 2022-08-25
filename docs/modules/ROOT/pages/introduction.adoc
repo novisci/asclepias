@@ -2,7 +2,7 @@
 :haddock-site: https://docs.novisci.com/asclepias/api
 :ghc: 9.2.2 
 :cabal: 3.6.2.0
-:asclepias-url: https://gitlab.novisci.com/nsStat/asclepias
+:asclepias-url: https://gitlab.com/targetrwe/epistats/nsstat/asclepias
 
 = Introduction to `asclepias`
 

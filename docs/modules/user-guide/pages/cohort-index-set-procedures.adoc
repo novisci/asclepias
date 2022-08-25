@@ -43,8 +43,8 @@ the last day that `YOUR_TAG` occurred for longer than 1 temporal unit (`a`)
 during `yourStudyPeriod`.
 
 *TODO - THIS EXAMPLE IS INCOMPLETE/INCORRECT AND WILL NOT COMPILE*
-*https://gitlab.novisci.com/nsStat/asclepias/-/merge_requests/254#note_40892*
-*https://gitlab.novisci.com/nsStat/asclepias/-/merge_requests/254#note_40893*
+*https://gitlab.com/targetrwe/epistats/nsstat/asclepias/-/merge_requests/254#note_40892*
+*https://gitlab.com/targetrwe/epistats/nsstat/asclepias/-/merge_requests/254#note_40893*
 [source,haskell]
 ----
 index :: [Event t m a] -> IndexSet (Interval a)

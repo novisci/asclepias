@@ -1,5 +1,5 @@
 :downloads_path: downloads.novisci.com/hasklepias/
-:registry_path: registry.novisci.com/nsstat/asclepias
+:registry_path: registry.gitlab.com/targetrwe/epistats/nsstat/asclepias
 :cohort-collector-version: 0.20.3
 
 = Cohort Collector

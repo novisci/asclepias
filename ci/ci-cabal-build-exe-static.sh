@@ -36,9 +36,9 @@ mkdir -p "$INSTALLDIR"
 #
 # BS: As of 2022-03-02, the constraints are necessary (or seem to be) again
 # see 
-# https://gitlab.novisci.com/nsStat/asclepias/-/jobs/72502
+# https://gitlab.com/targetrwe/epistats/nsstat/asclepias/-/jobs/72502
 # for a failed build without constraints, and
-# https://gitlab.novisci.com/nsStat/asclepias/-/jobs/72650
+# https://gitlab.com/targetrwe/epistats/nsstat/asclepias/-/jobs/72650
 # for a successful build with constraints
 cabal build "${PKG}":exe:"${COMPONENT}" \
    -j \

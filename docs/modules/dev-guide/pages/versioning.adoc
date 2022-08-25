@@ -28,7 +28,7 @@ start with `v` as they appear in the version-tagged commits, for example
 
 [TIP]
 The `antora-playbook.yml` file in the
-https://gitlab.novisci.com/nsStat/noviverse-site[`noviverse-site` repository]
+https://gitlab.com/targetrwe/epistats/nsstat/noviverse-site[`noviverse-site` repository]
 determines which commit references of `asclepias` are used for the
 documentation site. At present, these are the version-tagged commits beginning
 with `v0.27.0`. The `docs/antora.yml` file of the `asclepias` repo sets the

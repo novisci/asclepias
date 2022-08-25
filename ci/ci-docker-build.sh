@@ -18,7 +18,7 @@ echo "$CI_REGISTRY_PASSWORD" |
 
 # The $CI_REGISTRY_IMAGE environmental variable takes the prefix of the
 # container registry associated with the GitLab project, e.g.
-# `registry.novisci.com/nsstat/asclepias`
+# `registry.gitlab.com/targetrwe/epistats/nsstat/asclepias`
 NAME=$CI_REGISTRY_IMAGE/${2}
 
 echo "Building the ${NAME} docker image"

@@ -15,6 +15,9 @@ cradle:
     - path: "event-data-theory/test"
       component: "event-data-theory:test:tests"
 
+    - path: "event-data-theory/test"
+      component: "event-data-theory:test:doctests"
+
     - path: "hasklepias-core/src"
       component: "lib:hasklepias-core"
 
@@ -26,6 +29,9 @@ cradle:
 
     - path: "hasklepias-examples/test"
       component: "hasklepias-examples:test:examples"
+
+    - path: "hasklepias-examples/test"
+      component: "hasklepias-examples:test:doctests"
 
     - path: "hasklepias-examples/exampleCohortCwApp/Main.hs"
       component: "hasklepias-examples:exe:exampleCohortCwApp"
@@ -59,3 +65,6 @@ cradle:
 
     - path: "hasklepias-main/bench/Main.hs"
       component: "hasklepias-main:bench:hasklepias"
+
+    - path: "hasklepias-main/test"
+      component: "hasklepias-main:test:doctests"

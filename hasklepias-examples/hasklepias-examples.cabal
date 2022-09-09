@@ -11,10 +11,16 @@ category:       Data Science
 synopsis:       embedded DSL for defining epidemiologic cohorts
 license:        BSD-3-Clause
 --license-file:   LICENSE
-build-type:     Simple
+build-type:     Custom
 extra-source-files:
     README.adoc
     ChangeLog.adoc
+
+custom-setup
+  setup-depends:
+      base
+    , Cabal
+    , cabal-doctest  >=1.0.9 && <1.1
 
 source-repository head
   type: git
@@ -63,6 +69,18 @@ library
       FlexibleInstances
       DeriveGeneric
       MultiParamTypeClasses
+
+test-suite doctests
+  type:             exitcode-stdio-1.0
+  main-is:          doctests.hs
+  build-depends:
+      base
+    , base-compat       >=0.10.5 && <0.13
+    , doctest           >=0.15   && <0.21
+    , hasklepias-examples
+  ghc-options:      -Wall -threaded
+  hs-source-dirs:   test
+  default-language: Haskell2010
 
 test-suite examples
   type: exitcode-stdio-1.0

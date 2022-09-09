@@ -104,9 +104,7 @@ makeCohortParserInfo name version = Options.Applicative.info
 
   -- #{ gitdirty }
   -- |]
-      <> helpText
-      )
-    )
+                                               <> helpText))
   )
  where
   -- gitinfo  = [i| (gitrev: #{githash})|]

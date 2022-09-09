@@ -85,11 +85,7 @@ data Output =
      StdOutput
    | FileOutput (Maybe FilePath) FilePath
    | S3Output  String BucketName ObjectKey
-   deriving (Show)
-
--- | Flag for whether to decompress input
 data InputDecompression = NoDecompress | Decompress deriving (Show)
-
 -- | Flag for whether to compress output
 data OutputCompression = NoCompress | Compress deriving (Show)
 

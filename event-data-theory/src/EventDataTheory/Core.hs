@@ -140,7 +140,7 @@ True
 False
 -}
 
-
+{- tag::eventType[] -}
 newtype Event t m a= MkEvent ( PairedInterval (Context t m) a )
 {- end::eventType[] -}
   deriving (Eq, Show, Generic)

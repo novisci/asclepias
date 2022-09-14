@@ -10,4 +10,4 @@ Lawvere Theory: {lawvere-url}
 
 Haskell Setup: xref:nsBuild:ROOT:haskell-setup.adoc[nsBuild site]
 
-Event Data Model Documentation: {edm-path}
+Event Data Model Documentation: {edm-path}[noviverse pages]

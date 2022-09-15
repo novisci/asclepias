@@ -163,7 +163,7 @@ Values of the 'FeatureData' type contain the data we're ultimately interested
 in analyzing or passing along to downstream applications. However, a 'FeatureData'
 value does not simply contain data of type @d@. The type allows for the possibility
 of missingness, failures, or errors by using the 'Data.Either.Either' type. A value
-of a 'FeatureData', then, is either a @'Data.Either.Left' 'MissingReason'@ or a
+of a 'FeatureData', then, is either a @'Data.Either.Left' 'FeatureProblemFlag'@ or a
 @'Data.Either.Right' d@.
 
 The use of @Either@ has important implications when defining Features, as we will see.
@@ -245,7 +245,7 @@ featInts = pure
 
 feat1 :: Definition (Feature "someInts" [Int] -> Feature "hasMoreThan3" Bool)
 feat1 = defineA
-  (\ints -> if null ints then makeFeature (missingBecause $ Other "no data")
+  (\ints -> if null ints then makeFeature (missingBecause $ CustomFlag "no data")
            else makeFeature $ featureDataR (length ints > 3))
 
 feat2 :: Definition (
@@ -255,8 +255,8 @@ feat2 :: Definition (
 feat2 = define (\b ints -> if b then sum ints else 0)
 
 ex0 = featInts []
-ex0a = eval feat1 ex0 -- MkFeature (MkFeatureData (Left (Other "no data")))
-ex0b = eval feat2 (ex0a, ex0) -- MkFeature (MkFeatureData (Left (Other "no data")))
+ex0a = eval feat1 ex0 -- MkFeature (MkFeatureData (Left (CustomFlag "no data")))
+ex0b = eval feat2 (ex0a, ex0) -- MkFeature (MkFeatureData (Left (CustomFlag "no data")))
 
 ex1 = featInts [3, 8]
 ex1a = eval feat1 ex1 -- MkFeature (MkFeatureData (Right False))

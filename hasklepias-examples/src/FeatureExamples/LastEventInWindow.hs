@@ -26,7 +26,7 @@ durationsOf tSet =
     .> formMeetingSequence -- <4>
     .> filter (`hasAllTags` tSet) -- <5>
     .> \x -> if null x -- <6>
-         then makeFeature $ featureDataL $ Other "no cases"
+         then makeFeature $ featureDataL $ CustomFlag "no cases"
          else makeFeature $ featureDataR (durations x)
 {- end::function[] -}
 
@@ -44,7 +44,7 @@ example = testGroup
   [ testCase "test on exampleEvents1"
   $   durationsOf (["tookAntibiotics", "wasHospitalized"] :: [Text])
                   exampleEvents1
-  @?= makeFeature @"foo" (featureDataL (Other "no cases"))
+  @?= makeFeature @"foo" (featureDataL (CustomFlag "no cases"))
   , testCase "test on exampleEvents3"
   $   durationsOf (["tookAntibiotics", "wasHospitalized"] :: [Text])
                   exampleEvents3

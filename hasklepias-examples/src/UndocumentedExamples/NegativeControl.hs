@@ -301,7 +301,7 @@ index = defineA
   .> intervals'
   .> headMay
   .> \case
-       Nothing -> makeFeature $ featureDataL (Other "no index")
+       Nothing -> makeFeature $ featureDataL (CustomFlag "no index")
        Just x  -> pure x
   )
   where intervals' = fmap getInterval

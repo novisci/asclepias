@@ -154,7 +154,7 @@ age = defineA
       |> fmap (\bday -> computeAgeAt bday (begin index))
       |> \case
            Nothing ->
-             makeFeature $ featureDataL $ Other "No numeric birth year found"
+             makeFeature $ featureDataL $ CustomFlag "No numeric birth year found"
            Just age -> pure age
   )
  where

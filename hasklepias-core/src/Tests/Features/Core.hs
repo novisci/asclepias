@@ -16,11 +16,11 @@ f1F = define f1
 
 f2 :: Bool -> FeatureData Int
 f2 True  = pure 1
-f2 False = missingBecause $ Other "test"
+f2 False = missingBecause $ CustomFlag "test"
 
 f2' :: Bool -> Feature "someInt" Int
 f2' True  = pure 1
-f2' False = makeFeature $ missingBecause $ Other "test"
+f2' False = makeFeature $ missingBecause $ CustomFlag "test"
 
 f2F :: Definition (Feature "someBool" Bool -> Feature "someInt" Int)
 f2F = defineA f2'
@@ -45,7 +45,7 @@ featInts = pure
 feat1 :: Definition (Feature "someInts" [Int] -> Feature "hasMoreThan3" Bool)
 feat1 = defineA
   (\ints -> if null ints
-    then makeFeature (missingBecause $ Other "no data")
+    then makeFeature (missingBecause $ CustomFlag "no data")
     else makeFeature $ featureDataR (length ints > 3)
   )
 
@@ -58,8 +58,8 @@ feat2
 feat2 = define (\b ints -> if b then sum ints else 0)
 
 ex0 = featInts []
-ex0a = eval feat1 ex0 -- MkFeature (MkFeatureData (Left (Other "no data")))
-ex0b = eval feat2 ex0a ex0 -- MkFeature (MkFeatureData (Left (Other "no data")))
+ex0a = eval feat1 ex0 -- MkFeature (MkFeatureData (Left (CustomFlag  "no data")))
+ex0b = eval feat2 ex0a ex0 -- MkFeature (MkFeatureData (Left (CustomFlag  "no data")))
 
 ex1 = featInts [3, 8]
 ex1a = eval feat1 ex1 -- MkFeature (MkFeatureData (Right False))
@@ -77,15 +77,15 @@ tests = testGroup
   @?= pure 7
   , testCase "eval of f1F on d0 returns correct value"
   $   eval f2F (pure False)
-  @?= makeFeature (missingBecause (Other "test"))
+  @?= makeFeature (missingBecause (CustomFlag "test"))
   , testCase "eval of f3F returns correct value"
   $   eval f3F (pure True) (eval f2F (pure False))
-  @?= makeFeature (missingBecause (Other "test"))
+  @?= makeFeature (missingBecause (CustomFlag "test"))
   , testCase "eval of f3F  returns correct value"
   $   eval f3F (pure True) (eval f2F (pure True))
   @?= pure "this"
   , testCase "checking ex0-2 with ex0b" $ ex0b @?= makeFeature
-    (missingBecause (Other "no data"))
+    (missingBecause (CustomFlag "no data"))
   , testCase "checking ex0-2 with ex1b" $ ex1b @?= makeFeature (featureDataR 0)
   , testCase "checking ex0-2 with ex1b" $ ex2b @?= makeFeature (featureDataR 10)
   ]

@@ -25,11 +25,11 @@ import           Data.Proxy          (Proxy (Proxy))
 import           Data.Typeable       (Typeable, typeRep)
 import           Features.Attributes (Attributes, HasAttributes (..), Purpose,
                                       Role)
-import           Features.Core       (Feature, FeatureData, MissingReason,
+import           Features.Core       (Feature, FeatureData, FeatureProblemFlag,
                                       getFData, getFeatureData)
 import           GHC.Generics        (Generic)
 import           GHC.TypeLits        (KnownSymbol, symbolVal)
-instance ToJSON MissingReason
+instance ToJSON FeatureProblemFlag
 
 instance (ToJSON d) => ToJSON (FeatureData d) where
   toJSON x = case getFeatureData x of

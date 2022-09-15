@@ -22,7 +22,7 @@ module Features.Core
   (
   -- *** Features and FeatureData
     FeatureData
-  , MissingReason(..)
+  , FeatureProblemFlag(..)
   , Feature
   , F
   , featureDataL
@@ -70,12 +70,14 @@ Defines the reasons that a @'FeatureData'@ value may be missing. Can be used to
 indicate the reason that a @'Feature'@'s data was unable to be derived or does
 not need to be derived.
 -}
-{- tag::missingReason[] -}
-data MissingReason =
-    InsufficientData -- ^ Insufficient information available to derive data.
-  | Other Text -- ^ User provided reason for missingness
-{- end::missingReason[] -}
+{- tag::featureProblemFlag[] -}
+data FeatureProblemFlag =
+    InsufficientData -- ^ indicates there is insufficient data to define feature
+  | InconsistentData Text -- ^ indicates an inconsistency in the data that should be flagged
+  | CustomFlag Text -- ^ a means to indicate a custom problem in defining a feature
   deriving (Eq, Show, Generic)
+{- end::featureProblemFlag[] -}
+
 
 {- |
 The @FeatureData@ type is a container for an (almost) arbitrary type @d@ that can
@@ -88,7 +90,7 @@ constructed with @'featureDataL'@ or its synonym @'missingBecause'@.
 -}
 {- tag::featureData[] -}
 newtype FeatureData d = MkFeatureData {
-    getFeatureData :: Either MissingReason d  -- ^ Unwrap FeatureData.
+    getFeatureData :: Either FeatureProblemFlag d  -- ^ Unwrap FeatureData.
   }
 {- end::featureData[] -}
   deriving (Eq, Show, Generic)
@@ -109,17 +111,17 @@ featureDataR = MkFeatureData . Right
 
 -- | Creates a missing 'FeatureData'.
 --
--- >>> featureDataL (Other "no good reason") :: FeatureData P.Int
--- MkFeatureData (Left (Other "no good reason"))
+-- >>> featureDataL (CustomFlag "no good reason") :: FeatureData P.Int
+-- MkFeatureData (Left (CustomFlag "no good reason"))
 --
--- >>> featureDataL (Other "no good reason") :: FeatureData Text
--- MkFeatureData (Left (Other "no good reason"))
+-- >>> featureDataL (CustomFlag "no good reason") :: FeatureData Text
+-- MkFeatureData (Left (CustomFlag "no good reason"))
 --
-featureDataL :: MissingReason -> FeatureData d
+featureDataL :: FeatureProblemFlag -> FeatureData d
 featureDataL = MkFeatureData . Left
 
 -- | A synonym for 'featureDataL'.
-missingBecause :: MissingReason -> FeatureData d
+missingBecause :: FeatureProblemFlag -> FeatureData d
 missingBecause = featureDataL
 
 {- FeatureData instances -}
@@ -192,7 +194,7 @@ makeFeature
 makeFeature = MkFeature
 
 -- | A utility for getting the (inner) @'FeatureData'@ content of a @'Feature'@.
-getData :: Feature n d -> Either MissingReason d
+getData :: Feature n d -> Either FeatureProblemFlag d
 getData (MkFeature x) = getFeatureData x
 
 {- Feature instances -}

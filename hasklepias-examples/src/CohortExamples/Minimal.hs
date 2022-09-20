@@ -1,7 +1,8 @@
 {-|
 Description : Demostrates how to define a minimal cohort using Hasklepias
 -}
-{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE DataKinds        #-}
+{-# LANGUAGE TypeApplications #-}
 module CohortExamples.Minimal where
 
 import           Hasklepias
@@ -24,7 +25,8 @@ We include subject's only if the day is after 2022-04-01
 -}
 {- tag::criteriarunner[] -}
 runCriteria :: Day -> (Day, Integer) -> Criteria
-runCriteria _ (d, _) = criteria [criterion "indexAfterAprilFools" crit1]
+runCriteria _ (d, _) = into @Criteria
+  [makeCriterion "indexAfterAprilFools" crit1]
   where crit1 = includeIf (d > fromGregorian 2022 4 1)
 {- end::criteriarunner[] -}
 

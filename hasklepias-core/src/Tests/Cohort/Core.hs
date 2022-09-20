@@ -40,6 +40,8 @@ c1 = define includeIf
 c2 :: Definition (Feature "feat2" Bool -> Feature "crit2" Status)
 c2 = define excludeIf
 
+
+
 buildIndices :: SillySubjData -> IndexSet Int
 buildIndices (MkSillySubjData (i, _, _, _)) | i <= 0    = makeIndexSet [i]
                                             | otherwise = makeIndexSet []
@@ -47,8 +49,8 @@ buildIndices (MkSillySubjData (i, _, _, _)) | i <= 0    = makeIndexSet [i]
 
 buildCriteria :: Int -> SillySubjData -> Criteria
 buildCriteria _ (MkSillySubjData (_, b1, b2, _)) =
-  criteria $ f c1 b1 : [f c2 b2]
-  where f c d = into @Criterion $ eval c (pure d)
+  into @Criteria $ f c1 b1 : [f c2 b2]
+  where f c d = into @CriterionThatCanFail $ eval c (pure d)
 
 buildFeatures :: Int -> SillySubjData -> Text
 buildFeatures _ (MkSillySubjData (_, _, _, t)) = t
@@ -104,6 +106,34 @@ makeCase
   -> Assertion
 makeCase opts inputs expected =
   runCohort opts (makePop inputs) @?= pure @[] expected
+
+-- with failure
+
+c3 :: Feature "crit3" Status
+c3 = makeFeature $ featureDataL (CustomFlag "bad")
+
+buildCriteria' :: Int -> SillySubjData -> Criteria
+buildCriteria' _ (MkSillySubjData (_, b1, b2, _)) =
+  into @Criteria $ f c1 b1 : [into @CriterionThatCanFail c3, f c2 b2]
+  where f c d = into @CriterionThatCanFail $ eval c (pure d)
+
+cohort2spec' :: CohortSpec SillySubjData Text Int
+cohort2spec' = specifyCohort buildIndices buildCriteria' buildFeatures
+
+runCohort'
+  :: Monad m
+  => CohortEvalOptions
+  -> Population SillySubjData
+  -> m (Cohort Text Int)
+runCohort' opts = makeCohortEvaluator opts cohort2spec'
+
+makeCase'
+  :: CohortEvalOptions
+  -> [(Text, SillySubjData)]
+  -> Cohort Text Int
+  -> Assertion
+makeCase' opts inputs expected =
+  runCohort' opts (makePop inputs) @?= pure @[] expected
 
 {-
 All tests
@@ -218,4 +248,18 @@ tests = testGroup
         , ("c", MkSillySubjData (-2, True, True, "excluded by crit2"))
         ]
         (makeExpected 2 2 0 1 1 0 [])
+  , testCase
+      "case with failures"
+    $ makeCase'
+        defaultCohortEvalOptions
+        [ ("a", MkSillySubjData (0, False, False, "excluded by crit1"))
+        , ("b", MkSillySubjData (-1, True, False, "keep me"))
+        , ("c", MkSillySubjData (-2, True, True, "excluded by crit2"))
+        ]
+        (MkCohort (makeTestAttritionInfo 3 3
+          [ (SubjectHasNoIndex    , 0)
+          , (CriteriaFailure "CustomFlag \"bad\"", 3)
+          , (Included             , 0)
+          ] ,
+          from @[ObsUnit Text Int] []))
   ]

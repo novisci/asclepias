@@ -66,7 +66,8 @@ makeIndexRunner _ = makeIndexSet [beginerval 1 (fromGregorian 2010 7 6)]
 
 -- | Make a function that runs the criteria
 makeCriteriaRunner :: Interval Day -> [Event Text ExampleModel Day] -> Criteria
-makeCriteriaRunner _ events = criteria $ pure (into @Criterion crit1)
+makeCriteriaRunner _ events =
+  into @Criteria $ [into @CriterionThatCanFail crit1]
  where
   crit1   = eval critTrue featEvs
   featEvs = featureEvents events

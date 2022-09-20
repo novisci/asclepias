@@ -5,9 +5,9 @@ Copyright   : (c) NoviSci, Inc 2020
 License     : BSD3
 Maintainer  : bsaul@novisci.com
 -}
--- {-# OPTIONS_HADDOCK hide #-}
 {-# LANGUAGE DeriveGeneric         #-}
 {-# LANGUAGE FlexibleInstances     #-}
+{-# LANGUAGE LambdaCase            #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE ScopedTypeVariables   #-}
 {-# LANGUAGE TupleSections         #-}
@@ -15,15 +15,19 @@ Maintainer  : bsaul@novisci.com
 
 module Cohort.Criteria
   ( Criterion
+  , CriterionThatCanFail
+  , CriterionFailure(..)
   , Criteria
   , Status(..)
   , CohortStatus(..)
-  , criterion
-  , criteria
+  , makeCriterion
   , excludeIf
   , includeIf
   , checkCohortStatus
   , AttritionInfo
+  , totalSubjectsProcessed
+  , totalUnitsProcessed
+  , attritionInfo
   , measureSubjectAttrition
   , makeTestAttritionInfo
   ) where
@@ -42,16 +46,23 @@ import           GHC.Generics    (Generic)
 import           GHC.Num         (Natural)
 import           GHC.TypeLits    (KnownSymbol, symbolVal)
 import           Witch           (From (..))
--- | Defines the return type for @'Criterion'@ indicating whether to include or
--- exclude a subject.
-data Status = Include | Exclude deriving (Eq, Show, Generic)
 
--- | Defines subject's diposition in a cohort either included or which criterion
--- they were excluded by. See @'checkCohortStatus'@ for evaluating a @'Criteria'@
--- to determine CohortStatus.
+{- |
+Defines an observational unit's diposition in a cohort.
+See @'checkCohortStatus'@ for evaluating a @'Criteria'@
+to determine @CohortStatus@.
+-}
 data CohortStatus =
+  -- | Indicates that a subject had no indices from which to derive
+  --   observational units.
     SubjectHasNoIndex
+  -- | Indicates that a @'CriterionThatCanFail'@ reached a @Left@ (failed) state.
+  --  This status is only reachable when a user provides @'CriterionThatCanFail'@.
+  | CriteriaFailure Text
+  -- | Indicates that a unit is excluded in a cohort.
+  --  The reason for exclusion is given by the @Text@ field.
   | ExcludedBy (Natural, Text)
+  -- | Indicates that a unit is included in a cohort.
   | Included
     deriving (Eq, Show, Generic)
 
@@ -64,15 +75,32 @@ instance Binary CohortStatus
 -- Defines an ordering to put @SubjectHasNoIndex@ first and @Included@ last.
 -- The @'ExcludedBy'@ are ordered by their number value.
 instance Ord CohortStatus where
+  compare (CriteriaFailure x) (CriteriaFailure y) = compare x y
+  compare (CriteriaFailure _) Included            = LT
+  compare (CriteriaFailure _) SubjectHasNoIndex   = GT
+  compare (CriteriaFailure _) (ExcludedBy      _) = LT
+  compare Included            (CriteriaFailure _) = GT
   compare Included            Included            = EQ
-  compare SubjectHasNoIndex   SubjectHasNoIndex   = EQ
-  compare Included            (ExcludedBy _)      = GT
-  compare (ExcludedBy _)      Included            = LT
   compare Included            SubjectHasNoIndex   = GT
-  compare SubjectHasNoIndex   Included            = LT
+  compare Included            (ExcludedBy      _) = GT
+  compare (ExcludedBy      _) (CriteriaFailure _) = GT
+  compare (ExcludedBy _)      Included            = LT
   compare (ExcludedBy _)      SubjectHasNoIndex   = GT
-  compare SubjectHasNoIndex   (ExcludedBy _     ) = LT
   compare (ExcludedBy (i, _)) (ExcludedBy (j, _)) = compare i j
+  compare SubjectHasNoIndex   (CriteriaFailure _) = LT
+  compare SubjectHasNoIndex   Included            = LT
+  compare SubjectHasNoIndex   SubjectHasNoIndex   = EQ
+  compare SubjectHasNoIndex   (ExcludedBy _     ) = LT
+
+{-|
+The @Text@ is a label for the @Status@.
+The @'Status'@ identifies whether to @'Include'@ or @'Exclude'@ a subject.
+-}
+newtype Criterion = MkCriterion ( Text, Status ) deriving (Eq, Show)
+
+-- | Defines the return type for @'Criterion'@ indicating whether to include or
+-- exclude a subject.
+data Status = Include | Exclude deriving (Eq, Show, Generic)
 
 -- | Helper to convert a @Bool@ to a @'Status'@
 --
@@ -94,16 +122,18 @@ excludeIf :: Bool -> Status
 excludeIf True  = Exclude
 excludeIf False = Include
 
-{-|
-A type that is simply a @(Text, Status)@,
-where the @Text@ is a label providing the reason for the @Status@.
-The @'Status'@ identifies whether to @'Include'@ or @'Exclude'@ a subject.
--}
-newtype Criterion = MkCriterion ( Text, Status ) deriving (Eq, Show)
+-- | Represents failures in a @'CriterionThatCanFail'@.
+type CriterionFailure =  Text
 
--- | Converts a @'Feature'@ to a @'Criterion'@.
-criterion :: Text -> Status -> Criterion
-criterion = curry MkCriterion
+{- |
+A type where the @Left@ branch is a @CriterionFailure@
+and the @Right@ is a @Criterion@.
+-}
+type CriterionThatCanFail = Either CriterionFailure Criterion
+
+-- | Smart constructor a @'Criterion'@.
+makeCriterion :: Text -> Status -> Criterion
+makeCriterion = curry MkCriterion
 
 getStatus :: Criterion -> Status
 getStatus (MkCriterion (_, s)) = s
@@ -111,63 +141,34 @@ getStatus (MkCriterion (_, s)) = s
 getReason :: Criterion -> Text
 getReason (MkCriterion (r, _)) = r
 
-{-|
-Converts a @Feature n Status@ to a @Criterion@.
-In the case that the value of the @'Features.Core.FeatureData'@ is @Left@,
-the status is set to @'Exclude'@.
+{-
+INTERNAL
+A collection of @'Criterion'@ paired with a @Natural@ number,
+respresenting the order of each @'Criterion'@.
 -}
-instance KnownSymbol n => From (Feature n Status) Criterion where
-  from x = MkCriterion
-    ( pack $ symbolVal (Proxy @n)
-    , case s of
-      Left  mr  -> Exclude
-      Right sta -> sta
-    )
-    where s = getData x
-
-
--- | A nonempty collection of @'Criterion'@ paired with a @Natural@ number.
-newtype Criteria = MkCriteria [ (Natural, Criterion) ]
+newtype CriteriaI = MkCriteriaI [ (Natural, Criterion) ]
   deriving (Eq, Show)
 
--- | Unpacks a 'Criteria'.
-getCriteria :: Criteria -> [(Natural, Criterion)]
-getCriteria (MkCriteria x) = x
-
--- | Constructs a @'Criteria'@ from a list of @'Criterion'@.
-criteria :: [Criterion] -> Criteria
-criteria l = MkCriteria $ zip [1 ..] l
-
--- | Converts a subject's @'Criteria'@ into a list of triples of
--- (order of criterion, label, status).
-getStatuses :: Criteria -> [(Natural, Text, Status)]
-getStatuses (MkCriteria x) =
-  fmap (\c -> (fst c, (getReason . snd) c, (getStatus . snd) c)) x
-
 {-|
-An internal function used to @'Data.List.find'@ excluded statuses.
-Used in 'checkCohortStatus'
+A type where the @Left@ branch is a @CriterionFailure@
+and the @Right@ is a @CriteriaI@.
 -}
-findExclude :: Criteria -> Maybe (Natural, Text, Status)
-findExclude x = find (\(_, _, z) -> z == Exclude) (getStatuses x)
+type Criteria = Either CriterionFailure CriteriaI
 
-{-|
-Converts a subject's @'Criteria'@ to a @'CohortStatus'@.
-The status is set to @'Included'@
-if none of the @'Criterion'@ have a status of @'Exclude'@.
--}
-checkCohortStatus :: Criteria -> CohortStatus
-checkCohortStatus x =
-  maybe Included (\(i, n, _) -> ExcludedBy (i, n)) (findExclude x)
+instance From [Criterion] Criteria where
+  from = pure . criteriaI
 
-{-|
-Initializes a container of @'CohortStatus'@ from a @'Criteria'@.
-This can be used to generate all the possible Exclusion/Inclusion reasons.
--}
-initStatusInfo :: Criteria -> [CohortStatus]
-initStatusInfo (MkCriteria z) =
-  fmap (ExcludedBy . Data.Bifunctor.second getReason) z <> pure Included
+-- | Constructs a @'Criteria'@ from a list of @'CriterionThatCanFail'@.
+instance From [CriterionThatCanFail] Criteria where
+  from x = fmap criteriaI (sequenceA x)
 
+-- Unpacks a 'Criteria'.
+getCriteria :: CriteriaI -> [(Natural, Criterion)]
+getCriteria (MkCriteriaI x) = x
+
+-- Constructs a @'Criteria'@ from a list of @'Criterion'@.
+criteriaI :: [Criterion] -> CriteriaI
+criteriaI l = MkCriteriaI $ zip [1 ..] l
 
 {- |
 A type which collects the counts of subjects included or excluded.
@@ -202,12 +203,37 @@ instance Monoid AttritionInfo where
   mempty =
     MkAttritionInfo 0 0 (fromList [(SubjectHasNoIndex, 0), (Included, 0)])
 
+{- |
+Converts a unit's @'Criteria'@ to a @'CohortStatus'@.
+The status is set to @'Included'@
+if none of the @'Criterion'@ have a status of @'Exclude'@.
+-}
+checkCohortStatus :: Criteria -> CohortStatus
+checkCohortStatus (Left  cf) = CriteriaFailure cf
+checkCohortStatus (Right (MkCriteriaI xs)) = getStatus xs
+  where
+    op (i, MkCriterion (name, Exclude)) = Left (i, name)
+    op (i, MkCriterion (name, Include)) = Right ()
+    getStatus xs' = case traverse op xs' of
+      Left (i, name) -> ExcludedBy (i, name)
+      Right _        -> Included
+
+
 -- Initializes @AttritionInfo@ from a @'Criteria'@.
 initAttritionInfo :: Criteria -> Map.Map CohortStatus Natural
-initAttritionInfo x = fromList
-  $ zip (toList (initStatusInfo x)) (replicate (length (getCriteria x)) 0)
+initAttritionInfo = \case
+  Left e -> fromList [(CriteriaFailure e, 0)]
+  Right x ->
+    fromList $ zip (initStatusInfo x) (replicate (length $ getCriteria x) 0)
+  where
+    -- Initializes a container of @'CohortStatus'@ from a @'CriteriaI'@,
+    --in order to generate all the possible Exclusion/Inclusion.
+    initStatusInfo :: CriteriaI -> [CohortStatus]
+    initStatusInfo x =
+      fmap (ExcludedBy . Data.Bifunctor.second getReason) (getCriteria x)
+        <> pure Included
 
-{- |
+{-|
 Measures @'AttritionInfo'@ from a @'Criteria'@ and a list of @'CohortStatus'@
 **for a single subject**.
 The 'AttritionInfo' across subjects can obtains by summing
@@ -221,7 +247,7 @@ with 'initAttritionInfo'.
 -}
 measureSubjectAttrition :: Maybe Criteria -> [CohortStatus] -> AttritionInfo
 measureSubjectAttrition mcriteria statuses = MkAttritionInfo
-    -- again, function is meant to be used on a single subject, so one
+    -- function is meant to be used on a single subject, so intiialize to one
   1
     -- number of units is number of statuses not equal to SubjectHasNoIndex
   (length $ filter (/= SubjectHasNoIndex) statuses)
@@ -245,3 +271,14 @@ makeTestAttritionInfo
   -> [(CohortStatus, Natural)] -- ^ list of statuses with counts
   -> AttritionInfo
 makeTestAttritionInfo x y z = MkAttritionInfo x y $ fromList z
+
+{-|
+Converts a @Feature n Status@ to a @Criterion@.
+In the case that the value of the @'Features.Core.FeatureData'@ is @Left@,
+the status is set to @'Exclude'@.
+-}
+instance KnownSymbol n => From (Feature n Status) CriterionThatCanFail where
+  from x = case getData x of
+    Left  e -> Left $ pack $ show e
+    Right v -> Right (MkCriterion (pack $ symbolVal (Proxy @n), v))
+

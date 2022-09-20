@@ -297,14 +297,13 @@ makeIndexRunner i _ = makeIndexSet [i]
 
 -- | Make a function that runs the criteria for a calendar index
 makeCriteriaRunner :: Interval Day -> [Evnt Day] -> Criteria
-makeCriteriaRunner index events =
-  criteria
-    $ into @Criterion crit1
-    : [ into @Criterion crit2
-      , into @Criterion crit3
-      , into @Criterion crit4
-      , into @Criterion crit5
-      ]
+makeCriteriaRunner index events = into @Criteria
+  [ into @CriterionThatCanFail crit1
+  , into @CriterionThatCanFail crit2
+  , into @CriterionThatCanFail crit3
+  , into @CriterionThatCanFail crit4
+  , into @CriterionThatCanFail crit5
+  ]
  where
   crit1   = eval critFemale featEvs
   crit2   = eval critOver50 agefeat

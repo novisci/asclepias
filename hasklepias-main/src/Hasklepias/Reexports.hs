@@ -19,7 +19,9 @@ module Hasklepias.Reexports
   , module GHC.Generics
   , module GHC.Show
   , module GHC.TypeLits
+  , module Blammo.Logging
   , module Control.Monad
+  , module Control.Monad.IO.Class
   , module Control.Applicative
   , module Data.Bifunctor
   , module Data.Bool
@@ -60,10 +62,12 @@ module Hasklepias.Reexports
   , module Witch
   ) where
 
+import           Blammo.Logging
 import           Control.Applicative            (Applicative (..), (<$>))
 import           Control.Monad                  (Functor (..), Monad (..),
                                                  filterM, join, mfilter, (=<<),
                                                  (>>=))
+import           Control.Monad.IO.Class         (MonadIO (..))
 import           Data.Bifunctor                 (Bifunctor (..))
 import           Data.Bool                      (Bool (..), bool, not,
                                                  otherwise, (&&), (||))

@@ -11,8 +11,8 @@ These functions may be moved to more appropriate modules in future versions.
 {-# LANGUAGE DataKinds         #-}
 {-# LANGUAGE GADTs             #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE QuasiQuotes       #-}
 {-# LANGUAGE TypeApplications  #-}
-
 
 module Hasklepias.AppUtilities
   ( Location(..)
@@ -41,30 +41,43 @@ module Hasklepias.AppUtilities
   , s3OutputParser
   , inputDecompressionParser
   , outputCompressionParser
+
+  -- ** Environmental variable parsers and utilities
+  , logSettingsParser
+  , parseLogSettings
+  , logSettingsHelpDoc
   ) where
 
-import           Amazonka               (LogLevel (Debug, Error), Region,
-                                         ToBody (..), discover, newEnv,
-                                         newLogger, runResourceT, send,
-                                         sinkBody)
-import           Amazonka.S3            (BucketName,
-                                         ObjectCannedACL (ObjectCannedACL_Bucket_owner_full_control),
-                                         ObjectKey, newGetObject, newPutObject)
-import           Codec.Compression.GZip (CompressionLevel, compress, decompress)
+import           Amazonka                   (LogLevel (Debug, Error), Region,
+                                             ToBody (..), discover, newEnv,
+                                             newLogger, runResourceT, send,
+                                             sinkBody)
+import           Amazonka.S3                (BucketName,
+                                             ObjectCannedACL (ObjectCannedACL_Bucket_owner_full_control),
+                                             ObjectKey, newGetObject,
+                                             newPutObject)
+import           Blammo.Logging.LogSettings
+import           Codec.Compression.GZip     (CompressionLevel, compress,
+                                             decompress)
 import           Control.Monad
 import           Control.Monad.IO.Class
-import qualified Data.ByteString        as BS
-import qualified Data.ByteString.Char8  as BSC
-import qualified Data.ByteString.Lazy   as BL hiding (putStrLn)
-import           Data.Conduit.Binary    (sinkLbs)
-import           Data.Generics.Product  (HasField (field))
-import           Data.String            (IsString (fromString))
-import qualified Data.Text              as T (Text, pack)
-import qualified Data.Text.IO           as T (putStrLn)
-import           Lens.Micro             (set, (<&>), (^.))
-import           Lens.Micro.Extras      (view)
+import           Data.Bifunctor             (first)
+import qualified Data.ByteString            as BS
+import qualified Data.ByteString.Char8      as BSC
+import qualified Data.ByteString.Lazy       as BL hiding (putStrLn)
+import           Data.Conduit.Binary        (sinkLbs)
+import           Data.Generics.Product      (HasField (field))
+import           Data.Semigroup             (Endo (..))
+import           Data.String                (IsString (fromString))
+import           Data.String.Interpolate    (i)
+import qualified Data.Text                  as T (Text, pack)
+import qualified Data.Text.IO               as T (putStrLn)
+import qualified Env
+import           Lens.Micro                 (set, (<&>), (^.))
+import           Lens.Micro.Extras          (view)
 import           Options.Applicative
-import           System.IO              (stderr)
+import           Options.Applicative.Help
+import           System.IO                  (stderr)
 
 -- | Type representing locations that data can be read from
 data Location where
@@ -314,3 +327,69 @@ outputCompressionParser :: Parser OutputCompression
 outputCompressionParser =
   flag' Compress (long "gzip" <> short 'z' <> help "compress output using gzip")
     <|> pure NoCompress
+
+
+{-
+  BLAMMO logging utilities
+
+  The logSettingsParser, parseLogSettings, and endo functions below
+  are basically copied from
+  https://hackage.haskell.org/package/Blammo-1.0.2.3/docs/src/Blammo.Logging.LogSettings.Env.html#parse.
+  I (BS 2022-09-28) couldn't find an easy to change the default settings/parser
+  without parsing the LOG_DESTINATION variable again,
+  hence I just copied the functions over.
+  I opened related issue here:
+  https://github.com/freckle/blammo/issues/20
+-}
+
+logSettingsHelpDoc :: Doc
+logSettingsHelpDoc =
+  dullblue (bold "== Log Settings ==") <> linebreak <> [i|
+  Users can control the logging behavior by setting environmental variables.
+  The default for asclepias apps is to send logs to stderr in terminal format.
+  To change the format to JSON (for example) set the format variable
+  before calling the application, as in:
+
+  ```
+  export LOG_FORMAT=json
+  ```
+
+  For more information see,
+  https://hackage.haskell.org/package/Blammo/docs/Blammo-Logging-LogSettings-Env.html
+
+  Available environment variables:
+
+  LOG_LEVEL                known log level (case insensitive)
+  LOG_DESTINATION          stdout|stderr|@<path>
+  LOG_FORMAT               tty|json
+  LOG_COLOR                auto|always|never
+
+  |]
+-- | Sets the destination for the default Log settings to @stderr@,
+-- rather than @stdout@.
+ourDefaultLogSettings :: LogSettings
+ourDefaultLogSettings =
+  setLogSettingsDestination LogDestinationStderr defaultLogSettings
+
+-- | Environmental variable parser
+logSettingsParser :: Env.Parser Env.Error LogSettings
+logSettingsParser = ($ ourDefaultLogSettings) . appEndo . mconcat <$> sequenceA
+  [ Env.var (endo readLogLevels setLogSettingsLevels) "LOG_LEVEL" (Env.def mempty)
+  , Env.var (endo readLogDestination setLogSettingsDestination) "LOG_DESTINATION" (Env.def mempty)
+  , Env.var (endo readLogFormat setLogSettingsFormat) "LOG_FORMAT" (Env.def mempty)
+  , Env.var (endo readLogColor setLogSettingsColor) "LOG_COLOR" (Env.def mempty)
+  ]
+
+-- | Parse @'Blammo.Logging.LogSettings'@.
+parseLogSettings :: IO LogSettings
+parseLogSettings = Env.parse id logSettingsParser
+
+endo
+  :: Env.AsUnread e
+  => (String -> Either String a)
+  -- ^ How to parse the value
+  -> (a -> b -> b)
+  -- ^ How to turn the parsed value into a setter
+  -> Env.Reader e (Endo b)
+endo reader setter x = first Env.unread $ Endo . setter <$> reader x
+

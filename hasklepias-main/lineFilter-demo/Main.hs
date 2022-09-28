@@ -28,4 +28,4 @@ dciS' = decodeStrict' @LineAppTesterID
 tpr = (== MkLineAppTester True)
 
 main :: IO ()
-main = makeLineFilterApp "demo" dciS' dclS' tpr
+main = runLineFilterAppSimple "demo" dciS' dclS' tpr

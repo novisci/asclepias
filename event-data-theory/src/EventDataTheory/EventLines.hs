@@ -27,7 +27,7 @@ module EventDataTheory.EventLines
   , decodeEvent'
   , decodeEventStrict
   , decodeEventStrict'
-  , LineParseError
+  , LineParseError(..)
   , ParseEventLineOption(..)
   , defaultParseEventLineOption
   , modifyEventLineWithContext

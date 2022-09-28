@@ -21,29 +21,28 @@ module Hasklepias.MakeCohortApp
   , runAppWithLocation
   ) where
 
-
+import           Blammo.Logging
+import           Blammo.Logging.LogSettings.Env as Env
+import           Blammo.Logging.Simple
 import           Cohort
-import           Colog.Core               (HasLog (..), LogAction (..),
-                                           logPrint, logPrintStderr,
-                                           logStringStderr, logStringStdout,
-                                           (<&))
-import           Data.Aeson               (FromJSON, ToJSON (..), decode,
-                                           encode)
-import           Data.Bifunctor           (Bifunctor (second))
-import qualified Data.ByteString.Lazy     as BL
-import           Data.List                (sort)
-import           Data.Map.Strict          (fromList, toList)
-import qualified Data.Map.Strict          as M (fromListWith, toList)
-import           Data.Monoid              (Monoid (mconcat))
-import           Data.String.Interpolate  (i)
-import           Data.Text                (Text, pack, splitOn)
-import           Development.GitRev       (gitDirty, gitHash)
-import           EventDataTheory          hiding ((<|>))
+import           Control.Monad.IO.Class
+import           Data.Aeson                     (FromJSON, ToJSON (..), decode,
+                                                 encode)
+import           Data.Bifunctor                 (Bifunctor (second))
+import qualified Data.ByteString.Lazy           as BL
+import           Data.List                      (sort)
+import           Data.Map.Strict                (fromList, toList)
+import qualified Data.Map.Strict                as M (fromListWith, toList)
+import           Data.Monoid                    (Monoid (mconcat))
+import           Data.String.Interpolate        (i)
+import           Data.Text                      (Text, pack, splitOn)
+import           Development.GitRev             (gitDirty, gitHash)
+import           EventDataTheory                hiding ((<|>))
 import           Hasklepias.AppUtilities
 import           Options.Applicative
-import           Options.Applicative.Help hiding (fullDesc)
-import           Type.Reflection          (Typeable)
-import           Witch                    (into)
+import           Options.Applicative.Help       hiding (fullDesc)
+import           Type.Reflection                (Typeable)
+import           Witch                          (into)
 
 {-| INTERNAL
 A type which contains the evaluation options of a cohort application.
@@ -127,6 +126,8 @@ makeCohortParserInfo name version = Options.Applicative.info
       <> line
       <> line
       <> evaluateFeaturesDoc
+      <> line
+      <> logSettingsHelpDoc
       <> line
 
 {-
@@ -254,13 +255,12 @@ shapeOutput
   -> m ([LineParseError], CohortMapJSON)
 shapeOutput shape = fmap (fmap (reshapeCohortMap shape))
 
--- logging based on example here:
--- https://github.com/kowainik/co-log/blob/main/co-log/tutorials/Main.hs
-parseErrorL :: LogAction IO LineParseError
-parseErrorL = logPrintStderr
-
-logParseErrors :: [LineParseError] -> IO ()
-logParseErrors x = mconcat $ fmap (parseErrorL <&) x
+-- Log the parse errors
+logParseErrors :: MonadLogger m => [LineParseError] -> m ()
+logParseErrors =
+  mapM_
+    (\(MkLineParseError (n,e)) ->
+      logError $ "parse-error" :# ["line-number" .= n, "error" .= e])
 
 {-|
 Type containing a cohort app.
@@ -270,7 +270,9 @@ The return type contains the `Output` location so that the application
 captures the output location from the cli arguments,
 but can also be overridden by (e.g.) `runAppWithLocation`.
 -}
-newtype CohortApp m = MkCohortApp { runCohortApp :: Maybe Location -> m (BL.ByteString, (Output, OutputCompression)) }
+newtype CohortApp m = MkCohortApp {
+  runCohortApp :: Maybe Location -> m (BL.ByteString, (Output, OutputCompression))
+}
 
 -- | Make a command line cohort building application.
 makeCohortApp
@@ -279,45 +281,54 @@ makeCohortApp
      , FromJSONEvent t m a
      , ToJSON d0
      , ShapeCohort d0 i
+     , MonadLogger f
+     , MonadIO f
      )
   => String  -- ^ cohort name
   -> String  -- ^ app version
   -> (Cohort d0 i -> CohortJSON) -- ^ a function which specifies the output shape
   -> CohortMapSpec [Event t m a] d0 i  -- ^ a list of cohort specifications
-  -> CohortApp IO
+  -> CohortApp f
 makeCohortApp name version shape spec = MkCohortApp $ \l -> do
-  options <- execParser (makeCohortParserInfo name version)
-  let errLog = logStringStderr
+  options <- liftIO $ execParser (makeCohortParserInfo name version)
 
-  errLog <& "Creating cohort builder..."
+  logInfo "Creating cohort builder..."
+
   let cohortEvalOpts = MkCohortEvalOptions (evaluateFeaturesOpt options)
                                            (subjectSampleOpt options)
   let app = makeCohortBuilder cohortEvalOpts spec
 
-  errLog <& "Reading data from stdin..."
+  logInfo "Reading data from stdin..."
   -- TODO: give error if no contents within some amount of time
 
   let loc = case l of
         Nothing -> inputToLocation $ input options
         Just x  -> x
 
-  dat <- readData loc (inDecompress options)
+  dat <- liftIO $ readData loc (inDecompress options)
 
-  errLog <& "Bulding cohort..."
+  logInfo "Building cohort..."
   res <- shapeOutput shape (app dat)
 
   logParseErrors (fst res)
 
-  errLog <& "Encoding cohort(s) output and writing out..."
+  logInfo "Encoding cohort(s) output and writing out..."
 
   pure (encode (toJSON (snd res)), (output options, outCompress options))
 
--- | Just run the thing.
-runApp :: CohortApp IO -> IO ()
-runApp x = do
-  app <- runCohortApp x Nothing
-  writeData (outputToLocation $ fst $ snd app) (snd $ snd app) (fst app)
 
+-- | Just run the thing.
+runApp :: CohortApp (LoggingT IO) -> IO ()
+runApp x = do
+  let app = runCohortApp x Nothing :: LoggingT IO (BL.ByteString, (Output, OutputCompression))
+
+  logger <- newLogger =<< parseLogSettings
+  res <- runLoggerLoggingT logger app
+
+  liftIO $ writeData
+    (outputToLocation $ fst $ snd res)
+    (snd $ snd res)
+    (fst res)
 
 -- | Just run the thing with a set location (e.g for testing).
 runAppWithLocation :: Location -> CohortApp IO -> IO BL.ByteString

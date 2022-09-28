@@ -8,7 +8,8 @@ For example, if the cohort is consists only of females,
 one could run a prefilter to remove any groups (subjects in this case)
 of event lines for males.
 -}
-{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DeriveGeneric     #-}
+{-# LANGUAGE OverloadedStrings #-}
 module Hasklepias.AppBuilder.ProcessLines.Logic
   ( -- * Processing newline delimited data
     --
@@ -17,8 +18,10 @@ module Hasklepias.AppBuilder.ProcessLines.Logic
   , processAppLinesLazy
   , LineProcessor(..)
   , LineStatus(..)
+  , lineAppErrorMessage
   ) where
 
+import           Blammo.Logging
 import qualified Data.ByteString            as BS
 import           Data.ByteString.Builder
 import qualified Data.ByteString.Char8      as BSC
@@ -46,6 +49,13 @@ instance Show LineAppError where
   show (LineParseErrorA i) = "Line " <> show i <> ": failed to decode line"
   show (LineParseErrorID i) =
     "Line " <> show i <> ": failed to decode identifier"
+
+-- | Create a @'Blammo.Logging.Message'@ from a @'LineAppError'@.
+lineAppErrorMessage :: LineAppError -> Message
+lineAppErrorMessage (LineParseErrorA n) =
+  "Failed to decode line" :# ["line-number" .= n]
+lineAppErrorMessage (LineParseErrorID n) =
+  "Failed to decode identifier" :# ["line-number" .= n]
 
 {-
 INTERNAL

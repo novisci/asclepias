@@ -113,9 +113,9 @@ library
     , amazonka
     , amazonka-s3
     , base >=4.14 && <5
+    , Blammo
     , bytestring
     , cassava
-    , co-log-core
     , containers
     , conduit-extra
     , deepseq
@@ -128,6 +128,7 @@ library
     , microlens
     , OneTuple
     , optparse-applicative
+    , envparse
     , process
     , pretty-simple
     , QuickCheck

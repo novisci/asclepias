@@ -88,8 +88,8 @@ cohortSpecs
 cohortSpecs = makeCohortSpecs
   [("example", makeIndexRunner, makeCriteriaRunner, makeFeatureRunner)]
 
-exampleAppRW :: CohortApp IO
+exampleAppRW :: (MonadIO m, MonadLogger m) => CohortApp m
 exampleAppRW = makeCohortApp "testCohort" "v0.1.0" rowWise cohortSpecs
 
-exampleAppCW :: CohortApp IO
+exampleAppCW :: (MonadIO m, MonadLogger m) => CohortApp m
 exampleAppCW = makeCohortApp "testCohort" "v0.1.0" colWise cohortSpecs

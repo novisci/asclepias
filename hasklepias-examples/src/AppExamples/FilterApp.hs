@@ -8,7 +8,7 @@ import           Hasklepias
 
 -- | A basic test of the filter app: filter to subject that have at least one enrollment event.
 exampleFilterApp :: IO ()
-exampleFilterApp = makeFilterEventLineApp
+exampleFilterApp = runFilterEventLineAppSimple
   "Prefilter test app"
   (getPredicate isEnrollmentEvent :: Event Text ExampleModel Day -> Bool)
 

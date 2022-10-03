@@ -132,7 +132,7 @@ language is over 30 years old and has many, many features. Here are a few resour
 To run the examples interactively, open a @ghci@ session with:
 
 @
-cabal repl hasklepias:examples
+cabal repl hasklepias-examples
 @
 
 In @ghci@ you have access to all exposed functions in @hasklepias@, @interval-algebra@,

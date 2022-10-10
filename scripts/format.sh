@@ -9,4 +9,4 @@ if ! [ -x "$(command -v stylish-haskell)" ]; then
   echo 'or cabal install --constraint "stylish-haskell +ghc-lib" stylish-haskell to install the application'  >&2
   exit 1
 fi
-find . -name "*.hs" -not -path './dist-newstyle/*' -exec sh -c 'stylish-haskell "$1" --inplace' shell {} \;
+find . -name "*.hs" -not -path '*/Taggers.hs' -not -path './dist-newstyle/*' -exec sh -c 'stylish-haskell "$1" --inplace' shell {} \;

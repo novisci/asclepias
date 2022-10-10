@@ -78,6 +78,7 @@ library
   other-modules:
 
       Hasklepias.AppBuilder.ProcessLines.Logic
+      Hasklepias.AppBuilder.ProcessLines.Taggers
 
 
       Stype.Tests.Aeson

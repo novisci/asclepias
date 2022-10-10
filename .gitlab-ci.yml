@@ -41,7 +41,9 @@ check-source:
   image: registry.gitlab.com/targetrwe/epistats/nsstat/nsbuild/haskell:$GHC
   script:
     - ./scripts/lint.sh
-    - ./ci/ci-check-format.sh
+      #    TODO
+      #    https://gitlab.com/TargetRWE/epistats/nsstat/asclepias/-/issues/334
+      #    - ./ci/ci-check-format.sh
 
 trigger-main-build:
   stage: build

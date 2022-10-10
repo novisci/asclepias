@@ -1,4 +1,4 @@
-{-|
+{-| TODO
 -}
 {-# LANGUAGE QuasiQuotes      #-}
 {-# LANGUAGE TypeApplications #-}
@@ -7,31 +7,35 @@ module Hasklepias.AppBuilder.LineFilterApp
   , makeFilterEventLineApp
   , runLineFilterAppSimple
   , runFilterEventLineAppSimple
+  -- Re-exports
+  , TaggerConfig(..)
   ) where
 
 import           Blammo.Logging
-import           Blammo.Logging.LogSettings.Env           as LogSettingsEnv
+import           Blammo.Logging.LogSettings.Env               as LogSettingsEnv
 import           Blammo.Logging.Simple
 import           Control.Monad.IO.Class
-import           Data.Aeson                               (decodeStrict')
-import qualified Data.ByteString                          as BS
-import qualified Data.ByteString.Lazy                     as BL
-import           Data.String.Interpolate                  (i)
-import           EventDataTheory                          hiding ((<|>))
+import           Data.Aeson                                   (decodeStrict')
+import qualified Data.ByteString                              as BS
+import qualified Data.ByteString.Lazy                         as BL
+import           Data.String.Interpolate                      (i)
+import           EventDataTheory                              hiding ((<|>))
+import           Hasklepias.AppBuilder.ProcessLines.Taggers
 import           Hasklepias.AppBuilder.ProcessLines.Logic
 import           Hasklepias.AppUtilities
 import           Options.Applicative
-import           Options.Applicative.Help                 hiding (fullDesc)
+import           Options.Applicative.Help                     hiding (fullDesc)
 import           System.Exit
 
 -- Container for app options
-data LineFilterAppOpts = MkLineFilterAppOpts
-  { input        :: Input
-  , output       :: Output
-  , inDecompress :: InputDecompression
-  , outCompress  :: OutputCompression
-  -- , lazy :: Bool
-  }
+data LineFilterAppOpts
+  = MkLineFilterAppOpts
+      { input        :: Input
+      , output       :: Output
+      , inDecompress :: InputDecompression
+      , outCompress  :: OutputCompression
+        -- , lazy :: Bool
+      }
 
 desc :: Doc
 desc =
@@ -110,6 +114,12 @@ runLineFilterAppSimple name pid psl prd = do
   logger <- newLogger =<< parseLogSettings
   runLoggerLoggingT logger $ makeLineFilterApp name pid psl prd
 
+-- TODO types of make/runLineFilterApp would need to accommodate taggers if
+-- those functions are kept generic.  alternatively, makeFilterEventLineApp
+-- could be the entrypoint for project code actually using the LineFilterApp,
+-- and the generic parent functions could be scrapped. see
+-- https://gitlab.com/TargetRWE/epistats/nsstat/asclepias/-/issues/332
+
 {-|
 Create a application that filters event data with two arguments:
 
@@ -135,12 +145,19 @@ makeFilterEventLineApp
   :: (Eventable t m a, EventLineAble t m a b, FromJSONEvent t m a, MonadLogger f, MonadIO f)
   => String -- ^ name of the app (e.g. a project's id)
   -> (Event t m a -> Bool) -- ^ predicate to evaluate for each event
+  -> TaggerConfig t c m
+  -- ^ List of tagging functions producing @t@ tags, with signature @M.Map Text
+  -- c -> m -> t@, along with the path to a dhall file with which to create
+  -- @M.Map Text c@. Note @c@ must be @FromDhall@, which is enforced in the
+  -- constructor.
   -> f ()
-makeFilterEventLineApp name =
+-- TODO https://gitlab.com/TargetRWE/epistats/nsstat/asclepias/-/issues/331
+makeFilterEventLineApp name es _ =
   makeLineFilterApp
             name
             (decodeStrict' @SubjectIDLine)
             (fmap snd . decodeEventStrict' defaultParseEventLineOption)
+            es
 
 
 {-|
@@ -153,4 +170,5 @@ runFilterEventLineAppSimple
   -> IO ()
 runFilterEventLineAppSimple name prd = do
   logger <- newLogger =<< parseLogSettings
-  runLoggerLoggingT logger $ makeFilterEventLineApp name prd
+  -- TODO https://gitlab.com/TargetRWE/epistats/nsstat/asclepias/-/issues/331
+  runLoggerLoggingT logger $ makeFilterEventLineApp name prd emptyTaggerConfig

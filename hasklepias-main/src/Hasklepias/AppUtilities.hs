@@ -1,30 +1,31 @@
 {-|
-Module      : Misc types and functions
-Description : Misc types and functions useful in Hasklepias.
-Copyright   : (c) NoviSci, Inc 2020
-License     : BSD3
-Maintainer  : bsaul@novisci.com
-
-These functions may be moved to more appropriate modules in future versions.
+Module      : AppUtilities
+Description : Misc types and functions useful in creating Hasklepias applications.
 -}
--- {-# LANGUAGE NoImplicitPrelude #-}
-{-# LANGUAGE DataKinds         #-}
-{-# LANGUAGE GADTs             #-}
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE QuasiQuotes       #-}
-{-# LANGUAGE TypeApplications  #-}
+{-# LANGUAGE DataKinds             #-}
+{-# LANGUAGE GADTs                 #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE OverloadedStrings     #-}
+{-# LANGUAGE QuasiQuotes           #-}
+{-# LANGUAGE TypeApplications      #-}
 
 module Hasklepias.AppUtilities
-  ( Location(..)
-  , Input(..)
-  , Output(..)
+  (
+  -- * Types and functions for handling I/O
+    Location(..)
+  , showLocation
+  , Input
+  , Output
   , readData
   , readDataStrict
   , writeData
   , writeDataStrict
   , getS3Object
-  , inputToLocation
+  , parseIOSpec
   , outputToLocation
+  , IOSpec
+  , outputLocation
+  , inputLocation
 
   -- ** Compression handling
   , InputDecompression(..)
@@ -46,38 +47,50 @@ module Hasklepias.AppUtilities
   , logSettingsParser
   , parseLogSettings
   , logSettingsHelpDoc
+
+  -- * Processing indexed files
+  , updateLocationWithPartitionIndex
+  , partitionIndexParser
+  , partitionIndexDoc
+  , PartitionIndex
   ) where
 
 import           Amazonka                   (LogLevel (Debug, Error), Region,
                                              ToBody (..), discover, newEnv,
                                              newLogger, runResourceT, send,
                                              sinkBody)
-import           Amazonka.S3                (BucketName,
+import           Amazonka.S3                (BucketName (..),
                                              ObjectCannedACL (ObjectCannedACL_Bucket_owner_full_control),
-                                             ObjectKey, newGetObject,
+                                             ObjectKey (..), newGetObject,
                                              newPutObject)
 import           Blammo.Logging.LogSettings
 import           Codec.Compression.GZip     (CompressionLevel, compress,
                                              decompress)
+import           Control.Arrow              ((&&&))
 import           Control.Monad
 import           Control.Monad.IO.Class
-import           Data.Bifunctor             (first)
+import           Data.Bifunctor             (bimap, first)
 import qualified Data.ByteString            as BS
 import qualified Data.ByteString.Char8      as BSC
 import qualified Data.ByteString.Lazy       as BL hiding (putStrLn)
 import           Data.Conduit.Binary        (sinkLbs)
 import           Data.Generics.Product      (HasField (field))
+import           Data.List.Split            (splitOn)
 import           Data.Semigroup             (Endo (..))
 import           Data.String                (IsString (fromString))
 import           Data.String.Interpolate    (i)
-import qualified Data.Text                  as T (Text, pack)
+import qualified Data.Text                  as T (Text, pack, unpack)
 import qualified Data.Text.IO               as T (putStrLn)
 import qualified Env
+import           Formatting                 (formatToString, left)
 import           Lens.Micro                 (set, (<&>), (^.))
 import           Lens.Micro.Extras          (view)
 import           Options.Applicative
 import           Options.Applicative.Help
+import           Safe                       (atMay, headMay)
 import           System.IO                  (stderr)
+import           Text.Read                  (readMaybe)
+
 
 -- | Type representing locations that data can be read from
 data Location where
@@ -86,19 +99,28 @@ data Location where
   S3    ::Region -> BucketName -> ObjectKey -> Location
   deriving (Show)
 
+-- | Use to print where data is from (or to)
+showLocation :: Location -> T.Text
+showLocation Std                                 = "stdin/stdout"
+showLocation (Local f)                           = T.pack f
+showLocation (S3 r (BucketName b) (ObjectKey o)) = b <> "/" <> o
+
 -- | Type to hold input information. Either from file or from S3.
 data Input =
      StdInput
    | FileInput (Maybe FilePath) FilePath
-   | S3Input  String BucketName ObjectKey
+   | S3Input  Region BucketName ObjectKey
    deriving (Show)
 
 -- | Type to hold input information. Either from file or from S3.
 data Output =
      StdOutput
    | FileOutput (Maybe FilePath) FilePath
-   | S3Output  String BucketName ObjectKey
+   | S3Output  Region BucketName ObjectKey
+
+-- | Flag for whether to decompress input
 data InputDecompression = NoDecompress | Decompress deriving (Show)
+
 -- | Flag for whether to compress output
 data OutputCompression = NoCompress | Compress deriving (Show)
 
@@ -232,7 +254,7 @@ inputToLocation (FileInput d f) = Local (pre f)
   pre = case d of
     Nothing -> (<>) ""
     Just s  -> (<>) (s <> "/")
-inputToLocation (S3Input r b k) = S3 (fromString r) b k
+inputToLocation (S3Input r b k) = S3 r b k
 
 -- | Maps an @Input@ to a @Location@.
 outputToLocation :: Output -> Location
@@ -242,7 +264,7 @@ outputToLocation (FileOutput d f) = Local (pre f)
   pre = case d of
     Nothing -> (<>) ""
     Just s  -> (<>) (s <> "/")
-outputToLocation (S3Output r b k) = S3 (fromString r) b k
+outputToLocation (S3Output r b k) = S3 r b k
 
 {-
     CLI option parsers
@@ -328,6 +350,58 @@ outputCompressionParser =
   flag' Compress (long "gzip" <> short 'z' <> help "compress output using gzip")
     <|> pure NoCompress
 
+{-
+  IO Location utilities
+-}
+
+{- |
+A type containing the @'Location'@s for input and output.
+See @'parseIOSpec'@ for creating a term of this type.
+-}
+data IOSpec = MkIOSpec {
+     -- | @'Location'@ for input
+     inputLocation  :: Location
+     -- | @'Location'@ for output
+   , outputLocation :: Location
+   } deriving (Show)
+
+{- |
+Creates an @'IOSpec'@ from an @'Input'@ and @'Output'@.
+If a @PartitionIndex@ is provided, then the  @'Input'@ and @'Output'@
+are parsed via @'updateLocationWithPartitionIndex'@.
+
+Examples:
+
+>>> parseIOSpec Nothing StdInput StdOutput
+Right (MkIOSpec {inputLocation = Std, outputLocation = Std})
+>>> parseIOSpec (Just (MkPartitionIndex 1)) StdInput StdOutput
+Right (MkIOSpec {inputLocation = Std, outputLocation = Std})
+>>> parseIOSpec (Just (MkPartitionIndex 1)) (FileInput Nothing "hasklepias-examples/exampleData/exampleData%%n%%.jsonl") StdOutput
+Right (MkIOSpec {inputLocation = Local "hasklepias-examples/exampleData/exampleData1.jsonl", outputLocation = Std})
+>>> parseIOSpec (Just (MkPartitionIndex 1)) (FileInput Nothing "hasklepias-examples/exampleData/exampleData%%n%%.jsonl") (FileOutput Nothing "hasklepias-examples/exampleData/exampleCohort%%n%%.json")
+Right (MkIOSpec {inputLocation = Local "hasklepias-examples/exampleData/exampleData1.jsonl", outputLocation = Local "hasklepias-examples/exampleData/exampleCohort1.json"})
+>>> parseIOSpec (Just (MkPartitionIndex 1)) (FileInput Nothing "hasklepias-examples/exampleData/exampleData%%n%%.jsonl") (FileOutput Nothing "hasklepias-examples/exampleData/exampleCohort.json")
+Left FailedToSplitByDelimiter
+>>> parseIOSpec (Just (MkPartitionIndex (-1))) (FileInput Nothing "hasklepias-examples/exampleData/exampleData%%n%%.jsonl") StdOutput
+Left NOutOfBounds
+>>> parseIOSpec (Just (MkPartitionIndex 10)) (FileInput Nothing "hasklepias-examples/exampleData/exampleData%%1%%.jsonl") StdOutput
+Left NOutOfBounds
+
+-}
+parseIOSpec :: Maybe PartitionIndex
+  -> Input
+  -> Output
+  -> Either PartitionTemplateError IOSpec
+parseIOSpec Nothing i o = Right $ MkIOSpec (inputToLocation i) (outputToLocation o)
+parseIOSpec (Just pid) i o =
+  uncurry MkIOSpec <$> involve (update $ inputToLocation i, update $ outputToLocation o)
+  where update = flip updateLocationWithPartitionIndex pid
+        -- TODO: I failed to think of an obvious (f a, f a) -> f (a, a) function
+        involve (x, y) = case x of
+          Left e -> Left e
+          Right z1 -> case y of
+            Left e2  -> Left e2
+            Right z2 -> Right (z1, z2)
 
 {-
   BLAMMO logging utilities
@@ -342,6 +416,7 @@ outputCompressionParser =
   https://github.com/freckle/blammo/issues/20
 -}
 
+-- | information about using logging
 logSettingsHelpDoc :: Doc
 logSettingsHelpDoc =
   dullblue (bold "== Log Settings ==") <> linebreak <> [i|
@@ -363,8 +438,8 @@ logSettingsHelpDoc =
   LOG_DESTINATION          stdout|stderr|@<path>
   LOG_FORMAT               tty|json
   LOG_COLOR                auto|always|never
-
   |]
+
 -- | Sets the destination for the default Log settings to @stderr@,
 -- rather than @stdout@.
 ourDefaultLogSettings :: LogSettings
@@ -393,3 +468,217 @@ endo
   -> Env.Reader e (Endo b)
 endo reader setter x = first Env.unread $ Endo . setter <$> reader x
 
+{-
+  Utililties for processing (integer) indexed files, e.g.:
+     file1, file2, file3, ...
+-}
+
+-- | Enumerates kinds of errors handled by @'parsePartitionFilePath'@.
+data PartitionTemplateError =
+    NOutOfBounds
+  | NonPostiveWidth
+  | FailedToParseWidth
+  | FailedToSplitByDelimiter
+  deriving (Eq, Show)
+
+-- | The possible pattern for a partition template
+data PartitionTemplatePattern =
+    -- ^ Partition has fixed width
+    FixedWidth Int
+    -- ^ Partition does not have fixed width
+  | NotFixedWidth deriving (Eq, Show)
+
+-- internal function for @parsePartitionFilePath@
+parsePartitionTemplate ::
+     String
+  -> FilePath
+  -> Either PartitionTemplateError (String, PartitionTemplatePattern, String)
+parsePartitionTemplate delim =
+    checkParse
+     <=< fmap (call3 headMay (\x -> (x `atMay` 1) >>= readTemplatePattern) (`atMay` 2))
+      . (\x -> if length x == 3 then Right x else Left FailedToSplitByDelimiter)
+      . splitOn delim
+  where call3 f g h = (\((x, y), z) -> (x, y, z)) . ((f &&& g) &&& h)
+
+        readTemplatePattern "n" = Just NotFixedWidth
+        readTemplatePattern x   = fmap FixedWidth (readMaybe x)
+
+        checkParse (Just x, y, Just z) = case y of
+          Nothing -> Left FailedToParseWidth
+          Just pat -> case pat of
+            NotFixedWidth -> Right (x, pat, z)
+            FixedWidth i  -> if i <= 0 then Left NonPostiveWidth else Right (x, pat, z)
+        checkParse (_, _, _) = Left FailedToSplitByDelimiter
+
+{- |
+A utility for templating @'FilePath'@ with an integer value
+This is useful for processing batches of numbered files.
+The template pattern is @%%n%%@,
+where @n@ is either an integer value or the character @n@.
+If @n@ is a positive integer,
+then the output is left-padded with zeros to a fixed width of @n@.
+If the template variable simply @n@,
+then the output is not left-padded.
+
+The examples below show usage and possible errors that may occur.
+
+>>> parsePartitionFilePath "file-%%n%%.json" 3
+Right "file-3.json"
+>>> parsePartitionFilePath "file-%%5%%.json" 3
+Right "file-00003.json"
+>>> parsePartitionFilePath "file-%%10%%.json" 3
+Right "file-0000000003.json"
+>>> parsePartitionFilePath "file-%%n%%.json" (-1)
+Left NOutOfBounds
+>>> parsePartitionFilePath "file-%%2%%.json" 99
+Right "file-99.json"
+>>> parsePartitionFilePath "file-%%2%%.json" 100
+Left NOutOfBounds
+>>> parsePartitionFilePath "file-%%ab%%.json" 3
+Left FailedToParseWidth
+>>> parsePartitionFilePath "file-%%-1%%.json" 3
+Left NonPostiveWidth
+>>> parsePartitionFilePath "file-%%1%%.json" 10
+Left NOutOfBounds
+>>> parsePartitionFilePath "file-%%1%%-%%.json" 10
+Left FailedToSplitByDelimiter
+
+-}
+parsePartitionFilePath ::
+     FilePath
+  -> Int
+  -> Either PartitionTemplateError FilePath
+parsePartitionFilePath x n =
+   parsePartitionTemplate "%%" x >>= fillTemplate n
+   where
+    fillTemplate i (x, FixedWidth n, z) =
+      if 0 <= i && i <= 10 ^ n - 1
+        then Right $ x <> formatToString (left n '0') i <> z
+        else Left NOutOfBounds
+    fillTemplate i (x, NotFixedWidth, z) =
+      if  i < 0
+        then Left NOutOfBounds
+        else Right $ x <> show i <> z
+
+
+-- | Newtype wrapper for creating Parser for the @partition-index@ cli option.
+newtype PartitionIndex = MkPartitionIndex Int deriving (Eq, Show)
+
+-- | Parser for @PartitionIndex@.
+partitionIndexParser :: Parser PartitionIndex
+partitionIndexParser =
+  option
+  (eitherReader
+    (\s -> case readMaybe s :: Maybe Int of
+      Nothing -> Left "partition-index value must be an integer"
+      Just i ->
+        if i < 0
+          then Left "partition-index value must be non-negative"
+          else Right (MkPartitionIndex i)
+    ))
+    (  long "partition-index"
+    <> metavar "INT"
+    <> help
+    ("Non-negative integer value to pass an index to templated input/output paths. " <>
+     "See Processing Indexed Files help in help text for more information.")
+    )
+
+-- | information on how to use the @PartitionIndex@ option
+partitionIndexDoc :: Doc
+partitionIndexDoc =
+  dullblue (bold "=== Processing Indexed Files ===")
+  <> linebreak
+  <> [i|
+  The following options have a basic templating functionality for processing
+  indexed filenames (such as file1.json, file2.json, file3.json, etc):
+
+  * --file
+  * --output
+  * --key
+  * --outkey
+
+  The template pattern is @%%n%%@, where @n@ is either an integer value
+  or the character 'n'. If n is a positive integer, then the output is
+  left-padded with zeros to a fixed width of n. If the template variable is
+  simply 'n', then the output is not left-padded.
+
+  A filepath may contain at most one template.
+
+  When templated paths are used, the --partition-index option is interpolated
+  into the path(s). If both input and output go to one of the options listed,
+  then both paths must be templated.
+
+  **EXAMPLES**
+
+   Options
+    --file=path/to/in-%%5%%.ext
+    --output=path/to/out-%%5%%.ext
+    --partition-index=1
+   -----------------------
+   Interpretation
+    input file = path/to/in-00001.ext
+    output file = path/to/out-00001.ext
+
+   Options
+    --file=path/to/in%%n%%.ext
+    --output=path/to/out%%n%%.ext
+    --partition-index=1
+   -----------------------
+   Interpretation
+    input file = path/to/in1.ext
+    output file = path/to/out1.ext
+
+   Options
+    --file=path/to/in-%%5%%.ext
+    --output=path/to/out-%%5%%.ext
+    --partition-index=1
+   -----------------------
+   Interpretation
+    input file = path/to/in-00001.ext
+    output file = path/to/out-00001.ext
+
+   Options
+   --file=path/to/in%%n%%.ext
+   --outkey=path/to/out%%n%%.ext
+   --partition-index=1
+   -----------------------
+   Interpretation
+    input file = path/to/in1.ext
+    output S3 key = path/to/out1.ext
+
+  |]
+
+{- |
+Modifies a @'Location'@ given a @'PartitionIndex'@ in the following ways:
+
+* @Std@: ignores the @PartitionIndex@ and returns @Std@
+* @Local@: modifies the @FilePath@ with @'parsePartitionFilePath'@
+* @S3@: modifies the @'Amazonka.S3.ObjectKey'@ with @'parsePartitionFilePath'@
+
+Examples:
+
+>>> updateLocationWithPartitionIndex Std (MkPartitionIndex 1)
+Right Std
+>>> updateLocationWithPartitionIndex (Local "foo-%%2%%") (MkPartitionIndex 1)
+Right (Local "foo-01")
+>>> updateLocationWithPartitionIndex (Local "foo-%%%") (MkPartitionIndex 1)
+Left FailedToSplitByDelimiter
+>>> updateLocationWithPartitionIndex (S3 "us-east-1" "myBucket" "foo-%%5%%") (MkPartitionIndex 1)
+Right (S3 (Region' {fromRegion = "us-east-1"}) (BucketName "myBucket") (ObjectKey "foo-00001"))
+>>> updateLocationWithPartitionIndex ( Local "hasklepias-examples/exampleData/exampleData%%n%%.jsonl") (MkPartitionIndex 1)
+Right (Local "hasklepias-examples/exampleData/exampleData1.jsonl")
+
+-}
+updateLocationWithPartitionIndex ::
+     Location
+  -> PartitionIndex
+  -> Either PartitionTemplateError Location
+updateLocationWithPartitionIndex Std _ = Right Std
+updateLocationWithPartitionIndex (Local f) (MkPartitionIndex i) =
+  case parsePartitionFilePath f i of
+    Left e  -> Left e
+    Right x -> Right $ Local x
+updateLocationWithPartitionIndex (S3 r b (ObjectKey o)) (MkPartitionIndex i) =
+  case parsePartitionFilePath (T.unpack o) i of
+    Left e  -> Left e
+    Right x -> Right $ S3 r b (ObjectKey (T.pack x))

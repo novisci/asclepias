@@ -12,28 +12,30 @@ module Hasklepias.AppBuilder.LineFilterApp
   ) where
 
 import           Blammo.Logging
-import           Blammo.Logging.LogSettings.Env               as LogSettingsEnv
+import           Blammo.Logging.LogSettings.Env             as LogSettingsEnv
 import           Blammo.Logging.Simple
 import           Control.Monad.IO.Class
-import           Data.Aeson                                   (decodeStrict')
-import qualified Data.ByteString                              as BS
-import qualified Data.ByteString.Lazy                         as BL
-import           Data.String.Interpolate                      (i)
-import           EventDataTheory                              hiding ((<|>))
-import           Hasklepias.AppBuilder.ProcessLines.Taggers
+import           Data.Aeson                                 (decodeStrict')
+import qualified Data.ByteString                            as BS
+import qualified Data.ByteString.Lazy                       as BL
+import           Data.String                                (IsString (fromString))
+import           Data.String.Interpolate                    (i)
+import           EventDataTheory                            hiding ((<|>))
 import           Hasklepias.AppBuilder.ProcessLines.Logic
+import           Hasklepias.AppBuilder.ProcessLines.Taggers
 import           Hasklepias.AppUtilities
 import           Options.Applicative
-import           Options.Applicative.Help                     hiding (fullDesc)
+import           Options.Applicative.Help                   hiding (fullDesc)
 import           System.Exit
 
 -- Container for app options
 data LineFilterAppOpts
   = MkLineFilterAppOpts
-      { input        :: Input
-      , output       :: Output
-      , inDecompress :: InputDecompression
-      , outCompress  :: OutputCompression
+      { input          :: !Input
+      , output         :: !Output
+      , inDecompress   :: !InputDecompression
+      , outCompress    :: !OutputCompression
+      , partitionIndex :: !(Maybe PartitionIndex)
         -- , lazy :: Bool
       }
 
@@ -49,6 +51,9 @@ desc =
   the same order as the input, provided that at least one line successfully parses
   into an Event c m and satisfies the predicate.
   |]
+  <> line
+  <> partitionIndexDoc
+  <> line
 
 -- Create the ParserInfo for a LineFilterApp
 makeAppArgs :: String -> ParserInfo LineFilterAppOpts
@@ -58,6 +63,7 @@ makeAppArgs name = Options.Applicative.info
   <*>  outputParser
   <*>  inputDecompressionParser
   <*>  outputCompressionParser
+  <*>  optional partitionIndexParser
   -- <*>  switch (long "lazy" <> short 'l' <> help "Whether to process as lazy bytestring")
   <**> helper
   )
@@ -87,18 +93,28 @@ makeLineFilterApp
   -> m ()
 makeLineFilterApp name pid psl prd = do
   options <- liftIO $ execParser (makeAppArgs name)
-  let inloc  = inputToLocation $ input options
-      outloc = outputToLocation $ output options
 
-  result <-
-    liftIO $ processAppLinesStrict pid psl prd NoTransformation
-      <$> readDataStrict inloc (inDecompress options)
+  let iospec = parseIOSpec
+                (partitionIndex options)
+                (input options)
+                (output options)
 
-  case result of
-    Left lae -> do
-      logError $ lineAppErrorMessage lae
+  case iospec of
+    Left e -> do
+      logError (fromString $ show e)
       liftIO $ exitWith (ExitFailure 1)
-    Right bs -> liftIO $ writeDataStrict outloc (outCompress options) bs
+    Right spec -> do
+
+      result <-
+        liftIO $ processAppLinesStrict pid psl prd NoTransformation
+          <$> readDataStrict (inputLocation spec) (inDecompress options)
+
+      case result of
+        Left lae -> do
+          logError $ lineAppErrorMessage lae
+          liftIO $ exitWith (ExitFailure 1)
+        Right bs ->
+          liftIO $ writeDataStrict (outputLocation spec) (outCompress options) bs
 
 {-|
 Creates an @IO@ action from @'makeLineFilterApp'@

@@ -34,6 +34,7 @@ import           Data.List                      (sort)
 import           Data.Map.Strict                (fromList, toList)
 import qualified Data.Map.Strict                as M (fromListWith, toList)
 import           Data.Monoid                    (Monoid (mconcat))
+import           Data.String                    (IsString (fromString))
 import           Data.String.Interpolate        (i)
 import           Data.Text                      (Text, pack, splitOn)
 import           Development.GitRev             (gitDirty, gitHash)
@@ -41,6 +42,7 @@ import           EventDataTheory                hiding ((<|>))
 import           Hasklepias.AppUtilities
 import           Options.Applicative
 import           Options.Applicative.Help       hiding (fullDesc)
+import           System.Exit
 import           Type.Reflection                (Typeable)
 import           Witch                          (into)
 
@@ -60,9 +62,11 @@ data MakeCohort = MakeCohort
     -- | Sets the 'EvaluateFeatures' option for cohort evaluation.
   , evaluateFeaturesOpt :: !EvaluateFeatures
     -- | Decompress gzipped input
-  , inDecompress        :: InputDecompression
+  , inDecompress        :: !InputDecompression
     -- | Compress output using gzip
-  , outCompress         :: OutputCompression
+  , outCompress         :: !OutputCompression
+    -- |
+  , partitionIndex      :: !(Maybe PartitionIndex)
   }
 
 {-| INTERNAL
@@ -77,6 +81,7 @@ makeCohortParser =
     <*> evaluateFeaturesParser
     <*> inputDecompressionParser
     <*> outputCompressionParser
+    <*> optional partitionIndexParser
 
 ioDoc :: Doc
 ioDoc = dullblue (bold "== I/O options ==") <> linebreak <> [i|
@@ -106,6 +111,8 @@ makeCohortParserInfo name version = Options.Applicative.info
                                                <> helpText))
   )
  where
+  -- TODO: the following was commented out due to error when compiling with
+  -- GHC 9.2.x.
   -- gitinfo  = [i| (gitrev: #{githash})|]
   -- githash  = pack $(gitHash)
   -- dirtygit = $(gitDirty)
@@ -121,6 +128,7 @@ makeCohortParserInfo name version = Options.Applicative.info
     line
       <> ioDoc
       <> line
+      <> partitionIndexDoc
       <> line
       <> subjectSampleDoc
       <> line
@@ -129,6 +137,7 @@ makeCohortParserInfo name version = Options.Applicative.info
       <> line
       <> logSettingsHelpDoc
       <> line
+
 
 {-
 Defines the @Parser@ for @'SubjectSample'@ command line options.
@@ -271,7 +280,7 @@ captures the output location from the cli arguments,
 but can also be overridden by (e.g.) `runAppWithLocation`.
 -}
 newtype CohortApp m = MkCohortApp {
-  runCohortApp :: Maybe Location -> m (BL.ByteString, (Output, OutputCompression))
+  runCohortApp :: Maybe Location -> m (BL.ByteString, (Location, OutputCompression))
 }
 
 -- | Make a command line cohort building application.
@@ -298,37 +307,45 @@ makeCohortApp name version shape spec = MkCohortApp $ \l -> do
                                            (subjectSampleOpt options)
   let app = makeCohortBuilder cohortEvalOpts spec
 
-  logInfo "Reading data from stdin..."
-  -- TODO: give error if no contents within some amount of time
+  let iospec = parseIOSpec
+                (partitionIndex options)
+                (input options)
+                (output options)
 
-  let loc = case l of
-        Nothing -> inputToLocation $ input options
-        Just x  -> x
+  case iospec of
+    Left e -> do
+      logError (fromString $ show e)
+      liftIO $ exitWith (ExitFailure 1)
+    Right spec -> do
 
-  dat <- liftIO $ readData loc (inDecompress options)
+      -- TODO: give error if no contents within some amount of time
 
-  logInfo "Building cohort..."
-  res <- shapeOutput shape (app dat)
+      let loc = case l of
+            Nothing -> inputLocation spec
+            Just x  -> x
 
-  logParseErrors (fst res)
+      logInfo $ "Reading data from" :# ["location" .= showLocation loc]
 
-  logInfo "Encoding cohort(s) output and writing out..."
+      dat <- liftIO $ readData loc (inDecompress options)
 
-  pure (encode (toJSON (snd res)), (output options, outCompress options))
+      logInfo "Building cohort..."
+      res <- shapeOutput shape (app dat)
+
+      logParseErrors (fst res)
+
+      logInfo "Encoding cohort(s) output"
+      logInfo $ "Writing data to" :# ["location" .= showLocation (outputLocation spec)]
+      pure (encode (toJSON (snd res)), (outputLocation spec, outCompress options))
 
 
 -- | Just run the thing.
 runApp :: CohortApp (LoggingT IO) -> IO ()
 runApp x = do
-  let app = runCohortApp x Nothing :: LoggingT IO (BL.ByteString, (Output, OutputCompression))
+  let app = runCohortApp x Nothing :: LoggingT IO (BL.ByteString, (Location, OutputCompression))
 
   logger <- newLogger =<< parseLogSettings
   res <- runLoggerLoggingT logger app
-
-  liftIO $ writeData
-    (outputToLocation $ fst $ snd res)
-    (snd $ snd res)
-    (fst res)
+  liftIO $ uncurry writeData  (snd res) (fst res)
 
 -- | Just run the thing with a set location (e.g for testing).
 runAppWithLocation :: Location -> CohortApp IO -> IO BL.ByteString

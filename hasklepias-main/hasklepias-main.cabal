@@ -124,6 +124,7 @@ library
     , dhall-csv
     , filepath
     , flow
+    , formatting
     , generic-lens
     , gitrev
     , microlens
@@ -136,6 +137,7 @@ library
     , regex-compat
     , safe
     , semiring-simple
+    , split
     , string-interpolate
     , tasty
     , tasty-bench

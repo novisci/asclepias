@@ -83,7 +83,8 @@ import           Data.List                      (all, any, length, map, null,
                                                  scanl1, sort, transpose, unzip,
                                                  zip, zipWith, (++))
 import           Data.List.NonEmpty             (NonEmpty (..))
-import           Data.Map.Strict                as M (Map (..))
+import           Data.Map.Strict                as M (Map (..), findWithDefault,
+                                                      lookup, (!?))
 import           Data.Maybe                     (Maybe (..), catMaybes,
                                                  fromJust, fromMaybe, isJust,
                                                  isNothing, listToMaybe,

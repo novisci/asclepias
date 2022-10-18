@@ -93,6 +93,11 @@ type EventLineTagger t c m a = Tagger t c m -> EventLine t m a -> EventLine t m 
 -- about what shape the input file should be. We could alternatively use some
 -- ugly try/catch statements in the runner itself, provide info to the logger,
 -- etc.
+--
+-- In addition, that MR should consider whether this function should have signature
+-- (FromDhall c) => FilePath -> M.Map Text c. Now that this function is
+-- exported, it's perhaps inconvenient to have TaggerConfig as input.
+--
 -- | Construct the @M.Map Text c@ by parsing the @tagMapFile@.
 inputTagMap :: TaggerConfig t c m -> IO (M.Map Text c)
 inputTagMap MkTaggerConfig { tagMapFile  = tm } = inputFile auto tm

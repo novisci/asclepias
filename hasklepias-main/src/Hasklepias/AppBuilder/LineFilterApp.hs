@@ -9,6 +9,7 @@ module Hasklepias.AppBuilder.LineFilterApp
   , runFilterEventLineAppSimple
   -- Re-exports
   , TaggerConfig(..)
+  , inputTagMap
   ) where
 
 import           Blammo.Logging

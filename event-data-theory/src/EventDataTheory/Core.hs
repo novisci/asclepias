@@ -439,25 +439,7 @@ instance (Ord t, Ord t) => From (Interval a) (TagSetInterval t a) where
   from = makePairedInterval mempty
 
 -- | Contains a subject identifier
-data SubjectID =
-    SubjectIDText T.Text
-  | SubjectIDInteger Integer
-  deriving (Eq, Show, Ord, Generic)
-
-instance Binary SubjectID
-instance NFData SubjectID
-instance FromJSON SubjectID
-instance ToJSON SubjectID
-instance From SubjectID T.Text where
-  from (SubjectIDText    x) = x
-  from (SubjectIDInteger x) = T.pack $ show x
-instance From SubjectID Data.Aeson.Value where
-  from (SubjectIDText    x) = String x
-  from (SubjectIDInteger x) = Number (fromInteger x)
-instance From Integer SubjectID where
-  from = SubjectIDInteger
-instance From T.Text SubjectID where
-  from = SubjectIDText
+type SubjectID = T.Text
 
 {-|
 Provides a common interface to lift a 'Predicate' on some component

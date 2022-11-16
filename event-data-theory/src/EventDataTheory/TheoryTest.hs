@@ -42,21 +42,12 @@ data SillySchema =
   | D
   deriving (Show, Eq, Generic, Data)
 
-instance FromJSON SillySchema where
-  parseJSON = genericParseJSON
-    (defaultOptions
-      { sumEncoding = TaggedObject { tagFieldName      = "domain"
-                                   , contentsFieldName = "facts"
-                                   }
-      }
-    )
+instance FromJSON SillySchema
 
 type SillyEvent1 a = Event Text SillySchema a
 {- end::exampleEvent[] -}
 
-instance ToJSON SillySchema where
-  toJSON = genericToJSON defaultOptions { sumEncoding = UntaggedValue }
-
+instance ToJSON SillySchema
 
 -- | Just a dummy type to test non-text tag set
 data SillyTagSet= Mouse | Giraffe | Hornbill
@@ -187,59 +178,61 @@ decodeSillyFailTests2 =
   eventDecodeFailTests @SillySchema @Text @Day "test/events-integer-silly-bad"
 
 {- Unit tests on line parsers -}
-testInputsGood :: B.ByteString
-testInputsGood =
-  "[\"abc\", \"2020-01-01\", \"2020-01-02\", \"A\",\
+testInput1Good :: B.ByteString
+testInput1Good = "[\"abc\", \"2020-01-01\", \"2020-01-02\", \"A\",\
       \[\"someThing\"],\
-      \{\"domain\":\"A\",\
+      \{\"facts\" : {\"tag\":\"A\", \"contents\" : 1},\
       \ \"patient_id\":\"abc\",\
-      \ \"facts\":1,\
-      \ \"time\":{\"begin\":\"2020-01-01\",\"end\":\"2020-01-01\"}}]\n\
-      \[\"abc\", \"2020-01-05\", \"2020-01-06\", \"C\",\
+      \ \"time\":{\"begin\":\"2020-01-01\",\"end\":\"2020-01-01\"}}]"
+
+testInput2Good :: B.ByteString
+testInput2Good =
+  "[\"abc\", \"2020-01-05\", \"2020-01-06\", \"C\",\
       \[\"someThing\"],\
-      \{\"domain\":\"C\",\
+      \{\"facts\": { \"tag\" : \"C\", \"contents\":{}},\
       \ \"patient_id\":\"abc\",\
-      \ \"facts\":{},\
       \ \"time\":{\"begin\":\"2020-01-05\",\"end\":\"2020-01-06\"}}]"
 
-testInputsBad :: B.ByteString
-testInputsBad =
-  "[\"def\", \"2020-01-01\", null, \"D\",\
+testInput1Bad :: B.ByteString
+testInput1Bad = "[\"def\", \"2020-01-01\", null, \"D\",\
       \[\"someThing\"],\
-      \{\"domain\":\"D\",\
-      \ \"facts\":{},\
-      \ \"time\":{\"begin\":\"2020-01-01\",\"end\":\"2020-01-01\"}}]\n\
-      \[\"def\", \"2020-01-05\", null, \"C\",\
+      \{\"facts\": { \"tag\" : \"D\", \"contents\":{}},\
+      \ \"time\":{\"begin\":\"2020-01-01\",\"end\":\"2020-01-01\"}}]"
+
+testInput2Bad :: B.ByteString
+testInput2Bad =
+  "[\"def\", \"2020-01-05\", null, \"C\",\
       \[\"someThing\"],\
-      \{\"domain\":\"C\",\
-      \ \"facts\":{},\
+      \ {\"facts\":{\"tag\":\"C\", \"contents\":{}},\
       \ \"time\":{\"begin\":\"2020-01-05\",\"end\":\"2020-01-06\"}}]"
 
-testInput = testInputsGood <> "\n" <> testInputsBad
+testInputBad :: B.ByteString
+testInputBad = testInput1Bad <> "\n" <> testInput2Bad
 
-testOutput :: ([LineParseError], [(SubjectID, Event Text SillySchema Day)])
-testOutput =
-  ( [ from @(Natural, String) (3, "Error in $[5]: key \"patient_id\" not found")
-    , from @(Natural, String) (4, "Error in $[5]: key \"patient_id\" not found")
-    ]
-  , [ ( from @Text "abc"
-      , event (beginerval 1 (fromGregorian 2020 1 1))
-              (context (into ["someThing" :: Text]) (A 1) Nothing)
-      )
-    , ( from @Text "abc"
-      , event (beginerval 2 (fromGregorian 2020 1 5))
-              (context (into ["someThing" :: Text]) C Nothing)
-      )
-    ]
-  )
+
+testOutput1Good, testOutput2Good, testOutputBad  :: ([LineParseError], [(SubjectID, Event Text SillySchema Day)])
+testOutput1Good = ( [], [("abc", event (beginerval 1 (fromGregorian 2020 1 1)) (context (into ["someThing" :: Text]) (A 1) Nothing))])
+testOutput2Good = ( [], [("abc", event (beginerval 2 (fromGregorian 2020 1 5)) (context (into ["someThing" :: Text]) C Nothing))])
+testOutputBad = ( [ from @(Natural, String) (1, "Error in $[5]: parsing EventDataTheory.EventLines.FactsLine(MkFactsLine) failed, key \"patient_id\" not found")
+                  , from @(Natural, String) (2, "Error in $[5]: parsing EventDataTheory.EventLines.FactsLine(MkFactsLine) failed, key \"patient_id\" not found")
+                  ]
+                 , [])
 
 parserUnitTests :: TestTree
 parserUnitTests = testGroup
   "Unit tests of EventLines parsers"
-  [ testCase "with valid inputs"
+  [ testCase "with valid inputs 1"
     $   parseEventLinesL @SillySchema @Text @Day defaultParseEventLineOption
-                                                 testInput
-    @?= testOutput
+                                                 testInput1Good
+    @?= testOutput1Good
+  , testCase "with valid inputs 2"
+    $   parseEventLinesL @SillySchema @Text @Day defaultParseEventLineOption
+                                                 testInput2Good
+    @?= testOutput2Good
+  ,  testCase "with invalid inputs"
+    $   parseEventLinesL @SillySchema @Text @Day defaultParseEventLineOption
+                                                 testInputBad
+    @?= testOutputBad
   ]
 
 -- | Unit tests on Core utilities
@@ -247,19 +240,17 @@ singleEventGoodIn :: B.ByteString
 singleEventGoodIn =
   "[\"abc\",\"2020-01-01\",\"2020-01-02\",\"A\",\
       \[],\
-      \{\"domain\":\"A\",\
-      \ \"patient_id\":\"abc\",\
-      \ \"facts\":1,\
-      \ \"time\":{\"begin\":\"2020-01-01\",\"end\":\"2020-01-01\"}}]"
+      \{\"facts\":{\"contents\":1,\"tag\":\"A\"},\
+      \\"patient_id\":\"abc\",\
+      \\"time\":{\"begin\":\"2020-01-01\",\"end\":\"2020-01-02\"}}]"
 
 singleEventGoodOut :: B.ByteString
 singleEventGoodOut =
-  "[\"abc\",\"2020-01-01\",\"2020-01-02\",\"A\",\
+    "[\"abc\",\"2020-01-01\",\"2020-01-02\",\"A\",\
       \[\"bar\",\"foo\"],\
-      \{\"domain\":\"A\",\
-      \\"facts\":1,\
+      \{\"facts\":{\"contents\":1,\"tag\":\"A\"},\
       \\"patient_id\":\"abc\",\
-      \\"time\":{\"begin\":\"2020-01-01\",\"end\":\"2020-01-01\"}}]"
+      \\"time\":{\"begin\":\"2020-01-01\",\"end\":\"2020-01-02\"}}]"
 
 testAddTagViaEventLine :: IO ()
 testAddTagViaEventLine =

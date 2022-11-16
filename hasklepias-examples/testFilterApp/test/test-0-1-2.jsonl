@@ -1,2 +1,2 @@
-["a", "2019-01-01", null, "Demographics", [], {"domain" : "Demographics", "time": {"begin" : "2010-01-01", "end" : null}, "facts" : {"demo" : {"field" : "BirthYear", "info" : "1960"} } }]
-["a", "2020-01-01", null, "Demographics", [], {"domain" : "Demographics", "time": {"begin" : "2010-01-01", "end" : null}, "facts" : {"demo" : {"field" : "BirthYear", "info" : "1960"} } }]
+["a", "2019-01-01", null, "Demographic", [], {"tag" : "Demographic", "time": {"begin" : "2010-01-01", "end" : null}, "contents" : {"demographic" : {"field" : "BirthYear", "info" : "1960"} } }]
+["a", "2020-01-01", null, "Demographic", [], {"tag" : "Demographic", "time": {"begin" : "2010-01-01", "end" : null}, "contents" : {"demographic" : {"field" : "BirthYear", "info" : "1960"} } }]

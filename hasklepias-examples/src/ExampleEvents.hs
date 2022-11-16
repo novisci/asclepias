@@ -38,14 +38,7 @@ data ExampleModel =
 
 -- instance FromJSON ExampleModel
 instance FromJSON Demographic
-instance FromJSON ExampleModel where
-  parseJSON = genericParseJSON
-    (defaultOptions
-      { sumEncoding = TaggedObject { tagFieldName      = "domain"
-                                   , contentsFieldName = "facts"
-                                   }
-      }
-    )
+instance FromJSON ExampleModel
 
 type ExampleEvent = Event Text ExampleModel Int
 

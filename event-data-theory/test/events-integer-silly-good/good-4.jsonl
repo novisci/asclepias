@@ -1,1 +1,1 @@
-[1,0,0,"A",[],{"patient_id":1,"time":{"begin":0,"end":1},"domain":"A","facts":1}]
+[1,0,0,"A",[],{"patient_id":"1","time":{"begin":0,"end":1},"facts" : {"tag":"A","contents":1}}]

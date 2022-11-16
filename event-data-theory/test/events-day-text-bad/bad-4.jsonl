@@ -1,1 +1,1 @@
-[1,"2022-01-26",5,"A",[],{"patient_id":1,"time":{"begin":"2022-01-26", end:5},"domain":"A","facts":1}]
+[1,"2022-01-26",5,"A",[],{"patient_id":1,"time":{"begin":"2022-01-26", end:5},"tag":"A","contents":1}]

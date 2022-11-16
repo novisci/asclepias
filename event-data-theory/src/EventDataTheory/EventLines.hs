@@ -17,7 +17,7 @@ Maintainer  : bsaul@novisci.com
 {-# LANGUAGE UndecidableInstances  #-}
 
 module EventDataTheory.EventLines
-  ( EventLine
+  ( EventLine(..)
   , EventLineAble
   , parseEventLinesL
   , parseEventLinesL'
@@ -33,9 +33,8 @@ module EventDataTheory.EventLines
   , modifyEventLineWithContext
 
   -- for internal use;
-  , SubjectIDLine
-  , FactsLine
-  , TimeLine
+  , FactsLine(..)
+  , TimeLine(..)
   ) where
 
 import           Control.Exception
@@ -60,14 +59,13 @@ import           Type.Reflection            (Typeable)
 import           Witch
 {-|
 At this time,
-'EventLine', 'FactsLine', 'SubjectIDLine', and 'TimeLine' are
+'EventLine', 'FactsLine', and 'TimeLine' are
 simply wrapper types
 in order to create 'FromJSON' instances which can be used to marshal data from
 [ndjson](http://ndjson.org/).
 See [event data model docs](https://docs.novisci.com/event-data/3.0/index.html)
-'ToJSON' instances are not provided, but may be in the future.
+'ToJSON' instances are not provided, but may be in the future. 
 -}
-
 data EventLine t m a = MkEventLine Value Value Value Value [t] (FactsLine m a)
   deriving (Eq, Show, Generic)
 
@@ -82,8 +80,7 @@ type EventLineAble t m a b
 
 -- INTERNAL utility for getting subjectID from EventLine
 getSubjectID :: EventLine t m a -> SubjectID
-getSubjectID (MkEventLine _ _ _ _ _ fcts) =
-  (getSubjectIDLine . patient_id) fcts
+getSubjectID (MkEventLine _ _ _ _ _ fcts) = patient_id fcts
 
 -- INTERNAL utility for getting the FactsLine from EventLine
 fctln :: EventLine t m a -> FactsLine m a
@@ -144,45 +141,18 @@ instance ( Eventable t m a, EventLineAble t m a b ) =>
 
 -- | See 'EventLine'.
 data FactsLine m a = MkFactsLine
-  { domain     :: Text
-  , time       :: TimeLine a
+  { time       :: TimeLine a
   , facts      :: m
-  , patient_id :: SubjectIDLine
+  , patient_id :: SubjectID
   , source     :: Maybe Source
   , valid      :: Maybe Text
   }
   deriving (Eq, Show, Generic)
 
 instance (FromJSON a, Show a, IntervalSizeable a b, Show m, Eq m, FromJSON m)
-          => FromJSON (FactsLine m a) where
-  parseJSON = withObject "Facts Blob" $ \o -> do
-    dmn <- o .: "domain"
-    fct <- parseJSON (Object o)
-    itv <- o .: "time"
-    pid <- parseJSON (Object o)
-    vld <- o .:? "valid"
-    src <- o .:? "source"
-    pure $ MkFactsLine dmn itv fct pid src vld
+          => FromJSON (FactsLine m a)
 
-instance (Ord a, ToJSON a, ToJSON m) => ToJSON (FactsLine m a) where
-  toJSON = genericToJSON defaultOptions { omitNothingFields = True }
-
--- | See 'EventLine'.
-newtype SubjectIDLine = MkSubjectIDLine {getSubjectIDLine  :: SubjectID }
-  deriving (Eq, Show)
-
-instance FromJSON SubjectIDLine where
-  parseJSON = withObject "patient ID" $ \o -> do
-    z <- o .: "patient_id"
-    case z of
-      String x -> pure $ MkSubjectIDLine $ from x
-      Number x -> case floatingOrInteger x of
-        Left  _ -> fail "SubjectID number is not an integer"
-        Right i -> pure $ MkSubjectIDLine $ from @Integer i
-      _ -> fail (show z)
-
-instance ToJSON SubjectIDLine where
-  toJSON (MkSubjectIDLine x) = into x
+instance (Ord a, ToJSON a, ToJSON m) => ToJSON (FactsLine m a)
 
 -- | See 'EventLine'
 data TimeLine a = MkTimeLine
@@ -340,15 +310,14 @@ Transforming event lines
 {-
 INTERNAL
 
-Modify a @FactLines@ value with values from a @Context@.
+Modify a @FactsLine@ value with values from a @Context@.
 The @TimeLine@ value IS NOT changed.
 Only those fields in the context that align with the factsline
 are modified.
 -}
 updateFactsLine :: (Data m') => FactsLine m a -> Context t m' -> FactsLine m' a
-updateFactsLine (MkFactsLine dmn tm _ sid _ vld) x = MkFactsLine
-  { domain     = pack $ show $ toConstr (getFacts x)
-  , time       = tm
+updateFactsLine (MkFactsLine tm _ sid _ vld) x = MkFactsLine
+  { time       = tm
   , facts      = getFacts x
   , patient_id = sid
   , source     = getSource x
@@ -358,7 +327,7 @@ updateFactsLine (MkFactsLine dmn tm _ sid _ vld) x = MkFactsLine
 {-
 INTERNAL
 
-Modify a @FactLines@ value with values from a @Context@.
+Modify a @FactsLine@ value with values from a @Context@.
 The @TimeLine@ value IS NOT changed
 based on the provided interval.
 Only those fields in the context that align with the factsline
@@ -370,9 +339,8 @@ updateFactsLineWithInterval
   -> Context t m'
   -> Interval a'
   -> FactsLine m' a'
-updateFactsLineWithInterval (MkFactsLine _ _ _ sid _ vld) x i = MkFactsLine
-  { domain     = pack $ show $ toConstr (getFacts x)
-  , time       = MkTimeLine (begin i) (Just $ end i)
+updateFactsLineWithInterval (MkFactsLine _ _ sid _ vld) x i = MkFactsLine
+  { time       = MkTimeLine (begin i) (Just $ end i)
   , facts      = getFacts x
   , patient_id = sid
   , source     = getSource x

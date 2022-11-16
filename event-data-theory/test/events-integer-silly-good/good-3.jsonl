@@ -1,1 +1,1 @@
-[1,9765,null,"C",["Mouse"],{"patient_id":1,"time":{"begin":9675},"domain":"C","facts":{}}]
+[1,9765,null,"C",["Mouse"],{"patient_id":"1","time":{"begin":9675},"facts" : {"tag":"C","contents":{}}}]

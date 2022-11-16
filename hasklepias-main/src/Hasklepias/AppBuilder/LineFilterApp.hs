@@ -172,7 +172,7 @@ makeFilterEventLineApp
 makeFilterEventLineApp name es _ =
   makeLineFilterApp
             name
-            (decodeStrict' @SubjectIDLine)
+            (decodeStrict' @SubjectID)
             (fmap snd . decodeEventStrict' defaultParseEventLineOption)
             es
 

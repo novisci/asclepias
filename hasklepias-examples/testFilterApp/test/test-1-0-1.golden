@@ -1,1 +1,1 @@
-["a", "2016-01-01", "2017-12-31", "Enrollment", [], {"domain":"Enrollment","patient_id":"a","facts":{"plan":{"exchange":"None"}},"time":{"begin":"2016-01-01","end":"2017-12-31"}}]
+["a", "2016-01-01", "2017-12-31", "Enrollment", [], {"tag":"Enrollment","patient_id":"a","contents":{"plan":{"exchange":"None"}},"time":{"begin":"2016-01-01","end":"2017-12-31"}}]

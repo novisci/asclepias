@@ -1,1 +1,1 @@
-[1,5,null,"A",["APlant"],{"patient_id":1,"time":{"begin":5},"domain":"A","facts":1}]
+[1,5,null,"A",["APlant"],{"patient_id":1,"time":{"begin":5},"tag":"A","contents":1}]

@@ -10,6 +10,6 @@ skip this step.
 . Search the {edm-repo-url}[event-data-model] project repo for existing models.
 . If one of the existing models matches your project's use case, select this model.
 . Else, create a new model, following the instructions in the
-xref:event-data:ROOT:add-new-model.adoc[event-data-model documentation] to construct a new model.
+xref:event-data-model:ROOT:add-new-model.adoc[event-data-model documentation] to construct a new model.
 Note that, to make a new model, you may also need to 
-xref:event-data:ROOT:add-new-fact.adoc[make new facts].
+xref:event-data-model:ROOT:add-new-fact.adoc[make new facts].

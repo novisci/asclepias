@@ -1,6 +1,6 @@
 cabal-version:  2.2
 name:           hasklepias-core
-version:        0.28.0
+version:        0.29.0
 description:    Please see the README on GitHub at <https://github.com/novisci/asclepias#readme>
 homepage:       https://github.com/novisci/asclepias/#readme
 bug-reports:    https://github.com/novisci/asclepias/issues

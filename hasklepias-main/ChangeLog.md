@@ -1,5 +1,17 @@
 # Changelog for hasklepias-main
 
+## 0.29.0
+
+* add Data.Map.Strict `findWithDefault`, `lookup` and `!?` to Reexports.hs
+* import `inputTagMap` to `LineFilterApp`
+* add `partitionIndex` to `LineFilterAppOpts` type
+* filepath templating option for CLI apps
+* prep work for adding tags during the line filter process
+* added Blammo logger
+* add doctests
+* gitlab migration updates
+* switch from brittany to stylish-haskell
+
 ## 0.28.0
 
 * updates supported compiler to GHC 9.2.2.

@@ -1,5 +1,12 @@
 # Changelog for hasklepias-core
 
+## 0.29.0
+
+* added criteria that can fail
+* updated name of feature error message
+* gitlab migration updates
+* switch from brittany to stylish-haskell
+
 ## 0.27.0
 
 * Tweaks and adds to the `From` instances for `Subject` and `Population`

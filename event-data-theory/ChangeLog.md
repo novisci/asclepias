@@ -1,5 +1,12 @@
 # Changelog for event-data-theory
 
+## 0.29.0
+
+* updates to `FactsLine` type to conform to changes in `event-data-model`
+* adds doctests
+* gitlab migration updates
+* switch from brittany to stylish-haskell
+
 ## 0.28.0
 
 * updates `interval-algebra` to 2.1.1.

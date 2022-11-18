@@ -22,7 +22,7 @@ include::theory:define-context.adoc[]
 include::theory:define-tagset.adoc[]
 
 === Facts and Model
-See the `event-data-model` documentation for a definition of xref:event-data-model:models:page$define-facts.adoc[`Facts`] and  xref:event-data-model:models:page$define-models.adoc[`Model`]. Note that `Fact` and `Model` defined there are types defined in the Dhall programming language. The programmer using `asclepias` must manually define in Haskell code a type `m` within the `Context c m` that corresponds to the `Model` for a given project.
+See the `event-data-model` documentation for a definition of xref:event-data-model:theory:page$introduction.adoc#_what_is_a_fact[`Facts`] and  xref:event-data-model:theory:page$introduction.adoc#_what_is_a_model[`Model`]. Note that `Fact` and `Model` defined there are types defined in the Dhall programming language. The programmer using `asclepias` must manually define in Haskell code a type `m` within the `Context c m` that corresponds to the `Model` for a given project.
 
 === Source
 The `Source` type stores information on the origins of the data.

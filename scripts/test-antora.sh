@@ -46,12 +46,12 @@ content:
   - url: ../
     start_path: docs
     branches: [HEAD]
-  - url: https://gitlab+user-guide:11HiN9THLsxPVHSPpzxB@gitlab.novisci.com/nsStat/nsBuild.git
+  - url: https://noviverse:5s_vXizUwtQUUwpx93cA@gitlab.com/targetrwe/epistats/nsstat/nsBuild.git
     start_path: docs
-    branches: [HEAD]
-  - url: https://gitlab:glpat-n2fySz3M7AY_9Z4W7vAz@gitlab.novisci.com/nsStat/event-data-model.git
+    branches: [master]
+  - url:  https://noviverse:TpCqz21KThvBPTEX9Zmx@gitlab.com/targetrwe/epistats/nsstat/event-data-model.git
     start_path: docs
-    branches: [HEAD]
+    branches: [master]
 ui:
   bundle:
     url: https://gitlab.com/antora/antora-ui-default/-/jobs/artifacts/HEAD/raw/build/ui-bundle.zip?job=bundle-stable

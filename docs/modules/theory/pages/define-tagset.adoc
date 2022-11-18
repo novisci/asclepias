@@ -1,6 +1,6 @@
-A `TagSet` is a collection labels ("tags") that summarize the information in the data xref:event-data-model:models:page$define-models.adoc[`Model`], as given by the xref:event-data-model:models:page$define-facts.adoc[`Fact`] s of that model attached to a particular event. Each `Event` has an associated `TagSet`, which can contain multiple unique tags.
+A `TagSet` is a collection labels ("tags") that summarize the information in the data xref:event-data-model:theory:page$introduction.adoc#_what_is_a_model[`Model`], as given by the xref:event-data-model:theory:page$introduction.adoc#_what_is_a_fact[`Fact`] s of that model attached to a particular event. Each `Event` has an associated `TagSet`, which can contain multiple unique tags.
 
-A xref:event-data-model:models:page$define-facts.adoc[`Fact`] is a collection of metadata about an `Event`, which serves to classify for the purpose of building study cohorts and analyses. A xref:event-data-model:models:page$define-models.adoc[`Model`] for a given study defines which particular `Fact` s are allowed to bee used in that study.
+A xref:event-data-model:theory:page$introduction.adoc#_what_is_a_fact[`Fact`] is a collection of metadata about an `Event`, which serves to classify for the purpose of building study cohorts and analyses. A xref:event-data-model:theory:page$introduction.adoc#_what_is_a_model[`Model`] for a given study defines which particular `Fact` s are allowed to bee used in that study.
 
 `Fact` s can contain a lot of information. For example, a `Fact` to denote a medical insurance claim could contain procedure codes, cost information and provider information.
 

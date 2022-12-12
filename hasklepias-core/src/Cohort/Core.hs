@@ -402,7 +402,7 @@ makeSubjectEvaluator opts spec subj = do
       let stats         = fmap checkCohortStatus crits
 
       -- Pair up each status with its index for ease of processing later.
-      let statusIndices = liftA2 (\x y -> (makeObsID y sid, x)) stats ins
+      let statusIndices = zipWith (\y x -> (makeObsID y sid, x)) ins stats
 
       -- Measure the contribution to attrition for this subject
       -- NOTE: Criteria here is used only to the get the exclusion levels,

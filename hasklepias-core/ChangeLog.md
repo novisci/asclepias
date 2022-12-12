@@ -1,5 +1,14 @@
 # Changelog for hasklepias-core
 
+## 0.29.1
+
+* Fixes a bug in `Cohort.Core.makeSubjectEvaluator`, which produced duplicate
+or spurious output data in cases where the a subject's `IndexSet` had more
+than one element. 
+* Internal documentation changes, such that only the HEAD commit of the
+project's master branch is published rather than all recent version-tagged
+commits.
+
 ## 0.29.0
 
 * added criteria that can fail

@@ -1,59 +1,51 @@
 {-|
 Module      : Cohort IndexSet
-Copyright   : (c) NoviSci, Inc 2020
+Copyright   : (c) TargetRWE 2023
 License     : BSD3
-Maintainer  : bsaul@novisci.com
+Maintainer  : bbrown@targetrwe.com
+              ljackman@targetrwe.com
+              dpritchard@targetrwe.com
 -}
 
--- {-# OPTIONS_HADDOCK hide #-}
-{-# LANGUAGE DeriveGeneric         #-}
-{-# LANGUAGE FlexibleInstances     #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
-
+{-# LANGUAGE TypeFamilies #-}
 module Cohort.IndexSet
   ( IndexSet
-  , makeIndexSet
+    , Cohort.IndexSet.null
+    , Cohort.IndexSet.foldl'
+  , fromList
+  , toList
   ) where
 
-import qualified Data.List.NonEmpty as NEL (nonEmpty, toList)
-import qualified Data.Set.NonEmpty  as Set (NESet, fromList, singleton, toList)
-import           GHC.Generics       (Generic)
-import           Witch              (From (..), into)
+import qualified Data.Set        as Set (Set, foldl', null)
+import           EventDataTheory (Interval)
+import           GHC.Exts        (IsList (..))
 
 {-|
-A type containing (maybe) a @Data.Set.NonEmpty.NESet@ (nonempty) of type @i@,
-values of which serve as indices when defining cohorts.
-In cohort terminology,
-indices are the points in time at which an observational unit
-can be assessed whether it meets the criteria for inclusion in the cohort.
-For example, when @i@ is @Interval Day@,
-then index events are days.
+A type containing a @Data.Set.'Set'@ of type @Interval b@, values of which
+serve as index times when defining cohorts.  In cohort terminology, indices are
+the points in time at which an observational unit
+can be assessed whether it meets the criteria for inclusion in the cohort.  For
+example, when @i@ is @Interval Day@, then index events are days.
 
-A reason for using @Data.Set.NonEmpty.NESet@ as the underlying type
-is that indices must be unique within a subject.
-a subject cannot have multiple observational units for a given index.
+A reason for using a set as the underlying type is that indices must be unique
+within a subject. A subject cannot have multiple observational units for a
+given index.
 
-Use the 'makeIndexSet' function for creating an @IndexSet@.
+Construct an @IndexSet@ using @toList@.
 -}
-newtype IndexSet i = MkIndexSet ( Maybe (Set.NESet i) )
-  deriving (Eq, Show, Generic)
+newtype IndexSet b
+  = MkIndexSet (Set.Set (Interval b))
+  deriving (Eq, Show)
 
-instance From (IndexSet i) (Maybe (Set.NESet i)) where
-instance From (IndexSet i) (Maybe [i]) where
-  from (MkIndexSet x) = fmap (NEL.toList . Set.toList) x
+instance (Ord b) => IsList (IndexSet b) where
+  type Item (IndexSet b) = (Interval b)
+  toList (MkIndexSet s) = toList s
+  fromList idxs = MkIndexSet $ fromList idxs
 
-instance From (Maybe i) (IndexSet i) where
-  from x = case x of
-    Nothing -> MkIndexSet Nothing
-    Just i  -> MkIndexSet $ Just (Set.singleton i)
-instance From i (IndexSet i) where
-  from x = MkIndexSet $ Just (Set.singleton x)
-instance (Ord i) => From [i] (IndexSet i) where
-  from x = MkIndexSet $ fmap Set.fromList (NEL.nonEmpty x)
+-- | Specialized @Set.'null'@.
+null :: IndexSet b -> Bool
+null (MkIndexSet idxs) = Set.null idxs
 
-{-|
-Smart Constructor for creating an `IndexSet` from a list of indices.
--}
-makeIndexSet :: (Ord i) => [i] -> IndexSet i
-makeIndexSet = into
-
+-- | Specialized @Set.'foldl''@.
+foldl' :: (a -> Interval b -> a) -> a -> IndexSet b -> a
+foldl' f x0 (MkIndexSet s) = Set.foldl' f x0 s

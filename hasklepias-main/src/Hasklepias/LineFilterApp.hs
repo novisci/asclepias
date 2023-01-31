@@ -2,7 +2,7 @@
 -}
 {-# LANGUAGE QuasiQuotes      #-}
 {-# LANGUAGE TypeApplications #-}
-module Hasklepias.AppBuilder.LineFilterApp
+module Hasklepias.LineFilterApp
   ( makeLineFilterApp
   , makeFilterEventLineApp
   , runLineFilterAppSimple
@@ -22,9 +22,9 @@ import qualified Data.ByteString.Lazy                       as BL
 import           Data.String                                (IsString (fromString))
 import           Data.String.Interpolate                    (i)
 import           EventDataTheory                            hiding ((<|>))
-import           Hasklepias.AppBuilder.ProcessLines.Logic
-import           Hasklepias.AppBuilder.ProcessLines.Taggers
-import           Hasklepias.AppUtilities
+import           Hasklepias.LineFilterApp.ProcessLines.Logic
+import           Hasklepias.LineFilterApp.ProcessLines.Taggers
+import           Hasklepias.LineFilterApp.AppUtilities
 import           Options.Applicative
 import           Options.Applicative.Help                   hiding (fullDesc)
 import           System.Exit

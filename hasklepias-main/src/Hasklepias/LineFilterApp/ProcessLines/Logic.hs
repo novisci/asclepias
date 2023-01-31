@@ -10,7 +10,7 @@ of event lines for males.
 -}
 {-# LANGUAGE DeriveGeneric     #-}
 {-# LANGUAGE OverloadedStrings #-}
-module Hasklepias.AppBuilder.ProcessLines.Logic
+module Hasklepias.LineFilterApp.ProcessLines.Logic
   ( -- * Processing newline delimited data
     --
     -- $processAppLines

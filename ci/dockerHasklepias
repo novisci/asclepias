@@ -12,12 +12,9 @@ ARG GHC
 
 WORKDIR /project
 
-# TODO: surely there's a clean way to copy in necessary files
 COPY cabal.project .
 COPY hasklepias-core/hasklepias-core.cabal hasklepias-core/hasklepias-core.cabal
 COPY hasklepias-main/hasklepias-main.cabal hasklepias-main/hasklepias-main.cabal
-COPY hasklepias-examples/hasklepias-examples.cabal hasklepias-examples/hasklepias-examples.cabal
-COPY cohort-collector/cohort-collector.cabal cohort-collector/cohort-collector.cabal
 COPY event-data-theory/event-data-theory.cabal event-data-theory/event-data-theory.cabal
 
 RUN cabal update

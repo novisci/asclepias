@@ -21,27 +21,41 @@ source-repository head
   location: https://github.com/novisci/asclepias
 
 library
-  exposed-modules:
+  ghc-options:
+    -Wall
+    -Wcompat
+    -Widentities
+    -Wincomplete-record-updates
+    -Wincomplete-uni-patterns
+    -Wpartial-fields
+    -Wredundant-constraints
 
+  exposed-modules:
+      -- Top-level
       Features
+      Cohort
+      Tests
+      -- Cohort
+      Cohort.Core
+      Cohort.Cohort
+      Cohort.Output
+      Cohort.Criteria
+      Cohort.IndexSet
+  other-modules:
+      -- Features
       Features.Attributes
       Features.Core
       Features.Featureable
       Features.Output
       Features.Featureset
-      Cohort
-      Cohort.Core
-      Cohort.Output
-      Cohort.Criteria
-      Cohort.IndexSet
-      Tests
-  other-modules:
+      -- Tests
       Tests.Features
       Tests.Features.Core
       Tests.Features.Output
       Tests.Cohort
       Tests.Cohort.Core
       Tests.Cohort.Criteria
+      Tests.Cohort.Cohort
       Tests.Cohort.Output
   hs-source-dirs:
       src
@@ -64,6 +78,7 @@ library
     , time >= 1.11.1
     , witch 
     , witherable
+    , event-data-theory
   default-language: Haskell2010
 
 test-suite hasklepias-core-test

@@ -37,7 +37,7 @@ import           Data.Tuple.Curry
 -- #else
 import           Data.Tuple.Solo
 import           EventDataTheory
-import           Features.Core    (Define (..), Definition (..), F, Feature,
+import           Features         (Define (..), Definition (..), F, Feature,
                                    eval)
 import           GHC.Generics
 import           Test.Tasty

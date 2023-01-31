@@ -3,7 +3,7 @@ module Tests.Hasklepias
   , benches
   ) where
 
-import qualified Hasklepias.AppBuilder.ProcessLines.Tests as LF
+import qualified Hasklepias.LineFilterApp.ProcessLines.Tests as LF
 import           Test.Tasty
 import qualified Test.Tasty.Bench                         as B
 import qualified Tests.AssessmentIntervals                as AI

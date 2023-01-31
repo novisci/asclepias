@@ -56,5 +56,6 @@ haddock \
   --read-interface=event-data-theory,"${ARTIFACT_DIR}"/event-data-theory/event-data-theory.haddock \
   --read-interface=hasklepias-core,"${ARTIFACT_DIR}"/hasklepias-core/hasklepias-core.haddock \
   --read-interface=hasklepias-main,"${ARTIFACT_DIR}"/hasklepias-main/hasklepias-main.haddock \
-  --read-interface=hasklepias-examples,"${ARTIFACT_DIR}"/hasklepias-examples/hasklepias-examples.haddock \
-  --read-interface=cohort-collector,"${ARTIFACT_DIR}"/cohort-collector/cohort-collector.haddock
+  # TODO Commmented out as part of resolving #357 in !295
+  #--read-interface=hasklepias-examples,"${ARTIFACT_DIR}"/hasklepias-examples/hasklepias-examples.haddock \
+  #--read-interface=cohort-collector,"${ARTIFACT_DIR}"/cohort-collector/cohort-collector.haddock

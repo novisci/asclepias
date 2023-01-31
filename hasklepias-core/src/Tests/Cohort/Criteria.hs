@@ -1,100 +1,55 @@
-{-# LANGUAGE DataKinds         #-}
+-- | Tests for Cohort.Criteria. There is not much to test here except
+-- 'firstExclude', but the tests help ensure any changes do no have unintended
+-- consequences.
+
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TypeApplications  #-}
 module Tests.Cohort.Criteria
   ( tests
   ) where
 
 import           Cohort.Criteria
-import           Data.Map.Strict  as Map (toList)
-import           GHC.Natural
+import qualified Data.List.NonEmpty    as NE
+import           Data.Maybe            (isJust)
+import           Data.Text             (Text, pack)
 import           Test.Tasty
-import           Test.Tasty.HUnit
-import           Witch
+import           Test.Tasty.QuickCheck
 
-f1 :: Status -> Criterion
-f1 = makeCriterion "f1"
+  {- ORPHANS -}
 
-f2 :: Status -> Criterion
-f2 = makeCriterion "f2"
+-- TODO move this into Cohort.Criteria if used anywhere else.
 
-f3 :: Status -> Criterion
-f3 = makeCriterion "f3"
+instance Arbitrary Status where
+  arbitrary = elements [Include, Exclude]
 
-f4 :: CriterionThatCanFail
-f4 = Left "bad"
+instance Arbitrary Criterion where
+  arbitrary = MkCriterion . pack <$> arbitrary <*> arbitrary
 
-type ExpectedAttrition = (Int, Int, [(CohortStatus, Natural)])
+  {- UTILITIES -}
 
-toExpectedAttrition :: AttritionInfo -> ExpectedAttrition
-toExpectedAttrition x =
-  ( totalSubjectsProcessed x
-  , totalUnitsProcessed x
-  , toList $ attritionInfo x)
+isInclude :: Criterion -> Bool
+isInclude = (== Include) . status
 
-testAttr1 :: ExpectedAttrition
-testAttr1 =
-  ( 1
-  , 2
-  , [(SubjectHasNoIndex, 0), (ExcludedBy (1, "feat2"), 1), (Included, 1)]
-  )
+-- | Put @MkCriterion t Exclude@ before all others with status @Exclude@ in the
+-- list.
+makeThisExclusionFirst :: Text -> Criteria -> Criteria
+makeThisExclusionFirst t = op . fmap (c :) . NE.span isInclude
+  where c = MkCriterion t Exclude
+        op (l1, l2) = NE.fromList (l1 <> l2)
 
-testAttr2 :: ExpectedAttrition
-testAttr2 =
-  ( 1
-  , 5
-  , [(SubjectHasNoIndex, 0), (ExcludedBy (1, "feat2"), 3), (Included, 2)]
-  )
+-- | 'firstExclude' indeed always gets the first ExcludedBy element. Though the
+-- function as currently written transparently assures that, this function
+-- exists to catch unintended consequences of any future changes. Returning the
+-- first exclusion reason is one of the guarantees Hasklepias currently
+-- provides, as of 2023-01-03.
+prop_firstExclude :: NonEmptyList Criterion -> Property
+prop_firstExclude (NonEmpty xs) = isJust cfirst ==> cfirst === Just (MkCriterion "ALWAYS FIRST" Exclude)
+  where cfirst = firstExclude $ makeThisExclusionFirst "ALWAYS FIRST" $ NE.fromList xs
 
-testAttr1p2 :: ExpectedAttrition
-testAttr1p2 =
-  ( 2
-  , 7
-  , [(SubjectHasNoIndex, 0), (ExcludedBy (1, "feat2"), 4), (Included, 3)]
-  )
+  {- EXPECTED VALUES -}
+
+  {- TESTS -}
 
 tests :: TestTree
 tests = testGroup
-  "Unit tests on Cohort.Criteria"
-  [ testCase "include f1"
-  $   checkCohortStatus (into @Criteria $ [f1 Include])
-  @?= Included
-  , testCase "include f1, f2, f3"
-  $ checkCohortStatus (into @Criteria $ f1 Include : [f2 Include, f3 Include])
-  @?= Included
-  , testCase "exclude on f2"
-  $   checkCohortStatus (into @Criteria $ f2 Exclude : [f3 Include])
-  @?= ExcludedBy (1, "f2")
-  , testCase "exclude on f2"
-  $ checkCohortStatus (into @Criteria $ f1 Include : [f2 Exclude, f3 Include])
-  @?= ExcludedBy (2, "f2")
-  , testCase "error on f4"
-  $   checkCohortStatus
-        ( into @Criteria
-        $ pure (f1 Include)
-        : [pure $ f2 Include, pure $ f3 Include, f4]
-        )
-  @?= CriteriaFailure "bad"
-  , testCase "measuring attrition that includes a failure"
-  $  toExpectedAttrition (measureSubjectAttrition
-        (Just
-          ( into @Criteria
-          $ pure (f1 Include)
-          : [pure $ f2 Include, pure $ f3 Include, f4]
-          )
-        )
-        [ checkCohortStatus
-          ( into @Criteria
-          $ pure (f1 Include)
-          : [pure $ f2 Include, pure $ f3 Include, f4]
-          )
-        , checkCohortStatus
-          ( from @[CriterionThatCanFail]
-          $ [pure $ f1 Include, pure $ f2 Include, pure $ f3 Include]
-          )
-        ])
-  @?= (1, 2, [(CriteriaFailure "bad", 1), (Included, 1)])
-  ]
-
-
-
+  "Tests on Cohort.Criteria"
+  [testProperty "firstExclude gets first Exclude criterion" prop_firstExclude ]

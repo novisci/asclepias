@@ -1,360 +1,419 @@
-{-# LANGUAGE DataKinds           #-}
-{-# LANGUAGE FlexibleContexts    #-}
-{-# LANGUAGE OverloadedStrings   #-}
-{-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE TypeApplications    #-}
+-- | Tests of 'evalCohort' used to demonstrate the relevant guarantees listed
+-- in the `Hasklepias` module documentation (see hasklepias-main). Each example
+-- subject should have a "Sepcs" note in its docs, describing how 'evalCohort'
+-- should treat that subject.  Note: 'NE.fromList' is used throughout but
+-- should not be in code producing a 'CohortSpec', since the function is
+-- partial.
 
-module Tests.Cohort.Core
-  ( tests
-  ) where
+{-# LANGUAGE DataKinds             #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE OverloadedStrings     #-}
+{-# LANGUAGE TemplateHaskell       #-}
 
-import           Cohort
-import           Data.Set         (empty, fromList, singleton)
-import           Data.Text
+module Tests.Cohort.Core (tests) where
+
+import           Cohort.Cohort
+import           Cohort.Core
+import           Cohort.Criteria
+import           Cohort.IndexSet    (IndexSet)
+import qualified Cohort.IndexSet    as IS
+import           Data.List          (sortBy)
+import           Data.List.NonEmpty (NonEmpty (..))
+import qualified Data.List.NonEmpty as NE
+import qualified Data.Map.Strict    as M
+import           Data.Semigroup
+import           Data.Text          (Text)
+import qualified Data.Text          as T
+import           EventDataTheory
 import           Features
-import           GHC.Natural
 import           Test.Tasty
 import           Test.Tasty.HUnit
-import           Witch
 
 
-{-
-This example is purely here to check that GHC can relatively easily infer
-types based on the From instances for subject/population types
--}
-examplePopulation :: Population (Bool, Integer)
-examplePopulation =
-  from @[(Int, (Bool, Integer))] [(1, (True, 5)), (2, (True, 0))]
+{- TYPES AND UTILITIES -}
 
+-- Subject-level data
 
-{-
-Test Cohort
--}
-
-newtype SillySubjData
-  = MkSillySubjData (Int, Bool, Bool, Text)
+-- | 'Model', ie context for 'SillyEvent'.
+data SillySubjData
+  = MkSillySubjData
+      { crit1 :: Bool
+      , crit2 :: Bool
+      , info  :: Text
+      }
   deriving (Eq, Show)
 
-c1 :: Definition (Feature "feat1" Bool -> Feature "crit1" Status)
-c1 = define includeIf
+type SillyEvent = Event () SillySubjData Int
 
-c2 :: Definition (Feature "feat2" Bool -> Feature "crit2" Status)
-c2 = define excludeIf
+type SillySubject = Subject () SillySubjData Int
+
+-- Cohort-building logic and utilities
+
+-- | Is 'crit1' satisfied? If so, 'Include'. Stand-in for a function that would
+-- check model data and compute this.
+c1 :: SillySubjData -> Criterion
+c1 = MkCriterion "c1" . includeIf . crit1
+
+-- | Is 'crit2' satisfied? If so, 'Exclude.
+c2 :: SillySubjData -> Criterion
+c2 = MkCriterion "c2" . excludeIf . crit2
+
+-- | Single index of (begin i, begin i + 1) if the first event's @begin i@ is
+-- non-positive, else no index.
+buildIndices :: NonEmpty SillyEvent -> IndexSet Int
+buildIndices (e :| _)
+  | b <= 0    = IS.fromList [beginervalMoment b]
+  | otherwise = IS.fromList []
+  where b = begin $ getInterval e
 
 
+-- | Cases with multiple indices, where you arbitrarily add a first index of
+-- (101, 102) if i is non-positive, with no index otherwise.
+multiIndices :: NonEmpty SillyEvent  -> IndexSet Int
+multiIndices (e :| _)
+  | b <= 0    = IS.fromList [beginervalMoment 101, beginervalMoment b]
+  | otherwise = IS.fromList []
+  where b = begin $ getInterval e
 
--- Single index if i is non-positive, else no index.
-buildIndices :: SillySubjData -> IndexSet Int
-buildIndices (MkSillySubjData (i, _, _, _)) | i <= 0    = makeIndexSet [i]
-                                            | otherwise = makeIndexSet []
-
-
--- Cases with multiple indices, where you arbitrarily add a first index of 101
--- if i is non-positive, with no index otherwise.
-multiIndices :: SillySubjData -> IndexSet Int
-multiIndices (MkSillySubjData (i, _, _, _)) 
-  | i <= 0    = makeIndexSet [101, i] 
-  | otherwise = makeIndexSet []
-
+-- | Create @Criteria@ based on an index, @SillyEvent@ and @c1@, @c2@.
 -- NOTE: The cohort status within the criteria do not depend on the index, only
--- on the booleans. So the added 101 index for the multi* tests does not affect
+-- on the context. So the added 101 index for the multi* tests does not affect
 -- the status.
-buildCriteria :: Int -> SillySubjData -> Criteria
-buildCriteria _ (MkSillySubjData (_, b1, b2, _)) =
-  into @Criteria $ f c1 b1 : [f c2 b2]
-  where f c d = into @CriterionThatCanFail $ eval c (pure d)
+-- copied.
+buildCriteria :: NonEmpty SillyEvent -> Interval Int -> Criteria
+buildCriteria (e :| es) _ = sconcat $ NE.map op (e :| es)
+  where op e' = let d' = getFacts $ getContext e'
+                in c1 d' :| [c2 d']
 
--- Simply grabs the subject-level data, the Text element in the quadruple of
--- SillySubjData.
-buildFeatures :: Int -> SillySubjData -> Text
-buildFeatures _ (MkSillySubjData (_, _, _, t)) = t
+infoFeature :: SillyEvent -> Feature "info" Text
+infoFeature = pure . info . getFacts . getContext
 
--- Like buildFeatures, but the feature now declares which index it is
--- associated with.
-multibuildFeatures :: Int -> SillySubjData -> Text
-multibuildFeatures i (MkSillySubjData (_, _, _, t)) = pack (show i ++ ": ") <> t
+-- Note: compiler will pick whatever name n.
+noEventsFeature :: Feature "info" Text
+noEventsFeature = pure "No events"
 
-cohort2spec :: CohortSpec SillySubjData Text Int
-cohort2spec = specifyCohort buildIndices buildCriteria buildFeatures
+-- NOTE: This exists purely to satisfy the HasAttributes constraint for use in
+-- producing the expected results, which prevents us from wrapping Text in
+-- 'pure'. This is points to an awkwardness that could be smoothed out with
+-- Feature. We *can* use arbitrary features in `Featureset`, since the types
+-- are erased. Requiring HasAttributes is more annoyance than type safety.
+textFeature :: Text -> Feature "arbitrary" Text
+textFeature = pure
 
-multicohort2spec :: CohortSpec SillySubjData Text Int
-multicohort2spec = specifyCohort multiIndices buildCriteria multibuildFeatures
+toMultiInfo :: Interval Int -> Feature "info" Text -> Feature "multiinfo" Text
+toMultiInfo i t = makeFeature $ (T.pack (show i ++ ": ") <>) <$> getFData t
 
-runCohort
-  :: Monad m
-  => CohortEvalOptions
-  -> Population SillySubjData
-  -> m (Cohort Text Int)
-runCohort opts = makeCohortEvaluator opts cohort2spec
+-- To be used with multi* test data.
+multiinfoFeature :: Interval Int -> SillyEvent -> Feature "multiinfo" Text
+multiinfoFeature i = toMultiInfo i . infoFeature
 
--- runCohort, but with multiple indices allowed.
-multirunCohort
-  :: Monad m
-  => CohortEvalOptions
-  -> Population SillySubjData
-  -> m (Cohort Text Int)
-multirunCohort opts = makeCohortEvaluator opts multicohort2spec
+setAttributesEmpty "multiinfo" ''Text
+setAttributesEmpty "info" ''Text
+-- NOTE: see note on textFeature
+setAttributesEmpty "arbitrary" ''Text
 
-makePop :: [(Text, SillySubjData)] -> Population SillySubjData
-makePop x = into (fmap (into @(Subject SillySubjData)) x)
+-- | Stand-in for output variable construction based on an index and event.
+-- Simply grabs the 'info' field from each event and concats.
+buildFeatures :: NonEmpty SillyEvent -> Interval Int -> Featureset
+buildFeatures es _ = featureset $ NE.map (packFeature . infoFeature) es
 
-makeTestObsID 
-  :: Text -- ^ Subject id
-  -> Int -- ^ temporal index (here i type in cohort is not an interval but plain Int)
-  -> ObsID Int
-makeTestObsID x y = into (x, y)
+-- | Like the above, but the feature now declares which index it is associated
+-- with. NOTE 'NE.fromList' will throw an exception if the list is empty.
+multibuildFeatures :: NonEmpty SillyEvent -> Interval Int -> Featureset
+multibuildFeatures es i = featureset $ NE.map (packFeature . multiinfoFeature i) es
 
-makeTestObsUnit 
-  :: Text -- ^ subject id
-  -> Int -- ^ temporal index (here i type in cohort is not an interval but plain Int)
-  -> Text -- ^ cohort "data", the output of the feature runner here
-  -> ObsUnit Text Int
-makeTestObsUnit x y z = into (makeTestObsID x y, z)
+-- | This is what the user creates: entry-point to the CohortApp pipeline.
+cohort2spec :: CohortSpec () SillySubjData Int
+cohort2spec = MkCohortSpec buildIndices buildCriteria buildFeatures
 
-makeExpectedAttrition
-  :: Int     -- ^ count of subjects
-  -> Int     -- ^ count of observational units
-  -> Natural -- ^ count for SubjectHasNoIndex
-  -> Natural -- ^ count for ExcludedBy (1, "crit1")
-  -> Natural -- ^ count for ExcludedBy (2, "crit2")
-  -> Natural -- ^ count for Included
-  -> AttritionInfo
-makeExpectedAttrition a b c d e f = makeTestAttritionInfo
-  a
-  b
-  [ (SubjectHasNoIndex      , c)
-  , (ExcludedBy (1, "crit1"), d)
-  , (ExcludedBy (2, "crit2"), e)
-  , (Included               , f)
+multicohort2spec :: CohortSpec () SillySubjData Int
+multicohort2spec = MkCohortSpec multiIndices buildCriteria multibuildFeatures
+
+-- | "run" the cohort based on the provided logic in the spec. note this only
+-- evaluates pure code, so it is not the same as the runner the CohortApp
+-- actually would use. this module does not test the effectful CohortApp.
+runCohort :: [SillySubject] -> Cohort Int
+runCohort = evalCohort cohort2spec
+
+-- | Example where multiple indices allowed.
+multirunCohort :: [SillySubject] -> Cohort Int
+multirunCohort = evalCohort multicohort2spec
+
+{- DATA and DATA-CREATION UTILITIES -}
+
+-- Utilities
+
+-- | Initial SillySubjData, which can be modified in creating data.
+-- Subject with this data is included (crit1 == True, crit2 == False).
+dummyData :: Context () SillySubjData
+dummyData = context (packTagSet []) d Nothing
+  where d = MkSillySubjData True False ""
+
+-- | Silly setters.
+setCrit1, setCrit2 :: Bool -> Context () SillySubjData -> Context () SillySubjData
+setCrit1 x c = context ts d Nothing
+  where ts = getTagSet c
+        d0 = getFacts c
+        d = d0 { crit1 = x }
+
+setCrit2 x c = context ts d Nothing
+  where ts = getTagSet c
+        d0 = getFacts c
+        d = d0 { crit2 = x }
+
+setInfo :: Text -> Context () SillySubjData -> Context () SillySubjData
+setInfo x c = context ts d Nothing
+  where ts = getTagSet c
+        d0 = getFacts c
+        d = d0 { info = x }
+
+-- Example data
+
+-- TODO once subjects without index are properly handled as errors, these
+-- tests should evaluate the error state.
+
+-- TODO see note about buildIndices above. at the moment, only the first event
+-- can be an index. that should change in a future round of edits.
+
+-- | Subject without index, since the only event has interval (1, 2).
+-- Specs: This subject should not appear in the Cohort data, only contributing
+-- +1 to subjectsProcessed in the AttritionInfo.
+noIx :: SillySubject
+noIx = MkSubject (MkSubjId "noix") $ NE.fromList [event (beginervalMoment 1) dummyData]
+
+-- | Subject who is excluded by c1, with a single index.
+-- Specs: This subject should not appear in the Cohort data. It should contribute to the AttritionInfo by adding
+-- +1 to subjectsProcessed, +1 to unitsProcessed and +1 to the @ExcludedBy
+-- "c1"@ element of attritionByStatus. This subject should contribute no
+-- 'ObsUnit' data to the cohort.
+excludedByC1SingleIx :: SillySubject
+excludedByC1SingleIx = MkSubject (MkSubjId "excludedByC1SingleIx") (NE.fromList es)
+  where es = [event (beginervalMoment (-1)) (setInfo "i'm in, c1" dummyData)
+             -- NOTE: this event does not contribute to the IndexSet, but it is
+             -- still part of the subject's data and therefore is used to
+             -- compute criteria.
+             , event (beginervalMoment 2) (setInfo "i'm not, c1" $ setCrit1 False dummyData)
+             ]
+
+-- | Subject excluded by c2, with single index.
+-- Specs: This subject should not appear in the Cohort data. It should contribute to the AttritionInfo by adding
+-- +1 to subjectsProcessed, +1 to unitsProcessed and +1 to the @ExcludedBy
+-- "c2"@ element of attritionByStatus.
+excludedByC2SingleIx :: SillySubject
+excludedByC2SingleIx = MkSubject (MkSubjId "excludedByC2SingleIx") (NE.fromList es)
+  where es = [event (beginervalMoment (-2)) (setInfo "i'm not, c2" $ setCrit2 True dummyData)
+             ]
+
+
+-- | Subject excluded by c1, with multiple Exclude values, with single index.
+-- Specs: This subject should not contribute to the 'cohortData'. It should be
+-- excluded by the first Exclude, which has label "i'm not, c1". It should
+-- contribute to the AttritionInfo by adding +1 to subjectsProcessed, +1 to
+-- unitsProcessed and +1 to the @ExcludedBy "c1"@ element of attritionByStatus.
+excludedByC1SingleIx' :: SillySubject
+excludedByC1SingleIx' = MkSubject (MkSubjId "excludedByC1SingleIx'") (NE.fromList es)
+  where es = [event (beginervalMoment (-1)) (setInfo "i'm not, c1" $ setCrit1 False dummyData)
+             -- NOTE this does not contribute to the IndexSet, since only the
+             -- first date is used in buildIndices.
+             , event (beginervalMoment (-2)) (setInfo "i'm not, c2" $ setCrit2 True dummyData)
+             ]
+
+-- | Subject included.
+-- Specs: This subject should contribute to the 'cohortData'. It should
+-- contribute to the AttritionInfo byadding +1 to subjectsProcessed,
+-- unitsProcessed and to the @Included@ count of attritionByStatus.
+includedSingleIx :: SillySubject
+includedSingleIx = MkSubject (MkSubjId "includedSingleIx") (NE.fromList es)
+  where es = [event (beginervalMoment (-1)) (setInfo "i'm in, c1" dummyData)
+             -- NOTE this does not contribute to the IndexSet, since only the
+             -- first date is used in buildIndices.
+             , event (beginervalMoment (-2)) (setInfo "i'm in, c2" dummyData)
+             ]
+
+-- | Subject included.
+-- Specs: This subject should contribute to the 'cohortData'. It should
+-- contribute to the AttritionInfo byadding +1 to subjectsProcessed,
+-- unitsProcessed and to the @Included@ count of attritionByStatus.
+includedSingleIx' :: SillySubject
+includedSingleIx' = MkSubject (MkSubjId "includedSingleIx'") (NE.fromList es)
+  where es = [event (beginervalMoment (-1)) (setInfo "i'm in too, c1" dummyData)
+             , event (beginervalMoment (-2)) (setInfo "i'm in too, c2" dummyData)
+             ]
+
+
+-- Cohorts
+
+-- Legend (regex):
+-- ^cohortSingleIx([EI][12]?){1,4}'?$
+-- E: Excluded
+-- I: Included
+-- i: ExcludedBy ci
+-- ': denotes use of one or more "'" variants
+--
+-- e.g. "cohortE1E2" is the cohort created from [excludedByC1SingleIx, excludedByC2SingleIx]
+
+-- This stands alone and doesn't conform to pattern.
+cohortNoIx :: Cohort Int
+cohortNoIx = runCohort [noIx]
+
+cohortSingleIxE1 :: Cohort Int
+cohortSingleIxE1 = runCohort [excludedByC1SingleIx]
+
+cohortSingleIxE1' :: Cohort Int
+cohortSingleIxE1' = runCohort [excludedByC1SingleIx']
+
+cohortSingleIxE2 :: Cohort Int
+cohortSingleIxE2 = runCohort [excludedByC2SingleIx]
+
+cohortSingleIxI :: Cohort Int
+cohortSingleIxI = runCohort [includedSingleIx]
+
+cohortSingleIxIE1 :: Cohort Int
+cohortSingleIxIE1 = runCohort [includedSingleIx, excludedByC1SingleIx]
+
+cohortSingleIxIE1E2 :: Cohort Int
+cohortSingleIxIE1E2 = runCohort [includedSingleIx, excludedByC1SingleIx, excludedByC2SingleIx]
+
+cohortSingleIxIE1E2' :: Cohort Int
+cohortSingleIxIE1E2' = runCohort [includedSingleIx
+                                 , excludedByC1SingleIx
+                                 , excludedByC1SingleIx'
+                                 , excludedByC2SingleIx
+                                 ]
+
+
+cohortSingleIxIIE1E2' :: Cohort Int
+cohortSingleIxIIE1E2' = runCohort [includedSingleIx
+                                  , includedSingleIx'
+                                  , excludedByC1SingleIx
+                                  , excludedByC2SingleIx
+                                  ]
+
+-- Multiple (artificial) indices
+cohortMultiIxIE1E2 :: Cohort Int
+cohortMultiIxIE1E2 = multirunCohort [includedSingleIx, excludedByC1SingleIx, excludedByC2SingleIx]
+
+  {- EXPECTED Feature Data -}
+
+-- Where possible, expected values are spciefied in the test itself, but
+-- constructing features is verbose.
+
+-- | Utility for comparing lists of [ObsUnit Int]. 'allEqFeatureableData' sorts
+-- before comparing via ShapeOutput and ToJSON. The length check is important
+-- since zip shortens the result to the min lengthbetween the two lists.
+compareCohortData :: [ObsUnit Int] -> [ObsUnit Int] -> Bool
+compareCohortData xs ys = (length xs == length ys) && and bs
+  where bs = zipWith (\o1 o2 -> allEqFeatureableData (obsData o1) (obsData o2)) xs' ys'
+        xs' = sortBy (\x y -> compare (obsId x) (obsId y)) xs
+        ys' = sortBy (\x y -> compare (obsId x) (obsId y)) ys
+
+-- | Utility for making a featureset from a list of Text. Explicitly do not
+-- want to reuse the `buildFeatures` functions, since it doing so would be
+-- close to producing a tautological test.
+textFeatureset :: NonEmpty Text -> Featureset
+textFeatureset = featureset . NE.map (packFeature . textFeature)
+
+expectedNoIx :: [ObsUnit Int]
+expectedNoIx = []
+
+-- | Expected obsData from 'cohortSingleIxE1'. There is one excluded subject,
+-- so no data is expected in the current implementation.
+expectedSingleIxE1 :: [ObsUnit Int]
+expectedSingleIxE1 = []
+
+-- | Expected obsData from 'cohortSingleIxI'
+expectedSingleIxI :: [ObsUnit Int]
+expectedSingleIxI = [o1]
+  where oid1 = MkObsId (MkSubjId "includedSingleIx") (beginervalMoment (-1))
+        o1 = MkObsUnit oid1 $ textFeatureset $ NE.fromList ["i'm in, c1", "i'm in, c2"]
+
+-- | Expected obsData from 'cohortSingleIxIE1E2'.
+expectedSingleIxIE1E2 :: [ObsUnit Int]
+expectedSingleIxIE1E2 = expectedSingleIxI
+
+-- | Expected obsData from 'cohortSingleIxIIE1E2\''.
+expectedSingleIxIIE1E2' :: [ObsUnit Int]
+expectedSingleIxIIE1E2' = o2 : expectedSingleIxI
+  where oid2 = MkObsId (MkSubjId "includedSingleIx'") (beginervalMoment (-1))
+        o2 = MkObsUnit oid2 $ textFeatureset $ NE.fromList ["i'm in too, c1", "i'm in too, c2"]
+
+-- | Expected obsData from 'cohortMultiIxIE1E2'.
+expectedMultiIxIE1E2 :: [ObsUnit Int]
+expectedMultiIxIE1E2 = [o1, o2]
+  where oid1 = MkObsId (MkSubjId "includedSingleIx") (beginervalMoment (-1))
+        o1 = MkObsUnit oid1 d1 
+        oid2 = MkObsId (MkSubjId "includedSingleIx") (beginervalMoment 101)
+        o2 = MkObsUnit oid2 d2
+        -- These differ only in the index time prepended.
+        d1 = textFeatureset $ NE.fromList ["(-1, 0): i'm in, c1", "(-1, 0): i'm in, c2"]
+        d2 = textFeatureset $ NE.fromList ["(101, 102): i'm in, c1", "(101, 102): i'm in, c2"]
+
+
+{- TESTS -}
+
+-- | Single-index tests, AttritionInfo
+testsSingleIxAttrition :: TestTree
+testsSingleIxAttrition = testGroup
+  "Single-index tests, AttritionInfo"
+  [testCase "AttritionInfo for noIx" $
+    attritionInfo cohortNoIx @?=
+      MkAttritionInfo 1 0 M.empty
+  , testCase "AttritionInfo for single exclusion, c1" $
+    attritionInfo cohortSingleIxE1 @?=
+      MkAttritionInfo 1 1 (M.fromList [(ExcludedBy "c1", 1)])
+  , testCase "AttritionInfo for single exclusion, c2" $
+    attritionInfo cohortSingleIxE2 @?=
+      MkAttritionInfo 1 1 (M.fromList [(ExcludedBy "c2", 1)])
+  , testCase "AttritionInfo for multi exclusion, excludeby c1" $
+    attritionInfo cohortSingleIxE1' @?=
+      MkAttritionInfo 1 1 (M.fromList [(ExcludedBy "c1", 1)])
+  , testCase "AttritionInfo for single inclusion" $
+    attritionInfo cohortSingleIxI @?=
+      MkAttritionInfo 1 1 (M.fromList [(Included, 1)])
+  , testCase "AttritionInfo for one inclusion, one exclusion by c1" $
+    attritionInfo cohortSingleIxIE1 @?=
+      MkAttritionInfo 2 2 (M.fromList [(Included, 1), (ExcludedBy "c1", 1)])
+  , testCase "AttritionInfo for one inclusion, one exclusion by c1, one by c2" $
+    attritionInfo cohortSingleIxIE1E2 @?=
+      MkAttritionInfo 3 3 (M.fromList [(Included, 1), (ExcludedBy "c1", 1), (ExcludedBy "c2", 1)])
+  , testCase "AttritionInfo for one inclusion, two exclusion by c1, one by c2" $
+    attritionInfo cohortSingleIxIE1E2' @?=
+      MkAttritionInfo 4 4 (M.fromList [(Included, 1), (ExcludedBy "c1", 2), (ExcludedBy "c2", 1)])
   ]
 
--- Expected Cohort d0 i, with d0 Text and i not an interval but Int
-makeExpected
-  :: Int     -- ^ count of subjects
-  -> Int     -- ^ count of observational units
-  -> Natural -- ^ count for SubjectHasNoIndex
-  -> Natural -- ^ count for ExcludedBy (1, "crit1")
-  -> Natural -- ^ count for ExcludedBy (2, "crit2")
-  -> Natural -- ^ count for Included
-  -> [(Text, Int, Text)] -- ^ List of (Subject id, temporal index, output of feature runner)
-  -> Cohort Text Int
-makeExpected a b c d e f g = MkCohort
-  ( makeExpectedAttrition a b c d e f
-  , into @(CohortData Text Int) (fmap (\(x, y, z) -> makeTestObsUnit x y z) g)
-  )
+-- | Single-index tests, cohortData
+testsSingleIxData :: TestTree
+testsSingleIxData = testGroup
+  "Single-index tests, cohortData"
+  -- Equality expected.
+  [testCase "cohortData for cohort where no subjects have index times" $
+    compareCohortData (cohortData cohortNoIx) expectedNoIx @? "Expected True"
+   , testCase "cohortData for single exclusion" $
+    compareCohortData (cohortData cohortSingleIxE1) expectedSingleIxE1 @? "Expected True"
+   , testCase "cohortData for single inclusion" $
+    compareCohortData (cohortData cohortSingleIxI) expectedSingleIxI @? "Expected True"
+   , testCase "cohortData for single inclusion, two exclusions" $
+    compareCohortData (cohortData cohortSingleIxIE1E2) expectedSingleIxIE1E2 @? "Expected True"
+   , testCase "cohortData for two inclusions, two exclusions" $
+    compareCohortData (cohortData cohortSingleIxIIE1E2') expectedSingleIxIIE1E2' @? "Expected True"
+  -- Not equals expected.
+   , testCase "cohortData for single exclusion" $
+    not (compareCohortData (cohortData cohortSingleIxE1) expectedSingleIxI) @? "Expected False"
+   , testCase "cohortData for single inclusion" $
+    not (compareCohortData (cohortData cohortSingleIxI) expectedSingleIxIIE1E2') @? "Expected False"
+  ]
 
-makeCase
-  :: CohortEvalOptions
-  -> [(Text, SillySubjData)]
-  -> Cohort Text Int
-  -> Assertion
-makeCase opts inputs expected =
-  runCohort opts (makePop inputs) @?= pure @[] expected
 
-multimakeCase
-  :: CohortEvalOptions
-  -> [(Text, SillySubjData)]
-  -> Cohort Text Int
-  -> Assertion
-multimakeCase opts inputs expected =
-  multirunCohort opts (makePop inputs) @?= pure @[] expected
+-- | Multi-index tests, cohortData
+testsMultiIxData :: TestTree
+testsMultiIxData = testGroup
+  "Multi-index tests, cohortData"
+  [testCase "cohortData for cohort with single included subject contributing two units" $
+    compareCohortData (cohortData cohortMultiIxIE1E2) expectedMultiIxIE1E2 @? "Expected True"
+  ]
 
--- Criteria with failure
--- The sole difference between these cases and the single-index cases above are
--- that the criteria have an error.
-c3 :: Feature "crit3" Status
-c3 = makeFeature $ featureDataL (CustomFlag "bad")
-
-failbuildCriteria :: Int -> SillySubjData -> Criteria
-failbuildCriteria _ (MkSillySubjData (_, b1, b2, _)) =
-  into @Criteria $ f c1 b1 : [into @CriterionThatCanFail c3, f c2 b2]
-  where f c d = into @CriterionThatCanFail $ eval c (pure d)
-
-failcohort2spec :: CohortSpec SillySubjData Text Int
-failcohort2spec = specifyCohort buildIndices failbuildCriteria buildFeatures
-
-failrunCohort
-  :: Monad m
-  => CohortEvalOptions
-  -> Population SillySubjData
-  -> m (Cohort Text Int)
-failrunCohort opts = makeCohortEvaluator opts failcohort2spec
-
-failmakeCase
-  :: CohortEvalOptions
-  -> [(Text, SillySubjData)]
-  -> Cohort Text Int
-  -> Assertion
-failmakeCase opts inputs expected =
-  failrunCohort opts (makePop inputs) @?= pure @[] expected
-
-{-
-All tests
--}
-
+-- | All tests
 tests :: TestTree
 tests = testGroup
   "Unit tests on Cohort.Core"
-  [ testCase "no subjects" $ makeCase
-    defaultCohortEvalOptions
-    []
-    (MkCohort (mempty, into @(CohortData Text Int) ([] :: [ObsUnit Text Int])))
-  , testCase "one included subject (default options)" $ makeCase
-    defaultCohortEvalOptions
-    [("a", MkSillySubjData (0, True, False, "keep me"))]
-    (makeExpected 1 1 0 0 0 1 [("a", 0, "keep me")])
-  , testCase "one subject without index (default options)" $ makeCase
-    defaultCohortEvalOptions
-    [("a", MkSillySubjData (1, True, False, "no index"))]
-    (MkCohort
-      ( makeTestAttritionInfo 1 0 [(SubjectHasNoIndex, 1), (Included, 0)]
-      , into @(CohortData Text Int) ([] :: [ObsUnit Text Int])
-      )
-    )
-  , testCase "one subject excluded by crit1 (default options)" $ makeCase
-    defaultCohortEvalOptions
-    [("a", MkSillySubjData (0, False, False, "excluded by crit1"))]
-    (makeExpected 1 1 0 1 0 0 [])
-  , testCase "one subject excluded by crit2 (default options)" $ makeCase
-    defaultCohortEvalOptions
-    [("a", MkSillySubjData (0, True, True, "excluded by crit2"))]
-    (makeExpected 1 1 0 0 1 0 [])
-  , testCase "one included subject (skipFeatures)" $ makeCase
-    (MkCohortEvalOptions SkipFeatures AllSubjects)
-    [("a", MkSillySubjData (0, True, False, "keep me"))]
-    (makeExpected 1 1 0 0 0 1 [])
-  , testCase "one included subject (exclude via sample)" $ makeCase
-    (MkCohortEvalOptions OnlyOnIncluded (SubjectExludeList ["a"]))
-    [("a", MkSillySubjData (0, True, False, "keep me"))]
-    (MkCohort (mempty, into @(CohortData Text Int) ([] :: [ObsUnit Text Int])))
-  , testCase "one excluded subject (run features on all)" $ makeCase
-    (MkCohortEvalOptions OnAll AllSubjects)
-    [("a", MkSillySubjData (0, False, False, "excluded by crit1"))]
-    (makeExpected 1 1 0 1 0 0 [("a", 0, "excluded by crit1")])
-
-  , testCase "3 subjects: all included (default options)" $ makeCase
-    defaultCohortEvalOptions
-    [ ("a", MkSillySubjData (0, True, False, "keep me"))
-    , ("b", MkSillySubjData (-1, True, False, "keep me"))
-    , ("c", MkSillySubjData (-2, True, False, "keep me"))
-    ]
-    (makeExpected
-      3
-      3
-      0
-      0
-      0
-      3
-      [("a", 0, "keep me"), ("b", -1, "keep me"), ("c", -2, "keep me")]
-    )
-
-  -- Multi-index case
-  -- This test was added to evaluate the bug in
-  -- https://gitlab.com/TargetRWE/epistats/nsstat/asclepias/-/issues/350
-  , testCase "Multi-index: 1 subjects: all included (default options)" $ multimakeCase
-    -- Default options are OnlyOnIncluded, meaning features are run only on obs
-    -- units with status Included
-    defaultCohortEvalOptions
-    -- (subject id, MkSillySubjData (index, crit1, crit2, subject data on which
-    -- features are run)
-    [ ("a", MkSillySubjData (0, True, False, "keep me")) ]
-    -- See `makeExpected` docstrings for the meaning of the first arguments
-    (makeExpected
-      1
-      2
-      0
-      0
-      0
-      2
-      -- Should have one ObsUnit for each index.
-      [("a", 0, "0: keep me"), ("a", 101, "101: keep me")]
-    ), testCase "Multi-index: 2 subjects: all included (default options)" $ multimakeCase
-    -- Default options are OnlyOnIncluded, meaning features are run only on obs
-    -- units with status Included
-    defaultCohortEvalOptions
-    -- (subject id, MkSillySubjData (index, crit1, crit2, subject data on which
-    -- features are run)
-    [ ("a", MkSillySubjData (0, True, False, "keep me"))
-    , ("b", MkSillySubjData (0, True, False, "keep me"))
-    ]
-    -- See `makeExpected` docstrings for the meaning of the first arguments
-    (makeExpected
-      2
-      4
-      0
-      0
-      0
-      4
-      -- Should have one ObsUnit for each index.
-      [("a", 0, "0: keep me"), ("a", 101, "101: keep me"), ("b", 0, "0: keep me"), ("b", 101, "101: keep me")]
-    )
-  , testCase "3 subjects: 1 with no index, 2 included (default options)"
-    $ makeCase
-        defaultCohortEvalOptions
-        [ ("a", MkSillySubjData (1, True, False, "keep me"))
-        , ("b", MkSillySubjData (-1, True, False, "keep me"))
-        , ("c", MkSillySubjData (-2, True, False, "keep me"))
-        ]
-        (makeExpected 3 2 1 0 0 2 [("b", -1, "keep me"), ("c", -2, "keep me")])
-  , testCase
-      "3 subjects: 1 exclude by crit1, 1 excluded by crit2, 1 included (default options)"
-    $ makeCase
-        defaultCohortEvalOptions
-        [ ("a", MkSillySubjData (0, False, False, "excluded by crit1"))
-        , ("b", MkSillySubjData (-1, True, False, "keep me"))
-        , ("c", MkSillySubjData (-2, True, True, "excluded by crit2"))
-        ]
-        (makeExpected 3 3 0 1 1 1 [("b", -1, "keep me")])
-  , testCase
-      "3 subjects: 1 exclude by crit, 1 excluded by crit2, 1 included (run features on all)"
-    $ makeCase
-        (MkCohortEvalOptions OnAll AllSubjects)
-        [ ("a", MkSillySubjData (0, False, False, "excluded by crit1"))
-        , ("b", MkSillySubjData (-1, True, False, "keep me"))
-        , ("c", MkSillySubjData (-2, True, True, "excluded by crit2"))
-        ]
-        (makeExpected
-          3
-          3
-          0
-          1
-          1
-          1
-          [ ("a", 0 , "excluded by crit1")
-          , ("b", -1, "keep me")
-          , ("c", -2, "excluded by crit2")
-          ]
-        )
-  , testCase
-      "3 subjects: 1 exclude by crit, 1 excluded by crit2, 1 included (take only first2)"
-    $ makeCase
-        (MkCohortEvalOptions OnlyOnIncluded (FirstNSubjects 2))
-        [ ("a", MkSillySubjData (0, False, False, "excluded by crit1"))
-        , ("b", MkSillySubjData (-1, True, False, "keep me"))
-        , ("c", MkSillySubjData (-2, True, True, "excluded by crit2"))
-        ]
-        (makeExpected 2 2 0 1 0 1 [("b", -1, "keep me")])
-  , testCase
-      "3 subjects: 1 exclude by crit, 1 excluded by crit2, 1 included (exclude the included)"
-    $ makeCase
-        (MkCohortEvalOptions OnlyOnIncluded (SubjectExludeList ["b"]))
-        [ ("a", MkSillySubjData (0, False, False, "excluded by crit1"))
-        , ("b", MkSillySubjData (-1, True, False, "keep me"))
-        , ("c", MkSillySubjData (-2, True, True, "excluded by crit2"))
-        ]
-        (makeExpected 2 2 0 1 1 0 [])
-  , testCase
-      "case with failures"
-    $ failmakeCase
-        defaultCohortEvalOptions
-        [ ("a", MkSillySubjData (0, False, False, "excluded by crit1"))
-        , ("b", MkSillySubjData (-1, True, False, "keep me"))
-        , ("c", MkSillySubjData (-2, True, True, "excluded by crit2"))
-        ]
-        (MkCohort (makeTestAttritionInfo 3 3
-          [ (SubjectHasNoIndex    , 0)
-          , (CriteriaFailure "CustomFlag \"bad\"", 3)
-          , (Included             , 0)
-          ] ,
-          from @[ObsUnit Text Int] []))
-  ]
+  [testsSingleIxAttrition, testsSingleIxData, testsMultiIxData]

@@ -13,5 +13,4 @@ import qualified Tests.Features as F
 
 -- | All the tests of hasklepias-core
 coreTests :: IO ()
-coreTests = defaultMain . testGroup "Hasklepias core tests" =<< sequenceA
-  [pure F.tests, pure C.tests]
+coreTests = defaultMain $ testGroup "Hasklepias core tests" [F.tests, C.tests]

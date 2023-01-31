@@ -7,7 +7,7 @@ module Main where
 
 import           Data.Aeson
 import           Data.Vector                         ((!))
-import           Hasklepias.AppBuilder.LineFilterApp
+import           Hasklepias
 
 newtype LineAppTesterID = MkLineAppTesterID Int deriving (Show, Eq)
 

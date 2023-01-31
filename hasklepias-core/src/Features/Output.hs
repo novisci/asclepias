@@ -49,6 +49,8 @@ instance (Typeable d, KnownSymbol n, ToJSON d, HasAttributes n d) =>
     , "data" .= toJSON (getFData x)
     ]
 
+-- TODO REFACTOR what's the phantomtype for? it is fixed to Type in the only
+-- place this is used, which renders it meaningless.
 -- | A type used to determine the output shape of a Feature.
 data OutputShape d where
   DataOnly ::(ToJSON a, Show a) => a -> OutputShape b

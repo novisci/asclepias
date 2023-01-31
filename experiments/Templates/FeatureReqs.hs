@@ -20,7 +20,7 @@ module Templates.FeatureReqs
   , module W
   ) where
 
-import           Cohort
+import           Cohort hiding (toList)
 import           Data.Foldable                  (toList)
 import           Data.Maybe                     (catMaybes)
 import           Data.Text                      (Text)

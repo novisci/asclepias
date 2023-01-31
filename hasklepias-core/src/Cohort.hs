@@ -1,18 +1,18 @@
 {-|
 Module      : Hasklepias Cohorts
-Description : Defines the Cohort type and associated methods
-Copyright   : (c) NoviSci, Inc 2020
+Description : Defines the CohortSpecMap and supporting types, along
+              with core cohort-evaluation logic.
+Copyright   : (c) Target RWE 2023
 License     : BSD3
-Maintainer  : bsaul@novisci.com
+Maintainer  : bbrown@targetrwe.com 
+              ljackman@targetrwe.com 
+              dpritchard@targetrwe.com
 -}
--- {-# OPTIONS_HADDOCK hide #-}
-{-# LANGUAGE NoImplicitPrelude #-}
 
 module Cohort
   (
-
-   -- ** Defining Cohorts
-    module Cohort.Core
+   -- ** Types for Cohort data
+  module Cohort.Cohort
 
    -- ** Index
   , module Cohort.IndexSet
@@ -20,12 +20,9 @@ module Cohort
    -- ** Criteria
   , module Cohort.Criteria
 
-   -- ** Cohort I/O
-   -- *** Output
-  , module Cohort.Output
   ) where
 
-import           Cohort.Core
-import           Cohort.Criteria
+import           Cohort.Cohort   (CohortSpec (..), CohortSpecMap)
+import           Cohort.Criteria (Criterion (..), Status (..), excludeIf,
+                                  includeIf)
 import           Cohort.IndexSet
-import           Cohort.Output

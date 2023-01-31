@@ -18,19 +18,27 @@ module Features.Featureset
   , getFeaturesetAttrs
   , getFeaturesetList
   , tpose
+  , allEqFeatureableData
   ) where
 
 import           Data.Aeson           (ToJSON (toJSON), object, (.=))
 import           Data.Function        ((.))
 import           Data.Functor         (Functor (fmap))
-import           Data.List.NonEmpty   as NE (NonEmpty (..), head, transpose)
+import           Data.List.NonEmpty   (NonEmpty (..), head, transpose)
+import qualified Data.List.NonEmpty   as NE
 import           Features.Attributes  (Attributes)
 import           Features.Featureable (Featureable, getFeatureableAttrs)
+import           Features.Output      (ShapeOutput (dataOnly))
 import           GHC.Generics         (Generic)
 import           GHC.Show             (Show)
+-- TODO REFACTOR why no prelude?
+import           Prelude              (($), (==))
+import qualified Prelude
 
+-- TODO REFACTOR this is not a set
 -- | A Featureset is a (non-empty) list of @Featureable@.
-newtype Featureset = MkFeatureset (NE.NonEmpty Featureable)
+newtype Featureset
+  = MkFeatureset (NE.NonEmpty Featureable)
   deriving (Show)
 
 -- | Constructor of a @Featureset@.
@@ -49,7 +57,8 @@ instance ToJSON Featureset where
   toJSON (MkFeatureset x) = toJSON x
 
 -- | A newtype wrapper for a 'NE.NonEmpty' 'Featureset'.
-newtype FeaturesetList = MkFeaturesetList (NE.NonEmpty Featureset)
+newtype FeaturesetList
+  = MkFeaturesetList (NE.NonEmpty Featureset)
   deriving (Show)
 
 -- | Constructor of a @Featureset@.
@@ -60,3 +69,18 @@ getFeaturesetList (MkFeaturesetList x) = x
 tpose :: FeaturesetList -> FeaturesetList
 tpose (MkFeaturesetList x) =
   MkFeaturesetList (fmap featureset (transpose (fmap getFeatureset x)))
+
+
+  {- Utilities -}
+
+-- TODO revisit
+
+-- | Compare two Featuresets via their ShapeOutput and ToJSON implementations.
+-- They cannot be compared directly because an existential type cannot be Eq.
+-- Comparing by JSON at the moment makes the most sense because that is the
+-- output format and thus how downstream applications will understand
+-- "equality". Still, this should be revisited.
+allEqFeatureableData :: Featureset -> Featureset -> Prelude.Bool
+allEqFeatureableData (MkFeatureset f1) (MkFeatureset f2) = s1 == s2
+  where s1 = NE.sort $ NE.map (toJSON . dataOnly) f1
+        s2 = NE.sort $ NE.map (toJSON . dataOnly) f2

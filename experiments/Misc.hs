@@ -37,9 +37,8 @@ module Hasklepias.Misc
 
 import           Control.Applicative
 import           Data.Time
--- import           IntervalAlgebra
 import           EventDataTheory
-import           Features.Core            (Definition, Feature)
+import           Features                 (Definition, Feature)
 import           GHC.Generics             (Generic)
 import           Stype.Numeric.Censored   (MaybeCensored (..))
 import           Stype.Numeric.Continuous (EventTime)

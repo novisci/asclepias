@@ -16,7 +16,7 @@
 {-# LANGUAGE RankNTypes          #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
-module Hasklepias.AppBuilder.ProcessLines.Taggers where
+module Hasklepias.LineFilterApp.ProcessLines.Taggers where
 
 import qualified Data.Map.Strict as M
 import           Data.Text       (Text)

@@ -2,16 +2,35 @@
 Module      : Hasklepias
 Description : Everything you should need to get up and running with
               hasklepias.
-Copyright   : (c) NoviSci, Inc 2020
+Copyright   : (c) Target RWE 2023
 License     : BSD3
-Maintainer  : bsaul@novisci.com
-
+Maintainer  : bbrown@targetrwe.com
+              ljackman@targetrwe.com
+              dpritchard@targetrwe.com
 -}
 
-{-# LANGUAGE NoImplicitPrelude #-}
-
 module Hasklepias
-  ( -- $about
+  ( -- * Overview
+    -- $overview
+    
+    -- ** Terminology
+    -- $terminology
+    
+    -- ** Cohort construction
+    -- $cohort-construction
+    
+    -- *** Using the CLI
+    -- $using-cli-main
+    
+    -- *** 'cohortMain' guarantees
+    -- $cohortmain-guarantees
+    
+    
+    -- *** Input data format
+    -- $using-cli-input
+    
+    -- *** Logs and runtime errors
+    -- $logs-errors
 
     -- * Event Data
     {-|
@@ -25,23 +44,6 @@ module Hasklepias
     -- $features
   , module Features
 
-    -- * Feature definition builders
-    {- |
-    A collection of pre-defined functions which build common feature definitions
-    used in epidemiologic cohorts.
-    -}
-  , module Templates.Features
-    -- * Utilities for defining Features from Events
-    {- |
-    Much of logic needed to define features from events depends on the
-    [interval-algebra](https://hackage.haskell.org/package/interval-algebra) library.
-    Its main functions and types are re-exported in Hasklepias, but the documentation
-    can be found on [hackage](https://hackage.haskell.org/package/interval-algebra).
-
-    -}
-  -- , module Hasklepias.FeatureEvents
-  , module Hasklepias.Misc
-
     -- * Intervals based on an index
   , module Hasklepias.AssessmentIntervals
 
@@ -49,16 +51,14 @@ module Hasklepias
   , module Cohort
 
     -- ** Create a cohort application
-  , module Hasklepias.MakeCohortApp
-  , module Hasklepias.AppUtilities
+  , module Hasklepias.CohortApp
     -- ** Create an application for filtering subjects
-  , module Hasklepias.AppBuilder.LineFilterApp
-
-    -- * Statistical Types
-  , module Stype
+  , module Hasklepias.LineFilterApp
 
     -- * Rexported Functions and modules
   , module Hasklepias.Reexports
+    -- * Getting started
+    -- $gettingstarted
   ) where
 
 
@@ -66,32 +66,256 @@ module Hasklepias
 import           EventDataTheory
 
 import           Features
+import           Cohort                              hiding (foldl', null)
 
-import           Cohort
-
-import           Hasklepias.AppBuilder.LineFilterApp
-import           Hasklepias.AppUtilities
+import           Hasklepias.LineFilterApp
 import           Hasklepias.AssessmentIntervals
-import           Hasklepias.MakeCohortApp
-import           Hasklepias.Misc
+import           Hasklepias.CohortApp
 import           Hasklepias.Reexports
-import           Templates.Features
 
-import           Stype
+{- $overview
+`Hasklepias` provides an API for constructing a command-line program to
+produce analysis-ready datasets for epidemiological studies, referred to
+as 'cohorts' in this documentation. It also provides some domain-aware types
+and utilities to help Haskell programmers write custom logic for cohort
+construction, to feed the application.
 
-{- $about
+Users provide custom logic, written in Haskell, to transform subject-level
+input data into output data with computed variables and classifications of
+elements into one or more cohorts.
 
-@Hasklepias@ is an embedded domain specific language (eDSL) written in [Haskell](https://www.haskell.org/).
-To get started, then, you'll need to install the Haskell toolchain, especially
-the [Glasgow Haskell Compiler](https://www.haskell.org/ghc/) (GHC) and the building
+The following diagram describes the primary workflow `Hasklepias` supports, at
+a high level.
+
+@
+                                         +---------------------------------+
+    +--------------------------+         |Configure cohort construction    |
+    |Write cohort-building code|-------->| via CohortSpecMap type          |
+    | computing subject-level  |         +---------------------------------+
+    | * index times            |            |
+    | * inclusion criteria     |            |
+    | * output variables       |            |
+    +--------------------------+            |
+                                            |
+                +---------------------------|--------+
+                |Create an executable Cabal |        |
+                | package component that    |        |
+                | runs the transformation   |        |
+                |                           v        |
+                |  +------------------------------+  |
+                |  |provide CohortSpecMap value as|  |
+input data ---> |  | input to cohortMain to create|  | ---> output cohorts
+                |  | the data processing          |  |
+                |  | tranformation                |  |
+                |  + -----------------------------+  |
+                |                                    |
+                +------------------------------------+
+@
+
+-}
+
+{- $terminology
+/Subject/ refers to the unit of input data, which internally is assigned a
+subject id for processing. Internally, it has type @Subject t m a@.
+
+/Subject-level data/ refers to @[Event t m a]@, a list of events associated
+with a subject.
+
+/Index time/ is a special temporal interval serving as reference for
+inclusion and exclusion criteria as well as computed output variables. A
+subject might have zero or more index times, as computed by a user-supplied
+function.
+
+/Cohort/ refers to the output produced by applying the functions in a single
+@CohortSpec@ to a list of subjects. Internally, it has type @Cohort a@.
+
+/Observational unit/ refers to the unit element of a given cohort. There is
+one observational unit for each subject and index time. Each observational
+unit has an identifier marking which subject and index time it is asssociated
+with.
+
+/Attrition information/ refers to the counts of: number of subjects processed,
+number of observational units processed, and number of units in each inclusion
+/ exclusion category.
+-}
+
+{- $cohort-construction
+The 'CohortSpec' type is the only way a user can influence how input data are
+processed into output data as /cohorts/. It is
+parameterized as @'CohortSpec' t m a@, where the parameters
+match those of the subject-level data inputs in a
+non-empty list of @'Event' t m a@.
+
+One @'CohortSpec' t m a@ is provided for each cohort to be
+built, denoted by 'Text' labels in @Map Text (CohortSpec t
+m a)@, with alias @'CohortSpecMap' t m a@. The map is passed
+directly to 'cohortMain'.
+
+Specifically, a user must construct a 'CohortSpec' with the functions shown in the type definition:
+
+@
+data CohortSpec t m a
+  = MkCohortSpec
+      { runIndices   :: NonEmpty (Event t m a) -> IndexSet a
+      , runCriteria  :: NonEmpty (Event t m a) -> Interval a -> Criteria
+      , runVariables :: NonEmpty (Event t m a) -> Interval a -> Featureset
+      }
+@
+
+Each of those functions processes input data in a
+'Data.List.NonEmpty.NonEmpty' list of @'Event' t m a@ associated with a single
+subject. Subject input data is processed one at a time, cohort-by-cohort.
+Subjects without any data cannot be processed in a well-defined manner, and
+using the nonempty list type prevents such cases.
+
+@'runIndices'@ constructs the set of index times for a given subject, which are
+given as @'Interval' a@, the same type as the underlying temporal element of an
+@'Event' t m a@.
+
+@'runCriteria'@ constructs a non-empty list of inclusion / exclusion criteria for
+a single subject, relative to a particular index time.
+
+@'runVariables'@ defines the output data, currently of @'Featureset'@ type, for
+each subject and index time. This will produce one set of variables per input
+subject per index time.
+-}
+
+{- $cohortmain-guarantees
+'cohortMain' provides a controlled means to run the user-provided logic in a
+'CohortSpec' to subject-level data. A programmer creating an executable with
+'cohortMain' cannot inject arbitrary logic into the application.
+
+In exchange for that lack of flexibility, the application runner 'cohortMain'
+seeks to provide a set of guarantees about how a cohort will be built from the
+user specification.
+
+- Only the user-defined code in @'CohortSpec' t m a@ will ever manipulate,
+perform operations on or otherwise interact with the subject-level input data
+in a @'NonEmpty' ('Event' t m a)@.
+- Functions in each 'CohortSpec' are run only on input event data only for a
+single subject at a time. Input events from one subject do not influence
+results of another.
+- 'runIndices' produces exactly one @'IndexSet' a@ containing @'Interval' a@
+values, the same type of value as the temporal component of the subject's
+input events.
+- If a subject's 'IndexSet' is empty, the subject is dropped from the cohort
+data output, has no variables computed, and is counted only in the
+'subjectsProcessed' field of the output attrition information. At present,
+there is no means to mark or otherwise inspect the values or even the number of
+subjects with no index value. That will change soon, and a subject without
+index will be treated as an unexpected error.
+- Each @'Interval' a@ in an @'IndexSet' a@ appears exactly once. Uniqueness is
+determined by the 'begin' and 'end' of the interval.
+- The user-supplied 'runCriteria' function must produce a non-empty list of
+value type 'Criterion'. That is enforced at compile time in the user's code,
+when a 'CohortSpec' value is created.
+- Each observational unit is associated with exactly one subject and one index
+time. The @'Interval' a@ index time to which an observational unit is associated
+is part of the identifier for an observational unit, along with the subject
+identifier.
+- Each observational unit has a list of 'Criteria', as defined by
+'runCriteria'.
+- Observational units whose 'Criteria' contain at least one 'Exclude' status
+value are dropped from the cohort data output, and 'runVariables' is not
+computed. In the output attrition information, excluded units contribute +1 to
+the 'unitsProcessed' element of the attrition information. The unit also
+contributes +1 to the count of units excluded with a given label.
+- An excluded observational unit is considered to be excluded by the first
+'Criterion', in order of the list of 'Criteria'. The 'statusLabel' supplied
+for that 'Criterion' determines how the unit is counted in the output
+attrition information.
+- Observational units whose 'Criteria' contain only 'Include' status values
+are maintained in the cohort data output, and 'runVariables' is computed on
+the unit's associated input data and index time. For the output attrition
+information, included units contribute +1 to the 'unitsProcessed' and +1 to
+the count of 'Included' units.
+- Whether excluded or included in the cohort, units common to a single subject
+together contribute +1 to the number of 'subjectsProcessed'.
+
+-}
+
+{- $using-cli-main
+
+Your project's Haskell program will include some @Main.hs@ module which should look like this
+
+@
+module Main where
+
+import MyProj
+import Hasklepias (cohortMain)
+
+main :: IO ()
+main = cohortMain specs
+@
+
+Here @specs@ is your project-specific 'CohortSpecMap', which in this case is
+defined in some other module @MyProj@.
+
+Then, you can @cabal run@ to build and execute the program.
+
+To view the available command-line options, for a target named @myproj@, do
+
+@
+cabal run -v0 myproj -- --help
+@
+-}
+
+{- $using-cli-input
+The input data, regardless of source, must be in the event lines format,
+which is a JSON Lines format. Lines of input failing to parse into the
+appropriate format will be logged. See Logs produced.
+-}
+
+{- $logs-errors
+At the moment, failure modes are not configurable. Logging is configurable via environment variables, as described in the top-level [Blammo configuration documentation](https://hackage.haskell.org/package/Blammo-1.1.1.1).
+
+An application created with 'cohortMain' will fail at runtime if
+
+- The command-line options parser,
+[`execParser`](https://hackage.haskell.org/package/optparse-applicative-0.17.0.0/docs/Options-Applicative-Extra.html#v:execParser)
+fails.
+- File reads / writes fail.
+- AWS and network errors, if input or output location is
+'S3Input'.
+- None of the input data event lines was parsed correctly, including cases in
+which there were no lines of input at all.
+
+Logs produced at the 'info' level:
+
+- The location from which data are read, as passed to the application from
+command-line options.
+- The names of cohorts to be built, meaning the labels passed to 'cohortMain'
+in user-defined code via keys of @Map Text (CohortSpec t m a)@.
+- The request http status and S3 object [ETag hash
+](https://docs.aws.amazon.com/AmazonS3/latest/API/API_Object.html), when S3 is
+the input source or output destination.
+
+Note the application squashes AWS logs themselves, as produced in the
+`amazonka` package functions. These could be added if needed but are not
+included as yet because they are verbose.
+
+Logs produced at the 'error' level:
+
+- Event line parsing errors, with a reference to the line of input that failed.
+Note the application continues to process correctly parsed lines, if able.
+- A message stating no subject-level data parsed correctly, when applicable.
+The application then exits.
+-}
+
+
+{- $gettingstarted
+
+To get started, you'll need to install the Haskell toolchain, especially the
+[Glasgow Haskell Compiler](https://www.haskell.org/ghc/) (GHC) and the building
 and packaging system [cabal](https://www.haskell.org/cabal), for which you can
 use the [@ghcup@ utility](https://www.haskell.org/ghcup).
 
-You can use any development environment you choose, but for maximum coding pleasure,
-you should install the [Haskell language server](https://github.com/haskell/haskell-language-server)
-(@hsl@). This can be installed using @ghcup@. Some integrated development
+You can use any development environment you choose, but to be more productive
+you should install the [Haskell Language
+Server](https://github.com/haskell/haskell-language-server)
+(@hls@). @hls@ can be installed using @ghcup@. Some integrated development
 environments, such as [Visual Studio Code](https://code.visualstudio.com/, have
-[excellent @hsl@ integration](https://marketplace.visualstudio.com/items?itemName=haskell.haskell).
+[excellent @hls@ integration](https://marketplace.visualstudio.com/items?itemName=haskell.haskell).
 
 In summary,
 
@@ -111,7 +335,9 @@ In summary,
   ghcup set cabal {cabalVersion}
 @
 
-* Setup your IDE. (e.g. in Visual Studio, you'll want to install the [Haskell](https://marketplace.visualstudio.com/items?itemName=haskell.haskell) extension.
+* Setup your IDE. For example in Visual Studio Code, you'll want to install the
+[Haskell](https://marketplace.visualstudio.com/items?itemName=haskell.haskell)
+extension.
 
 === Getting started in Haskell
 
@@ -127,23 +353,20 @@ language is over 30 years old and has many, many features. Here are a few resour
 * [5 years of Haskell in production](https://www.youtube.com/watch?v=hZgW4mT1PkE[): video on using Haskell in production environment
 * [Things software engineers trip up on when learning Haskell](https://williamyaoh.com/posts/2020-04-12-software-engineer-hangups.html): a software engineer's list of tips on using Haskell
 
-=== Interacting with the examples (using GHCi)
-
-To run the examples interactively, open a @ghci@ session with:
-
-@
-cabal repl hasklepias-examples
-@
-
-In @ghci@ you have access to all exposed functions in @hasklepias@, @interval-algebra@,
-and those in the [examples](https://github.com/novisci/asclepias/tree/master/examples) folder.
-
 -}
 
 {- $features
 
+'Feature' present an interface for leveraging the type system to ensure the
+inputs and outputs of functions you write are indeed what you intended, with
+your intentions checked at compile time. At present, using 'Feature' s is
+necessary for building an application with `Hasklepias` via 'cohortMain'.
+However, that requirement will be relaxed, and 'Feature' s will be provided as
+an experimental API for building cohorts, which could be integrated more
+tightly with the rest of `Hasklepias` at some point.
+
 A 'Feature' is a type parametrized by two types: @name@ and @d@. The type @d@ here
-stands for "data", which then parametrizes the 'FeatureData' type which is the
+stands for data, which then parametrizes the 'FeatureData' type which is the
 singular value which a 'Feature' contains. The @d@ here can be almost anything
 and need not be a scalar, for example, all the following are valid types for @d@:
 
@@ -296,4 +519,9 @@ pass = eval f y
 In the example, @fail@ does not compile because @"someInt"@ is not @"age"@,
 even though both the data type are @Natural@.
 
+== Further reading
+'Feature' s are an example of
+providing tight type-level control over a library API using phantom types, the
+'name' of a 'Feature', in the same spirit as the Noonan's [Ghost of Departed
+Proofs](http://kataskeue.com/gdp.pdf).
 -}

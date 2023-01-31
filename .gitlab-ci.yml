@@ -54,15 +54,6 @@ trigger-main-build:
     include: ci/ci-main-build.yml
     strategy: depend
 
-trigger-static-build:
-  stage: build
-  variables:
-    PARENT_PIPELINE_ID: $CI_PIPELINE_ID
-    PARENT_CI_PIPELINE_SOURCE: $CI_PIPELINE_SOURCE
-  trigger: 
-    include: ci/ci-static-build.yml
-    strategy: depend
-
 # Trigger the downstream noviverse site to build *only* if a tag is pushed with
 # name v* (version tag)
 trigger-doc-site:

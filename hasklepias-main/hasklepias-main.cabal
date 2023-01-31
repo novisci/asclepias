@@ -1,15 +1,18 @@
 cabal-version:  2.2
+
 -- tag::devel-docs-package-properties[]
 name:           hasklepias-main
 version:        0.29.0
 description:    Please see the README on GitHub at <https://github.com/novisci/asclepias#readme>
 homepage:       https://github.com/novisci/asclepias/#readme
 bug-reports:    https://github.com/novisci/asclepias/issues
-author:         Bradley Saul
-maintainer:     bsaul@novisci.com
-copyright:      NoviSci, Inc
+author:         Brendan Brown, Leah Jackman, David Pritchard
+maintainer:     bbrown@targetrwe.com
+                ljackman@targetrwe.com
+                dpritchard@targetrwe.com
+copyright:      (c) Target RWE 2023
 category:       Data Science
-synopsis:       embedded DSL for defining epidemiologic cohorts
+synopsis:       tools for constructing epidemiological cohorts
 license:        BSD-3-Clause
 license-file:   LICENSE
 build-type:     Custom
@@ -33,42 +36,7 @@ library
   exposed-modules:
       
       Hasklepias
-      Hasklepias.AppUtilities
-      Hasklepias.AssessmentIntervals
-      Hasklepias.MakeCohortApp
-      Hasklepias.AppBuilder.LineFilterApp
-      Hasklepias.AppBuilder.ProcessLines.Tests
-      
-      Hasklepias.Misc
-      Hasklepias.Reexports
       Tests.Hasklepias
-
-      -- Monarch 
-      Monarch
-      Test.Monarch.TestMap
-      Test.Monarch.ToOutput
-      Test.Monarch.MonarchException
-      Test.Monarch.Parse
-      Test.Tasty.Monarch
-        -- TODO remove or relocate
-      Examples.Simple
-      
-      -- Stype
-      Stype
-      Stype.Aeson
-      Stype.Numeric
-      Stype.Numeric.Count
-      Stype.Numeric.Continuous
-      Stype.Numeric.Censored
-      Stype.Categorical
-      Stype.Categorical.Binary
-      Stype.Categorical.Nominal
-      Stype.Tests
-
-      -- Templates
-      Templates.Features
-      Templates.Tests
-
       -- Etc
       TestUtils.BuildLargeTestData
       TestUtils.ConstructTestTree
@@ -76,29 +44,15 @@ library
       TestUtils.S3Utils
       TestUtils.TestCases
   other-modules:
-
-      Hasklepias.AppBuilder.ProcessLines.Logic
-      Hasklepias.AppBuilder.ProcessLines.Taggers
-
-
-      Stype.Tests.Aeson
-      Stype.Tests.Censored
-      Templates.Features.BuildIsEnrolled
-      Templates.Features.BuildContinuousEnrollment
-      Templates.Features.BuildNofXBase
-      Templates.Features.BuildNofX
-      Templates.Features.BuildNofXWithGap
-      Templates.Features.BuildNofXOrMofYWithGap
-      Templates.Features.BuildNofUniqueBegins
-      Templates.FeatureReqs
-      Templates.TestUtilities
-
-      Test.Monarch.Internal.Map
-      Test.Monarch.Internal.Dhall
-      Test.Monarch.Internal.EventDataTheory
-      Test.Monarch.Internal.Csv
-      Test.Monarch.Internal.Atomic
-      Test.Monarch.Internal.Utilities
+      Hasklepias.CohortApp
+      Hasklepias.CohortApp.CohortAppCLI
+      Hasklepias.LineFilterApp
+      Hasklepias.LineFilterApp.ProcessLines.Logic
+      Hasklepias.LineFilterApp.ProcessLines.Taggers
+      Hasklepias.LineFilterApp.AppUtilities
+      Hasklepias.AssessmentIntervals
+      Hasklepias.LineFilterApp.ProcessLines.Tests
+      Hasklepias.Reexports
 
       Tests.AssessmentIntervals
 
@@ -146,6 +100,7 @@ library
     , tasty-silver
     , text
     , time >= 1.11.1
+    , transformers
     , tuple
     , vector
     , witherable
@@ -180,43 +135,6 @@ test-suite hasklepias-test
   build-depends:
       hasklepias-main, base
   default-language: Haskell2010
-
-test-suite stype-test
-  type: exitcode-stdio-1.0
-  main-is: Main.hs
-  hs-source-dirs: stype-test
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N
-  build-depends:
-      hasklepias-main, base
-  default-language: Haskell2010
-
-test-suite templates-test
-  type: exitcode-stdio-1.0
-  main-is: Main.hs
-  hs-source-dirs: templates-test
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N
-  build-depends:
-      hasklepias-main, base
-  default-language: Haskell2010
-
-test-suite monarch-test-suite
-  type: exitcode-stdio-1.0
-  main-is: Main.hs
-  hs-source-dirs:
-      monarch-test
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N
-  build-depends: 
-    hasklepias-main, base, filepath
-  default-language: Haskell2010
-
-executable monarch-demo
-    main-is:          Main.hs
-    build-depends:
-        base
-        , hasklepias-main
-        , tasty
-    hs-source-dirs:   monarch-demo
-    default-language: Haskell2010
 
 executable lineFilter-demo
     main-is:          Main.hs

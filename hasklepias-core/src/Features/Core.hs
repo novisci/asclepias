@@ -14,7 +14,7 @@ Maintainer  : bsaul@novisci.com
 {-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE GADTs                  #-}
 {-# LANGUAGE NoImplicitPrelude      #-}
-{-# LANGUAGE Safe                   #-}
+{-# LANGUAGE Trustworthy                   #-}
 {-# LANGUAGE ScopedTypeVariables    #-}
 {-# LANGUAGE TypeApplications       #-}
 

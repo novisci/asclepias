@@ -28,7 +28,7 @@ import           GHC.TypeLits        (KnownSymbol)
 into a homogeneous list.
 -}
 data Featureable
-  = forall d . (Show d, ToJSON d, ShapeOutput d) => MkFeatureable d Attributes
+  = forall d. (Show d, ToJSON d, ShapeOutput d) => MkFeatureable d Attributes
 
 {- | Pack a feature into a @Featurable@. -}
 packFeature
@@ -38,6 +38,8 @@ packFeature
   -> Featureable
 packFeature x = MkFeatureable x (getAttributes @n)
 
+-- TODO REFACTOR why are attributes there if not in show or
+-- json?
 instance Show Featureable where
   show (MkFeatureable x _) = show x
 
@@ -55,3 +57,10 @@ instance ShapeOutput Featureable where
 getFeatureableAttrs :: Featureable -> Attributes
 getFeatureableAttrs (MkFeatureable _ a) = a
 
+
+  {- Utilities -}
+
+-- | Compare two featurables via their ShapeOutput and ToJSON implementations.
+-- See @Features.Featureset.'allEqFeatureable'@.
+eqFeatureableData :: Featureable -> Featureable -> Bool
+eqFeatureableData f1 f2 = toJSON (dataOnly f1) == toJSON (dataOnly f2)

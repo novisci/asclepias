@@ -3,7 +3,7 @@
 {-# LANGUAGE TypeApplications #-}
 {-# OPTIONS_HADDOCK hide #-}
 {- HLINT ignore "Avoid restricted function" -}
-module Hasklepias.AppBuilder.ProcessLines.Tests
+module Hasklepias.LineFilterApp.ProcessLines.Tests
   ( tests
   , benches
   ) where
@@ -32,9 +32,9 @@ import qualified Data.Text.Encoding                         as T
 import           Data.Vector                                ((!))
 import           GHC.Generics
 import           GHC.IO.Unsafe                              (unsafePerformIO)
-import           Hasklepias.AppBuilder.ProcessLines.Logic
-import           Hasklepias.AppBuilder.ProcessLines.Taggers
-import           Hasklepias.AppUtilities
+import           Hasklepias.LineFilterApp.ProcessLines.Logic
+import           Hasklepias.LineFilterApp.ProcessLines.Taggers
+import           Hasklepias.LineFilterApp.AppUtilities
 import           Options.Applicative
 import           Test.Tasty
 import           Test.Tasty.Bench
@@ -173,7 +173,7 @@ isAllGEThan m i = if chk then Just "is_huge" else Just "is_not_huge"
 hasOui m _ = if M.member "oui" m then Just "has_oui" else Nothing
 
 testTaggerConfig :: TaggerConfig T.Text Integer Integer
-testTaggerConfig = MkTaggerConfig [isAllGEThan, hasOui] "src/Hasklepias/AppBuilder/ProcessLines/tests.dhall"
+testTaggerConfig = MkTaggerConfig [isAllGEThan, hasOui] "src/Hasklepias/LineFilterApp/ProcessLines/tests.dhall"
 
 expectedTagMap = M.fromList [("oui", 1), ("non", -1), ("commeci", 0), ("commeca", 0)]
 

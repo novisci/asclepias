@@ -3,9 +3,7 @@ index-state: 2022-08-11T11:35:57Z
 with-compiler: ghc-9.2.2
 
 packages: hasklepias-core
-        , hasklepias-examples
         , hasklepias-main
-        , cohort-collector
         , event-data-theory
   
 -- For amazonka

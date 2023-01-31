@@ -1,7 +1,10 @@
 {-|
-Module      : AppUtilities
+Module      : AppUtilities for LineFilterApp
 Description : Misc types and functions useful in creating Hasklepias applications.
 -}
+-- TODO This module is now needed only for the LineFilterApp. Some
+-- consolidation of utilities might be possible after the LineFilterApp is
+-- refactored as the CohortApp was.
 {-# LANGUAGE DataKinds             #-}
 {-# LANGUAGE GADTs                 #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
@@ -9,7 +12,7 @@ Description : Misc types and functions useful in creating Hasklepias application
 {-# LANGUAGE QuasiQuotes           #-}
 {-# LANGUAGE TypeApplications      #-}
 
-module Hasklepias.AppUtilities
+module Hasklepias.LineFilterApp.AppUtilities
   (
   -- * Types and functions for handling I/O
     Location(..)
@@ -91,6 +94,7 @@ import           Safe                       (atMay, headMay)
 import           System.IO                  (stderr)
 import           Text.Read                  (readMaybe)
 
+-- TODO REFACTOR could use a reorg. note duplication with CohortAppCLI module. this one is pretty messy, but there is value in having a shared module with the LineFilter app
 
 -- | Type representing locations that data can be read from
 data Location where

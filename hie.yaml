@@ -1,14 +1,5 @@
 cradle:
   cabal:
-    - path: "cohort-collector/src"
-      component: "lib:cohort-collector"
-
-    - path: "cohort-collector/app/Main.hs"
-      component: "cohort-collector:exe:cohort-collector"
-
-    - path: "cohort-collector/test"
-      component: "cohort-collector:test:collector-test"
-
     - path: "event-data-theory/src"
       component: "lib:event-data-theory"
 
@@ -24,41 +15,11 @@ cradle:
     - path: "hasklepias-core/test"
       component: "hasklepias-core:test:hasklepias-core-test"
 
-    - path: "hasklepias-examples/src"
-      component: "lib:hasklepias-examples"
-
-    - path: "hasklepias-examples/test"
-      component: "hasklepias-examples:test:examples"
-
-    - path: "hasklepias-examples/test"
-      component: "hasklepias-examples:test:doctests"
-
-    - path: "hasklepias-examples/exampleCohortCwApp/Main.hs"
-      component: "hasklepias-examples:exe:exampleCohortCwApp"
-
-    - path: "hasklepias-examples/exampleCohortRwApp/Main.hs"
-      component: "hasklepias-examples:exe:exampleCohortRwApp"
-
-    - path: "hasklepias-examples/exampleFilterApp/Main.hs"
-      component: "hasklepias-examples:exe:exampleFilterApp"
-
     - path: "hasklepias-main/src"
       component: "lib:hasklepias-main"
 
     - path: "hasklepias-main/test"
       component: "hasklepias-main:test:hasklepias-test"
-
-    - path: "hasklepias-main/stype-test"
-      component: "hasklepias-main:test:stype-test"
-
-    - path: "hasklepias-main/templates-test"
-      component: "hasklepias-main:test:templates-test"
-
-    - path: "hasklepias-main/monarch-test"
-      component: "hasklepias-main:test:monarch-test-suite"
-
-    - path: "hasklepias-main/monarch-demo/Main.hs"
-      component: "hasklepias-main:exe:monarch-demo"
 
     - path: "hasklepias-main/lineFilter-demo/Main.hs"
       component: "hasklepias-main:exe:lineFilter-demo"

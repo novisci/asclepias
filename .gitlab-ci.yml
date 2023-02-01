@@ -9,7 +9,7 @@
 
 variables:
   PKG: hasklepias
-  GHC: "9.2.2"
+  GHC: "9.2.5"
   DOCKER: "20.10.11"
 
 # Tag all jobs with nsstat so that the nsstat runner is used:

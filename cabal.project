@@ -1,6 +1,6 @@
-index-state: 2022-08-11T11:35:57Z
+index-state: 2023-02-01T13:56:40Z
 
-with-compiler: ghc-9.2.2
+with-compiler: ghc-9.2.5
 
 packages: hasklepias-core
         , hasklepias-main

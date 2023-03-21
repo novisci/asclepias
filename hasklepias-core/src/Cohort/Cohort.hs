@@ -4,8 +4,8 @@ Description : Defines the Cohort and related types used in core logic of
               producing a Cohort from subject-level data.
 Copyright   : (c) Target RWE 2023
 License     : BSD3
-Maintainer  : bbrown@targetrwe.com 
-              ljackman@targetrwe.com 
+Maintainer  : bbrown@targetrwe.com
+              ljackman@targetrwe.com
               dpritchard@targetrwe.com
 -}
 
@@ -21,8 +21,8 @@ import           Data.List.NonEmpty  (NonEmpty (..), (<|))
 import           Data.Map.Strict     (Map, alter, empty, unionWith)
 import           Data.Text           (Text)
 import           EventDataTheory     (Event, Interval)
-import           Features.Featureset (Featureset)
 import           GHC.Generics        (Generic)
+import           Variable
 
 {- COHORT SPECIFICATION -}
 
@@ -30,7 +30,7 @@ import           GHC.Generics        (Generic)
 -- functions will be run on subject-level data, subject-by-subject. Logic will
 -- be executed as part of a @'CohortApp'@ pipeline. The type 'CohortApp' itself
 -- is not exported, but the user will create such a pipeline via the exported
--- 'cohortMain'. 
+-- 'cohortMain'.
 --
 -- Note 'runVariables' must construct *all* output variables. For a more
 -- detailed explanation of the cohort-building pipeline, see the `Hasklepias`
@@ -46,7 +46,7 @@ data CohortSpec t m a
         -- criteria for a single subject, relative to a particular index
         -- time. There will be one 'Criteria' value for each subject and
         -- element of @'IndexSet' a@.
-      , runVariables :: NonEmpty (Event t m a) -> Interval a -> Featureset
+      , runVariables :: NonEmpty (Event t m a) -> Interval a -> VariableRow
         -- ^ Construct all output variables for the provided subject
         -- data, with respect to a particular index time.
       }
@@ -119,7 +119,7 @@ instance (ToJSON a) => ToJSON (ObsId a)
 data ObsUnit a
   = MkObsUnit
       { obsId   :: ObsId a
-      , obsData :: Featureset
+      , obsData :: VariableRow
       }
   deriving (Show)
 

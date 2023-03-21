@@ -5,30 +5,35 @@ Description : Everything you should need to get up and running with
 Copyright   : (c) Target RWE 2023
 License     : BSD3
 Maintainer  : bbrown@targetrwe.com
-              ljackman@targetrwe.com
-              dpritchard@targetrwe.com
+              ljackman@targetrwe.com dpritchard@targetrwe.com
 -}
 
 module Hasklepias
   ( -- * Overview
     -- $overview
-    
+
     -- ** Terminology
     -- $terminology
-    
+
     -- ** Cohort construction
     -- $cohort-construction
-    
+
+    -- *** Using 'Variable'
+    -- $using-variable
+    module Variable,
+
     -- *** Using the CLI
     -- $using-cli-main
-    
+
     -- *** 'cohortMain' guarantees
     -- $cohortmain-guarantees
-    
-    
+
     -- *** Input data format
     -- $using-cli-input
-    
+
+    -- *** Output data format
+    -- $using-cli-output
+    --
     -- *** Logs and runtime errors
     -- $logs-errors
 
@@ -65,12 +70,13 @@ module Hasklepias
 
 import           EventDataTheory
 
+import           Cohort                         hiding (foldl', null)
 import           Features
-import           Cohort                              hiding (foldl', null)
+import           Variable
 
-import           Hasklepias.LineFilterApp
 import           Hasklepias.AssessmentIntervals
 import           Hasklepias.CohortApp
+import           Hasklepias.LineFilterApp
 import           Hasklepias.Reexports
 
 {- $overview
@@ -158,7 +164,7 @@ data CohortSpec t m a
   = MkCohortSpec
       { runIndices   :: NonEmpty (Event t m a) -> IndexSet a
       , runCriteria  :: NonEmpty (Event t m a) -> Interval a -> Criteria
-      , runVariables :: NonEmpty (Event t m a) -> Interval a -> Featureset
+      , runVariables :: NonEmpty (Event t m a) -> Interval a -> VariableRow
       }
 @
 
@@ -175,8 +181,8 @@ given as @'Interval' a@, the same type as the underlying temporal element of an
 @'runCriteria'@ constructs a non-empty list of inclusion / exclusion criteria for
 a single subject, relative to a particular index time.
 
-@'runVariables'@ defines the output data, currently of @'Featureset'@ type, for
-each subject and index time. This will produce one set of variables per input
+@'runVariables'@ defines the output data of @'VariableRow'@ type, for each
+subject and index time. This will produce one set of variables per input
 subject per index time.
 -}
 
@@ -234,6 +240,48 @@ together contribute +1 to the number of 'subjectsProcessed'.
 
 -}
 
+{- $using-variable
+    This module defines the return type of 'Cohort.runVariables' along with the
+    type system for the supported output targets.
+
+    Currently the only target type system that is supported by asclepias is a
+    subset of the R type system.
+    
+    The 'VariableRow' type is a list of 'Variable's. The intention is that the
+    list of 'Variable's that is returned by 'Cohort.runVariables' after being
+    applied to a single observational unit's 'Event's represents one row of
+    data in a data frame, with one row per observational unit and one columns
+    per study variable.
+    
+    The 'Variable' type wraps an underlying R type along with some metadata. The
+    type is not designed to be convenient to work with once it has been created,
+    so it is recommended to only produce `Variable` values when assembling the
+    return value from 'Cohort.runVariables'. Instead, for intermediate values the
+    recommended approach is to use one of the types used to represent R values,
+    such as 'RTypeRep', 'Factor', or 'Stype'.
+    
+    All of the types used to represent R types in this module are either directly
+    or indirectly based upon the 'RTypeRep' type. The R types that are supported
+    by 'RTypeRep' are the atomic R vectors types as well as generic vectors (i.e.
+    lists). These vectors are modeled as arrays of @Maybe (SEXPElem s)@s and
+    where @Nothing@s represent @NA*@ values in the case of atomic vectors (see
+    the type documentation for more detail for a @Nothing@ value for the list
+    case).
+    
+    The elements of the 'RTypeRep' vector representations are modeled using the
+    'SEXPElem' type family. The types in this type family for the atomic types
+    correpond to the underlying element "type" that the various R atomic vectors are based
+    upon. "Type" is in quotations because R's SEXPTYPE does not provide a
+    separate type for the elements of an atomic vector: All singletons are
+    single-length vectors. For example, the @SEXPElem 'INTSXP@ type is a
+    synonym for @Int32@, which is the same type that R INTSXP values (i.e. R
+    integer vectors) are based upon.
+    
+    The @SEXPElem 'VECSXP@ type is used to represent R VECSXP values (i.e. R
+    generic vectors); see the type documentation for details.
+
+    -}
+
 {- $using-cli-main
 
 Your project's Haskell program will include some @Main.hs@ module which should look like this
@@ -265,6 +313,102 @@ The input data, regardless of source, must be in the event lines format,
 which is a JSON Lines format. Lines of input failing to parse into the
 appropriate format will be logged. See Logs produced.
 -}
+
+{- $using-cli-output
+    An application created with 'cohortMain' will produce JSON output of a
+    consistent format. Only the 'VariableRow' JSON output differs in shape
+    based on the variables produced in 'Cohort.runVariables'. See documentation
+    for that type for details.
+
+    The following example demonstrates the JSON shape produced. Here, "main"
+    refers to a single cohort called "main". The output object can include one
+    or more elements, all of which have the shape of "main" below.
+
+@
+
+{
+  "main": {
+    "attritionJSON": {
+      "attritionByStatus": [
+        [
+          {
+            "tag": "Included"
+          },
+          2
+        ],
+        [
+          {
+            "contents": "continuousEnrollment",
+            "tag": "ExcludedBy"
+          },
+          1
+        ]
+      ],
+      "subjectsProcessed": 4,
+      "unitsProcessed": 3
+    },
+    "cohortJSON": [
+      {
+        "obsIdJSON": {
+          "fromSubjId": "3",
+          "indexTime": [
+            "2015-01-02",
+            "2015-01-03"
+          ]
+        },
+        "variableRowJSON": [
+          {
+            "attrs": {
+              "varName": "ageAtIndex",
+              "varType": "INTSXP"
+            },
+            "subAttrs": {
+              "long_label": "Age at day of index, computed from January 7 of smallest provided birth year.",
+              "short_label": "Age at day of index",
+              "special_attrs": [
+                "51"
+              ],
+              "study_role": null,
+              "stypeType": "v_nominal"
+            },
+            "vals": [
+              51
+            ],
+            "varTarget": "StypeVector"
+          },
+          {
+            "attrs": {
+              "varName": "primaryOutcome",
+              "varType": "INTSXP"
+            },
+            "subAttrs": [],
+            "vals": [
+              null
+            ],
+            "varTarget": "RVector"
+          }
+        ]
+      }
+    ]
+  }
+}
+@
+
+  - "main" provides the top-level field for data on a given cohort, in this
+  case called "main".
+  - "attritionJSON" is an @object@ providing a summary of attrition information
+  for the cohort.
+  - "cohortJSON" is an @array@ of the output data produced for the cohort. It
+  can be thought of as an array of rows, with one row per observational unit of
+  the cohort. Specifically, each element is an @object@ with two fields:
+  "obsIdJSON" and "variableRowJSON".
+  - "obsIdJSON" is an @object@ providing the subject id and index time pair
+  uniquely identifying the observational unit.
+  - "variableRowJSON" provides an @array@ of all output 'Variable' values for
+  that observational unit. See 'VariableRow' for details on the shape of
+  elements in this array.
+-}
+
 
 {- $logs-errors
 At the moment, failure modes are not configurable. Logging is configurable via environment variables, as described in the top-level [Blammo configuration documentation](https://hackage.haskell.org/package/Blammo-1.1.1.1).

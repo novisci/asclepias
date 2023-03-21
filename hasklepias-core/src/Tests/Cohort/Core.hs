@@ -1,14 +1,9 @@
 -- | Tests of 'evalCohort' used to demonstrate the relevant guarantees listed
--- in the `Hasklepias` module documentation (see hasklepias-main). Each example
--- subject should have a "Sepcs" note in its docs, describing how 'evalCohort'
--- should treat that subject.  Note: 'NE.fromList' is used throughout but
--- should not be in code producing a 'CohortSpec', since the function is
--- partial.
+-- in the `Hasklepias` module documentation (see hasklepias-main).
 
 {-# LANGUAGE DataKinds             #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings     #-}
-{-# LANGUAGE TemplateHaskell       #-}
 
 module Tests.Cohort.Core (tests) where
 
@@ -17,17 +12,19 @@ import           Cohort.Core
 import           Cohort.Criteria
 import           Cohort.IndexSet    (IndexSet)
 import qualified Cohort.IndexSet    as IS
-import           Data.List          (sortBy)
+import qualified Data.List          as L
 import           Data.List.NonEmpty (NonEmpty (..))
 import qualified Data.List.NonEmpty as NE
 import qualified Data.Map.Strict    as M
 import           Data.Semigroup
 import           Data.Text          (Text)
 import qualified Data.Text          as T
+import qualified Data.Vector        as V
 import           EventDataTheory
-import           Features
 import           Test.Tasty
 import           Test.Tasty.HUnit
+import           Variable
+import           Variable.Variable  (asVariableWrapped)
 
 
 {- TYPES AND UTILITIES -}
@@ -85,49 +82,38 @@ buildCriteria (e :| es) _ = sconcat $ NE.map op (e :| es)
   where op e' = let d' = getFacts $ getContext e'
                 in c1 d' :| [c2 d']
 
-infoFeature :: SillyEvent -> Feature "info" Text
-infoFeature = pure . info . getFacts . getContext
+-- NOTE: It's not necessary to use RTypeRep at this point. You could just
+-- return Text. Done for demo purposes.
+infoVariable :: SillyEvent -> RTypeRep 'STRSXP
+infoVariable = as_character . info . getFacts . getContext
 
--- Note: compiler will pick whatever name n.
-noEventsFeature :: Feature "info" Text
-noEventsFeature = pure "No events"
+toMultiInfo :: Interval Int -> Text -> Text
+toMultiInfo i t = T.pack (show i) <> ": " <> t
 
--- NOTE: This exists purely to satisfy the HasAttributes constraint for use in
--- producing the expected results, which prevents us from wrapping Text in
--- 'pure'. This is points to an awkwardness that could be smoothed out with
--- Feature. We *can* use arbitrary features in `Featureset`, since the types
--- are erased. Requiring HasAttributes is more annoyance than type safety.
-textFeature :: Text -> Feature "arbitrary" Text
-textFeature = pure
-
-toMultiInfo :: Interval Int -> Feature "info" Text -> Feature "multiinfo" Text
-toMultiInfo i t = makeFeature $ (T.pack (show i ++ ": ") <>) <$> getFData t
-
--- To be used with multi* test data.
-multiinfoFeature :: Interval Int -> SillyEvent -> Feature "multiinfo" Text
-multiinfoFeature i = toMultiInfo i . infoFeature
-
-setAttributesEmpty "multiinfo" ''Text
-setAttributesEmpty "info" ''Text
--- NOTE: see note on textFeature
-setAttributesEmpty "arbitrary" ''Text
+-- To be used with multi* test data. Example of the annoyance of using 'Maybe'
+-- in RTypeRep.
+multiinfoVariable :: Interval Int -> SillyEvent -> RTypeRep 'STRSXP
+multiinfoVariable i = V.map (fmap (toMultiInfo i)) . infoVariable
 
 -- | Stand-in for output variable construction based on an index and event.
--- Simply grabs the 'info' field from each event and concats.
-buildFeatures :: NonEmpty SillyEvent -> Interval Int -> Featureset
-buildFeatures es _ = featureset $ NE.map (packFeature . infoFeature) es
+-- Simply grabs the 'info' field from each event and concats. Variables are
+-- named arbitrarily.
+buildVariables :: NonEmpty SillyEvent -> Interval Int -> VariableRow
+buildVariables es _ = zipWith (\nm e -> rVector nm $ infoVariable e) nms (NE.toList es)
+  where nms = map (\i -> "v" <> T.pack (show i)) [1..length es]
 
 -- | Like the above, but the feature now declares which index it is associated
 -- with. NOTE 'NE.fromList' will throw an exception if the list is empty.
-multibuildFeatures :: NonEmpty SillyEvent -> Interval Int -> Featureset
-multibuildFeatures es i = featureset $ NE.map (packFeature . multiinfoFeature i) es
+multibuildVariables :: NonEmpty SillyEvent -> Interval Int -> VariableRow
+multibuildVariables es i = zipWith (\nm e -> rVector nm $ multiinfoVariable i e) nms (NE.toList es)
+  where nms = map (\i' -> "v" <> T.pack (show i')) [1..length es]
 
 -- | This is what the user creates: entry-point to the CohortApp pipeline.
 cohort2spec :: CohortSpec () SillySubjData Int
-cohort2spec = MkCohortSpec buildIndices buildCriteria buildFeatures
+cohort2spec = MkCohortSpec buildIndices buildCriteria buildVariables
 
 multicohort2spec :: CohortSpec () SillySubjData Int
-multicohort2spec = MkCohortSpec multiIndices buildCriteria multibuildFeatures
+multicohort2spec = MkCohortSpec multiIndices buildCriteria multibuildVariables
 
 -- | "run" the cohort based on the provided logic in the spec. note this only
 -- evaluates pure code, so it is not the same as the runner the CohortApp
@@ -293,25 +279,29 @@ cohortSingleIxIIE1E2' = runCohort [includedSingleIx
 cohortMultiIxIE1E2 :: Cohort Int
 cohortMultiIxIE1E2 = multirunCohort [includedSingleIx, excludedByC1SingleIx, excludedByC2SingleIx]
 
-  {- EXPECTED Feature Data -}
+  {- EXPECTED Variable Data -}
 
 -- Where possible, expected values are spciefied in the test itself, but
 -- constructing features is verbose.
 
--- | Utility for comparing lists of [ObsUnit Int]. 'allEqFeatureableData' sorts
+-- | Utility for comparing lists of [ObsUnit Int]. 'allEqVariableableData' sorts
 -- before comparing via ShapeOutput and ToJSON. The length check is important
--- since zip shortens the result to the min lengthbetween the two lists.
+-- since zip shortens the result to the min length between the two lists.
 compareCohortData :: [ObsUnit Int] -> [ObsUnit Int] -> Bool
 compareCohortData xs ys = (length xs == length ys) && and bs
-  where bs = zipWith (\o1 o2 -> allEqFeatureableData (obsData o1) (obsData o2)) xs' ys'
-        xs' = sortBy (\x y -> compare (obsId x) (obsId y)) xs
-        ys' = sortBy (\x y -> compare (obsId x) (obsId y)) ys
+  where bs = zipWith (\o1 o2 -> allEqVariableRow (obsData o1) (obsData o2)) xs' ys'
+        xs' = L.sortBy (\x y -> compare (obsId x) (obsId y)) xs
+        ys' = L.sortBy (\x y -> compare (obsId x) (obsId y)) ys
+        -- NOTE: A lazy comparison of Variables by their VariableWrapped (i.e.
+        -- JSON) representations.
+        allEqVariableRow vs1 vs2 = L.sort (map asVariableWrapped vs1) == L.sort (map asVariableWrapped vs2)
 
--- | Utility for making a featureset from a list of Text. Explicitly do not
--- want to reuse the `buildFeatures` functions, since it doing so would be
--- close to producing a tautological test.
-textFeatureset :: NonEmpty Text -> Featureset
-textFeatureset = featureset . NE.map (packFeature . textFeature)
+-- | Utility for making a VariableRow from a list of Text. Explicitly do not
+-- want to reuse the `buildVariables` functions, since it doing so would be
+-- close to producing a tautological test. Variable names assigned arbitrarily.
+textVariableRow :: [Text] -> VariableRow
+textVariableRow xs = zipWith (\nm t -> rVector nm $ as_character t) nms xs
+  where nms = map (\i -> "v" <> T.pack (show i)) [1..length xs]
 
 expectedNoIx :: [ObsUnit Int]
 expectedNoIx = []
@@ -325,7 +315,7 @@ expectedSingleIxE1 = []
 expectedSingleIxI :: [ObsUnit Int]
 expectedSingleIxI = [o1]
   where oid1 = MkObsId (MkSubjId "includedSingleIx") (beginervalMoment (-1))
-        o1 = MkObsUnit oid1 $ textFeatureset $ NE.fromList ["i'm in, c1", "i'm in, c2"]
+        o1 = MkObsUnit oid1 $ textVariableRow ["i'm in, c1", "i'm in, c2"]
 
 -- | Expected obsData from 'cohortSingleIxIE1E2'.
 expectedSingleIxIE1E2 :: [ObsUnit Int]
@@ -335,19 +325,18 @@ expectedSingleIxIE1E2 = expectedSingleIxI
 expectedSingleIxIIE1E2' :: [ObsUnit Int]
 expectedSingleIxIIE1E2' = o2 : expectedSingleIxI
   where oid2 = MkObsId (MkSubjId "includedSingleIx'") (beginervalMoment (-1))
-        o2 = MkObsUnit oid2 $ textFeatureset $ NE.fromList ["i'm in too, c1", "i'm in too, c2"]
+        o2 = MkObsUnit oid2 $ textVariableRow ["i'm in too, c1", "i'm in too, c2"]
 
 -- | Expected obsData from 'cohortMultiIxIE1E2'.
 expectedMultiIxIE1E2 :: [ObsUnit Int]
 expectedMultiIxIE1E2 = [o1, o2]
   where oid1 = MkObsId (MkSubjId "includedSingleIx") (beginervalMoment (-1))
-        o1 = MkObsUnit oid1 d1 
+        o1 = MkObsUnit oid1 d1
         oid2 = MkObsId (MkSubjId "includedSingleIx") (beginervalMoment 101)
         o2 = MkObsUnit oid2 d2
         -- These differ only in the index time prepended.
-        d1 = textFeatureset $ NE.fromList ["(-1, 0): i'm in, c1", "(-1, 0): i'm in, c2"]
-        d2 = textFeatureset $ NE.fromList ["(101, 102): i'm in, c1", "(101, 102): i'm in, c2"]
-
+        d1 = textVariableRow ["(-1, 0): i'm in, c1", "(-1, 0): i'm in, c2"]
+        d2 = textVariableRow ["(101, 102): i'm in, c1", "(101, 102): i'm in, c2"]
 
 {- TESTS -}
 

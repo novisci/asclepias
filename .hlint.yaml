@@ -3,6 +3,7 @@
 # https://github.com/NorfairKing/haskell-dangerous-functions/
 
 - ignore: { name: "Use unless" }
+- ignore: { name: "Use camelCase" }
 # - ignore: { name: "Use tuple-section" }
 
 - functions:
@@ -20,7 +21,7 @@
 
   - {name: undefined, within: []} # Purposely fails. Deal with errors appropriately instead.
   - {name: throw, within: []} # Don't throw from pure code, use throwIO instead.
-  - {name: Prelude.error, within: []}
+  - {name: Prelude.error, within: ["Variable.R.Stype", "Variable.R.SEXP"]}
 
   - {name: Data.List.head, within: []} # Partial, use `listToMaybe` instead.
   - {name: Data.List.tail, within: []} # Partial

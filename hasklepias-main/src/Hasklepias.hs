@@ -24,6 +24,8 @@ module Hasklepias
 
     -- *** Using the CLI
     -- $using-cli-main
+    -- *** AWS credentials
+    -- $using-cli-main
 
     -- *** 'cohortMain' guarantees
     -- $cohortmain-guarantees
@@ -306,6 +308,24 @@ To view the available command-line options, for a target named @myproj@, do
 @
 cabal run -v0 myproj -- --help
 @
+-}
+
+{- $aws-credentials
+If running an cohort application with the @--s3in@ or @--s3out@ flags, you will
+need to provide AWS credentials from one of the follwing sources:
+
+* environment variables @AWS_ACCESS_KEY_ID@ and @AWS_ACCESS_KEY_SECRET@ or
+@AWS_SECRET_ACCESS_KEY@.
+* configuration file in the format used by the @aws@ cli. See "Short-term
+credentials" in the @aws@
+  [documentation](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html).
+* Ec2 instance metadata.
+
+A cohort application will check all three sources *in the order shown*, from
+top to bottom, before throwing an exception if none can be found. The default
+credentials file location is @$HOME/.aws/credentials@, with default profile
+name @default@. Both values are configurable via a cohort application's
+command-line interface.
 -}
 
 {- $using-cli-input

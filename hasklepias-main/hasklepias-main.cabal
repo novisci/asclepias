@@ -65,23 +65,29 @@ library
     , hasklepias-core
     
     -- External packages
+    , base >=4.14 && <5
     , aeson
+    -- TODO amazonka is kept purely for legacy code in line filter app
     , amazonka
     , amazonka-s3
-    , base >=4.14 && <5
+    , aws
     , Blammo
     , bytestring
     , cassava
     , containers
+    , conduit
     , conduit-extra
     , deepseq
     , dhall
     , dhall-csv
+    , directory
     , filepath
     , flow
     , formatting
     , generic-lens
     , gitrev
+    , http-conduit
+    , ini
     , microlens
     , OneTuple
     , optparse-applicative
@@ -90,6 +96,7 @@ library
     , pretty-simple
     , QuickCheck
     , regex-compat
+    , resourcet
     , safe
     , semiring-simple
     , split
@@ -103,6 +110,7 @@ library
     , time >= 1.11.1
     , transformers
     , tuple
+    , unordered-containers
     , vector
     , witherable
     , witch

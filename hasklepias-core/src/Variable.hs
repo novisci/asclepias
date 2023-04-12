@@ -25,6 +25,7 @@ module Variable (
   rVector,
   rFactor,
   stypeVector,
+  rAtomicVectorElem,
   -- * Supported downstream type representations
   -- ** R vectors
   SEXPTYPE(..),

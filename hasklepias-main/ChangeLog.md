@@ -1,5 +1,17 @@
 # Changelog for hasklepias-main
 
+## 0.30.0
+
+* Refactors the `CohortApp` substantially to implement a `ReaderT` pattern for IO actions.
+* Expanded documentation in the `Hasklepias` module to make transparent
+  `CohortApp` evaluation logic and guarantees it does and does not provide the
+  user.
+* Simplifies the CLI options.
+* Uses `aws` rather than `amazonka` for `S3` requests.
+* Restricts the `asclepias` project to contain only its core package members:
+  `event-data-theory`, `hasklepias-main` and `hasklepias-core`. All others have
+  been moved, for now, to `experiments`.
+
 ## 0.29.0
 
 * add Data.Map.Strict `findWithDefault`, `lookup` and `!?` to Reexports.hs

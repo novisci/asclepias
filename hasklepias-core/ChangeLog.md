@@ -1,5 +1,24 @@
 # Changelog for hasklepias-core
 
+## 0.30.0
+
+* Redesigns the core cohort evaluation logic, the pure functions used to
+  process input data according to the user-provided `CohortSpec`. See the
+  `Hasklepias` module documentation for details.
+* Adds the `Variable` type as the core component of `CohortApp` output data,
+  meaning the required return value of `runVariables` within a `CohortSpec`.
+  * `Hasklepias` module documentation in `hasklepias-main`defines a clear output shape downstream
+    applications can depend on.
+  * Models the relevant type system with Haskell of specified target downstream
+    applications, which at this time is a subset of the `R` language's vector
+    types, to ensure high fidelity to the downstream type system and simplify
+    conversion of JSON output to the target types.
+  * Provides constructors and typeclasses for safe and convenient construction of `Variable`s.
+* Miscellaneous refactoring and simplification.
+  * `Feature` no longer is the de-facto required type for output of
+    `runVariables` (formerly `runFeatures`).
+  * `Feature` and its related API are entirely optional.
+
 ## 0.29.1
 
 * Fixes a bug in `Cohort.Core.makeSubjectEvaluator`, which produced duplicate

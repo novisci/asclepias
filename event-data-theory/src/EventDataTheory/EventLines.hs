@@ -145,7 +145,7 @@ data FactsLine m a = MkFactsLine
   , facts      :: m
   , patient_id :: SubjectID
   , source     :: Maybe Source
-  , valid      :: Maybe Text
+  , valid      :: Maybe Bool
   }
   deriving (Eq, Show, Generic)
 

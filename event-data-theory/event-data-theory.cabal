@@ -42,8 +42,8 @@ library
     , binary
     , bytestring
     , containers
-    , dhall
     , deepseq
+    , dhall < 1.42.0
     , filepath
     , interval-algebra >= 2.1.1
     , QuickCheck

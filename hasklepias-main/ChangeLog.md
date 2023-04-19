@@ -1,5 +1,10 @@
 # Changelog for hasklepias-main
 
+## 0.30.1
+
+* Minor change to a type in `event-data-theory`.
+* Patches to CI document builds.
+
 ## 0.30.0
 
 * Refactors the `CohortApp` substantially to implement a `ReaderT` pattern for IO actions.

@@ -1,5 +1,9 @@
 # Changelog for event-data-theory
 
+## 0.30.1
+
+* Changes the `valid` field of a `FactLine` to `Maybe Bool` from `Maybe Text`.
+
 ## 0.29.0
 
 * updates to `FactsLine` type to conform to changes in `event-data-model`

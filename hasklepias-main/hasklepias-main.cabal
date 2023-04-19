@@ -78,7 +78,7 @@ library
     , conduit
     , conduit-extra
     , deepseq
-    , dhall
+    , dhall < 1.42.0
     , dhall-csv
     , directory
     , filepath

@@ -48,6 +48,8 @@ check-source:
 trigger-main-build:
   stage: build
   variables:
+    PARENT_CI_COMMIT_BRANCH: $CI_COMMIT_BRANCH
+    PARENT_CI_DEFAULT_BRANCH: $CI_DEFAULT_BRANCH
     PARENT_PIPELINE_ID: $CI_PIPELINE_ID
     PARENT_CI_PIPELINE_SOURCE: $CI_PIPELINE_SOURCE
   trigger: 

@@ -2,7 +2,8 @@
 stages:
   - prep
   - build
-  - deploy
+  # NOTE: See docs upload job
+  #- deploy
 
 # Tag all jobs with nsstat so that the nsstat runner is used:
 # https://gitlab.com/groups/TargetRWE/epistats/-/runners/16673355
@@ -12,8 +13,8 @@ default:
 # Rules for main-build and dependencies
 .rules-main-build:
   rules:
-    - if: '$PARENT_CI_PIPELINE_SOURCE == "merge_request_event" || $PARENT_CI_PIPELINE_SOURCE == "push"'
-      changes: ["**/*.cabal", "**/*.hs", "ci/ci-cabal-build-all.sh", "ci/ci-docker-build.sh", "ci/dockerHasklepias"]
+    - if: '$PARENT_CI_COMMIT_BRANCH == $PARENT_CI_DEFAULT_BRANCH || $PARENT_CI_PIPELINE_SOURCE == "merge_request_event" || $PARENT_CI_PIPELINE_SOURCE == "push"'
+      changes: ["**/*.cabal", "**/*.hs", "ci/ci-cabal-build-all.sh", "ci/ci-cabal-haddock-docs.sh", "ci/ci-docker-build.sh", "ci/dockerHasklepias"]
     - if: '$CI_COMMIT_MESSAGE =~ /-build/'
     - if: '$CI_COMMIT_MESSAGE =~ /-docker/'
 
@@ -39,16 +40,12 @@ docker-build:
      job: build_vars
      artifacts: true
   rules:
-   - if: '$PARENT_CI_PIPELINE_SOURCE == "merge_request_event" || $PARENT_CI_PIPELINE_SOURCE == "push"'
-     changes: ["**/*.cabal", "cabal.project", "ci/ci-docker-build.sh", "ci/dockerHasklepias"]
-   - if: '$CI_COMMIT_MESSAGE =~ /-docker/'
+    - !reference [.rules-main-build, rules]
   script:
      - ./ci/ci-docker-build.sh $MAINVERSION hasklepias-build haskell $GHC
 
 main-build:
   stage: build
-  variables:
-    HADDOCK_DIR: install
   needs:
     - pipeline: $PARENT_PIPELINE_ID
       job: build_vars
@@ -60,16 +57,12 @@ main-build:
   image: registry.gitlab.com/targetrwe/epistats/nsstat/asclepias/hasklepias-build:${MAINVERSION}
   script:
      - ./ci/ci-cabal-build-all.sh
-  artifacts:
-    paths:
-      - "$HADDOCK_DIR"
-      # - coverage-report.txt
-    expire_in: 1 hour
 
 # Upload docs to S3
-# TODO: change to a lighterweight aws image when available in nsBuild
 upload-haddock-docs:
-  image: registry.gitlab.com/targetrwe/epistats/nsstat/nsbuild/ubuntu:latest
+  variables:
+    ARTIFACT_DIR: "install/doc"
+  image: registry.gitlab.com/targetrwe/epistats/nsstat/asclepias/hasklepias-build:${MAINVERSION}
   needs:
     - pipeline: $PARENT_PIPELINE_ID
       job: build_vars
@@ -87,6 +80,11 @@ upload-haddock-docs:
     # if it does, run according to main-build rules
     - !reference [.rules-main-build, rules]
 
-  stage: deploy
+  stage: build
+  # TODO: debug passing artifacts from one stage to another. check git blame to
+  # see the MR where this was changed for background. in practice, version tags
+  # will occur only on master, so it doesn't matter too much.
+  #stage: deploy
   script:
+    - ./ci/ci-cabal-haddock-docs.sh
     - ./ci/ci-upload-docs-to-s3.sh

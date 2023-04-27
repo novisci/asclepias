@@ -1,31 +1,30 @@
--- | Module defining the output types for 'Cohort.runVariables'.
-
-{-# LANGUAGE AllowAmbiguousTypes   #-}
-{-# LANGUAGE ConstraintKinds       #-}
-{-# LANGUAGE DataKinds             #-}
-{-# LANGUAGE DeriveGeneric         #-}
-{-# LANGUAGE FlexibleContexts      #-}
-{-# LANGUAGE FlexibleInstances     #-}
-{-# LANGUAGE GADTs                 #-}
-{-# LANGUAGE KindSignatures        #-}
-{-# LANGUAGE LambdaCase            #-}
+{-# LANGUAGE AllowAmbiguousTypes #-}
+{-# LANGUAGE ConstraintKinds #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE GADTs #-}
+{-# LANGUAGE KindSignatures #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE OverloadedStrings     #-}
-{-# LANGUAGE RankNTypes            #-}
-{-# LANGUAGE ScopedTypeVariables   #-}
-{-# LANGUAGE TypeApplications      #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeApplications #-}
 
+-- | Module defining the output types for 'Cohort.runVariables'.
 module Variable.Variable where
 
-import           Data.Aeson          (ToJSON (..), Value)
-import           Data.Singletons
-import           Data.Text
-import qualified Data.Vector         as V
-import           GHC.Generics        (Generic)
-import           Variable.Attributes (VarAttrs (..))
-import           Variable.R.Factor
-import           Variable.R.SEXP
-import           Variable.R.Stype
+import Data.Aeson (ToJSON (..), Value)
+import Data.Singletons
+import Data.Text
+import qualified Data.Vector as V
+import GHC.Generics (Generic)
+import Variable.Attributes (VarAttrs (..))
+import Variable.R.Factor
+import Variable.R.SEXP
+import Variable.R.Stype
 
 -- | 'Variable', the element type of 'VariableRow', exists to ensure as much as
 -- possible that the values computed within an `asclepias` application can be
@@ -96,7 +95,6 @@ import           Variable.R.Stype
 -- MkVariableWrapped {varTarget = "RVector", vals = Array [Number 60.0], attrs
 -- = MkVarAttrs {varType = "REALSXP", varName = "maxAgeVar"}, subAttrs = Array
 -- []}
---
 data Variable where
   -- | A subset of base R vector types, those listed among 'SEXPTYPE', backed
   -- by the Haskell types given in 'RTypeRep'. A 'Variable' intended for this
@@ -105,9 +103,6 @@ data Variable where
   -- | The unordered @factor@ type in R, backed by the 'Variable.R.Factor.Factor'
   -- type in Haskell and constructed with 'rFactor'.
   RFactor :: Factor -> VarAttrs -> Variable
-  -- | The ordered @factor@ type in R, backed by the 'Variable.R.Factor.Factor'
-  -- type in Haskell and constructed with 'rOrdered'.
-  ROrdered :: Factor -> VarAttrs -> Variable
   -- | Vectors defined in the R @stype@ package, backed by some
   -- 'Variable.R.Stype.Stype' and constructed with 'stypeVector'. All but
   -- @v_rcensored@ is supported.
@@ -178,7 +173,8 @@ data Variable where
 --   "VECSXP"@, representing an R list.
 type VariableRow = [Variable]
 
-  {- CONSTRUCTORS -}
+{- CONSTRUCTORS -}
+
 -- | Constructor for 'RVector' with the given name as first argument,
 -- automatically producing type attribute information. To produce an
 -- 'RTypeRep', use of the of @as_*@ constructors or produce one directly by
@@ -186,54 +182,48 @@ type VariableRow = [Variable]
 -- by 'RTypeRep'.
 rVector :: (RTypeRepConstraints r) => Text -> RTypeRep r -> Variable
 rVector nm rv = RVector rv a
-  where a = MkVarAttrs (textSEXPTYPEOf rv) nm
+  where
+    a = MkVarAttrs (textSEXPTYPEOf rv) nm
 
 -- | Constructor for 'RFactor' with the given name as first argument, 'values'
 -- as second argument and 'levels' as third.  Calls 'factor', which is
 -- associated to an unordered @factor@ in R. Note the 'varType' always is
 -- @STRSXP@ and not the 'SEXPTYPE' of the input, in keeping with the R
 -- implementation in which 'factor' variables are backed by character vectors.
-rFactor :: (RTypeRepConstraints r) => Text -> RTypeRep r -> V.Vector Text -> Variable
+rFactor :: (AsCharacter a) => Text -> a -> V.Vector Text -> Variable
 rFactor nm rv lvls = RFactor (factor rv lvls) a
-  where a = MkVarAttrs "STRSXP" nm
-
--- | Constructor for 'ROrdered with the given name as first argument, 'values'
--- as second argument and 'levels' as third. Calls 'ordered', which is
--- associated to an ordered @factor@ in R. Note the 'varType' always is
--- @STRSXP@ and not the 'SEXPTYPE' of the input, in keeping with the R
--- implementation in which 'factor' variables are backed by character vectors.
-rOrdered :: (Ord (SEXPElem r), RTypeRepConstraints r) => Text -> RTypeRep r -> V.Vector Text -> Variable
-rOrdered nm rv lvls = RFactor (ordered rv lvls) a
-  where a = MkVarAttrs "STRSXP" nm
+  where
+    a = MkVarAttrs "STRSXP" nm
 
 -- | Constructor for 'StypeVector' with the given name as first argument. To
 -- produce a 'Stype', use one of the @v_*@ constructors such as
 -- 'Variable.R.Stype.v_binary' or 'Variable.R.Stype.as_v_binary'.
 stypeVector :: (RTypeRepConstraints r) => Text -> Stype r -> Variable
 stypeVector nm sv = StypeVector sv a
-  where a = MkVarAttrs ty nm
-        (ty, _) = stypeInfoOf sv
+  where
+    a = MkVarAttrs ty nm
+    (ty, _) = stypeInfoOf sv
 
 rAtomicVectorElem :: (RTypeRepConstraints r) => Text -> SEXPElem r -> Variable
 rAtomicVectorElem nm e = RAtomicVectorElem e a
-  where a = MkVarAttrs ty nm
-        ty = textSEXPTYPEOfElem e
+  where
+    a = MkVarAttrs ty nm
+    ty = textSEXPTYPEOfElem e
 
-  {- Show, JSON etc -}
+{- Show, JSON etc -}
 
 -- | Internal. Container to control Show and ToJSON shapes.
-data VariableWrapped
-  = MkVariableWrapped
-      { varTarget :: Text
-        -- ^ "Target" of the variable, meaning which variant of 'Variable' the
-        -- data are wrapped in.
-      , vals      :: Value
-        -- ^ Values of the variable.
-      , attrs     :: VarAttrs
-        -- ^ Common attritubutes required for all 'Variable' s.
-      , subAttrs  :: Value
-        -- ^ Any additional attributes lumped into a JSON 'Value'.
-      }
+data VariableWrapped = MkVariableWrapped
+  { -- | "Target" of the variable, meaning which variant of 'Variable' the
+    -- data are wrapped in.
+    varTarget :: Text,
+    -- | Values of the variable.
+    vals :: Value,
+    -- | Common attritubutes required for all 'Variable' s.
+    attrs :: VarAttrs,
+    -- | Any additional attributes lumped into a JSON 'Value'.
+    subAttrs :: Value
+  }
   deriving (Eq, Generic, Ord, Show)
 
 instance ToJSON VariableWrapped
@@ -246,27 +236,36 @@ instance Show Variable where
 instance ToJSON Variable where
   toJSON = toJSON . asVariableWrapped
 
-  {- UTILITIES -}
+{- UTILITIES -}
 
 -- Helper utilities for nested RVector lists.
 atomicRVectorAsWrapped :: (RTypeRepConstraints s) => RTypeRep s -> VarAttrs -> VariableWrapped
 atomicRVectorAsWrapped rv a = MkVariableWrapped "RVector" (toJSON rv) a (toJSON ())
 
-
 rVectorAsWrappedA :: (RTypeRepConstraints s) => Sing s -> RTypeRep s -> VarAttrs -> VariableWrapped
 rVectorAsWrappedA sxp rv a = case sxp of
-                     SLGLSXP    -> atomicRVectorAsWrapped rv a
-                     SINTSXP    -> atomicRVectorAsWrapped rv a
-                     SREALSXP   -> atomicRVectorAsWrapped rv a
-                     SCPLSXP    -> atomicRVectorAsWrapped rv a
-                     SSTRSXP    -> atomicRVectorAsWrapped rv a
-                     -- Must recurse through the list to produce a
-                     -- 'VariableWrapped' (converting it then to JSON) for each
-                     -- element. Types erased within 'SomeRTypeRep' are
-                     -- recovered.
-                     SVECSXP -> MkVariableWrapped "RVector" (toJSON $ V.map (\case
-                                                                           Nothing -> Nothing
-                                                                           Just (nm, v) -> Just $ withSomeRTypeRep v (\rv' -> rVectorAsWrappedA (singOfRTypeRep rv') rv' (MkVarAttrs (textSEXPTYPEOfErased v) nm))) rv) a (toJSON ())
+  SLGLSXP -> atomicRVectorAsWrapped rv a
+  SINTSXP -> atomicRVectorAsWrapped rv a
+  SREALSXP -> atomicRVectorAsWrapped rv a
+  SCPLSXP -> atomicRVectorAsWrapped rv a
+  SSTRSXP -> atomicRVectorAsWrapped rv a
+  -- Must recurse through the list to produce a
+  -- 'VariableWrapped' (converting it then to JSON) for each
+  -- element. Types erased within 'SomeRTypeRep' are
+  -- recovered.
+  SVECSXP ->
+    MkVariableWrapped
+      "RVector"
+      ( toJSON $
+          V.map
+            ( \case
+                Nothing -> Nothing
+                Just (nm, v) -> Just $ withSomeRTypeRep v (\rv' -> rVectorAsWrappedA (singOfRTypeRep rv') rv' (MkVarAttrs (textSEXPTYPEOfErased v) nm))
+            )
+            rv
+      )
+      a
+      (toJSON ())
 
 rVectorAsWrapped :: forall s. (RTypeRepConstraints s) => RTypeRep s -> VarAttrs -> VariableWrapped
 rVectorAsWrapped = rVectorAsWrappedA (sing @s)
@@ -276,14 +275,12 @@ rVectorAsWrapped = rVectorAsWrappedA (sing @s)
 asVariableWrapped :: Variable -> VariableWrapped
 asVariableWrapped (RVector rv a) = rVectorAsWrapped rv a
 asVariableWrapped (RFactor rv a) = MkVariableWrapped "RFactor" (toJSON $ values rv) a (toJSON $ levels rv)
-asVariableWrapped (ROrdered rv a) = MkVariableWrapped "ROrdered" (toJSON $ values rv) a (toJSON $ levels rv)
 asVariableWrapped (StypeVector sv a) = MkVariableWrapped "StypeVector" (toJSON $ stypeRTypeRep sv) a (toJSON $ wrappedStypeAttrs sv)
 asVariableWrapped (RAtomicVectorElem e a) = MkVariableWrapped "RAtomicVectorElem" (toJSON e) a (toJSON ())
 
 -- | Internal. Used for testing. Extract the attributes of a 'Variable'.
 varAttrs :: Variable -> VarAttrs
-varAttrs (RVector _ a)           = a
-varAttrs (RFactor _ a)           = a
-varAttrs (ROrdered _ a)          = a
-varAttrs (StypeVector _ a)       = a
+varAttrs (RVector _ a) = a
+varAttrs (RFactor _ a) = a
+varAttrs (StypeVector _ a) = a
 varAttrs (RAtomicVectorElem _ a) = a

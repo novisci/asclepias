@@ -16,75 +16,81 @@
 --   However, in some cases it can be convenient to work directly with the
 --   target type system representations of this module. See 'RTypeRep' for
 --   details.
-module Variable (
-  -- * Variable type
-  Variable(..),
-  VariableRow,
-  VariableConstraints,
-  -- ** Variable constructors
-  rVector,
-  rFactor,
-  stypeVector,
-  rAtomicVectorElem,
-  -- * Supported downstream type representations
-  -- ** R vectors
-  SEXPTYPE(..),
-  SEXPElem,
-  SomeRTypeRep(..),
-  RTypeRep,
-  RTypeRepConstraints,
-  -- ** R factors, ordered and unordered
-  Factor(..),
-  factor,
-  factorL,
-  ordered,
-  orderedL,
-  -- ** Stype vectors
-  Stype,
-  StypeAttrs(..),
-  StypeRole(..),
-  -- *** Constructors
-  v_binary,
-  v_continuous,
-  v_continuous_nonneg,
-  v_count,
-  v_nominal,
-  v_ordered,
-  v_proportion,
-  -- * Utilities
-  -- ** For casting to R vectors
-  AsRTypeRep(..),
-  AsLogical,
-  AsInteger,
-  AsNumeric,
-  AsComplex,
-  AsCharacter,
-  as_logical,
-  as_integer,
-  as_numeric,
-  as_character,
-  as_characterL,
-  as_characterV,
-  as_list,
-  -- ** For manipulating R vectors
-  sort,
-  sortUniq,
-  summarizeWith,
-  -- ** For casting to Stype vectors
-  as_v_binary,
-  as_v_continuous,
-  as_v_continuous_nonneg,
-  as_v_count,
-  as_v_proportion,
-  -- ** For type-level programming
-  withSomeRTypeRep,
-  sexpTypeOf,
-  sexpTypeOfErased
-  )where
+module Variable
+  ( -- * Variable type
+    Variable (..),
+    VariableRow,
+    VariableConstraints,
 
+    -- ** Variable constructors
+    rVector,
+    rFactor,
+    stypeVector,
+    rAtomicVectorElem,
 
-import           Variable.Constraints
-import           Variable.R.Factor
-import           Variable.R.SEXP
-import           Variable.R.Stype
-import           Variable.Variable
+    -- * Supported downstream type representations
+
+    -- ** R vectors
+    SEXPTYPE (..),
+    SEXPElem,
+    SomeRTypeRep (..),
+    RTypeRep,
+    RTypeRepConstraints,
+
+    -- ** R factors, ordered and unordered
+    Factor (..),
+    factor,
+
+    -- ** Stype vectors
+    Stype,
+    StypeAttrs (..),
+    StypeRole (..),
+
+    -- *** Constructors
+    v_binary,
+    v_continuous,
+    v_continuous_nonneg,
+    v_count,
+    v_nominal,
+    v_ordered,
+    v_proportion,
+
+    -- * Utilities
+
+    -- ** For casting to R vectors
+    AsRTypeRep (..),
+    AsLogical,
+    AsInteger,
+    AsNumeric,
+    AsComplex,
+    AsCharacter,
+    as_logical,
+    as_integer,
+    as_numeric,
+    as_character,
+    as_list,
+
+    -- ** For manipulating R vectors
+    sort,
+    sortUniq,
+    summarizeWith,
+
+    -- ** For casting to Stype vectors
+    as_v_binary,
+    as_v_continuous,
+    as_v_continuous_nonneg,
+    as_v_count,
+    as_v_proportion,
+
+    -- ** For type-level programming
+    withSomeRTypeRep,
+    sexpTypeOf,
+    sexpTypeOfErased,
+  )
+where
+
+import Variable.Constraints
+import Variable.R.Factor
+import Variable.R.SEXP
+import Variable.R.Stype
+import Variable.Variable

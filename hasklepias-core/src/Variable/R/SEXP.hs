@@ -1,56 +1,56 @@
--- | Model of R vector 'SEXPTYPE' s with related utilities.
-
-{-# LANGUAGE ConstraintKinds           #-}
-{-# LANGUAGE DataKinds                 #-}
-{-# LANGUAGE EmptyCase                 #-}
+{-# LANGUAGE ConstraintKinds #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE EmptyCase #-}
 {-# LANGUAGE ExistentialQuantification #-}
-{-# LANGUAGE FlexibleContexts          #-}
-{-# LANGUAGE FlexibleInstances         #-}
-{-# LANGUAGE GADTs                     #-}
-{-# LANGUAGE InstanceSigs              #-}
-{-# LANGUAGE LambdaCase                #-}
-{-# LANGUAGE MultiParamTypeClasses     #-}
-{-# LANGUAGE NoCUSKs                   #-}
-{-# LANGUAGE NoNamedWildCards          #-}
-{-# LANGUAGE NoStarIsType              #-}
-{-# LANGUAGE PolyKinds                 #-}
-{-# LANGUAGE RankNTypes                #-}
-{-# LANGUAGE ScopedTypeVariables       #-}
-{-# LANGUAGE StandaloneDeriving        #-}
-{-# LANGUAGE StandaloneKindSignatures  #-}
-{-# LANGUAGE TemplateHaskell           #-}
-{-# LANGUAGE TypeApplications          #-}
-{-# LANGUAGE TypeFamilyDependencies    #-}
-{-# LANGUAGE TypeOperators             #-}
-{-# LANGUAGE UndecidableInstances      #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE GADTs #-}
+{-# LANGUAGE InstanceSigs #-}
+{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE PolyKinds #-}
+{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE StandaloneDeriving #-}
+{-# LANGUAGE StandaloneKindSignatures #-}
+{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE TypeFamilyDependencies #-}
+{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE NoCUSKs #-}
+{-# LANGUAGE NoNamedWildCards #-}
+{-# LANGUAGE NoStarIsType #-}
 
+-- | Model of R vector 'SEXPTYPE' s with related utilities.
 module Variable.R.SEXP where
 
-import           Data.Aeson                   (ToJSON (..))
-import           Data.Complex                 (Complex)
-import           Data.Int                     (Int32)
-import           Data.Singletons
-import           Data.Singletons.TH
-import           Data.Text                    (Text, pack)
-import           Data.Vector                  (Vector)
-import qualified Data.Vector                  as V
+import Data.Aeson (ToJSON (..))
+import Data.Complex (Complex)
+import Data.Int (Int32)
+import Data.Singletons
+import Data.Singletons.TH
+import Data.Text (Text, pack)
+import Data.Vector (Vector)
+import qualified Data.Vector as V
 import qualified Data.Vector.Algorithms.Merge as VA
-import           GHC.ST                       (runST)
-import           Type.Reflection              (Typeable, typeRep)
-import           Variable.Constraints
 import GHC.Float
+import GHC.ST (runST)
+import Type.Reflection (Typeable, typeRep)
+import Variable.Constraints
 
 -- Auto-generation of all the basic types and classes from Data.Singletons.
 -- Most language extensions of this model are to support this. See
 -- https://github.com/goldfirere/singletons/blob/master/README.md
-$(singletons [d| data SEXPTYPE = LGLSXP | INTSXP | REALSXP | CPLSXP | STRSXP | VECSXP |])
+$(singletons [d|data SEXPTYPE = LGLSXP | INTSXP | REALSXP | CPLSXP | STRSXP | VECSXP|])
 
 deriving instance Show SEXPTYPE
+
 deriving instance Eq SEXPTYPE
 
-  {- TYPES -}
+{- TYPES -}
 
--- | The "element" type of an 'RTypeRep'. See 'RTypeRep' for more. 
+-- | The "element" type of an 'RTypeRep'. See 'RTypeRep' for more.
 type family SEXPElem (s :: SEXPTYPE) = h | h -> s where
   SEXPElem 'LGLSXP = Bool
   SEXPElem 'INTSXP = Int32
@@ -62,14 +62,14 @@ type family SEXPElem (s :: SEXPTYPE) = h | h -> s where
   SEXPElem 'VECSXP = (Text, SomeRTypeRep)
 
 -- | 'RTypeRep s' is a Haskell representation of 's', an 'SEXPTYPE', in R.
--- 'Nothing' elements represent `NA` values. 
+-- 'Nothing' elements represent `NA` values.
 --
 -- R SEXP vector types do not distinguish between vectors and their elements,
 -- but Haskell does. 'SEXPElem' provides a one-to-one correspondence between
 -- 'Vector (Maybe a)' and the supported 'SEXPTYPE' s in R by providing a map
 -- between the 'a' and its corresponding Haskell type. 'SEXPElem s' for some
 -- 'SEXPTYPE' 's' is chosen such that the conversion from a Haskell value of
--- type 'RTypeRep s' and the R type 's' is as seamless as possible. 
+-- type 'RTypeRep s' and the R type 's' is as seamless as possible.
 --
 -- Each 'SEXPElem s' is wrapped in 'Maybe' within an 'RTypeRep s' to allow for
 -- typed `NA` values in R. For example, 'Nothing' in an @RTypeRep 'LGLSXP@
@@ -86,7 +86,7 @@ type family SEXPElem (s :: SEXPTYPE) = h | h -> s where
 -- extensions.
 --
 -- ==== __Examples__
--- 
+--
 -- The following mimics R's `mean` function behavior, with an `na.rm` argument
 -- removing `NA` values. It is generic over types that can be converted to
 -- @RTypeRep 'REALSXP@. The auxiliary function `mean` returns 'NaN :: Double'
@@ -144,10 +144,10 @@ type family SEXPElem (s :: SEXPTYPE) = h | h -> s where
 -- [Haskell](https://hackage.haskell.org/package/base-4.18.0.0/docs/Prelude.html#t:Double)
 -- and R state the types conform to the IEEE double-precision standard, in other words the [binary64
 -- format](https://en.wikipedia.org/wiki/Double-precision_floating-point_format).
--- and which has precision of 16 decimal digits, with maximum values of `2e308`. 
+-- and which has precision of 16 decimal digits, with maximum values of `2e308`.
 -- Haskell's documentation is less clear on that point and leaves open the
 -- possibility of greater precision.
--- 
+--
 -- ==== __Advanced usage__
 --
 -- Users can take advantage of the tools from the `singletons` package to
@@ -170,7 +170,7 @@ instance Show SomeRTypeRep where
 instance ToJSON SomeRTypeRep where
   toJSON (SomeRTypeRep x) = toJSON x
 
-  {- CONVERSIONS -}
+{- CONVERSIONS -}
 
 -- NOTE trying to clean this up with constraints like a ~ SEXPElem s leads to
 -- overlapping instances in many cases, for reasons that aren't entirely clear
@@ -184,118 +184,252 @@ instance ToJSON SomeRTypeRep where
 -- | Convert Haskell types to 'RTypeRep s'. It is up to the user to define
 -- conversions in a manner consistent with R's behavior. 'Nothing' elements of
 -- an 'RTypeRep s' correspond to the `NA` value in R, where appropriate.
--- 
+--
 -- Note: It never makes sense to produce a 'Nothing' element within an
 -- @RTypeRep 'VECSXP@.
 class AsRTypeRep s a where
   as_rtyperep :: a -> RTypeRep s
 
 type AsLogical = AsRTypeRep 'LGLSXP
+
 type AsInteger = AsRTypeRep 'INTSXP
+
 type AsNumeric = AsRTypeRep 'REALSXP
+
 type AsComplex = AsRTypeRep 'CPLSXP
+
 type AsCharacter = AsRTypeRep 'STRSXP
+
 type AsList = AsRTypeRep 'VECSXP
 
 -- Singleton instances
 instance AsRTypeRep 'LGLSXP Bool where
   as_rtyperep = V.singleton . Just
+
 instance AsRTypeRep 'LGLSXP (Maybe Bool) where
   as_rtyperep = V.singleton
+
 instance AsRTypeRep 'INTSXP Int32 where
   as_rtyperep = V.singleton . Just
+
 instance AsRTypeRep 'INTSXP (Maybe Int32) where
   as_rtyperep = V.singleton
+
 instance AsRTypeRep 'REALSXP Double where
   as_rtyperep = V.singleton . Just
+
 instance AsRTypeRep 'REALSXP (Maybe Double) where
   as_rtyperep = V.singleton
+
 instance AsRTypeRep 'CPLSXP (Complex Double) where
   as_rtyperep = V.singleton . Just
+
 instance AsRTypeRep 'CPLSXP (Maybe (Complex Double)) where
   as_rtyperep = V.singleton
+
 instance AsRTypeRep 'STRSXP Text where
   as_rtyperep = V.singleton . Just
+
 instance AsRTypeRep 'STRSXP (Maybe Text) where
   as_rtyperep = V.singleton
+
 instance AsRTypeRep 'STRSXP String where
   as_rtyperep = as_character . pack
+
 instance AsRTypeRep 'STRSXP (Maybe String) where
   as_rtyperep = as_character . (pack <$>)
+
+instance AsRTypeRep 'STRSXP Int32 where
+  as_rtyperep = as_character . pack . show
+
+instance AsRTypeRep 'STRSXP (Maybe Int32) where
+  as_rtyperep = as_character . (pack . show <$>)
+
+instance AsRTypeRep 'STRSXP Bool where
+  as_rtyperep = as_character . pack . show
+
+instance AsRTypeRep 'STRSXP (Maybe Bool) where
+  as_rtyperep = as_character . (pack . show <$>)
+
+instance AsRTypeRep 'STRSXP Double where
+  as_rtyperep = as_character . pack . show
+
+instance AsRTypeRep 'STRSXP (Maybe Double) where
+  as_rtyperep = as_character . (pack . show <$>)
+
+instance AsRTypeRep 'STRSXP Int where
+  as_rtyperep = as_character . pack . show
+
+instance AsRTypeRep 'STRSXP (Maybe Int) where
+  as_rtyperep = as_character . (pack . show <$>)
+
+instance AsRTypeRep 'STRSXP Integer where
+  as_rtyperep = as_character . pack . show
+
+instance AsRTypeRep 'STRSXP (Maybe Integer) where
+  as_rtyperep = as_character . (pack . show <$>)
 
 -- Identity-ish instances
 instance AsRTypeRep 'LGLSXP (Vector Bool) where
   as_rtyperep = V.map Just
+
 instance AsRTypeRep 'LGLSXP [Bool] where
   as_rtyperep = as_rtyperep . V.fromList
+
 instance AsRTypeRep 'LGLSXP (Vector (Maybe Bool)) where
   as_rtyperep = id
+
 instance AsRTypeRep 'LGLSXP [Maybe Bool] where
   as_rtyperep = as_rtyperep . V.fromList
 
 instance AsRTypeRep 'INTSXP (Vector Int32) where
   as_rtyperep = V.map Just
+
 instance AsRTypeRep 'INTSXP [Int32] where
   as_rtyperep = as_rtyperep . V.fromList
+
 instance AsRTypeRep 'INTSXP (Vector (Maybe Int32)) where
   as_rtyperep = id
+
 instance AsRTypeRep 'INTSXP [Maybe Int32] where
   as_rtyperep = as_rtyperep . V.fromList
+
 instance AsRTypeRep 'INTSXP (Vector Bool) where
   as_rtyperep = V.map (Just . (\b -> if b then 1 else 0))
+
 instance AsRTypeRep 'INTSXP [Bool] where
   as_rtyperep = as_rtyperep . V.fromList
+
 instance AsRTypeRep 'INTSXP (Vector (Maybe Bool)) where
   as_rtyperep = V.map (fmap (\b -> if b then 1 else 0))
+
 instance AsRTypeRep 'INTSXP [Maybe Bool] where
   as_rtyperep = as_rtyperep . V.fromList
 
 instance AsRTypeRep 'REALSXP (Vector Double) where
   as_rtyperep = V.map Just
+
 instance AsRTypeRep 'REALSXP [Double] where
   as_rtyperep = as_rtyperep . V.fromList
+
 instance AsRTypeRep 'REALSXP (Vector (Maybe Double)) where
   as_rtyperep = id
+
 instance AsRTypeRep 'REALSXP [Maybe Double] where
   as_rtyperep = as_rtyperep . V.fromList
+
 instance AsRTypeRep 'REALSXP (Vector (Maybe Int32)) where
   as_rtyperep = V.map (fmap (int2Double . fromEnum))
+
 instance AsRTypeRep 'REALSXP (Vector Int32) where
   as_rtyperep = V.map (Just . (int2Double . fromEnum))
+
 instance AsRTypeRep 'REALSXP (Vector (Maybe Int)) where
   as_rtyperep = V.map (fmap int2Double)
+
 instance AsRTypeRep 'REALSXP (Vector Int) where
   as_rtyperep = V.map (Just . int2Double)
+
 instance AsRTypeRep 'REALSXP (Vector (Maybe Bool)) where
   as_rtyperep = V.map (fmap (int2Double . fromEnum))
+
 instance AsRTypeRep 'REALSXP (Vector Bool) where
   as_rtyperep = V.map (Just . (int2Double . fromEnum))
 
 instance AsRTypeRep 'CPLSXP (Vector (Complex Double)) where
   as_rtyperep = V.map Just
+
 instance AsRTypeRep 'CPLSXP [Complex Double] where
   as_rtyperep = as_rtyperep . V.fromList
+
 instance AsRTypeRep 'CPLSXP (Vector (Maybe (Complex Double))) where
   as_rtyperep = id
+
 instance AsRTypeRep 'CPLSXP [Maybe (Complex Double)] where
   as_rtyperep = as_rtyperep . V.fromList
 
 instance AsRTypeRep 'STRSXP (Vector Text) where
   as_rtyperep = V.map Just
+
 instance AsRTypeRep 'STRSXP [Text] where
   as_rtyperep = as_rtyperep . V.fromList
+
 instance AsRTypeRep 'STRSXP (Vector (Maybe Text)) where
   as_rtyperep = id
+
 instance AsRTypeRep 'STRSXP [Maybe Text] where
   as_rtyperep = as_rtyperep . V.fromList
 
 instance AsRTypeRep 'STRSXP (Vector String) where
   as_rtyperep = V.map (Just . pack)
+
 instance AsRTypeRep 'STRSXP [String] where
   as_rtyperep = as_rtyperep . V.fromList
+
 instance AsRTypeRep 'STRSXP (Vector (Maybe String)) where
   as_rtyperep = V.map (fmap pack)
+
 instance AsRTypeRep 'STRSXP [Maybe String] where
+  as_rtyperep = as_rtyperep . V.fromList
+
+instance AsRTypeRep 'STRSXP (Vector Int32) where
+  as_rtyperep = V.map (Just . pack . show)
+
+instance AsRTypeRep 'STRSXP (Vector (Maybe Int32)) where
+  as_rtyperep = V.map (pack . show <$>)
+
+instance AsRTypeRep 'STRSXP [Int32] where
+  as_rtyperep = as_rtyperep . V.fromList
+
+instance AsRTypeRep 'STRSXP [Maybe Int32] where
+  as_rtyperep = as_rtyperep . V.fromList
+
+instance AsRTypeRep 'STRSXP (Vector Bool) where
+  as_rtyperep = V.map (Just . pack . show)
+
+instance AsRTypeRep 'STRSXP (Vector (Maybe Bool)) where
+  as_rtyperep = V.map (pack . show <$>)
+
+instance AsRTypeRep 'STRSXP [Bool] where
+  as_rtyperep = as_rtyperep . V.fromList
+
+instance AsRTypeRep 'STRSXP [Maybe Bool] where
+  as_rtyperep = as_rtyperep . V.fromList
+
+instance AsRTypeRep 'STRSXP (Vector Double) where
+  as_rtyperep = V.map (Just . pack . show)
+
+instance AsRTypeRep 'STRSXP (Vector (Maybe Double)) where
+  as_rtyperep = V.map (pack . show <$>)
+
+instance AsRTypeRep 'STRSXP [Double] where
+  as_rtyperep = as_rtyperep . V.fromList
+
+instance AsRTypeRep 'STRSXP [Maybe Double] where
+  as_rtyperep = as_rtyperep . V.fromList
+
+instance AsRTypeRep 'STRSXP (Vector Int) where
+  as_rtyperep = V.map (Just . pack . show)
+
+instance AsRTypeRep 'STRSXP (Vector (Maybe Int)) where
+  as_rtyperep = V.map (pack . show <$>)
+
+instance AsRTypeRep 'STRSXP [Int] where
+  as_rtyperep = as_rtyperep . V.fromList
+
+instance AsRTypeRep 'STRSXP [Maybe Int] where
+  as_rtyperep = as_rtyperep . V.fromList
+
+instance AsRTypeRep 'STRSXP (Vector Integer) where
+  as_rtyperep = V.map (Just . pack . show)
+
+instance AsRTypeRep 'STRSXP (Vector (Maybe Integer)) where
+  as_rtyperep = V.map (pack . show <$>)
+
+instance AsRTypeRep 'STRSXP [Integer] where
+  as_rtyperep = as_rtyperep . V.fromList
+
+instance AsRTypeRep 'STRSXP [Maybe Integer] where
   as_rtyperep = as_rtyperep . V.fromList
 
 -- | 'as_list' utility, allowing to match the s in RTypeRep s with that of
@@ -304,8 +438,8 @@ instance AsRTypeRep 'STRSXP [Maybe String] where
 -- cannot infer that @s@ in the input @RTypeRep s@ indeed matches @'VECSXP@.
 as_listA :: (RTypeRepConstraints s) => Sing s -> RTypeRep s -> RTypeRep 'VECSXP
 as_listA sxp rv = case sxp of
-                    SVECSXP -> rv
-                    _ -> V.map (\(ix, v) -> Just (pack $ show ix, SomeRTypeRep $ V.singleton v)) (V.indexed rv)
+  SVECSXP -> rv
+  _ -> V.map (\(ix, v) -> Just (pack $ show ix, SomeRTypeRep $ V.singleton v)) (V.indexed rv)
 
 -- Singleton list instance
 -- To create an inhomogeneous list of RTypeRep, do it manally: first convert
@@ -319,7 +453,7 @@ instance (RTypeRepConstraints s, a ~ SEXPElem s) => AsRTypeRep 'VECSXP [a] where
 -- NOTE: Example of overlapping instance (error appears when invoked).
 -- Guess is that the type checker cannot determine that a ~ SEXPElem s is never
 -- (a ~ SEXPElem s) => Maybe a.
---instance (RTypeRepConstraints s, a ~ SEXPElem s) => AsRTypeRep 'VECSXP (Vector a) where
+-- instance (RTypeRepConstraints s, a ~ SEXPElem s) => AsRTypeRep 'VECSXP (Vector a) where
 --  as_rtyperep = as_listA (sing @s) . V.map Just
 
 -- Conversions with loss
@@ -327,18 +461,24 @@ instance AsRTypeRep 'INTSXP Integer where
   as_rtyperep i
     | i <= mm && i >= mn = as_rtyperep (fromInteger i :: Int32)
     | otherwise = V.singleton Nothing
-    where mm = toInteger (maxBound :: Int32)
-          mn = toInteger (minBound :: Int32)
+    where
+      mm = toInteger (maxBound :: Int32)
+      mn = toInteger (minBound :: Int32)
+
 instance AsRTypeRep 'INTSXP (Maybe Integer) where
   as_rtyperep = \case
-                   Nothing -> V.singleton Nothing 
-                   Just ii -> as_rtyperep ii
+    Nothing -> V.singleton Nothing
+    Just ii -> as_rtyperep ii
+
 instance AsRTypeRep 'INTSXP (Vector Integer) where
   as_rtyperep = V.concatMap as_rtyperep
+
 instance AsRTypeRep 'INTSXP [Integer] where
   as_rtyperep = as_rtyperep . V.fromList
+
 instance AsRTypeRep 'INTSXP (Vector (Maybe Integer)) where
   as_rtyperep = V.concatMap as_rtyperep
+
 instance AsRTypeRep 'INTSXP [Maybe Integer] where
   as_rtyperep = as_rtyperep . V.fromList
 
@@ -354,22 +494,10 @@ as_integer = as_rtyperep
 as_numeric :: (AsNumeric a) => a -> RTypeRep 'REALSXP
 as_numeric = as_rtyperep
 
--- TODO the as_character utilities are awkward and should be rethought along
--- with the instances above. we'd like for them to be generic over Show, but
--- that leads to weird situations because (Show a) => Show (Maybe a).
-
 -- | Analogous to R's @as.character@. Includes versions to directly construct
 -- character vectors from lists or vector containing Show elements.
 as_character :: (AsCharacter a) => a -> RTypeRep 'STRSXP
 as_character = as_rtyperep
-as_characterL :: (Show a) => [Maybe a] -> RTypeRep 'STRSXP
-as_characterL = V.map (fmap (pack . show)) . V.fromList
-as_characterL' :: (Show a) => [a] -> RTypeRep 'STRSXP
-as_characterL' = V.map (Just . pack . show) . V.fromList
-as_characterV :: (Show a) => Vector (Maybe a) -> RTypeRep 'STRSXP
-as_characterV = V.map (fmap (pack . show))
-as_characterV' :: (Show a) => Vector a -> RTypeRep 'STRSXP
-as_characterV' = V.map (Just . pack . show)
 
 -- | @as_list v@ is analogous to R's @as.list(v)@ for 'v' of the supported
 -- @RTypeRep s@. Note R's @...@ syntax is not supported here. The constraints

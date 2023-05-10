@@ -21,9 +21,3 @@ package hasklepias-core
 
 package hasklepias-main
   haddock-options: --quickjump --lib=../resources/haddock-api-resources --use-index=../doc-index.html --use-contents=../index.html --base-url=..
-
-package hasklepias-examples
-  haddock-options: --quickjump --lib=../resources/haddock-api-resources/ --use-index=../doc-index.html --use-contents=../index.html --base-url=..
-
-package cohort-collector
-  haddock-options: --quickjump --lib=../resources/haddock-api-resources/ --use-index=../doc-index.html --use-contents=../index.html --base-url=..

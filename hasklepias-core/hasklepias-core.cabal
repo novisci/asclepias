@@ -1,14 +1,17 @@
 cabal-version:  2.2
 name:           hasklepias-core
-version:        0.30.1
+version:        0.30.2
 description:    Please see the README on GitHub at <https://github.com/novisci/asclepias#readme>
 homepage:       https://github.com/novisci/asclepias/#readme
 bug-reports:    https://github.com/novisci/asclepias/issues
-author:         Bradley Saul
-maintainer:     bsaul@novisci.com
-copyright:      NoviSci, Inc
+author:         Brendan Brown, Leah Jackman, David Pritchard
+maintainer:     bbrown@targetrwe.com
+                ljackman@targetrwe.com
+                dpritchard@targetrwe.com
+copyright:      (c) Target RWE 2023
 category:       Data Science
-synopsis:       embedded DSL for defining epidemiologic cohorts
+synopsis:       Domain-aware tools and types for constructing
+                epidemiological cohorts
 license:        BSD-3-Clause
 license-file:   LICENSE
 build-type:     Simple

@@ -1,5 +1,12 @@
 # Changelog for hasklepias-core
 
+## 0.30.2
+
+* Drops several `as_character*` helpers and makes `AsCharacter`
+  instances more limited to better ensure reliable behavior.
+
+## 0.30.1
+
 ## 0.30.0
 
 * Redesigns the core cohort evaluation logic, the pure functions used to

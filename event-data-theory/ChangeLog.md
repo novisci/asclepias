@@ -1,5 +1,9 @@
 # Changelog for event-data-theory
 
+## 0.30.2
+
+* Fixes an incorrect implementation of `Ord` for `Event`.
+
 ## 0.30.1
 
 * Changes the `valid` field of a `FactLine` to `Maybe Bool` from `Maybe Text`.

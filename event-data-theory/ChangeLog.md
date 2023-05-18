@@ -3,6 +3,7 @@
 ## 0.30.2
 
 * Fixes an incorrect implementation of `Ord` for `Event`.
+* Restricts `interval-algebra` dependency to be < 2.2.0.
 
 ## 0.30.1
 

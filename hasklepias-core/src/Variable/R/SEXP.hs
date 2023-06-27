@@ -31,6 +31,7 @@ import Data.Int (Int32)
 import Data.Singletons
 import Data.Singletons.TH
 import Data.Text (Text, pack)
+import Data.Time.Calendar (Day)
 import Data.Vector (Vector)
 import qualified Data.Vector as V
 import qualified Data.Vector.Algorithms.Merge as VA
@@ -269,6 +270,12 @@ instance AsRTypeRep 'STRSXP Integer where
 instance AsRTypeRep 'STRSXP (Maybe Integer) where
   as_rtyperep = as_character . (pack . show <$>)
 
+instance AsRTypeRep 'STRSXP Day where
+  as_rtyperep = as_character . pack . show
+
+instance AsRTypeRep 'STRSXP (Maybe Day) where
+  as_rtyperep = as_character . (pack . show <$>)
+
 -- Identity-ish instances
 instance AsRTypeRep 'LGLSXP (Vector Bool) where
   as_rtyperep = V.map Just
@@ -372,6 +379,7 @@ instance AsRTypeRep 'STRSXP (Vector (Maybe String)) where
 instance AsRTypeRep 'STRSXP [Maybe String] where
   as_rtyperep = as_rtyperep . V.fromList
 
+-- Conversions
 instance AsRTypeRep 'STRSXP (Vector Int32) where
   as_rtyperep = V.map (Just . pack . show)
 
@@ -430,6 +438,18 @@ instance AsRTypeRep 'STRSXP [Integer] where
   as_rtyperep = as_rtyperep . V.fromList
 
 instance AsRTypeRep 'STRSXP [Maybe Integer] where
+  as_rtyperep = as_rtyperep . V.fromList
+
+instance AsRTypeRep 'STRSXP (Vector Day) where
+  as_rtyperep = V.map (Just . pack . show)
+
+instance AsRTypeRep 'STRSXP (Vector (Maybe Day)) where
+  as_rtyperep = V.map (pack . show <$>)
+
+instance AsRTypeRep 'STRSXP [Day] where
+  as_rtyperep = as_rtyperep . V.fromList
+
+instance AsRTypeRep 'STRSXP [Maybe Day] where
   as_rtyperep = as_rtyperep . V.fromList
 
 -- | 'as_list' utility, allowing to match the s in RTypeRep s with that of

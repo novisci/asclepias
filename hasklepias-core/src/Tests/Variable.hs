@@ -11,6 +11,7 @@ where
 import Data.Int (Int32)
 import Data.Maybe (isNothing)
 import Data.Text (Text, pack)
+import Data.Time.Calendar (Day, fromGregorian)
 import qualified Data.Vector as V
 import Test.Tasty
 import Test.Tasty.HUnit
@@ -93,6 +94,13 @@ rVarStypeTypes = map (varType . varAttrs) rVarStype
 rVarIntOutOfBounds :: RTypeRep 'INTSXP
 rVarIntOutOfBounds = as_integer (1 + toInteger (maxBound :: Int32))
 
+rVarDay :: [RTypeRep 'STRSXP]
+rVarDay =
+  [ as_character $ fromGregorian 2023 6 27,
+    as_character (Nothing :: Maybe Day),
+    as_character $ map (fromGregorian 2023 6) [27, 28]
+  ]
+
 -- At present, the intended behavior is to fail invalid conversions at by
 -- throwing 'error'.
 rVarStypeInvalidNonneg :: Bool
@@ -149,6 +157,13 @@ rVarStypeTypesExp = map (pack . show) [LGLSXP, REALSXP, INTSXP, REALSXP]
 rVarIntOutOfBoundsExp :: RTypeRep 'INTSXP
 rVarIntOutOfBoundsExp = V.singleton Nothing
 
+rVarDayExp :: [RTypeRep 'STRSXP]
+rVarDayExp =
+  [ V.singleton $ Just "2023-06-27",
+    V.singleton Nothing,
+    V.fromList [Just "2023-06-27", Just "2023-06-28"]
+  ]
+
 -- Factor
 rFactorCorrectLevelsExp :: [Factor]
 rFactorCorrectLevelsExp =
@@ -187,6 +202,8 @@ tests =
       -- Constructors and coercions
       testCase "Integer conversion out of Int32 range gives Nothing" $
         rVarIntOutOfBounds @?= rVarIntOutOfBoundsExp,
+      testCase "AsCharacter Day formats as expected" $
+        rVarDay @?= rVarDayExp,
       testCase "invalid v_continuous_nonneg" $
         rVarStypeInvalidNonneg @? "as_v_continuous_nonneg should be Nothing",
       testCase "invalid v_count" $

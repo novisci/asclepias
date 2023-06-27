@@ -196,6 +196,7 @@ readData = do
 
 -- | Internal. Parse a 'ByteString' into event lines. Process successfully parsed lines
 -- into subjects. Logs out lines that failed to parse.
+-- Note input must be UTF-8. See documentation for @BS.'Bytestring'@.
 parseSubjects :: (CohortConstraints t m a b) => BS.ByteString -> CohortApp t m a [Subject t m a]
 parseSubjects bs = do
   ivopt <- asks (intervalOpt . cliOpts)

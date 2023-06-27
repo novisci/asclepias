@@ -229,6 +229,8 @@ instance From (Natural, String) LineParseError
 -- Returns a pair where
 -- the first element is a list of parse errors
 -- and the second element is a list of successfully parsed (subjectID, event) pairs.
+--
+-- Note the input must be UTF-8.
 parseEventLinesL' ::
   forall m t a b.
   (Eventable t m a, EventLineAble t m a b, FromJSONEvent t m a) =>

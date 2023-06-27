@@ -333,6 +333,11 @@ The input data, regardless of source, must be in the event lines format,
 which is a JSON Lines format. Lines of input failing to parse into the
 appropriate format will be logged. See Logs produced.
 
+Input data must also:
+
+* contain all relevant events for a given subject, and
+* have UTF-8 encoding.
+
 Two flags allow the user to configure how intervals in input data will be parsed.
 
 * @--fix-end@ will convert intervals with null 'end' fields into moment-length intervals.

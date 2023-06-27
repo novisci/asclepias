@@ -1,5 +1,6 @@
 {-# LANGUAGE ConstraintKinds #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE FlexibleContexts #-}
 
 -- |
 -- Module      : Hasklepias.AppBuilder.CohortApp
@@ -57,7 +58,7 @@ import EventDataTheory
     LineParseError (..),
     ToJSONEvent,
     defaultParseEventLineOption,
-    parseEventLinesL,
+    parseEventLinesL',
   )
 import GHC.Arr (accumArray, assocs)
 import Hasklepias.CohortApp.CohortAppCLI
@@ -168,7 +169,10 @@ readData = do
         NoDecompress -> id
 
   bs <-
-    decompFun <$> case snd $ input opts of
+    -- TODO: toStrict can be expensive: Only 'decompress' with default options
+    -- prevents us from simply replacing BL with BS to use strict bytestrings.
+    -- See #402
+    BL.toStrict . decompFun <$> case snd $ input opts of
       StdInput -> liftIO BL.getContents
       FileInput x -> liftIO $ BL.readFile x
       S3Input cred b k -> do
@@ -192,9 +196,10 @@ readData = do
 
 -- | Internal. Parse a 'ByteString' into event lines. Process successfully parsed lines
 -- into subjects. Logs out lines that failed to parse.
-parseSubjects :: (CohortConstraints t m a b) => BL.ByteString -> CohortApp t m a [Subject t m a]
+parseSubjects :: (CohortConstraints t m a b) => BS.ByteString -> CohortApp t m a [Subject t m a]
 parseSubjects bs = do
-  let (errs, bss) = parseEventLinesL defaultParseEventLineOption bs
+  ivopt <- asks (intervalOpt . cliOpts)
+  let (errs, bss) = parseEventLinesL' ivopt bs
   let ss = eventsToSubject bss
   -- Note this does not exit.
   mapM_

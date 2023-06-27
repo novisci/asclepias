@@ -11,9 +11,11 @@
 -- Module      : Hasklepias Event Type
 -- Description : Defines the Event type and its component types, constructors,
 --               and class instance
--- Copyright   : (c) NoviSci, Inc 2020
+-- Copyright   : (c) Target RWE 2023
 -- License     : BSD3
--- Maintainer  : bsaul@novisci.com
+-- Maintainer  : bbrown@targetrwe.com 
+--               ljackman@targetrwe.com 
+--               dpritchard@targetrwe.com
 --
 -- NOTE: The types herein are how events are represently internally.
 -- Events may be represented in different structures for transferring or storing data, for example.
@@ -54,6 +56,9 @@ module EventDataTheory.Core
     mapTagSet,
     dropSource,
     SubjectID,
+    -- TODO: evaluate this old note. does not seem that these should
+    -- be exported if that is the only reason they are now.
+    --
     -- the following names are exported for haddock linking
     HasTag,
     EventPredicate,
@@ -87,7 +92,7 @@ import IntervalAlgebra
     getPairData,
     makePairedInterval,
   )
-import Test.QuickCheck (Arbitrary (arbitrary))
+import Test.Tasty.QuickCheck (Arbitrary (arbitrary))
 import Type.Reflection (Typeable)
 import Witch (From (..), into, via)
 
@@ -174,7 +179,6 @@ instance (NFData a, NFData m, NFData t) => NFData (Event t m a)
 
 instance (Binary m, Binary t, Binary a) => Binary (Event t m a)
 
--- See NOTE at top of module regarding To/FromJSON instances
 instance (FromJSON a) => FromJSON (Interval a)
 
 instance (ToJSON a) => ToJSON (Interval a)
@@ -188,25 +192,29 @@ instance (Ord t, FromJSON t, FromJSON m, FromJSON a) => FromJSON (Event t m a)
 instance (Ord t, ToJSON t, ToJSON m, ToJSON a) => ToJSON (Event t m a)
 
 instance
-  ( Eventable t m a,
-    Generic m,
-    Typeable t,
-    Typeable a,
+  ( 
+    Ord t,
     Arbitrary m,
     Arbitrary t,
-    Arbitrary a
+    Arbitrary (Interval a)
   ) =>
   Arbitrary (Event t m a)
   where
   arbitrary = liftM2 event arbitrary arbitrary
 
-instance (Ord a) => From (Event t m a) (Interval a) where
+instance From (Event t m a) (Interval a) where
   from = getInterval
 
--- | A synonym for the basic set of constraints an event needs on its types.
-type Eventable t m a = (Eq m, Ord t, Ord a, Show m, Show t, Show a)
+-- TODO: revisit this constraint synonym. these likely are not needed.
+-- this pattern appears to be part of a design approach that constrains
+-- constructors such as `event` not because that constructor actually needs
+-- the given constraints but because imagined uses of values of the type
+-- will require the constraints. however, it almost always is cleaner to
+-- place the restrictions where they actually are used.
 
--- Text is not Generic; but t should at least be Typeable
+-- | A synonym for a basic set of constraints frequently used with
+-- the 'Event' type.
+type Eventable t m a = (Eq m, Ord t, Ord a, Show m, Show t, Show a)
 
 -- | Constraint synonym for @ToJSON@ on an event's component types.
 type ToJSONEvent t m a = (ToJSON m, ToJSON t, ToJSON a)
@@ -215,7 +223,7 @@ type ToJSONEvent t m a = (ToJSON m, ToJSON t, ToJSON a)
 type FromJSONEvent t m a = (FromJSON m, FromJSON t, FromJSON a)
 
 -- | A smart constructor for 'Event t m a's.
-event :: (Eventable t m a) => Interval a -> Context t m -> Event t m a
+event :: Interval a -> Context t m -> Event t m a
 event i t = MkEvent (makePairedInterval t i)
 
 -- | Unpack an 'Event' from its constructor.
@@ -261,38 +269,36 @@ data Context t m = MkContext
   {- end::contextType[] -}
   deriving (Eq, Show, Generic)
 
-instance Ord t => HasTag (Context t m) t where
+
+instance (Ord t) => HasTag (Context t m) t where
   hasTag t = hasTag (getTagSet t)
 
 instance (NFData m, NFData t) => NFData (Context t m)
 
 instance (Binary m, Binary t) => Binary (Context t m)
 
--- See NOTE at top of module regarding To/FromJSON
+-- NOTE: Ord t is required because of TagSet.
 instance (Ord t, FromJSON t, FromJSON m) => FromJSON (Context t m)
 
 instance (Ord t, ToJSON t, ToJSON m) => ToJSON (Context t m)
 
+-- | The 'Arbitrary' instance for 'Context' fixes 'getSource' to 'Nothing'.
 instance
   ( Arbitrary m,
-    Show m,
-    Eq m,
-    Generic m,
     Arbitrary t,
-    Show t,
-    Eq t,
-    Ord t,
-    Typeable t
+    Ord t
   ) =>
   Arbitrary (Context t m)
   where
   arbitrary = liftM3 MkContext arbitrary arbitrary (pure Nothing)
 
-instance Functor (Context c) where
+-- | The 'Functor' instance of @Context t@ maps over the 'getFacts'
+-- field, leaving 'getSource' untouched.
+instance Functor (Context t) where
   fmap f (MkContext t m s) = MkContext t (f m) s
 
 -- | Smart constructor for a 'Context',
-context :: (Ord t) => TagSet t -> d -> Maybe Source -> Context t d
+context :: TagSet t -> d -> Maybe Source -> Context t d
 context = MkContext
 
 -- |
@@ -305,9 +311,9 @@ context = MkContext
 -- But @Context@ is not a 'Data.Bifunctor.Bifunctor'.
 -- The underlying type of @TagSet@ is 'Data.Set.Set',
 -- which is not a 'Functor'
--- due to the @Set@ 'Ord' constraints.
+-- because of the @Set@ 'Ord' constraints.
 bimapContext ::
-  (Ord t1, Ord t2) =>
+  (Ord t2) =>
   (t1 -> t2) ->
   (d1 -> d2) ->
   Context t1 d1 ->
@@ -341,7 +347,7 @@ instance FromJSON Source
 
 instance ToJSON Source
 
--- | A @Tag@ is simply a tag or label for an 'Event'.
+-- | A @Tag@ is simply a label for an 'Event'.
 newtype Tag t = MkTag t deriving (Eq, Ord, Show, Generic)
 
 instance Functor Tag where
@@ -440,7 +446,7 @@ addTagSet x tSet = into x <> tSet
 -- The underlying type of @TagSet@ is 'Data.Set.Set',
 -- which is not a 'Functor'
 -- due to the @Set@ 'Ord' constraints.
-mapTagSet :: (Ord t1, Ord t2) => (t1 -> t2) -> TagSet t1 -> TagSet t2
+mapTagSet :: (Ord t2) => (t1 -> t2) -> TagSet t1 -> TagSet t2
 mapTagSet f (MkTagSet x) = MkTagSet (Data.Set.map (fmap f) x)
 
 -- |
@@ -486,8 +492,9 @@ instance (Ord t, Ord t) => From (Interval a) (TagSetInterval t a) where
 type SubjectID = T.Text
 
 -- |
--- Provides a common interface to lift a 'Predicate' on some component
--- of an 'Event' to a 'Predicate (Event t m a)'.
+-- Provides a common interface to lift a @'Predicate' e@ to a
+-- @Predicate (Event t m a)@.
+--
 -- For example, if @x@ is a 'Predicate' on some 'Context m t',
 -- @liftToEventPredicate x@ yields a @Predicate (Event t m a)@,
 -- thus the predicate then also be applied to @Event@s.
@@ -513,7 +520,7 @@ instance EventPredicate (TagSet t) t m a where
 instance EventPredicate (Maybe Source) t m a where
   liftToEventPredicate = contramap (getSource . getContext)
 
-instance (Ord a) => EventPredicate (Interval a) t m a where
+instance EventPredicate (Interval a) t m a where
   liftToEventPredicate = contramap getInterval
 
 -- |

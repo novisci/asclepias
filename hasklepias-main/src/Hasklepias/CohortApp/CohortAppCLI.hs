@@ -12,8 +12,10 @@
 module Hasklepias.CohortApp.CohortAppCLI where
 
 import Data.Aeson (ToJSON)
+import Data.Char (toLower)
 import Data.String.Interpolate (i)
 import Data.Text (Text, splitOn)
+import EventDataTheory.EventLines (ParseEventLineOption (..))
 import GHC.Generics (Generic)
 import Options.Applicative
 import Options.Applicative.Help hiding (fullDesc)
@@ -29,7 +31,9 @@ data CohortCLIOpts = CohortCLIOpts
     -- | Decompress gzipped input.
     inDecompress :: !InputDecompression,
     -- | Compress output using gzip.
-    outCompress :: !OutputCompression
+    outCompress :: !OutputCompression,
+    -- | Interval parsing behavior
+    intervalOpt :: !ParseEventLineOption
   }
 
 {- TYPES -}
@@ -86,6 +90,32 @@ cliParser =
     <*> outParser
     <*> inputDecompressionParser
     <*> outputCompressionParser
+    <*> intervalOptParser
+
+-- | Internal. Switch to fix intervals with
+-- missing end during parsing.
+intervalFixEnd :: Parser Bool
+intervalFixEnd =
+  switch
+    ( long "fix-end"
+        <> help "Parse input intervals with missing end as moment-length intervals"
+    )
+
+intervalAddMoment :: Parser Bool
+intervalAddMoment =
+  switch
+    ( long "add-moment"
+        <> help "Add a moment to input interval end times for which end >= begin"
+    )
+
+-- | Internal. ReaderM to parse string into ParseEventLineOption.
+-- Case insensitive.
+intervalOptParser :: Parser ParseEventLineOption
+intervalOptParser = fmap wrap $ (,) <$> intervalFixEnd <*> intervalAddMoment
+  where wrap (True, True) = AddMomentAndFix
+        wrap (True, False) = FixEnd
+        wrap (False, True) = AddMomentToEnd
+        wrap (False, False) = DoNotModifyTime
 
 -- | Internal. Input type option parsers.
 stdIn = (,) <$> stdInFlag <*> stdInputParser

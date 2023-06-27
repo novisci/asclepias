@@ -2,6 +2,7 @@
 -}
 {-# LANGUAGE QuasiQuotes      #-}
 {-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE FlexibleContexts #-}
 module Hasklepias.LineFilterApp
   ( makeLineFilterApp
   , makeFilterEventLineApp
@@ -173,7 +174,7 @@ makeFilterEventLineApp name es _ =
   makeLineFilterApp
             name
             (decodeStrict' @SubjectID)
-            (fmap snd . decodeEventStrict' defaultParseEventLineOption)
+            (fmap snd . decodeEvent' defaultParseEventLineOption)
             es
 
 

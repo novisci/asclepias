@@ -47,8 +47,8 @@ library
     , deepseq
     , dhall < 1.42.0
     , filepath
-    , interval-algebra >= 2.1.1 && < 2.2.0
-    , QuickCheck
+    , interval-algebra ^>= 2.2
+    , tasty-quickcheck
     , safe
     , scientific
     , tasty

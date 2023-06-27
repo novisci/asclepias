@@ -25,6 +25,7 @@ import Data.Aeson
     eitherDecode,
     encode,
   )
+import qualified Data.ByteString.Char8 as C
 import qualified Data.ByteString.Lazy as B
 import qualified Data.ByteString.Lazy.Char8 as B
 import Data.Data
@@ -43,24 +44,6 @@ import Test.Tasty.Silver (findByExtension)
 import Type.Reflection (Typeable)
 
 -- |
--- Creates a single test case
--- which decodes the contents of a file
--- into @Either String a@.
--- The test passes if the decoding results in a @Right a@ value.
-createDecodeSmokeTest ::
-  -- | a function which tests the decoding result, first value is the string if test fails
-  (Either String a -> (String, Bool)) ->
-  -- | a function which decodes a @ByteString@ to @Either String a@
-  (B.ByteString -> Either String a) ->
-  -- | path to file to be decoded
-  FilePath ->
-  IO TestTree
-createDecodeSmokeTest testf decoder testFile = do
-  z <- decoder <$> B.readFile testFile
-  let res = uncurry assertBool (testf z)
-  pure $ testCase (takeBaseName testFile) res
-
--- |
 -- Creates a group of tests
 -- using 'createDecodeSmokeTest'
 -- from all the files
@@ -73,16 +56,16 @@ createDecodeSmokeTestGroup ::
   -- | a function which tests the decoding result, first value is the string if test fails
   (Either String a -> (String, Bool)) ->
   -- | a function which decodes a @ByteString@ to @Either String a@
-  (B.ByteString -> Either String a) ->
+  (C.ByteString -> Either String a) ->
   -- | a list of file extensions to find in the provided directory
   [FilePath] ->
   -- | name of directory containing files to be parsed
   FilePath ->
-  IO TestTree
-createDecodeSmokeTestGroup n testf decoder exts dir = do
+  TestTree
+createDecodeSmokeTestGroup n testf decoder exts dir = testCaseSteps n $ \step -> do
   sources <- findByExtension exts dir
-  let tests = traverse (createDecodeSmokeTest testf decoder) sources
-  testGroup n <$> tests
+  mapM_ (\f -> step f >> createDecodeAssertion f) sources
+  where createDecodeAssertion testFile = uncurry assertBool . testf . decoder =<<  C.readFile testFile
 
 -- |
 -- Creates a group of tests
@@ -99,12 +82,12 @@ eventDecodeTests ::
   forall m t a b.
   (Eventable t m a, EventLineAble t m a b, FromJSONEvent t m a) =>
   FilePath ->
-  IO TestTree
+  TestTree
 eventDecodeTests dir =
   createDecodeSmokeTestGroup
     ("Checking that .jsonl files in " <> dir <> " can be decoded")
     (\x -> (fromLeft "" x, isRight x))
-    (eitherDecodeEvent @m @t @a defaultParseEventLineOption)
+    (eitherDecodeEvent' @m @t @a AddMomentAndFix)
     [".jsonl"]
     dir
 
@@ -123,12 +106,12 @@ eventDecodeFailTests ::
   forall m t a b.
   (Eventable t m a, EventLineAble t m a b, FromJSONEvent t m a) =>
   FilePath ->
-  IO TestTree
+  TestTree
 eventDecodeFailTests dir =
   createDecodeSmokeTestGroup
     ("Checking that .jsonl files in " <> dir <> " fail to decode")
     (\x -> ("successly parsed; should fail", isLeft x))
-    (eitherDecodeEvent @m @t @a defaultParseEventLineOption)
+    (eitherDecodeEvent' @m @t @a AddMomentAndFix)
     [".jsonl"]
     dir
 
@@ -143,15 +126,12 @@ createJSONRoundtripSmokeTest ::
   (FromJSON a, ToJSON a, Eq a, Show a) =>
   -- | path to file to be decoded
   FilePath ->
-  IO TestTree
+  IO ()
 createJSONRoundtripSmokeTest testFile = do
   x <- B.readFile testFile
   let d1 = decode' @a x
   let d2 = decode' @a (encode d1)
-  -- print d1 -- Just visually confirming d1 and d2 are equivalent
-  -- print d2
-  let assert = d1 @?= d2
-  pure $ testCase (takeBaseName testFile) assert
+  d1 @?= d2
 
 -- |
 -- Creates a group of tests
@@ -167,11 +147,10 @@ createJSONRoundtripSmokeTestGroup ::
   [FilePath] ->
   -- | name of directory containing files to be parsed
   FilePath ->
-  IO TestTree
-createJSONRoundtripSmokeTestGroup n exts dir = do
+  TestTree
+createJSONRoundtripSmokeTestGroup n exts dir = testCaseSteps n $ \step -> do
   sources <- findByExtension exts dir
-  let tests = traverse (createJSONRoundtripSmokeTest @a) sources
-  testGroup n <$> tests
+  mapM_ (\f -> step f >> createJSONRoundtripSmokeTest @a f) sources
 
 -- |
 -- Creates a group of tests
@@ -189,10 +168,10 @@ eventLineRoundTripTests ::
   ( Eventable t m a,
     FromJSONEvent t m a,
     ToJSONEvent t m a,
-    IntervalSizeable a b
+    SizedIv (Interval a)
   ) =>
   FilePath ->
-  IO TestTree
+  TestTree
 eventLineRoundTripTests dir =
   createJSONRoundtripSmokeTestGroup @(EventLine t m a)
     ( "Checking that .jsonl files in "
@@ -215,24 +194,23 @@ createModifyEventLineTest ::
   (Eventable t m a, EventLineAble t m a b, FromJSONEvent t m a, Data m) =>
   -- | path to file to be decoded
   FilePath ->
-  IO TestTree
+  IO ()
 createModifyEventLineTest testFile = do
   x <- B.readFile testFile
   let d1 = decode' @(EventLine t m a) x
 
-  let res = case d1 of
+  case d1 of
         Nothing ->
           assertFailure ("failed to parse contents of " <> takeBaseName testFile)
         Just el -> do
           let d2 =
                 modifyEventLineWithContext @m @m @t @t @a
-                  defaultParseEventLineOption
+                  AddMomentAndFix
                   id
                   x
           case d2 of
             Left s -> assertFailure s
             Right el' -> el @?= el'
-  pure $ testCase (takeBaseName testFile) res
 
 -- |
 -- Creates a group of tests
@@ -248,11 +226,10 @@ createModifyEventLineTestGroup ::
   [FilePath] ->
   -- | name of directory containing files to be parsed
   FilePath ->
-  IO TestTree
-createModifyEventLineTestGroup n exts dir = do
+  TestTree
+createModifyEventLineTestGroup n exts dir = testCaseSteps n $ \step -> do
   sources <- findByExtension exts dir
-  let tests = traverse (createModifyEventLineTest @m @t @a) sources
-  testGroup n <$> tests
+  mapM_ (\f -> step f >> createModifyEventLineTest @m @t @a f) sources
 
 -- |
 -- Creates a group of tests
@@ -275,7 +252,7 @@ eventLineModifyTests ::
   forall m t a b.
   (Eventable t m a, EventLineAble t m a b, FromJSONEvent t m a, Data m) =>
   FilePath ->
-  IO TestTree
+  TestTree
 eventLineModifyTests dir =
   createModifyEventLineTestGroup @m @t @a
     ( "Checking that .jsonl files in "

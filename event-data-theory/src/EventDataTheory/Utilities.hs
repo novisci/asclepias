@@ -1,11 +1,13 @@
-{-|
-Module      : Misc utilities useful in working with events
--}
+-- |
+-- Module      : Misc utilities useful in working with events
+-- Copyright   : (c) Target RWE 2023
+-- License     : BSD3
+-- Maintainer  : bbrown@targetrwe.com 
+--               ljackman@targetrwe.com 
+--               dpritchard@targetrwe.com
 
 module EventDataTheory.Utilities
-  ( (|||)
-  , (&&&)
-  , Predicate(..)
+  ( Predicate(..)
   {-
   RE: haddock message:
     80% (  4 /  5) in 'EventDataTheory.Utilities'
@@ -29,16 +31,6 @@ import           EventDataTheory.Core
 import           IntervalAlgebra
 import           Safe                       (headMay, lastMay)
 import qualified Witherable                 as W
-
--- | Combine two 'Predicate's by "or".
-(|||) :: Predicate a -> Predicate a -> Predicate a
-(|||) f g =
-  Predicate (\x -> getAny (Any (getPredicate f x) <> Any (getPredicate g x)))
-
--- | Combine two 'Predicate's by "and".
-(&&&) :: Predicate a -> Predicate a -> Predicate a
-(&&&) f g =
-  Predicate (\x -> getAll (All (getPredicate f x) <> All (getPredicate g x)))
 
 {-|
 Creates a predicate to check that an 'Event' contains

@@ -176,7 +176,7 @@ type CohortMap a = Map Text (Cohort a)
 -- configurable.
 
 -- | Accumulate @[(Text, Event t m a)]@ into @[Subject t m a]@. The former is
--- the \'flat\' output format produced in 'EventDataTheory.parseEventLinesL'.
+-- the \'flat\' output format produced in @EventDataTheory.parseEventLinesL'@.
 eventsToSubject :: [(Text, Event t m a)] -> [Subject t m a]
 eventsToSubject [] = []
 eventsToSubject es = foldr op [] es'

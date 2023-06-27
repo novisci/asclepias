@@ -1,5 +1,6 @@
 {-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeApplications #-}
@@ -14,12 +15,14 @@ module EventDataTheory.TheoryTest
 where
 
 import Data.Aeson
+import Data.Bifunctor (first)
+import qualified Data.ByteString.Char8 as C
 import qualified Data.ByteString.Lazy as B
 import Data.Data
 import Data.Functor.Contravariant (Predicate (..))
 import Data.List (sort)
 import Data.Maybe (isNothing)
-import Data.Text (Text)
+import Data.Text (Text, pack)
 import Data.Time (Day, fromGregorian)
 import EventDataTheory.Core
 import EventDataTheory.EventLines
@@ -28,15 +31,36 @@ import EventDataTheory.Utilities
 import GHC.Generics (Generic)
 import GHC.Num (Natural)
 import IntervalAlgebra
-  ( beginerval,
-    filterContains,
+  ( Interval,
+    Intervallic (..),
+    Iv,
+    PointedIv (..),
+    SizedIv (..),
+    begin,
+    beginerval,
+    contains,
+    end,
+    expandr,
     meets,
     metBy,
+    momentize,
     overlaps,
   )
+import IntervalAlgebra.Arbitrary
 import Test.Tasty (TestTree, defaultMain, testGroup)
 import Test.Tasty.HUnit
+import Test.Tasty.QuickCheck
 import Witch (from, into)
+
+-- TODO: assess whether this needs to be provided as a utility
+-- in event-data-theory. it was previously only used here.
+-- Note Ord a implies Iv (Interval a).
+
+-- | Temporary stand-in for a utility that has been removed from
+-- interval-algebra. The slightly odd type signature is there to match
+-- the old API and usage here.
+filterContains :: (Ord a, Intervallic i) => Interval a -> [i a] -> [i a]
+filterContains iv = filter (iv `contains`)
 
 -- | Just a dummy type with which to define an event
 
@@ -50,7 +74,16 @@ data SillySchema
 
 instance FromJSON SillySchema
 
-type SillyEvent1 a = Event Text SillySchema a
+instance Arbitrary SillySchema where
+  arbitrary =
+    oneof
+      [ pure C,
+        pure D,
+        A <$> arbitrary,
+        B . pack <$> arbitrary
+      ]
+
+type SillyEvent1 a = Event String SillySchema a
 
 {- end::exampleEvent[] -}
 
@@ -62,19 +95,36 @@ data SillyTagSet = Mouse | Giraffe | Hornbill
 
 instance FromJSON SillyTagSet
 
+instance ToJSON SillyTagSet
+
+instance Arbitrary SillyTagSet where
+  arbitrary = oneof [pure Mouse, pure Giraffe, pure Hornbill]
+
 type SillyEvent2 a = Event SillyTagSet SillySchema a
 
-c1 :: Context Text SillySchema
-c1 = context (into (["this", "that"] :: [Text])) (A 1) Nothing
+-- TODO: remove these if they can still just alias `arbitrary`
+-- Generators for SillyEvents
+genSillyEvent1 :: (Arbitrary (Interval a)) => Gen (SillyEvent1 a)
+genSillyEvent1 = arbitrary
+
+genSillyEvent2 :: (Arbitrary (Interval a)) => Gen (SillyEvent2 a)
+genSillyEvent2 = arbitrary
+
+-- Examples for SillyEvents
+
+c1 :: Context String SillySchema
+c1 = context (from @[String] ["this", "that"]) (A 1) Nothing
 
 e1 :: SillyEvent1 Int
 e1 = event (beginerval 2 1) c1
 
-c2 :: Context Text SillySchema
-c2 = context (into (["this", "another"] :: [Text])) (A 1) Nothing
+c2 :: Context String SillySchema
+c2 = context (from @[String] ["this", "another"]) (A 1) Nothing
 
 e2 :: SillyEvent1 Int
 e2 = event (beginerval 4 3) c2
+
+{- UNIT TESTS -}
 
 {-
 These tests of the interval algebra are in a way silly
@@ -105,25 +155,25 @@ hasTagUnitTests :: TestTree
 hasTagUnitTests =
   testGroup
     "Unit tests for hasTagSet using a dummy event model"
-    [ testCase "hasTag should have tag" $ hasTag e1 ("this" :: Text) @?= True,
-      testCase "hasTag should not have tag" $ hasTag e1 ("not" :: Text) @?= False,
-      testCase "hasAnyTag works" $ hasAnyTag e1 (["this"] :: [Text]) @?= True,
-      testCase "hasAnyTags works" $ hasAnyTag e1 (["not"] :: [Text]) @?= False,
+    [ testCase "hasTag should have tag" $ hasTag e1 ("this" :: String) @?= True,
+      testCase "hasTag should not have tag" $ hasTag e1 ("not" :: String) @?= False,
+      testCase "hasAnyTag works" $ hasAnyTag e1 (["this"] :: [String]) @?= True,
+      testCase "hasAnyTags works" $ hasAnyTag e1 (["not"] :: [String]) @?= False,
       testCase "hasAnyTags works" $
-        hasAnyTag e1 (["not", "this"] :: [Text])
+        hasAnyTag e1 (["not", "this"] :: [String])
           @?= True,
       testCase "hasAllTags works" $
-        hasAllTags e1 (["not", "this"] :: [Text])
+        hasAllTags e1 (["not", "this"] :: [String])
           @?= False,
       testCase "hasAllTags works" $
-        hasAllTags e1 (["that", "this"] :: [Text])
+        hasAllTags e1 (["that", "this"] :: [String])
           @?= True,
       testCase "hasAllTags works" $
-        hasAllTags e1 (["that", "this", "not"] :: [Text])
+        hasAllTags e1 (["that", "this", "not"] :: [String])
           @?= False
     ]
 
-cPred1 :: Predicate (Context Text SillySchema)
+cPred1 :: Predicate (Context String SillySchema)
 cPred1 = Predicate (\x -> getFacts x == C)
 
 cPred2 :: Predicate (Maybe Source)
@@ -163,38 +213,38 @@ toFromTagSetUnitTests =
     ]
 
 -- | Check that files in test/events-day-text-good successfully parse
-decodeSillyTests1 :: IO TestTree
+decodeSillyTests1 :: TestTree
 decodeSillyTests1 =
   eventDecodeTests @SillySchema @Text @Day "test/events-day-text-good"
 
 -- | Check that files in test/events-day-text-good successfully parse
-roundtripSillyTests1 :: IO TestTree
+roundtripSillyTests1 :: TestTree
 roundtripSillyTests1 =
   eventLineRoundTripTests @SillySchema @Text @Day "test/events-day-text-good"
 
 -- | Check that files in test/events-day-text-good successfully parse
-modifySillyTests1 :: IO TestTree
+modifySillyTests1 :: TestTree
 modifySillyTests1 =
   eventLineModifyTests @SillySchema @Text @Day "test/events-day-text-good"
 
 -- | Check that files in test/events-day-text-bad successfully fail
-decodeSillyFailTests1 :: IO TestTree
+decodeSillyFailTests1 :: TestTree
 decodeSillyFailTests1 =
   eventDecodeFailTests @SillySchema @Text @Day "test/events-day-text-bad"
 
 -- | Check that files in test/events-integer-silly-good successfully parse
-decodeSillyTests2 :: IO TestTree
+decodeSillyTests2 :: TestTree
 decodeSillyTests2 =
   eventDecodeTests @SillySchema @SillyTagSet @Integer
     "test/events-integer-silly-good"
 
 -- | Check that files in test/events-integer-silly-bad successfully fail
-decodeSillyFailTests2 :: IO TestTree
+decodeSillyFailTests2 :: TestTree
 decodeSillyFailTests2 =
   eventDecodeFailTests @SillySchema @Text @Day "test/events-integer-silly-bad"
 
 {- Unit tests on line parsers -}
-testInput1Good :: B.ByteString
+testInput1Good :: C.ByteString
 testInput1Good =
   "[\"abc\", \"2020-01-01\", \"2020-01-02\", \"A\",\
   \[\"someThing\"],\
@@ -202,7 +252,7 @@ testInput1Good =
   \ \"patient_id\":\"abc\",\
   \ \"time\":{\"begin\":\"2020-01-01\",\"end\":\"2020-01-01\"}}]"
 
-testInput2Good :: B.ByteString
+testInput2Good :: C.ByteString
 testInput2Good =
   "[\"abc\", \"2020-01-05\", \"2020-01-06\", \"C\",\
   \[\"someThing\"],\
@@ -210,21 +260,21 @@ testInput2Good =
   \ \"patient_id\":\"abc\",\
   \ \"time\":{\"begin\":\"2020-01-05\",\"end\":\"2020-01-06\"}}]"
 
-testInput1Bad :: B.ByteString
+testInput1Bad :: C.ByteString
 testInput1Bad =
   "[\"def\", \"2020-01-01\", null, \"D\",\
   \[\"someThing\"],\
   \{\"facts\": { \"tag\" : \"D\", \"contents\":{}},\
   \ \"time\":{\"begin\":\"2020-01-01\",\"end\":\"2020-01-01\"}}]"
 
-testInput2Bad :: B.ByteString
+testInput2Bad :: C.ByteString
 testInput2Bad =
   "[\"def\", \"2020-01-05\", null, \"C\",\
   \[\"someThing\"],\
   \ {\"facts\":{\"tag\":\"C\", \"contents\":{}},\
   \ \"time\":{\"begin\":\"2020-01-05\",\"end\":\"2020-01-06\"}}]"
 
-testInputBad :: B.ByteString
+testInputBad :: C.ByteString
 testInputBad = testInput1Bad <> "\n" <> testInput2Bad
 
 testOutput1Good, testOutput2Good, testOutputBad :: ([LineParseError], [(SubjectID, Event Text SillySchema Day)])
@@ -242,18 +292,18 @@ parserUnitTests =
   testGroup
     "Unit tests of EventLines parsers"
     [ testCase "with valid inputs 1" $
-        parseEventLinesL @SillySchema @Text @Day
-          defaultParseEventLineOption
+        parseEventLinesL' @SillySchema @Text @Day
+          AddMomentAndFix
           testInput1Good
           @?= testOutput1Good,
       testCase "with valid inputs 2" $
-        parseEventLinesL @SillySchema @Text @Day
-          defaultParseEventLineOption
+        parseEventLinesL' @SillySchema @Text @Day
+          AddMomentAndFix
           testInput2Good
           @?= testOutput2Good,
       testCase "with invalid inputs" $
-        parseEventLinesL @SillySchema @Text @Day
-          defaultParseEventLineOption
+        parseEventLinesL' @SillySchema @Text @Day
+          AddMomentAndFix
           testInputBad
           @?= testOutputBad
     ]
@@ -275,11 +325,11 @@ singleEventGoodOut =
   \\"patient_id\":\"abc\",\
   \\"time\":{\"begin\":\"2020-01-01\",\"end\":\"2020-01-02\"}}]"
 
-testAddTagViaEventLine :: IO ()
+testAddTagViaEventLine :: Assertion
 testAddTagViaEventLine =
   let x =
         modifyEventLineWithContext @SillySchema @SillySchema @Text @Text @Day
-          defaultParseEventLineOption
+          AddMomentAndFix
           (liftToContextFunction $ addTagSet ["foo", "bar" :: Text])
           singleEventGoodIn
    in case x of
@@ -314,26 +364,166 @@ utilitiesUnitTests =
           @?= Nothing
     ]
 
--- TODO: rewrite this test group. decode tests need not have nested IO.
+-- | Test group
+theoryUnitTests :: TestTree
+theoryUnitTests =
+  testGroup
+    "Event Theory unit tests"
+    [ decodeSillyTests1,
+      decodeSillyTests2,
+      decodeSillyFailTests1,
+      decodeSillyFailTests2,
+      roundtripSillyTests1,
+      modifySillyTests1,
+      coreUtilitiesUnitTests,
+      eventIntervalUnitTests,
+      hasTagUnitTests,
+      eventPredicateUnitTests,
+      toFromTagSetUnitTests,
+      utilitiesUnitTests,
+      parserUnitTests,
+      eventOrdTests
+    ]
+
+{- PROPERTY TESTS -}
+
+-- TODO: revise these constraints when you do so for parseEventLinesL'
+
+-- | Utility to parse a Bytestring eventline and grab the
+-- correctly parsed events, ignoring the rest. Uses the specified
+-- parsing option.
+parsedEvents ::
+  (Eventable t m a, EventLineAble t m a b, FromJSONEvent t m a) =>
+  ParseEventLineOption ->
+  C.ByteString ->
+  [Event t m a]
+parsedEvents opt = map snd . snd . parseEventLinesL' opt
+
+-- TODO: modify this to support creating begin == end intervals.
+
+-- | Utility to wrap an event into a single eventline, with the provided Text as subject ID.
+-- The 'modFact' input allows to modify the FactLine before parsing.
+eventToEventLine ::
+  (Eventable t m a, EventLineAble t m a b) =>
+  (FactsLine m a -> FactsLine m a) -> 
+  Text ->
+  Event t m a ->
+  EventLine t m a
+eventToEventLine modFact sid e = MkEventLine Null Null Null Null tgs $ modFact factline
+  where
+    factline =
+      MkFactsLine
+        { valid = Nothing,
+          time =
+            MkTimeLine
+              { timeEnd = Just (ivEnd i),
+                timeBegin = ivBegin i
+              },
+          source = getSource ctx,
+          patient_id = sid,
+          facts = getFacts ctx
+        }
+    ctx = getContext e
+    i = getInterval e
+    tgs = into $ getTagSet ctx
+
+-- | Utility to set the timeEnd in a 'FactLine'.
+setTimeEnd :: Maybe a -> FactsLine m a -> FactsLine m a
+setTimeEnd e f = f
+      { time = MkTimeLine {timeEnd = e, timeBegin = timeBegin $ time f}
+      }
+
+-- | Transform a list of events into EventLines, then encode as a single bytestring,
+-- with one eventline per line. The Bool flag if True sets timeEnd to Nothing
+encodeEventList ::
+  (EventLineAble t m a b, Eventable t m a, ToJSON t, ToJSON m, ToJSON a) =>
+  (FactsLine m a -> FactsLine m a) -> 
+  [Event t m a] ->
+  C.ByteString
+encodeEventList modFact es = C.intercalate "\n" bs
+  where
+    bs = zipWith op [1 ..] es
+    op t e = C.toStrict $ encode $ eventToEventLine modFact (pack $ show t) e
+
+-- | Valid events should round-trip through JSON with the DoNotModifyTime
+-- parsing option.
+prop_noModTimeOption :: [SillyEvent2 Int] -> Property
+prop_noModTimeOption es = es === es'
+  where
+    es' = parsedEvents DoNotModifyTime $ encodeEventList id es
+
+-- | AddMomentToEnd works as advertised for valid events.
+prop_addMoment :: [SillyEvent2 Int] -> Property
+prop_addMoment es = esExpanded === es'
+  where
+    m = moment @(Interval Int)
+    esExpanded = map (expandr m) es
+    es' = parsedEvents AddMomentToEnd $ encodeEventList id es
+
+-- | AddMomentAndFix creates a moment-length interval when
+-- only a 'begin' is provided.
+prop_addMomentToPoint :: [SillyEvent2 Int] -> Property
+prop_addMomentToPoint es = esMoment === es'
+  where
+    esMoment = map momentize es
+    es' = parsedEvents AddMomentAndFix $ encodeEventList (setTimeEnd Nothing) es
+
+-- | AddMomentToEnd does *not* fixup missing end, and no such events should parse.
+prop_addMomentMissingEnd :: [SillyEvent2 Int] -> Property
+prop_addMomentMissingEnd es = es' === ([] :: [SillyEvent2 Int])
+  where es' = parsedEvents AddMomentToEnd $ encodeEventList (setTimeEnd Nothing) es
+
+-- | AddMomentToEnd works as advertised for events where begin == end.
+prop_addMomentToPoint' :: [SillyEvent2 Int] -> Property
+prop_addMomentToPoint' es = esPoint === es'
+  where
+    esPoint = map momentize es
+    es' = parsedEvents AddMomentToEnd $ encodeEventList (\f -> setTimeEnd (Just $ timeBegin $ time f) f) es
+
+-- | FixEnd creates a moment-length interval when
+-- only a 'begin' is provided and otherwise leaves events untouched.
+-- Note this does *not* check whether it fails when it should.
+prop_FixEnd :: [SillyEvent2 Int] -> Property
+prop_FixEnd es = (es ++ esMoment) === (es' ++ es'')
+  where
+    esMoment = map momentize es
+    es'' = parsedEvents FixEnd $ encodeEventList (setTimeEnd Nothing) es
+    es' = parsedEvents FixEnd $ encodeEventList id es
+
+-- | Test group
+theoryPropTests :: TestTree
+theoryPropTests =
+  testGroup
+    "Event Data Theory property tests"
+    [ testProperty
+        "DoNotModifyTime gives JSON roundtrip with valid events"
+        prop_noModTimeOption,
+      testProperty
+        "AddMomentToEnd gives JSON roundtrip re: valid events expanded rightward by moment"
+        prop_addMoment,
+      testProperty
+        "AddMomentToEnd does not fix up missing end"
+        prop_addMomentMissingEnd,
+      testProperty
+        "AddMomentAndFix gives JSON roundtrip for eventlines with no end point"
+        prop_addMomentToPoint,
+      testProperty
+        "AddMomentToEnd gives JSON roundtrip for eventlines where end == begin"
+        prop_addMomentToPoint',
+      testProperty
+        "FixEnd gives JSON roundtrip for eventlines with no end point, leaving rest untouched"
+        prop_FixEnd
+    ]
+
+{- TEST RUNNER -}
 
 -- |
 -- The set of tests used to test the @event-data-theory@ package.
 theoryTests :: IO ()
 theoryTests =
-  defaultMain . testGroup "Event Theory tests"
-    =<< sequenceA
-      [ decodeSillyTests1,
-        decodeSillyTests2,
-        decodeSillyFailTests1,
-        decodeSillyFailTests2,
-        roundtripSillyTests1,
-        modifySillyTests1,
-        pure coreUtilitiesUnitTests,
-        pure eventIntervalUnitTests,
-        pure hasTagUnitTests,
-        pure eventPredicateUnitTests,
-        pure toFromTagSetUnitTests,
-        pure utilitiesUnitTests,
-        pure parserUnitTests,
-        pure eventOrdTests
+  defaultMain $
+    testGroup
+      "Event Data Theory tests"
+      [ theoryUnitTests,
+        theoryPropTests
       ]

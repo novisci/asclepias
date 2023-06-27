@@ -332,6 +332,17 @@ command-line interface.
 The input data, regardless of source, must be in the event lines format,
 which is a JSON Lines format. Lines of input failing to parse into the
 appropriate format will be logged. See Logs produced.
+
+Two flags allow the user to configure how intervals in input data will be parsed.
+
+* @--fix-end@ will convert intervals with null 'end' fields into moment-length intervals.
+* @--add-moment@ will add a moment to the 'end' time of intervals for which the 'end' is not null
+and the @end >= begin@. Intervals with missing 'end' or for which 'end' is less than 'begin' will
+still fail to parse.
+
+These flags can be used together to specify both modifications should be applied. The default
+behavior is not to modify input intervals at all, so that for example any event whose interval
+has a null 'end' will fail to parse.
 -}
 
 {- $using-cli-output

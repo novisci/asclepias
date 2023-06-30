@@ -1,5 +1,9 @@
 # Changelog for hasklepias-core
 
+## 0.30.3
+
+* Adds `AsCharacter` instances related to `Day`.
+
 ## 0.30.2
 
 * Drops several `as_character*` helpers and makes `AsCharacter`

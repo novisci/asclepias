@@ -1,5 +1,17 @@
 # Changelog for event-data-theory
 
+## 0.30.3
+
+* Updates the dependency `interval-algebra ^>= 2.2` and makes related changes.
+* Refactors the testing pipeline and adds property tests for `EventLine` parsing.
+* Consolidates `EventLine` parsing routines to a single pipeline, instead of
+two, ending with `parseEventLineL'`, which uses strict bytestrings.
+* Adds greater configurability for time-modification options in `ParseEventLineOption`,
+which allows for configuration of those options in CLIs produced with
+`cohortMain` of `hasklepias-main`.
+* Removes the unnecessary `Eventable` constraint from constructor `event`.
+* Removes unused `Predicate` utilities.
+
 ## 0.30.2
 
 * Fixes an incorrect implementation of `Ord` for `Event`.

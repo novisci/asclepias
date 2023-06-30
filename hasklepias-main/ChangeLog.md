@@ -1,5 +1,11 @@
 # Changelog for hasklepias-main
 
+## 0.30.3
+
+* Adds configuration flags to applications created with `cohortMain`, for
+parsing the time interval element of input data.
+* Adds some clarifications to the top-level `Hasklepias` module documentation.
+
 ## 0.30.1
 
 * Minor change to a type in `event-data-theory`.
